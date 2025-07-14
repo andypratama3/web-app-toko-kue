@@ -5,13 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Kue Pandan Asli Malang</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/script_homepage.js'])
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <style>
         [x-cloak] {
             display: none !important;
         }
     </style>
-    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/script_homepage.js'])
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
 
 <body>
@@ -117,7 +119,7 @@
     <section class="relative w-full h-[400px] md:h-[520px] flex items-center justify-center overflow-hidden">
         <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
             alt="Banner Dummy" class="absolute inset-0 w-full h-full object-cover object-center brightness-95">
-        <div class="absolute inset-0 flex flex-col items-center justify-center z-10">
+        <div class="absolute inset-0 flex flex-col items-center justify-center z-10" data-aos="fade-down">
             <h1 class="text-white text-4xl md:text-6xl font-extrabold mb-4 drop-shadow-lg">Pandan Chiffon</h1>
             <p class="text-white text-lg md:text-2xl font-medium drop-shadow mb-8 max-w-2xl text-center">Kelembutan dan
                 aroma pandan asli, cocok untuk semua acara spesial Anda.</p>
@@ -130,7 +132,7 @@
 
     <!-- About Us Section -->
     <section class="w-full py-8" style="background-color: #f2f6f5;">
-        <div class="w-[90%] max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12">
+        <div class="w-[90%] max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12" data-aos="fade-up">
             <!-- Left: Image -->
             <div class="w-full md:w-1/2">
                 <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80"
@@ -174,7 +176,7 @@
             </div>
 
             <!-- Products Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" data-aos="zoom-in">
 
                 <!-- Product 1: Pandan Chiffon Cake -->
                 <div
@@ -352,7 +354,7 @@
                     Asli Malang.
                 </p>
             </div>
-            <div class="relative">
+            <div class="relative" data-aos="zoom-out-down">
                 <div id="testimonial-carousel" class="overflow-hidden">
                     <div id="testimonial-track" class="flex transition-transform duration-700">
                         <!-- Testimonial 1 -->
@@ -467,7 +469,7 @@
                     Temukan outlet Kue Pandan Asli Malang terdekat di kota Anda.
                 </p>
             </div>
-            <div class="flex justify-center mb-8 gap-4">
+            <div class="flex justify-center mb-8 gap-4" data-aos="fade-down">
                 <button id="btn-surabaya"
                     class="outlet-btn bg-[#8BA870] text-white px-5 py-2 rounded-lg font-medium shadow hover:bg-[#7a965e] transition">Surabaya</button>
                 <button id="btn-malang"
@@ -476,7 +478,7 @@
                     class="outlet-btn bg-[#8BA870] text-white px-5 py-2 rounded-lg font-medium shadow hover:bg-[#7a965e] transition">Denpasar</button>
 
             </div>
-            <div id="outlet-content"
+            <div id="outlet-content" data-aos="fade-up"
                 class="bg-soft-green rounded-2xl shadow-lg p-6 flex flex-col md:flex-row gap-6 items-center">
                 <!-- Google Maps -->
                 <div class="w-full md:w-1/2 flex justify-center items-center">

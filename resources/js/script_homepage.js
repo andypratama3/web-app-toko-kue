@@ -101,3 +101,8 @@
       btn.classList.add('bg-[#8BA870]','text-white');
       btn.classList.remove('bg-white','text-[#8BA870]','border','border-[#8BA870]');
     }
+
+    AOS.init({
+        duration: 800, // durasi animasi dalam ms
+        once: false, // apakah animasi hanya terjadi sekali
+    });
