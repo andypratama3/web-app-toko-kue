@@ -1,3 +1,8 @@
+      window.addEventListener('load', function() {
+    const preloader = document.getElementById('preloader');
+    preloader.style.display = 'none';
+  });
+
     // Hamburger menu
     const hamburgerBtn = document.getElementById('hamburger-btn');
     const mobileMenu = document.getElementById('mobile-menu');
