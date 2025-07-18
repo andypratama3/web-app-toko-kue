@@ -4,25 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kue Pandan Asli Malang</title>
+  <title>{{ config('app.name', 'Laravel') }}</title>
   @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/script_homepage.js'])
   <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-  <style>
-    [x-cloak] {
-      display: none !important;
-    }
-    @keyframes slidein {
-      from {
-        transform: translateX(100%);
-      }
-
-      to {
-        transform: translateX(0);
-      }
-    }
-  </style>
 </head>
 <!-- PRELOADER -->
 <div id="preloader" class="fixed top-0 left-0 w-full h-full bg-white flex justify-center items-center z-50">
@@ -82,12 +68,27 @@
     </div>
     <!-- Search & Order Kanan -->
     <div class="flex items-center gap-3 pr-2 md:pr-6 flex-shrink-0">
+      <!-- Icon button (tambahkan isi button jika perlu) -->
       <button class="text-gray-500 hover:text-green-600 focus:outline-none">
+        <!-- <i class="your-icon-class"></i> -->
       </button>
-      <button
-        class="hidden md:block bg-[#8BA870] text-white rounded-full px-5 py-1.5 font-medium text-sm hover:bg-[#7a965e] transition">
-        Order
-      </button>
+
+      <!-- Form wrapper untuk tombol Login -->
+      <form action="{{ route('login') }}" method="GET" class="hidden md:block">
+        <button
+          type="submit"
+          class="bg-[#8BA870]
+                   text-white
+                   rounded-full
+                   px-5 py-1.5
+                   font-medium text-sm
+                   hover:bg-[#7a965e]
+                   transition">
+          Login
+        </button>
+      </form>
+    </div>
+
     </div>
     <!-- Hamburger Menu (Mobile) -->
     <div class="md:hidden flex items-center ml-2">
@@ -108,8 +109,18 @@
       <a href="#" class="hover:text-green-600 transition text-left">Produk Kami</a>
       <a href="#" class="hover:text-green-600 transition text-left">Testimoni</a>
       <a href="#" class="hover:text-green-600 transition text-left">Outlet Location</a>
+
+      <!-- Separator -->
+      <div class="border-t border-gray-200 my-4"></div>
+
+      <!-- Tombol/Login Link -->
+      <a href="{{ route('login') }}"
+        class="block w-full text-center bg-[#8BA870] text-white rounded-full px-5 py-2 font-medium text-sm hover:bg-[#7a965e] transition">
+        Login
+      </a>
     </div>
   </div>
+
   <!-- Spacer agar konten tidak tertutup navbar -->
   <div class="h-[68px] md:h-[68px]"></div>
 
@@ -560,4 +571,5 @@
     </div>
   </footer>
 </body>
+
 </html>

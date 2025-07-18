@@ -16,7 +16,10 @@ export default {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
-        },
+            colors: {
+                greenlight: '#97b67d', // Light green sesuai logo
+                greendark: '#2e5d32',  // Dark green,
+        },}
     },
 
     plugins: [forms, typography],
