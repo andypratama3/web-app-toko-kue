@@ -48,31 +48,34 @@
     // Data outlet
     const outlets = {
       surabaya: {
-        map: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d27407.361567370317!2d112.667856172412!3d-7.30505313126888!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7fc3a2785bf49%3A0x86974c8847438953!2sAzko%20-%20Lenmarc%20Mall%20Surabaya!5e0!3m2!1sid!2sid!4v1752289089994!5m2!1sid!2sid',
+        map: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3957.9681779681105!2d112.775769691843!3d-7.244461222219543!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7f9b0b298d195%3A0x1b301a8958c157c6!2sKue%20Ijo%20Pandan%20Asli!5e0!3m2!1sid!2sid!4v1753154879994!5m2!1sid!2sid',
         img: 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80',
-        title: 'Outlet Surabaya',
-        address: 'Jl. Raya Darmo No. 99, Surabaya',
+        title: 'Pusat Surabaya',
+        address: 'Jl. Lebak Jaya II No.26, RT.005/RW.04, Gading, Kec. Tambaksari, Surabaya, Jawa Timur 60134',
         hours: 'Senin - Minggu, 08.00 - 20.00',
-        contact: 'Telp: 031-1234567',
-        directions: 'https://maps.app.goo.gl/451F7tNyDLVXx3pt6'
+        contact: 'Telp: 083849268988',
+        email: 'pandanaslisbyadm@gmail.com',
+        directions: 'https://maps.app.goo.gl/FBLH5zD3sq1wBYit8'
       },
       malang: {
-        map: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3952.934234!2d112.6304!3d-7.9775!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd6281b1b1b1b1b%3A0x1b1b1b1b1b1b1b1b!2sMalang!5e0!3m2!1sen!2sid!4v1680000000001!5m2!1sen!2sid',
+        map: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3951.4563986431112!2d112.6579965!3d-7.951697299999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd629afaf867ba3%3A0x9aa041e45fac81a8!2sJl.%20Graha%20Pelita%20Asri%20No.b29%2C%20Pandanwangi%2C%20Kec.%20Blimbing%2C%20Kota%20Malang%2C%20Jawa%20Timur%2065124!5e0!3m2!1sid!2sid!4v1753156426758!5m2!1sid!2sid',
         img: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80',
         title: 'Outlet Malang',
-        address: 'Jl. Ijen No. 88, Malang',
+        address: 'Jl. Graha Pelita Asri No.b29, Pandanwangi, Kec. Blimbing, Kota Malang, Jawa Timur 65124',
         hours: 'Senin - Minggu, 08.00 - 21.00',
-        contact: 'Telp: 0341-7654321',
-        directions: 'https://goo.gl/maps/efgh5678'
+        contact: 'Telp: 082131338971',
+        email:'pandanaslimalangadm@gmail.com',
+        directions: 'https://maps.app.goo.gl/fyw33cyHhwBuAyQE8'
       },
       denpasar: {
-        map: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3944.934234!2d115.2204!3d-8.6575!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd2471b1b1b1b1b%3A0x1b1b1b1b1b1b1b1b!2sDenpasar!5e0!3m2!1sen!2sid!4v1680000000002!5m2!1sen!2sid',
+        map: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3943.832310607487!2d115.22523580000001!3d-8.7074693!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd2410d9d4cfba5%3A0xf2eb89848c9d9c5a!2sGg.%20Ikan%20Arwana%20No.6%2C%20Sesetan%2C%20Denpasar%20Selatan%2C%20Kota%20Denpasar%2C%20Bali%2080224!5e0!3m2!1sid!2sid!4v1753156639022!5m2!1sid!2sid',
         img: 'https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80',
         title: 'Outlet Denpasar',
-        address: 'Jl. Teuku Umar No. 123, Denpasar',
+        address: 'Gg. Ikan Arwana No.6, Sesetan, Denpasar Selatan, Kota Denpasar, Bali 80224',
         hours: 'Senin - Minggu, 09.00 - 21.00',
-        contact: 'Telp: 0361-9876543',
-        directions: 'https://goo.gl/maps/ijkl9101'
+        contact: 'Telp: -',
+        email:'pandanaslibaliadm@hmail.com',
+        directions: 'https://maps.app.goo.gl/YA8hKxqigziBTiXf7'
       }
     };
     // Button event
@@ -96,6 +99,7 @@
       document.getElementById('outlet-address').textContent = o.address;
       document.getElementById('outlet-hours').textContent = o.hours;
       document.getElementById('outlet-contact').textContent = o.contact;
+      document.getElementById('outlet-email').textContent = 'Email: ' + o.email;
       document.getElementById('outlet-directions').href = o.directions;
     }
     function setActive(btn) {

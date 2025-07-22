@@ -1,15 +1,17 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" style="scroll-behavior: smooth;">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ config('app.name', 'Laravel') }}</title>
+  @section('title', 'Homepage')
+  @include('layouts.headicon')
   @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/script_homepage.js'])
   <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 </head>
+
 <!-- PRELOADER -->
 <div id="preloader" class="fixed top-0 left-0 w-full h-full bg-white flex justify-center items-center z-50">
   <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500"></div>
@@ -45,7 +47,7 @@
     class="w-full bg-white/80 shadow-sm px-6 py-3 flex items-center justify-between fixed top-0 left-0 z-50 transition-all duration-300">
     <!-- Logo Kiri -->
     <div class="flex items-center gap-2 pl-2 md:pl-6 flex-shrink-0">
-      <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=facearea&w=64&h=64&facepad=2"
+      <img src="{{ asset('assets/homepage/logo.png') }}"
         alt="Logo" class="h-10 w-10 rounded-full object-cover">
       <span class="font-semibold text-[#8BA870] text-xl tracking-tight">Kue Pandan Asli Malang</span>
     </div>
@@ -53,16 +55,16 @@
     <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] max-w-full">
       <ul class="hidden md:flex items-center justify-center gap-8 text-sm font-medium text-gray-700 w-full">
         <li>
-          <a href="#" class="hover:text-green-600 transition">Tentang Kami</a>
+          <a href="#tentang-kami" class="hover:text-green-600 transition">Tentang Kami</a>
         </li>
         <li>
-          <a href="#" class="hover:text-green-600 transition">Produk Kami</a>
+          <a href="#produk-kami" class="hover:text-green-600 transition">Produk Kami</a>
         </li>
         <li>
-          <a href="#" class="hover:text-green-600 transition">Testimoni</a>
+          <a href="#testimoni" class="hover:text-green-600 transition">Testimoni</a>
         </li>
         <li>
-          <a href="#" class="hover:text-green-600 transition">Outlet Location</a>
+          <a href="#outlet-location" class="hover:text-green-600 transition">Outlet Location</a>
         </li>
       </ul>
     </div>
@@ -105,10 +107,10 @@
     class="fixed top-[68px] left-0 w-full h-[calc(100vh-68px)] bg-gray-900/60 z-40 opacity-0 pointer-events-none transition-all duration-300">
     <div class="bg-white rounded-r-2xl shadow-xl w-4/5 max-w-xs h-full p-8 flex flex-col gap-6 text-lg font-medium text-gray-700 animate-slidein"
       style="animation: slidein 0.3s cubic-bezier(.4,0,.2,1)">
-      <a href="#" class="hover:text-green-600 transition text-left">Tentang Kami</a>
-      <a href="#" class="hover:text-green-600 transition text-left">Produk Kami</a>
-      <a href="#" class="hover:text-green-600 transition text-left">Testimoni</a>
-      <a href="#" class="hover:text-green-600 transition text-left">Outlet Location</a>
+      <a href="#tentang-kami" class="hover:text-green-600 transition text-left">Tentang Kami</a>
+      <a href="#produk-kami" class="hover:text-green-600 transition text-left">Produk Kami</a>
+      <a href="#testimoni" class="hover:text-green-600 transition text-left">Testimoni</a>
+      <a href="#outlet-location" class="hover:text-green-600 transition text-left">Outlet Location</a>
 
       <!-- Separator -->
       <div class="border-t border-gray-200 my-4"></div>
@@ -140,7 +142,7 @@
   </section>
 
   <!-- About Us Section -->
-  <section class="w-full py-8" style="background-color: #f2f6f5;">
+  <section id="tentang-kami" class="w-full py-8" style="background-color: #f2f6f5;">
     <div class="w-[90%] max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12" data-aos="fade-up">
       <!-- Left: Image -->
       <div class="w-full md:w-1/2">
@@ -172,7 +174,7 @@
   </section>
 
   <!-- Products Section -->
-  <section class="w-full bg-white py-8">
+  <section id="produk-kami" class="w-full bg-white py-8">
     <div class="w-[90%] max-w-7xl mx-auto">
       <!-- Section Header -->
       <div class="text-center mb-16">
@@ -353,7 +355,7 @@
   </section>
 
   <!-- Testimonials Section -->
-  <section class="w-full bg-white py-8" style="background-color: #f2f6f5;">
+  <section id="testimoni" class="w-full bg-white py-8" style="background-color: #f2f6f5;">
     <div class="w-[90%] max-w-7xl mx-auto">
       <div class="text-center mb-10">
         <span class="text-[#8BA870] font-medium tracking-wider text-sm mb-3 block">TESTIMONI</span>
@@ -469,7 +471,7 @@
   </section>
 
   <!-- Outlet Location Section -->
-  <section class="w-full py-8" style="background-color: bg-whhite;">
+  <section id="outlet-location" class="w-full py-8" style="background-color: bg-whhite;">
     <div class="w-[90%] max-w-5xl mx-auto">
       <div class="text-center mb-10">
         <span class="text-[#8BA870] font-medium tracking-wider text-sm mb-3 block">Outlet Location</span>
@@ -488,13 +490,13 @@
 
       </div>
       <div id="outlet-content" data-aos="fade-up"
-        class="bg-soft-green rounded-2xl shadow-lg p-6 flex flex-col md:flex-row gap-6 items-center">
+        class="bg-soft-green rounded-2xl shadow-2xl p-6 flex flex-col md:flex-row gap-6 items-center">
         <!-- Google Maps -->
         <div class="w-full md:w-1/2 flex justify-center items-center">
           <iframe id="outlet-map"
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d27407.361567370317!2d112.667856172412!3d-7.30505313126888!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7fc3a2785bf49%3A0x86974c8847438953!2sAzko%20-%20Lenmarc%20Mall%20Surabaya!5e0!3m2!1sid!2sid!4v1752289089994!5m2!1sid!2sid"
-            width="100%" height="320"
-            style="border:0; border-radius:1rem; box-shadow:0 2px 16px 0 rgba(44,62,80,0.08); max-width: 370px; min-width: 220px; display: block; margin: 0 auto; background: #eee;"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3957.9681779681105!2d112.775769691843!3d-7.244461222219543!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7f9b0b298d195%3A0x1b301a8958c157c6!2sKue%20Ijo%20Pandan%20Asli!5e0!3m2!1sid!2sid!4v1753154879994!5m2!1sid!2sid"
+            width="100%" height="450"
+            style="border:0; border-radius:1rem; box-shadow:0 2px 16px 0 rgba(44,62,80,0.08); max-width: 480px; min-width: 320px; display: block; margin: 0 auto; background: #eee;"
             allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
         </div>
         <!-- Outlet Info -->
@@ -502,16 +504,23 @@
           <img id="outlet-img"
             src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80"
             alt="Outlet Surabaya" class="w-full h-36 object-cover rounded-xl mb-2 shadow">
-          <h3 id="outlet-title" class="text-2xl font-bold text-[#2C3E50] mb-1">Outlet Surabaya</h3>
-          <p id="outlet-address" class="text-gray-700 mb-1">Jl. Raya Darmo No. 99, Surabaya</p>
+          <h3 id="outlet-title" class="text-2xl font-bold text-[#2C3E50] mb-1">Pusat Surabaya</h3>
+          <p id="outlet-address" class="text-gray-700 mb-1">Jalan Lebak Jaya II no. 26A Gading, Tambaksari, Surabaya, Jawa Timur 60134 (Rumah pagar hitam)</p>
           <p id="outlet-hours" class="text-gray-500 text-sm mb-1">Senin - Minggu, 08.00 - 20.00</p>
-          <p id="outlet-contact" class="text-gray-500 text-sm mb-2">Telp: 031-1234567</p>
-          <a id="outlet-directions" href="https://maps.app.goo.gl/451F7tNyDLVXx3pt6" target="_blank"
-            class="inline-block bg-[#8BA870] text-white px-5 py-2 rounded-lg font-medium shadow hover:bg-[#7a965e] transition">Get
-            Directions</a>
+          <p id="outlet-contact" class="text-gray-500 text-sm mb-2">Telp: 083849268988</p>
+          <p id="outlet-email" class="text-gray-500 text-sm mb-2">Email: pandanaslisbyadm@gmail.com</p>
+          <div class="w-full">
+            <a
+              id="outlet-directions"
+              href="https://maps.app.goo.gl/FBLH5zD3sq1wBYit8"
+              target="_blank"
+              class="w-full flex justify-center items-center bg-[#8BA870] text-white px-5 py-2 rounded-lg font-medium shadow hover:bg-[#7a965e] transition">
+              Get Directions
+            </a>
+          </div>
+
         </div>
       </div>
-    </div>
   </section>
 
   <!-- Footer -->
@@ -520,7 +529,7 @@
       <div class="md:flex md:justify-between">
         <div class="mb-6 md:mb-0">
           <a href="#" class="flex items-center">
-            <span class="self-center text-2xl font-semibold whitespace-nowrap">NamaBrand</span>
+            <span class="self-center text-2xl font-semibold whitespace-nowrap">Kue Pandan Asli Malang</span>
           </a>
           <p class="mt-2 text-gray-400 max-w-xs text-sm">Lorem ipsum dolor sit amet, consectetur adipiscing
             elit. Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam nunc, eget aliquam massa
@@ -528,35 +537,41 @@
         </div>
         <div class="grid grid-cols-2 gap-8 sm:gap-6 sm:grid-cols-3">
           <div>
-            <h2 class="mb-6 text-sm font-semibold uppercase">Resources</h2>
+            <h2 class="mb-6 text-sm font-semibold uppercase">Social Media</h2>
             <ul class="text-gray-400 font-medium">
               <li class="mb-4">
-                <a href="#" class="hover:underline">Tailwind CSS</a>
+                <a href="https://www.instagram.com/pandanaslimalang/" class="hover:underline">Instagram</a>
+              </li>
+              <li class="mb-4">
+                <a href="https://www.tiktok.com/@pandanasli_malang" class="hover:underline">Tiktok</a>
               </li>
               <li>
-                <a href="#" class="hover:underline">Flowbite</a>
+                <a href="https://www.facebook.com/profile.php?id=61557399493559&ref=pro_upsell_xav_ig_profile_page_web#" class="hover:underline">Facebook</a>
               </li>
             </ul>
           </div>
           <div>
-            <h2 class="mb-6 text-sm font-semibold uppercase">Follow us</h2>
+            <h2 class="mb-6 text-sm font-semibold uppercase">Useful Link</h2>
             <ul class="text-gray-400 font-medium">
               <li class="mb-4">
-                <a href="#" class="hover:underline ">Github</a>
+                <a href="#tentang-kami" class="hover:underline">Tentang Kami</a>
+              </li>
+              <li class="mb-4">
+                <a href="#testimoni" class="hover:underline">Testimoni</a>
+              </li>
+              <li class="mb-4">
+                <a href="#outlet-location" class="hover:underline">Outlet Location</a>
               </li>
               <li>
-                <a href="#" class="hover:underline">Discord</a>
+                <a href="#produk-kami" class="hover:underline">Produk Kami</a>
               </li>
             </ul>
           </div>
           <div>
-            <h2 class="mb-6 text-sm font-semibold uppercase">Legal</h2>
+            <h2 class="mb-6 text-sm font-semibold uppercase">Katalog</h2>
             <ul class="text-gray-400 font-medium">
               <li class="mb-4">
-                <a href="#" class="hover:underline">Privacy Policy</a>
-              </li>
-              <li>
-                <a href="#" class="hover:underline">Terms &amp; Conditions</a>
+                <a href="#" class="hover:underline">Download Katalog</a>
               </li>
             </ul>
           </div>
@@ -564,8 +579,8 @@
       </div>
       <hr class="my-6 border-gray-700 sm:mx-auto lg:my-8" />
       <div class="sm:flex sm:items-center sm:justify-center p-4">
-        <span class="text-sm text-gray-400 sm:text-center">© 2025 <a href="#" class="hover:underline">Kue Pandan
-            Asli Malang™</a><br>All Rights Reserved.
+        <span class="text-sm text-gray-400 sm:text-center">© Copyright 2010 - 2025 <a href="#" class="hover:underline">Kue Pandan
+            Asli Malang</a><br>All Rights Reserved.
         </span>
       </div>
     </div>

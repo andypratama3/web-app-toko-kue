@@ -1,8 +1,10 @@
+@section('title', 'Login')
+@include('layouts.headicon')
 <x-guest-layout>
     <div class="min-h-screen flex items-center justify-center relative overflow-hidden">
         {{-- Background --}}
         <img
-            src="{{ asset('assets/bg-login.jpg') }}"
+            src="{{ asset('assets/homepage/bg-login.jpg') }}"
             alt="Background Login"
             class="absolute inset-0 w-full h-full object-cover" />
         <div class="absolute inset-0 bg-black/20"></div>
