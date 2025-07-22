@@ -18,7 +18,7 @@
              bg-white rounded-2xl shadow-lg
              flex overflow-hidden">
             {{-- KIRI: SIGN IN --}}
-            <div class="w-full md:w-1/2 px-8 py-12 flex flex-col justify-center bg-white">
+            <div class="w-full md:w-1/2 px-4 py-8 sm:px-8 sm:py-12 flex flex-col justify-center bg-white max-w-xs mx-auto md:mx-0 md:max-w-full">
                 <x-slot name="logo">
                     <div class="flex justify-center mb-6">
                         <img src="{{ asset('logo.png') }}" alt="Logo" class="w-14 h-14">
