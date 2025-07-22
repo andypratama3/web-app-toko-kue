@@ -66,11 +66,9 @@
                     </div>
                     {{-- actions --}}
                     <div class="flex items-center justify-between mt-4">
-                        @if(Route::has('password.request'))
-                        <a class="underline text-sm text-greenlight hover:text-greendark" href="{{ route('password.request') }}">
-                            {{ __('Forgot your password?') }}
+                       <a href="/" class="text-green-600 hover:text-green-800 underline">
+                        ← Back
                         </a>
-                        @endif
                         <x-button class="bg-greenlight hover:bg-greendark text-white px-6 ml-4 rounded-full">
                             {{ __('Sign In') }}
                         </x-button>
