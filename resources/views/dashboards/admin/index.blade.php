@@ -1,22 +1,47 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Admin Dashboard - Region {{ $admin->region }}
-        </h2>
-    </x-slot>
+@extends('layouts.argon')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                <h3 class="text-lg font-medium">Monitoring Kurir di Region {{ $admin->region }}</h3>
-                <ul class="mt-4 list-disc list-inside">
-                    @forelse($couriers as $kurir)
-                        <li>{{ $kurir->name }} ({{ $kurir->email }})</li>
-                    @empty
-                        <li>Tidak ada data kurir di region ini.</li>
-                    @endforelse
-                </ul>
-            </div>
+@section('title', 'Dashboard Admin')
+
+@section('content')
+  <div class="row">
+    <div class="col-12">
+      <div class="mb-4 card">
+        <div class="pb-0 card-header">
+          <h6>Monitoring Kurir di Region {{ Auth::user()->region }}</h6>
         </div>
+        <div class="px-0 pt-0 pb-2 card-body">
+          <div class="p-0 table-responsive">
+            <table class="table mb-0 align-items-center">
+              <thead>
+                <tr>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nama Kurir</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Email</th>
+                </tr>
+              </thead>
+              <tbody>
+                @forelse($couriers as $kurir)
+                <tr>
+                  <td>
+                    <div class="px-2 py-1 d-flex">
+                      <div class="d-flex flex-column justify-content-center">
+                        <h6 class="mb-0 text-sm">{{ $kurir->name }}</h6>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <p class="mb-0 text-xs font-weight-bold">{{ $kurir->email }}</p>
+                  </td>
+                </tr>
+                @empty
+                <tr>
+                  <td colspan="2" class="py-4 text-center">Tidak ada data kurir di region ini.</td>
+                </tr>
+                @endforelse
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
-</x-app-layout>
+  </div>
+@endsection
