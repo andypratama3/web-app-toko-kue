@@ -47,7 +47,6 @@
                         @if (request()->routeIs('admin.dashboard') || request()->routeIs('kurir.dashboard')) bg-blue-500/13 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif"
                         href="{{ $dashboardUrl }}">
                         <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
-                            {{-- PERBAIKAN: Menggunakan ikon Nucleo --}}
                             <i class="ni ni-tv-2 @if (request()->routeIs('admin.dashboard') || request()->routeIs('kurir.dashboard')) text-blue-500 @else text-slate-400 @endif"></i>
                         </div>
                         <span class="ml-1 duration-300 opacity-100 pointer-events-none ease">Dashboard</span>

@@ -17,7 +17,7 @@
   <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500"></div>
 </div>
 
-<body class="flex flex-col min-h-screen">
+<body class="flex flex-col min-h-screen" style="overflow-x:hidden;">
 
   <!-- Floating WhatsApp Button -->
   <a class="fixed bottom-6 right-6 z-50"
@@ -44,12 +44,12 @@
 
   <!-- Navbar -->
   <nav id="navbar"
-    class="w-full bg-white/80 shadow-sm px-6 py-3 flex items-center justify-between fixed top-0 left-0 z-50 transition-all duration-300">
+    class="w-full bg-white/80 shadow-sm py-3 flex items-center justify-between fixed top-0 left-0 z-50 transition-all duration-300">
     <!-- Logo Kiri -->
     <div class="flex items-center gap-2 pl-2 md:pl-6 flex-shrink-0">
       <img src="{{ asset('assets/homepage/logo.png') }}"
         alt="Logo" class="h-10 w-10 rounded-full object-cover">
-      <span class="font-semibold text-[#8BA870] text-xl tracking-tight">Kue Pandan Asli Malang</span>
+      <a href="/" class="font-semibold text-[#8BA870] text-xl tracking-tight hover:text-black active:text-black transition-colors duration-200">Kue Pandan Asli Malang</a>
     </div>
     <!-- Menu Tengah Absolute Center Boxed -->
     <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] max-w-full">
@@ -131,10 +131,9 @@
     <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
       alt="Banner Dummy" class="absolute inset-0 w-full h-full object-cover object-center brightness-95">
     <div class="absolute inset-0 flex flex-col items-center justify-center z-10" data-aos="fade-down">
-      <h1 class="text-white text-4xl md:text-6xl font-extrabold mb-4 drop-shadow-lg">Pandan Chiffon</h1>
-      <p class="text-white text-lg md:text-2xl font-medium drop-shadow mb-8 max-w-2xl text-center">Kelembutan dan
-        aroma pandan asli, cocok untuk semua acara spesial Anda.</p>
-      <a href="#"
+      <h1 class="text-white text-4xl md:text-6xl font-extrabold mb-4 drop-shadow-lg">Pandan Asli Malang</h1>
+      <p class="text-white text-lg md:text-2xl font-medium drop-shadow mb-8 max-w-2xl text-center">Kue Ijo Pandan Asli Malang adalah Kue tradisional Indonesia, cocok untuk semua acara spesial Anda.</p>
+      <a href="https://api.whatsapp.com/send/?phone=6282131338971&text=Hai+admin+%2APandan+Asli+Malang%2A%2C+perkenalan+nama+saya+%28isi+nama+anda%29+.+Saya+ingin+..&type=phone_number&app_absent=0"
         class="bg-white text-[#7a965e] font-semibold px-8 py-3 rounded-full shadow hover:bg-[#8BA870] hover:text-white transition text-lg border border-[#8BA870]">Pesan
         Sekarang</a>
     </div>
@@ -528,7 +527,7 @@
     <div class="mx-auto w-full max-w-screen-xl p-4 py-6 lg:py-8">
       <div class="md:flex md:justify-between">
         <div class="mb-6 md:mb-0">
-          <a href="#" class="flex items-center">
+          <a href="/" class="flex items-center">
             <span class="self-center text-2xl font-semibold whitespace-nowrap">Kue Pandan Asli Malang</span>
           </a>
           <p class="mt-2 text-gray-400 max-w-xs text-sm">Lorem ipsum dolor sit amet, consectetur adipiscing
