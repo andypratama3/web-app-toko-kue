@@ -5,15 +5,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@yield('title', 'Dashboard')</title>
-
+    @include('layouts.headicon')
     {{-- Vite build assets --}}
     @vite(['resources/css/app.css', 'resources/css/argon-dashboard-tailwind.css', 'resources/js/app.js', 'resources/js/argon-dashboard-tailwind.js'])
 
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
 
     <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
-    <link href="resources/css/nucleo-icons.css" rel="stylesheet" />
-    <link href="resources/css/nucleo-svg.css" rel="stylesheet" />
+    {{-- <link href="resources/css/nucleo-icons.css" rel="stylesheet" />
+    <link href="resources/css/nucleo-svg.css" rel="stylesheet" /> --}}
     <script src="https://unpkg.com/@popperjs/core@2"></script>
 
     {{-- Script for Sidenav --}}
