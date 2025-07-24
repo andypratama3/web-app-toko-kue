@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+@import 'nucleo-icons.css';
+@import 'nucleo-svg.css';
+
 [x-cloak] {
     display: none !important;
 }
