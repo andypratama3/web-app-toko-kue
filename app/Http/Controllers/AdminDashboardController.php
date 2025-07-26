@@ -21,6 +21,18 @@ class AdminDashboardController extends Controller
                         ->where('region', $admin->region)
                         ->get();
 
-        return view('dashboards.admin.index', compact('admin', 'couriers'));
+        return view('dashboard.admin.dashboard', compact('admin', 'couriers'));
+    }
+
+    public function profile()
+    {
+        $admin = Auth::user();
+
+        // Cek hanya role admin
+        if (!$admin->hasRole('admin')) {
+            abort(403, 'AKSES DITOLAK');
+        }
+
+        return view('dashboard.admin.profile.profile', compact('admin'));
     }
 }

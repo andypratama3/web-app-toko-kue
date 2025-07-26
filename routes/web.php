@@ -58,3 +58,6 @@ Route::get('/dashboard', function () {
     }
     abort(403, 'Unauthorized');
 })->name('dashboard');
+
+// Route untuk profile admin
+Route::get('/admin/profile', [AdminDashboardController::class, 'profile'])->name('admin.profile');
