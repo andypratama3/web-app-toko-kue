@@ -68,5 +68,7 @@ class RoleAndUserSeeder extends Seeder
             'region' => 'Denpasar',
             'password' => bcrypt('password')
         ])->assignRole($kurirRole);
+
+        
     }
 }
