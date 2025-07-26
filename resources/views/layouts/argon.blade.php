@@ -10,7 +10,8 @@
     @vite(['resources/css/app.css', 'resources/css/argon-dashboard-tailwind.css', 'resources/js/app.js', 'resources/js/argon-dashboard-tailwind.js'])
 
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
-
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
     {{-- <link href="resources/css/nucleo-icons.css" rel="stylesheet" />
     <link href="resources/css/nucleo-svg.css" rel="stylesheet" /> --}}
@@ -68,10 +69,8 @@
     <main class="relative h-full max-h-screen transition-all duration-200 ease-in-out xl:ml-68 rounded-xl">
         @include('layouts.partials.navbar')
 
-        <div class="w-full px-6 py-6 mx-auto">
-            @yield('content')
-            @include('layouts.partials.footer')
-        </div>
+        @include('layouts.partials.content')
+        @include('layouts.partials.footer')
     </main>
 </body>
 
