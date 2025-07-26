@@ -15,7 +15,7 @@ class KurirDashboardController extends Controller
             abort(403, 'AKSES DITOLAK');
         }
 
-        return view('dashboards.kurir.index', compact('kurir'));
+        return view('dashboard.kurir.dashboard', compact('kurir'));
     }
 
     // controller data seller
@@ -29,5 +29,18 @@ class KurirDashboardController extends Controller
         }
 
         return view('dashboards.kurir.tambah-seller', compact('kurir'));
+    }
+
+    // controller profile
+    public function profile()
+    {
+        $kurir = Auth::user();
+
+        // Cek hanya role admin
+        if (!$kurir->hasRole('kurir')) {
+            abort(403, 'AKSES DITOLAK');
+        }
+
+        return view('dashboard.kurir.profile.profile', compact('kurir'));
     }
 }

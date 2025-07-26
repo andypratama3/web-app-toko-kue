@@ -59,6 +59,11 @@ Route::get('/dashboard', function () {
     abort(403, 'Unauthorized');
 })->name('dashboard');
 
+// Route untuk profile admin
+Route::get('/admin/profile', [AdminDashboardController::class, 'profile'])->name('admin.profile');
+// Route untuk profile kurir
+Route::get('/kurir/profile', [KurirDashboardController::class, 'profile'])->name('kurir.profile');
+
 // Route untuk form tambah data seller
 Route::get('/{region}/dashboard-kurir/tambah-seller', [KurirDashboardController::class, 'tambahSeller'])
     ->middleware(['auth', 'verified'])

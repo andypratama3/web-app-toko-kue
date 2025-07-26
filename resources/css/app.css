@@ -1,3 +1,6 @@
+@import './nucleo-icons.css';
+@import './nucleo-svg.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
