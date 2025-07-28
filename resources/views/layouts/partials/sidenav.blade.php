@@ -84,7 +84,7 @@
             <li class="mt-0.5 w-full">
                 <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors" href="{{ url('/pengiriman') }}">
                     <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
-                        <i class="fas fa-book text-red-600"></i>
+                        <i class="text-red-600 fas fa-book"></i>
                     </div>
                     <span class="ml-1 duration-300 opacity-100 pointer-events-none ease">Data Seller</span>
                 </a>
@@ -120,7 +120,7 @@
                     <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors" href="{{ route('logout') }}" onclick="event.preventDefault(); this.closest('form').submit();">
                         <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
                             {{-- PERBAIKAN: Menggunakan ikon Nucleo --}}
-                            <i class="fas fa-sign-out-alt text-red-600"></i>
+                            <i class="text-red-600 fas fa-sign-out-alt"></i>
                         </div>
                         <span class="ml-1 duration-300 opacity-100 pointer-events-none ease">Logout</span>
                     </a>
