@@ -16,11 +16,10 @@ class ProductController extends Controller
      */
     public function index()
     {
-        // Method ini akan menampilkan daftar produk jika Anda membuat view khusus untuk itu.
-        // Contoh: return view('dashboard.admin.products.index', ['products' => Product::paginate(10)]);
-        // Untuk saat ini, kita redirect ke dashboard utama.
-        $region = Auth::user()->region ?? 'default';
-        return redirect()->route('admin.dashboard', ['region' => $region]);
+        $products = \App\Models\Product::latest()->paginate(12); // Ambil 12 produk terbaru
+
+        // Anda perlu membuat view baru untuk ini, contoh: 'products.index'
+        return view('dashboard.admin.products.index', compact('products'));
     }
 
     /**

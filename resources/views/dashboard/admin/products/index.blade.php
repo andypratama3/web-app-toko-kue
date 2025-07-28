@@ -1,57 +1,10 @@
 @extends('layouts.argon')
-@section('title', 'Dashboard Admin')
+@section('title', 'Manajemen Produk')
 
 @section('content')
-    <div class="row">
-        <div class="col-12">
-            <div class="mb-4 card">
-                <div class="pb-0 card-header">
-                    <h6>Monitoring Kurir di Region {{ Auth::user()->region }}</h6>
-                </div>
-                <div class="px-0 pt-0 pb-2 card-body">
-                    <div class="p-0 table-responsive">
-                        <table class="table mb-0 align-items-center">
-                            <thead>
-                                <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nama
-                                        Kurir</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
-                                        Email</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($couriers as $kurir)
-                                    <tr>
-                                        <td>
-                                            <div class="px-2 py-1 d-flex">
-                                                <div class="d-flex flex-column justify-content-center">
-                                                    <h6 class="mb-0 text-sm">{{ $kurir->name }}</h6>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <p class="mb-0 text-xs font-weight-bold">{{ $kurir->email }}</p>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="2" class="py-4 text-center">Tidak ada data kurir di region ini.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    {{-- Dynamic Product Section --}}
-    {{-- <div class="max-w-screen-xl px-4 mx-auto 2xl:px-0"> --}}
-    <div class="items-end justify-between mb-4 space-y-4 sm:flex sm:space-y-0 md:mb-8">
+<div class="items-end justify-between mb-4 space-y-4 sm:flex sm:space-y-0 md:mb-8">
         <div>
-            <h2 class="mt-3 text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">Data Produk</h2>
+            <h2 class="mt-3 text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">Manajemen Produk</h2>
         </div>
         {{-- <div class="flex items-center space-x-4">
             <a href="{{ route('admin.products.create') }}" class="flex items-center justify-center w-full px-3 py-2 text-sm font-medium text-white bg-green-700 rounded-lg hover:bg-green-800 focus:ring-4 focus:ring-green-300 sm:w-auto dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">

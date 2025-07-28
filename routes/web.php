@@ -40,7 +40,7 @@ Route::middleware([
     Route::get('/admin/dashboard/{region}', [AdminDashboardController::class, 'index'])
         ->name('admin.dashboard');
 
-    // Resource route untuk produk admin (agar route name admin.products.* tersedia)
+    // Resource route untuk produk admin (prefix dan nama route: admin.products.*)
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('products', ProductController::class);
     });
