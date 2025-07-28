@@ -2,41 +2,7 @@
 @section('title', 'Dashboard Kurir')
 @section('content')
 
-<!-- <body class="m-0 font-sans text-base antialiased font-normal dark:bg-slate-900 leading-default bg-blue-50 text-slate-500">
-    <div class="fixed top-0 w-full z-0 dark:hidden min-h-75" style="background-color: #888f7a;"></div> -->
-
-<!-- sidenav  -->
-<!-- <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-40 z-980 hidden transition-opacity duration-200"></div> -->
-
-
-
-<main class="relative h-full max-h-screen transition-all duration-200 ease-in-out rounded-xl -px-8">
-    <!-- Navbar -->
-    <!-- <nav id="navbar" class="sticky top-0 pt-4 pb-2 z-50 px-6 transition-shadow duration-300 shadow-xl rounded-b-2xl" style="background-color: #888f7a;">
-            <div class="flex items-center justify-between bg-[#888f7a] p-5">
-                <div class="flex items-center">
-                    <div>
-                        <h4 class="mb-0 font-bold text-white">Hai! {{ $kurir->name }}</h4>
-                        <div class="text-sm text-white">Semangat bekerja!</div>
-                    </div>
-                </div>
-                <div>
-                    <a href="javascript:;" class="block p-0 text-sm text-white xl:hidden" sidenav-trigger>
-                        <button class="bg-white/10 p-2 rounded-lg">
-                            <svg width="24" height="24" fill="none" stroke="currentColor" class="text-white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="3" width="7" height="7" rx="1.5" />
-                                <rect x="14" y="3" width="7" height="7" rx="1.5" />
-                                <rect x="14" y="14" width="7" height="7" rx="1.5" />
-                                <rect x="3" y="14" width="7" height="7" rx="1.5" />
-                            </svg>
-                        </button>
-                    </a>
-                </div>
-            </div>
-        </nav> -->
-    <!-- end Navbar -->
-
-    <!-- cards -->
+<!-- cards -->
     <div class="w-full -p-8 mx-auto">
         <div class="flex flex-wrap gap-6 -mx-3">
             <div class="w-full max-w-full lg:flex-nome space-y-4 px-3">
@@ -228,7 +194,6 @@
             </footer> -->
     </div>
     <!-- end cards -->
-</main>
 <!-- </body> -->
 <!-- plugin for charts  -->
 
@@ -346,6 +311,5 @@
 <script src="/assets/argon/js/plugins/perfect-scrollbar.min.js" async></script>
 <script src="/assets/argon/js/assets/argon-dashboard-tailwind.js?v=1.0.1" async></script>
 
-</html>
 
 @endsection
