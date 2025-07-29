@@ -65,6 +65,17 @@ Route::get('/admin/profile', [AdminDashboardController::class, 'profile'])->name
 Route::get('/kurir/profile', [KurirDashboardController::class, 'profile'])->name('kurir.profile');
 
 // Route untuk form tambah data seller
-Route::get('/{region}/dashboard-kurir/tambah-seller', [KurirDashboardController::class, 'tambahSeller'])
+Route::get('/{region}/dashboard-kurir/modal/tmbh-seller', [KurirDashboardController::class, 'tambahSeller'])
     ->middleware(['auth', 'verified'])
-    ->name('kurir.tambahSeller');
+    ->name('kurir.modal.tmbh-seller');
+
+// Route untuk form tambah pesanan
+Route::get('/{region}/dashboard-kurir/pages/tmbh-pesanan', [KurirDashboardController::class, 'tambahPesanan'])
+    ->middleware(['auth', 'verified'])
+    ->name('kurir.pages.tmbh-pesanan');
+
+// Route untuk sidebar data-seller (menampilkan semua data seller)
+Route::get('/{region}/dashboard-kurir/pages/data-seller', [KurirDashboardController::class, 'dataSeller'])
+    ->middleware(['auth', 'verified'])
+    ->name('kurir.pages.data-seller');
+

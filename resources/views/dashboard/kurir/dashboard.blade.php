@@ -1,238 +1,181 @@
 @extends('layouts.argon')
 @section('title', 'Dashboard Kurir')
 @section('content')
+@include('dashboard.kurir.modal.tmbh-seller')
 
-<!-- <body class="m-0 font-sans text-base antialiased font-normal dark:bg-slate-900 leading-default bg-blue-50 text-slate-500">
-    <div class="fixed top-0 w-full z-0 dark:hidden min-h-75" style="background-color: #888f7a;"></div> -->
-
-<!-- sidenav  -->
-<!-- <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-40 z-980 hidden transition-opacity duration-200"></div> -->
-
-
-
-<main class="relative h-full max-h-screen transition-all duration-200 ease-in-out rounded-xl -px-8">
-    <!-- Navbar -->
-    <!-- <nav id="navbar" class="sticky top-0 pt-4 pb-2 z-50 px-6 transition-shadow duration-300 shadow-xl rounded-b-2xl" style="background-color: #888f7a;">
-            <div class="flex items-center justify-between bg-[#888f7a] p-5">
-                <div class="flex items-center">
-                    <div>
-                        <h4 class="mb-0 font-bold text-white">Hai! {{ $kurir->name }}</h4>
-                        <div class="text-sm text-white">Semangat bekerja!</div>
+<!-- cards -->
+<div class="w-full max-w full">
+    <div class="flex flex-wrap gap-6 -mx-3">
+        <div class="w-full max-w-full lg:flex-nome space-y-4 px-3">
+            <div class=" mb-6">
+                <div class=" max-w-full rounded-2xl p-5 shadow flex flex-col flex-none gap-4 xl:gap-0 px-4 py-4 " style="background-color: #efece8ff; ">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <div>
+                                <div class="font-bold text-black text-base" id="ucapan">Selamat</div>
+                                <div class="text-xs text-black">Your Achivement Today</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-700 opacity-80 mb-1">
+                        <div class="w-1/4 text-center">TOTAL</div>
+                        <div class="w-1/4 text-center">WAKTU</div>
+                        <div class="w-1/4 text-center">SELESAI</div>
+                        <div class="w-1/4 text-center">GAGAL</div>
+                    </div>
+                    <div class="flex justify-between font-bold text-gray-800 text-lg mb-4">
+                        <div class="w-1/4 text-center">62</div>
+                        <div class="w-1/4 text-center">23</div>
+                        <div class="w-1/4 text-center">45</div>
+                        <div class="w-1/4 text-center">17</div>
                     </div>
                 </div>
-                <div>
-                    <a href="javascript:;" class="block p-0 text-sm text-white xl:hidden" sidenav-trigger>
-                        <button class="bg-white/10 p-2 rounded-lg">
-                            <svg width="24" height="24" fill="none" stroke="currentColor" class="text-white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="3" width="7" height="7" rx="1.5" />
-                                <rect x="14" y="3" width="7" height="7" rx="1.5" />
-                                <rect x="14" y="14" width="7" height="7" rx="1.5" />
-                                <rect x="3" y="14" width="7" height="7" rx="1.5" />
-                            </svg>
-                        </button>
+            </div>
+
+            <div class="grid g gap-4">
+                <div class="flex flex-wrap -mx-3">
+                    <!-- Card 1: Pesanan -->
+                    <a href="{{ route('kurir.pages.tmbh-pesanan', ['region' => $kurir->region]) }}" class="w-1/2 px-3 ">
+                        <div class="flex items-center rounded-2xl p-4 bg-white shadow-lg hover:shadow-xl transition ease-in-out duration-150 transform active:scale-95">
+                            <div class="flex items-center justify-center w-12 h-6 rounded-full bg-green-100 mr-2 lg:mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" viewBox="0 0 24 24" fill="#fde047" stroke="#000">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M12 3v2a2 2 0 01-2 2h4a2 2 0 01-2-2V3zm-2 9h4m-4 4h4" />
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-lg font-bold text-black sm:text-xl">Pesanan</div>
+                                <div class="text-xs text-black sm:text-sm">Input here!</div>
+                            </div>
+                        </div>
                     </a>
-                </div>
-            </div>
-        </nav> -->
-    <!-- end Navbar -->
 
-    <!-- cards -->
-    <div class="w-full -p-8 mx-auto">
-        <div class="flex flex-wrap gap-6 -mx-3">
-            <div class="w-full max-w-full lg:flex-nome space-y-4 px-3">
-                <div class=" mb-6">
-                    <div class=" max-w-full rounded-2xl p-5 shadow flex flex-col flex-none gap-4 xl:gap-0 px-4 py-4 " style="background-color: #efece8ff; ">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center gap-2">
-                                <div>
-                                    <div class="font-bold text-black text-base" id="ucapan">Selamat</div>
-                                    <div class="text-xs text-black">Your Achivement Today</div>
-                                </div>
+                    <!-- Card 2: Seller -->
+                    <button type="button"
+                        class="w-1/2 px-3 mb-6"
+                        data-modal-toggle="crud-modal">
+                        <div class="flex items-center rounded-2xl p-4 bg-white shadow-lg hover:shadow-xl transition ease-in-out duration-150 transform active:scale-95">
+                            <div class="flex items-center justify-center w-12 h-6 rounded-full bg-yellow-100 mr-2 lg:mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" viewBox="0 0 24 24" fill="#fde047" stroke="#000">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M18 9v6m3-3h-6M9 16a4 4 0 100-8 4 4 0 000 8zm0 0c-2.21 0-4 1.79-4 4v1h8v-1c0-2.21-1.79-4-4-4z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="text-lg font-bold text-black sm:text-2xl">Seller</div>
+                                <div class="text-xs text-black sm:text-sm">Input here!</div>
                             </div>
                         </div>
-                        <div class="flex justify-between text-xs text-gray-700 opacity-80 mb-1">
-                            <div class="w-1/4 text-center">TOTAL</div>
-                            <div class="w-1/4 text-center">WAKTU</div>
-                            <div class="w-1/4 text-center">SELESAI</div>
-                            <div class="w-1/4 text-center">GAGAL</div>
-                        </div>
-                        <div class="flex justify-between font-bold text-gray-800 text-lg mb-4">
-                            <div class="w-1/4 text-center">62</div>
-                            <div class="w-1/4 text-center">23</div>
-                            <div class="w-1/4 text-center">45</div>
-                            <div class="w-1/4 text-center">17</div>
-                        </div>
-                        <!-- <div class="flex justify-between items-center text-xs text-gray-700 opacity-80">
-                                <span class="font-semibold">Today <span class="ml-1">▼</span></span>
-                                <span class="underline">See Progress</span>
-                            </div> -->
-                    </div>
-                </div>
-
-                <div class="grid g gap-4">
-                    <div class="flex flex-wrap -mx-3">
-                        <!-- Card 1: Pesanan -->
-                        <a href="/tambah-pesanan" class="w-1/2 px-3 ">
-                            <div class="flex items-center rounded-2xl p-4 bg-white shadow-lg hover:shadow-xl transition ease-in-out duration-150 transform active:scale-95">
-                                <div class="flex items-center justify-center w-12 h-6 rounded-full bg-green-100 mr-2 lg:mr-4">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" viewBox="0 0 24 24" fill="#fde047" stroke="#000">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M12 3v2a2 2 0 01-2 2h4a2 2 0 01-2-2V3zm-2 9h4m-4 4h4" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <div class="text-lg font-bold text-black sm:text-xl">Pesanan</div>
-                                    <div class="text-xs text-black sm:text-sm">Input here!</div>
-                                </div>
-                            </div>
-                        </a>
-
-                        <!-- Card 2: Seller -->
-                        <a href="{{ route('kurir.tambahSeller', ['region' => $kurir->region]) }}" class="w-1/2 px-3 mb-6">
-                            <div class="flex items-center rounded-2xl p-4 bg-white shadow-lg hover:shadow-xl transition ease-in-out duration-150 transform active:scale-95">
-                                <div class="flex items-center justify-center w-12 h-6 rounded-full bg-yellow-100 mr-2 lg:mr-4">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" viewBox="0 0 24 24" fill="#fde047" stroke="#000">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M18 9v6m3-3h-6M9 16a4 4 0 100-8 4 4 0 000 8zm0 0c-2.21 0-4 1.79-4 4v1h8v-1c0-2.21-1.79-4-4-4z" />
-                                    </svg>
-
-                                </div>
-                                <div>
-                                    <div class="text-lg font-bold text-black sm:text-2xl">Seller</div>
-                                    <div class="text-xs text-black sm:text-sm">Input here!</div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="w-full max-w-full px-3 mt-0 lg:flex-none">
-                <div class="border-black/12.5 dark:bg-slate-850 dark:shadow-dark-xl shadow-xl relative z-20 flex min-w-0 flex-col break-words rounded-2xl border-0 border-solid bg-white bg-clip-border">
-                    <div class="border-black/12.5 mb-0 rounded-t-2xl border-b-0 border-solid p-6 pt-4 pb-0">
-                        <h6 class="capitalize dark:text-white">Income</h6>
-                        <p class="mb-0 text-sm text-black leading-normal dark:text-white dark:opacity-60">
-                            <i class="fa fa-arrow-up text-emerald-500"></i>
-                            <span class="text-xl text-black font-semibold">Rp 550.000</span>
-                        </p>
-                    </div>
-                    <div class="flex-auto p-4">
-                        <div>
-                            <canvas id="savingsChart" class="h-[200px] lg:h-[300px]"></canvas>
-                        </div>
-                    </div>
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Lastes Order -->
-        <div class="flex flex-wrap mt-6 -mx-3">
-            <div class="w-full max-w-full px-3 mt-0 lg:w-7/12 lg:flex-none">
-                <div class="relative flex flex-col min-w-0 mb-4 break-words bg-white border-0 border-transparent border-solid shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
-                    <div class="p-6 pb-0 mb-0 border-b-0 border-b-solid rounded-t-2xl border-b-transparent">
-                        <h5 class="dark:text-white text-black">Lastes Order</h5>
-                    </div>
-                    <div class="flex-auto px-0 pt-0 pb-2">
-                        <div class="p-0 overflow-x-auto">
-                            <table class="items-center w-full mb-0 align-top border-collapse dark:border-white/40 text-slate-500">
-                                <thead class="align-bottom text-black">
-                                    <tr>
-                                        <th class="px-6 py-3 font-bold text-left text-black uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
-                                            Nama</th>
-                                        <th class="px-6 py-3 pl-2 font-bold text-left text-black uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
-                                            Alamat</th>
-                                        <th class="px-6 py-3 font-bold text-center text-black uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
-                                            Pesanan</th>
-                                        <th class="px-6 py-3 font-bold text-center text-black uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
-                                            Status</th>
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                                            <div class="flex px-2 py-1">
-                                                <div class="flex flex-col justify-center">
-                                                    <h6 class="mb-0 text-sm leading-normal dark:text-white">John Michael</h6>
-                                                    <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400">
-                                                        john@creative-tim.com</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                                            <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-80">Gampeng</p>
-                                        </td>
-                                        <td class="p-2 bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                                            <span class="text-xs font-semibold leading-tight dark:text-white dark:opacity-80 text-slate-400">Tumpeng Kue Pandan</span>
-                                        </td>
-                                        <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                                            <span class="bg-gradient-to-tl from-emerald-500 to-teal-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">TERKIRIM</span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                                            <div class="flex px-2 py-1">
-                                                <div class="flex flex-col justify-center">
-                                                    <h6 class="mb-0 text-sm leading-normal dark:text-white">John Michael</h6>
-                                                    <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400">
-                                                        john@creative-tim.com</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                                            <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-80">Gampeng</p>
-                                        </td>
-                                        <td class="p-2r bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                                            <span class="text-xs font-semibold leading-tight dark:text-white dark:opacity-80 text-slate-400">Kue Manis</span>
-                                        </td>
-                                        <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
-                                            <span class="bg-gradient-to-tl from-red-600 to-red-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">Gagal</span>
-                                        </td>
-
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+        <div class="w-full max-w-full px-3 mt-0 lg:flex-none">
+            <div class="border-black/12.5 dark:bg-slate-850 dark:shadow-dark-xl shadow-xl relative z-20 flex min-w-0 flex-col break-words rounded-2xl border-0 border-solid bg-white bg-clip-border">
+                <div class="border-black/12.5 mb-0 rounded-t-2xl border-b-0 border-solid p-6 pt-4 pb-0">
+                    <h6 class="capitalize dark:text-white">Income</h6>
+                    <p class="mb-0 text-sm text-black leading-normal dark:text-white dark:opacity-60">
+                        <i class="fa fa-arrow-up text-emerald-500"></i>
+                        <span class="text-xl text-black font-semibold">Rp 550.000</span>
+                    </p>
                 </div>
-            </div>
-            <div class="w-full max-w-full px-3 mt-0 mb-6 lg:mb-0 lg:w-5/12 lg:flex-none">
-                <div class="relative flex flex-col min-w-0 break-words bg-white border-0 border-solid shadow-xl dark:bg-slate-850 dark:shadow-dark-xl dark:bg-gray-950 border-black-125 rounded-2xl bg-clip-border">
-                    <div class="p-4 pb-0 mb-0 rounded-t-4">
-                        <!-- Total Income -->
-                        <div class="flex-1">
-                            <h4 class=" text-blackfont-semibold text-xl mb-1">APAYAAA</h4>
-                            <div class="text-3xl md:text-4xl font-bold  text-black mb-4">????? </div>
-                        </div>                        
+                <div class="flex-auto p-4">
+                    <div>
+                        <canvas id="savingsChart" class="h-[200px] lg:h-[300px]"></canvas>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- <footer class="">
-                <div class="w-full px-6 mx-auto">
-                    <div class="flex flex-wrap items-center -mx-3 lg:justify-between">
-                        <div class="w-full max-w-full px-3 mt-0 mb-4 shrink-0 lg:mb-0 lg:w-1/2 lg:flex-none">
-                            <div class="text-sm leading-normal text-center text-slate-500 lg:text-left">
-                                ©
-                                <script>
-                                    document.write(new Date().getFullYear() + ",");
-                                </script>
-                                made with <i class="fa fa-heart"></i> by
-                                <a href="https://www.creative-tim.com" class="font-semibold text-slate-700 dark:text-white" target="_blank">Creative Tim L0v3</a>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </footer> -->
     </div>
-    <!-- end cards -->
-</main>
-<!-- </body> -->
-<!-- plugin for charts  -->
 
-<script src="/assets/argon/js/plugins/chartjs.min.js"></script>
+    <!-- Lastes Order -->
+    <div class="flex flex-wrap mt-6 -mx-3">
+        <div class="w-full max-w-full px-3 mt-0 lg:w-7/12 lg:flex-none">
+            <div class="relative flex flex-col min-w-0 mb-4 break-words bg-white border-0 border-transparent border-solid shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
+                <div class="p-6 pb-0 mb-0 border-b-0 border-b-solid rounded-t-2xl border-b-transparent">
+                    <h5 class="dark:text-white text-black">Lastes Order</h5>
+                </div>
+                <div class="flex-auto px-0 pt-0 pb-2">
+                    <div class="p-0 overflow-x-auto">
+                        <table class="items-center w-full mb-0 align-top border-collapse dark:border-white/40 text-slate-500">
+                            <thead class="align-bottom text-black">
+                                <tr>
+                                    <th class="px-6 py-3 font-bold text-left text-black uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
+                                        Nama</th>
+                                    <th class="px-6 py-3 pl-2 font-bold text-left text-black uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
+                                        Alamat</th>
+                                    <th class="px-6 py-3 font-bold text-center text-black uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
+                                        Pesanan</th>
+                                    <th class="px-6 py-3 font-bold text-center text-black uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
+                                        Status</th>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
+                                        <div class="flex px-2 py-1">
+                                            <div class="flex flex-col justify-center">
+                                                <h6 class="mb-0 text-sm leading-normal dark:text-white">John Michael</h6>
+                                                <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400">
+                                                    john@creative-tim.com</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
+                                        <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-80">Gampeng</p>
+                                    </td>
+                                    <td class="p-2 bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
+                                        <span class="text-xs font-semibold leading-tight dark:text-white dark:opacity-80 text-slate-400">Tumpeng Kue Pandan</span>
+                                    </td>
+                                    <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
+                                        <span class="bg-gradient-to-tl from-emerald-500 to-teal-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">TERKIRIM</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
+                                        <div class="flex px-2 py-1">
+                                            <div class="flex flex-col justify-center">
+                                                <h6 class="mb-0 text-sm leading-normal dark:text-white">John Michael</h6>
+                                                <p class="mb-0 text-xs leading-tight dark:text-white dark:opacity-80 text-slate-400">
+                                                    john@creative-tim.com</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
+                                        <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-80">Gampeng</p>
+                                    </td>
+                                    <td class="p-2r bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
+                                        <span class="text-xs font-semibold leading-tight dark:text-white dark:opacity-80 text-slate-400">Kue Manis</span>
+                                    </td>
+                                    <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
+                                        <span class="bg-gradient-to-tl from-red-600 to-red-400 px-2.5 text-xs rounded-1.8 py-1.4 inline-block whitespace-nowrap text-center align-baseline font-bold uppercase leading-none text-white">Gagal</span>
+                                    </td>
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="w-full max-w-full px-3 mt-0 mb-6 lg:mb-0 lg:w-5/12 lg:flex-none">
+            <div class="relative flex flex-col min-w-0 break-words bg-white border-0 border-solid shadow-xl dark:bg-slate-850 dark:shadow-dark-xl dark:bg-gray-950 border-black-125 rounded-2xl bg-clip-border">
+                <div class="p-4 pb-0 mb-0 rounded-t-4">
+                    <div class="flex-1">
+                        <h4 class=" text-blackfont-semibold text-xl mb-1">APAYAAA</h4>
+                        <div class="text-3xl md:text-4xl font-bold  text-black mb-4">????? </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- end cards -->
+<!-- </body> -->
+
+<!-- plugin for charts  -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         var ctx = document.getElementById('savingsChart');
@@ -308,15 +251,16 @@
     });
 </script>
 
+<!-- untuk ucapan waktu -->
 <script>
     function getGreeting() {
         const now = new Date();
         const hour = now.getHours();
 
         if (hour >= 4 && hour < 11) {
-            return "Selamat Pagi 🌤️";
+            return "Selamat Pagi 🌤";
         } else if (hour >= 11 && hour < 15) {
-            return "Selamat Siang ☀️";
+            return "Selamat Siang ☀";
         } else if (hour >= 15 && hour < 18) {
             return "Selamat Sore 🌇";
         } else {
@@ -330,7 +274,7 @@
         document.getElementById("ucapan").textContent = getGreeting();
     });
 </script>
-
+<!-- 
 <script>
     window.addEventListener('scroll', function() {
         const navbar = document.getElementById('navbar');
@@ -340,12 +284,10 @@
             navbar.classList.remove('shadow-xl');
         }
     });
-</script>
+</script> -->
 
-
+<script src="/assets/argon/js/plugins/chartjs.min.js"></script>
 <script src="/assets/argon/js/plugins/perfect-scrollbar.min.js" async></script>
 <script src="/assets/argon/js/assets/argon-dashboard-tailwind.js?v=1.0.1" async></script>
-
-</html>
 
 @endsection

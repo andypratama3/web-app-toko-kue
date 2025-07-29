@@ -17,6 +17,17 @@
     <link href="resources/css/nucleo-svg.css" rel="stylesheet" /> --}}
     <script src="https://unpkg.com/@popperjs/core@2"></script>
 
+    {{-- Script for Modal --}}
+    <script src="https://unpkg.com/flowbite@1.6.5/dist/flowbite.min.js"></script>
+
+    <!-- dropdown search -->
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+
     {{-- Script for Sidenav --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -59,7 +70,7 @@
 
 <body class="m-0 font-sans text-base antialiased font-normal dark:bg-slate-900 leading-default bg-gray-50 text-slate-500">
     {{-- Top color bar --}}
-    <div class="absolute w-full bg-greenlight dark:hidden min-h-75"></div>
+    <div class="fixed w-full bg-greenlight dark:hidden min-h-75"></div>
 
     {{-- Sidebar Overlay --}}
     <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden transition-opacity duration-200 bg-black bg-opacity-40"></div>

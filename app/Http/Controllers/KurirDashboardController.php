@@ -18,19 +18,6 @@ class KurirDashboardController extends Controller
         return view('dashboard.kurir.dashboard', compact('kurir'));
     }
 
-    // controller data seller
-    public function tambahSeller(string $region)
-    {
-        $kurir = Auth::user();
-
-        // Pastikan hanya kurir dan sesuai region
-        if ($kurir->region !== $region || !$kurir->hasRole('kurir')) {
-            abort(403, 'AKSES DITOLAK');
-        }
-
-        return view('dashboards.kurir.tambah-seller', compact('kurir'));
-    }
-
     // controller profile
     public function profile()
     {
@@ -43,4 +30,44 @@ class KurirDashboardController extends Controller
 
         return view('dashboard.kurir.profile.profile', compact('kurir'));
     }
+
+    // controller tambah data seller
+    public function tambahSeller(string $region)
+    {
+        $kurir = Auth::user();
+
+        // Pastikan hanya kurir dan sesuai region
+        if ($kurir->region !== $region || !$kurir->hasRole('kurir')) {
+            abort(403, 'AKSES DITOLAK');
+        }
+
+        return view('dashboard.kurir.modal.tmbh-seller', compact('kurir'));
+    }
+
+    // controller tambah pesanan
+    public function tambahPesanan(string $region)
+    {
+        $kurir = Auth::user();
+
+        // Pastikan hanya kurir dan sesuai region
+        if ($kurir->region !== $region || !$kurir->hasRole('kurir')) {
+            abort(403, 'AKSES DITOLAK');
+        }
+
+        return view('dashboard.kurir.pages.tmbh-pesanan', compact('kurir'));
+    }
+
+    // controller data seller
+    public function dataSeller(string $region)
+    {
+        $kurir = Auth::user();
+
+        // Pastikan hanya kurir dan sesuai region
+        if ($kurir->region !== $region || !$kurir->hasRole('kurir')) {
+            abort(403, 'AKSES DITOLAK');   
+        }
+
+        return view('dashboard.kurir.pages.data-seller', compact('kurir'));
+    }
+
 }

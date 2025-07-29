@@ -82,13 +82,17 @@
 
             @role('kurir')
             <li class="mt-0.5 w-full">
-                <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors" href="{{ url('/pengiriman') }}">
+                <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
+                    href="{{ route('kurir.pages.data-seller', ['region' => $kurir->region]) }}">
                     <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
                         <i class="fas fa-book text-red-600"></i>
                     </div>
                     <span class="ml-1 duration-300 opacity-100 pointer-events-none ease">Data Seller</span>
                 </a>
-                <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors" href="{{ url('/pengiriman') }}">
+            </li>
+            <li class="mt-0.5 w-full">
+                <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
+                    href="{{ url('/pengiriman') }}">
                     <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
                         <i class="fas fa-folder text-greenlight"></i>
                     </div>
@@ -103,11 +107,11 @@
             </li>
             <li class="mt-0.5 w-full">
                 <a class="py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg font-semibold
-                        @if (request()->routeIs('admin.profile')) bg-blue-500/13 text-blue-700 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif"
+                        @if (request()->routeIs('kurir.profile')) bg-blue-500/13 text-blue-700 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif"
                     href="{{ route('kurir.profile') }}">
                     <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
                         {{-- PERBAIKAN: Menggunakan ikon Nucleo --}}
-                        <i class="ni ni-single-02 @if (request()->routeIs('admin.profile')) text-blue-500 @else text-slate-700 @endif"></i>
+                        <i class="ni ni-single-02 @if (request()->routeIs('kurir.profile')) text-blue-500 @else text-slate-700 @endif"></i>
                     </div>
                     <span class="ml-1 duration-300 opacity-100 pointer-events-none ease">Profil Saya</span>
                 </a>
