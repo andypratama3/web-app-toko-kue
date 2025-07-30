@@ -4,15 +4,83 @@
 {{-- <nav class="relative flex flex-wrap items-center justify-between px-0 py-2 mx-6 transition-all ease-in shadow-none duration-250 rounded-2xl lg:flex-nowrap lg:justify-start" navbar-main navbar-scroll="false">
   <div class="flex flex-wrap items-center justify-between w-full px-4 py-1 mx-auto"> --}}
     <nav>
+      @php
+          // Definisikan nama yang lebih ramah pengguna untuk segmen URL.
+          $segmentNames = [
+              'products' => 'Manajemen Produk',
+              'create' => 'Tambah',
+              'edit' => 'Edit',
+              'profile' => 'Profil'
+              // Anda bisa menambahkan nama kustom lainnya di sini.
+          ];
+
+          // --- PERBAIKAN DIMULAI DI SINI ---
+          // Buat URL Home yang benar berdasarkan role dan region pengguna.
+          $user = Auth::user();
+          $homeUrl = url('/'); // Fallback jika user tidak login
+
+          if ($user) {
+              $region = $user->region ?? null;
+              if ($region) {
+                  if ($user->hasRole('admin')) {
+                      // Menggunakan route 'admin.dashboard' dengan parameter region
+                      $homeUrl = route('admin.dashboard', ['region' => $region]);
+                  } elseif ($user->hasRole('kurir')) {
+                      // Menggunakan route 'kurir.dashboard' dengan parameter region
+                      $homeUrl = route('kurir.dashboard', ['region' => $region]);
+                  }
+              } else {
+                  // Fallback jika user tidak punya region, arahkan ke dashboard umum
+                  $homeUrl = url('/dashboard');
+              }
+          }
+          // Mulai breadcrumb dengan "Home" dan URL yang sudah benar.
+          $breadcrumbs = [['title' => 'Home', 'url' => $homeUrl]];
+          // --- PERBAIKAN SELESAI ---
+
+          // Proses setiap segmen URL untuk membangun jejak navigasi.
+          foreach (request()->segments() as $segment) {
+              // Lewati segmen yang merupakan prefix role (admin/kurir) atau ID numerik.
+              if (in_array($segment, ['admin', 'kurir']) || is_numeric($segment)) {
+                  continue;
+              }
+              
+              // Jika segmen adalah 'dashboard', kita anggap ini halaman utama dan berhenti.
+              if ($segment === 'dashboard') {
+                  $breadcrumbs[] = ['title' => 'Dashboard'];
+                  break; // Hentikan proses agar tidak menampilkan nama region, dll.
+              }
+
+              // Ambil nama kustom jika ada, jika tidak, format segmen URL menjadi judul.
+              $title = $segmentNames[$segment] ?? ucwords(str_replace('-', ' ', $segment));
+              
+              // Tambahkan segmen ke dalam array breadcrumbs.
+              $breadcrumbs[] = ['title' => $title];
+          }
+      @endphp
+
+      {{-- Tampilkan Breadcrumb --}}
       <ol class="flex flex-wrap pt-1 mr-12 bg-transparent rounded-lg sm:mr-16">
-        <li class="text-sm leading-normal">
-          <a class="text-white opacity-50" href="javascript:;">Pages</a>
-        </li>
-        <li class="text-sm pl-2 capitalize leading-normal text-white before:float-left before:pr-2 before:text-white before:content-['/']" aria-current="page">
-          @yield('page_title', 'Dashboard')
-        </li>
+          @foreach ($breadcrumbs as $breadcrumb)
+              @if ($loop->first)
+                  {{-- Item pertama (Home) --}}
+                  <li class="text-sm leading-normal">
+                      <a class="text-white opacity-50" href="{{ $breadcrumb['url'] }}">{{ $breadcrumb['title'] }}</a>
+                  </li>
+              @else
+                  {{-- Item selanjutnya dengan pemisah '/' --}}
+                  <li class="text-sm pl-2 capitalize leading-normal {{ $loop->last ? 'text-white' : 'text-white opacity-50' }} before:float-left before:pr-2 before:text-white before:content-['/']" @if($loop->last) aria-current="page" @endif>
+                      {{ $breadcrumb['title'] }}
+                  </li>
+              @endif
+          @endforeach
       </ol>
-      <h6 class="mb-0 font-bold text-white capitalize">@yield('page_title', 'Dashboard')</h6>
+
+      {{-- Judul Utama Halaman --}}
+      <h6 class="mb-0 font-bold text-white capitalize">
+          {{-- Ambil judul dari item breadcrumb terakhir, atau 'Dashboard' sebagai default. --}}
+          {{ end($breadcrumbs)['title'] ?? 'Dashboard' }}
+      </h6>
     </nav>
     {{-- <nav>
       <ol class="flex flex-wrap pt-1 mr-12 bg-transparent rounded-lg sm:mr-16">

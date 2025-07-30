@@ -4,12 +4,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="keywords" content="Kue, Kue Pandan, Kue Pandan Asli, Kue Pandan Ijo, Kue Pandan Tradisional, Kue Tradisional, Kue Ijo, Malang, Kue Malang, Oleh oleh Malang, Kue Ijo Alami, Kue Natural, Kue Asli Pandan, Kue Ketan, Kue Pulut, Kue Singkong, Kelapa, Kelapa parut, Kue Ongol, Kue Aren, Kue Talang, Kue Estetik, Kue Srikaya, Kue Coklat, Kue Manis, Kue Ubi Nanas, Kue Ubi, Kue Nanas, Lumpur Surga, Tumpeng Kue, Tumpeng Kue Tradisional, Paket Hampers, Paket Tumpeng, Kue Enak, Kue Lezat, Kue Kekinian, Kue Instagram, Kue Estetik, Camilan Kekinian, Camilan Instgramable, Kue Photogenic, Kue Lembut, Kue Pandan Wangi, Kue Pandan Lembut, Kue Homemade, Buah Tangan Malang, Kue Kuno, Kue 100% Pandan, Kue Delicious, Kue Santan, Kue Gurih, Kue Asin, Kue Tanpa Pengawet, Bahan Baku Alami, Makanan sehat, Saus Srikaya, Kue Srikaya, Kue Basah, Kue Kenyal, Kue Gula Jawa, Saus Gula Jawa, Kue Hijau, Asli Pandan, Kue Ubi Madu, Pandan Homemade">
+  <meta name="description" content="Kue Pandan Asli, kami adalah perusahaan kuliner yang berfokus pada produksi dan pengembangan kue tradisional berbahan alami tanpa campuran pengawet dan pewarna. Kami berfokus pada bahan bahan alami mulai dari pewarna kami menggunakan 100% pandan pada seluruh produk kami. Kami berkomitmen menghadirkan kue tradisional dengan bahan baku premium, alami dan kekinian.">
+  
   @section('title', 'Homepage')
   @include('layouts.headicon')
   @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/script_homepage.js'])
+  
   <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/dist/medium-zoom.min.js"></script>
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 
 <!-- PRELOADER -->
@@ -49,7 +55,7 @@
     <div class="flex items-center gap-2 pl-2 md:pl-6 flex-shrink-0">
       <img src="{{ asset('assets/homepage/logo.png') }}"
         alt="Logo" class="h-10 w-10 rounded-full object-cover">
-      <a href="/" class="font-semibold text-[#8BA870] text-xl tracking-tight hover:text-black active:text-black transition-colors duration-200">Kue Pandan Asli Malang</a>
+      <a href="/" class="font-semibold text-[#8BA870] text-xl tracking-tight hover:text-black active:text-black transition-colors duration-200">Kue Pandan Asli</a>
     </div>
     <!-- Menu Tengah Absolute Center Boxed -->
     <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] max-w-full">
@@ -128,11 +134,11 @@
 
   <!-- Banner Section -->
   <section class="relative w-full h-[400px] md:h-[520px] flex items-center justify-center overflow-hidden">
-    <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80"
-      alt="Banner Dummy" class="absolute inset-0 w-full h-full object-cover object-center brightness-95">
+    <img src="{{ asset('assets/homepage/hero-image.jpg') }}"
+      alt="Hero Image" loading="lazy" class="absolute inset-0 w-full h-full object-cover object-center brightness-90">
     <div class="absolute inset-0 flex flex-col items-center justify-center z-10" data-aos="fade-down">
-      <h1 class="text-white text-4xl md:text-6xl font-extrabold mb-4 drop-shadow-lg">Pandan Asli Malang</h1>
-      <p class="text-white text-lg md:text-2xl font-medium drop-shadow mb-8 max-w-2xl text-center">Kue Ijo Pandan Asli Malang adalah Kue tradisional Indonesia, cocok untuk semua acara spesial Anda.</p>
+      <h1 class="text-white text-4xl md:text-6xl font-extrabold mb-4 drop-shadow-lg">Kue Pandan Asli</h1>
+      <p class="text-white text-lg md:text-2xl font-medium drop-shadow mb-8 max-w-2xl text-center">Kue Ijo Adalah Kue tradisional Indonesia, cocok untuk semua acara spesial Anda.</p>
       <a href="https://api.whatsapp.com/send/?phone=6282131338971&text=Hai+admin+%2APandan+Asli+Malang%2A%2C+perkenalan+nama+saya+%28isi+nama+anda%29+.+Saya+ingin+..&type=phone_number&app_absent=0"
         class="bg-white text-[#7a965e] font-semibold px-8 py-3 rounded-full shadow hover:bg-[#8BA870] hover:text-white transition text-lg border border-[#8BA870]">Pesan
         Sekarang</a>
@@ -145,28 +151,77 @@
     <div class="w-[90%] max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12" data-aos="fade-up">
       <!-- Left: Image -->
       <div class="w-full md:w-1/2">
-        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80"
-          alt="About Us" class="w-full h-[400px] object-cover rounded-2xl shadow-lg">
+        <img src="{{ asset('assets/homepage/about-us.jpg') }}"
+          alt="About Us" loading="lazy" class="w-full h-[400px] object-cover rounded-2xl shadow-lg">
       </div>
-      <!-- Right: Content -->
+      <!-- Right: Content (tab only on this side) -->
       <div class="w-full md:w-1/2 flex flex-col items-start">
-        <span class="text-[#8BA870] font-medium tracking-wider text-sm mb-2">TENTANG KAMI</span>
-        <h2 class="text-3xl md:text-4xl font-bold text-[#2C3E50] mb-6">Kue Pandan Asli Malang</h2>
-        <p class="text-gray-600 leading-relaxed mb-8">
-          Kami adalah pembuat kue pandan artisanal yang berbasis di Malang. Setiap produk kami dibuat dengan
-          bahan-bahan berkualitas tinggi dan menggunakan daun pandan asli untuk memberikan aroma dan rasa yang
-          autentik. Dengan pengalaman lebih dari 10 tahun, kami berkomitmen untuk menghadirkan kelezatan dan
-          kehangatan dalam setiap gigitan.
-        </p>
-        <div class="flex gap-4">
-          <button
-            class="bg-[#8BA870] text-white rounded-full px-8 py-3 font-medium hover:bg-[#7a965e] transition shadow-md">
-            Hubungi Kami
-          </button>
-          <button
-            class="bg-white text-[#8BA870] rounded-full px-8 py-3 font-medium hover:bg-gray-50 transition shadow-md border border-[#8BA870]">
-            Lihat Menu
-          </button>
+        <div x-data="{ tab: 'tentang' }" class="w-full">
+          <div class="flex gap-8 mb-4 border-b border-gray-200 relative">
+            <button @click="tab = 'tentang'"
+              class="pb-2 px-1 text-lg font-semibold focus:outline-none transition-colors duration-200 border-b-2"
+              :class="tab === 'tentang' ? 'text-[#8BA870] border-[#8BA870]' : 'text-gray-500 hover:text-[#8BA870] border-b-2 border-transparent'">
+              Tentang
+            </button>
+            <button @click="tab = 'visi'"
+              class="pb-2 px-1 text-lg font-semibold focus:outline-none transition-colors duration-200 border-b-2"
+              :class="tab === 'visi' ? 'text-[#8BA870] border-[#8BA870]' : 'text-gray-500 hover:text-[#8BA870] border-b-2 border-transparent'">
+              Visi
+            </button>
+            <button @click="tab = 'misi'"
+              class="pb-2 px-1 text-lg font-semibold focus:outline-none transition-colors duration-200 border-b-2"
+              :class="tab === 'misi' ? 'text-[#8BA870] border-[#8BA870]' : 'text-gray-500 hover:text-[#8BA870] border-b-2 border-transparent'">
+              Misi
+            </button>
+          </div>
+          <h2 class="text-3xl md:text-4xl font-bold text-[#2C3E50] mb-6" x-show="tab === 'tentang'">Kue Pandan Asli</h2>
+          <div x-show="tab === 'tentang'" x-transition:enter="transition ease-out duration-800" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-400" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+            <div x-data="{ open: false }">
+              <p class="text-gray-600 leading-relaxed mb-8">
+                <span x-show="!open">
+                  Kue Pandan Asli, kami adalah perusahaan kuliner yang berfokus pada produksi dan pengembangan kue tradisional berbahan alami tanpa campuran pengawet dan pewarna. Kami berfokus pada bahan bahan alami mulai dari pewarna kami menggunakan 100% pandan pada seluruh produk kami. Kami berkomitmen menghadirkan kue tradisional dengan bahan baku premium, alami dan kekinian.<br>
+                  <button @click="open = true" class="inline-flex items-center gap-2 bg-[#8BA870] text-white px-4 py-1.5 rounded-full font-semibold shadow hover:bg-[#7a965e] transition mt-8 group">
+                    <svg class="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                    <span>Selengkapnya</span>
+                  </button>
+                </span>
+                <span x-show="open">
+                  Kue Pandan Asli, kami adalah perusahaan kuliner yang berfokus pada produksi dan pengembangan kue tradisional berbahan alami tanpa campuran pengawet dan pewarna. Kami berfokus pada bahan bahan alami mulai dari pewarna kami menggunakan 100% pandan pada seluruh produk kami. Kami berkomitmen menghadirkan kue tradisional dengan bahan baku premium, alami dan kekinian.<br><br>
+                  Kue Pandan Asli mengelakan kembali warisan kuliner nusantara melalui produk-produk unggulan seperti Kue Ijo Pandan, Kue Pulut Srikaya, Kue Lumpur Surga, Kue Ongol, Kue Ubi Nanas dengan mengedepankan 100% bahan alami yang telah melalui quality control tim kami mulai dari pemilihan daun pandan yang hijau tua segar, gula jawa murni dari suplier sampai dengan pemilihan nanas langsung dari petani lokal. Mengangkat Kue Tradisional yang dikemas secara premium, cantik dan estetik agar sesuai dengan perkembangan zaman.<br><br>
+                  Kami percaya bahwasanya makanan tidak hanya soal rasa, tetapi juga pengalaman dan nilai budaya. Oleh karena itu, setiap produk kami dikemas dengan visual yang photogenic dan instagramable, menjadikannya pilihan utama sebagai oleh-oleh yang tersedia mulai dari Paket Hampers A (Anggun),  Hampers B (Bagus) dan Hampers C (Cantik) dan Paket Tumpeng kue tradisional mulai dari Tumpeng Mini dan Tumpeng Besar yang cocok untuk berbagai acara.<br>
+                  <button @click="open = false" class="inline-flex items-center gap-2 bg-gray-200 text-[#8BA870] px-4 py-1.5 rounded-full font-semibold shadow hover:bg-gray-300 transition mt-8 group">
+                    <svg class="w-4 h-4 text-[#8BA870] group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16l-4-4m0 0l4-4m-4 4h18"/></svg>
+                    <span>Tutup Selengkapnya</span>
+                  </button>
+                </span>
+              </p>
+            </div>
+          </div>
+          <div x-show="tab === 'visi'" x-transition:enter="transition ease-out duration-800" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-400" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+            <h2 class="text-3xl md:text-4xl font-bold text-[#2C3E50] mb-6">Visi Kami</h2>
+            <div class="text-gray-600 leading-relaxed mb-8">
+              <p class="mb-4">Menjadi pelopor dalam pelestarian dan pengembangan kue tradisional Indonesia berbahan alami, dengan menghadirkan produk yang tidak hanya lezat dan sehat, tetapi juga dikemas secara modern dan menarik.</p>
+              <p>Kami ingin membawa warisan kuliner nusantara ke generasi masa kini dan mendatang, sehingga kue tradisional tetap relevan, dicintai, dan menjadi kebanggaan bangsa.</p>
+            </div>
+          </div>
+          <div x-show="tab === 'misi'" x-transition:enter="transition ease-out duration-800" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-400" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
+            <h2 class="text-3xl md:text-4xl font-bold text-[#2C3E50] mb-6">Misi Kami</h2>
+            <ul class="text-gray-600 leading-relaxed mb-8 list-disc pl-6 space-y-2">
+              <li>
+                <span class="font-semibold text-[#8BA870]">Mengutamakan bahan alami:</span> Seluruh produk dibuat dari bahan baku alami, tanpa pengawet dan pewarna buatan, demi kesehatan dan kualitas terbaik.
+              </li>
+              <li>
+                <span class="font-semibold text-[#8BA870]">Inovasi berkelanjutan:</span> Terus mengembangkan varian kue tradisional dengan sentuhan modern, baik dari segi rasa maupun tampilan.
+              </li>
+              <li>
+                <span class="font-semibold text-[#8BA870]">Tanggung jawab produk:</span> Menjaga kualitas mulai dari pemilihan bahan, proses produksi, hingga pengemasan dan pengiriman ke konsumen.
+              </li>
+              <li>
+                <span class="font-semibold text-[#8BA870]">Pelayanan prima:</span> Memberikan pengalaman terbaik bagi pelanggan melalui produk berkualitas, pelayanan ramah, dan kemasan eksklusif.
+              </li>
+            </ul>
+          </div>
+        </div>
         </div>
       </div>
     </div>
@@ -174,9 +229,9 @@
 
   <!-- Products Section -->
   <section id="produk-kami" class="w-full bg-white py-8">
-    <div class="w-[90%] max-w-7xl mx-auto">
+    <div class="w-[90%] max-w-7xl mx-auto" x-data="{ kategori: 'produk' }">
       <!-- Section Header -->
-      <div class="text-center mb-16">
+      <div class="text-center mb-8">
         <span class="text-[#8BA870] font-medium tracking-wider text-sm mb-3 block">PRODUK UNGGULAN</span>
         <h2 class="text-4xl md:text-5xl font-bold text-[#2C3E50] mb-6">Produk Kami</h2>
         <p class="text-gray-600 max-w-3xl mx-auto text-lg leading-relaxed">
@@ -184,26 +239,39 @@
           bahan-bahan pilihan
         </p>
       </div>
+      <!-- Tombol Filter Kategori (pindah ke bawah judul) -->
+      <div class="flex justify-center gap-4 mb-4">
+        <button @click="kategori = 'produk'" :class="kategori === 'produk' ? 'bg-[#8BA870] text-white' : 'bg-gray-100 text-[#2C3E50]'" class="px-5 py-2 rounded-full font-semibold shadow transition">Produk</button>
+        <button @click="kategori = 'hampers'" :class="kategori === 'hampers' ? 'bg-[#8BA870] text-white' : 'bg-gray-100 text-[#2C3E50]'" class="px-5 py-2 rounded-full font-semibold shadow transition">Hampers</button>
+        <button @click="kategori = 'tumpeng'" :class="kategori === 'tumpeng' ? 'bg-[#8BA870] text-white' : 'bg-gray-100 text-[#2C3E50]'" class="px-5 py-2 rounded-full font-semibold shadow transition">Tumpeng</button>
+      </div>
 
-      <!-- Products Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" data-aos="zoom-in">
-
-        <!-- Product 1: Pandan Chiffon Cake -->
+      <!-- Produk: Kategori Produk -->
+      <div x-show="kategori === 'produk'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-12 md:py-20" data-aos="zoom-in">
+        <!-- Product 1: Kue Ijo -->
         <div
           class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div class="relative overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=400&q=80"
-              alt="Pandan Chiffon Cake"
-              class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300">
+            <img src="{{ asset('assets/homepage/product/kue-ijo.jpg') }}"
+              alt="Kue Ijo"
+              loading="lazy"
+              class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
             <div
               class="absolute top-3 right-3 bg-[#8BA870] text-white px-2 py-1 rounded-full text-xs font-medium">
               Best Seller
             </div>
           </div>
           <div class="p-5">
-            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Pandan Chiffon Cake</h3>
-            <p class="text-gray-600 text-sm mb-3 line-clamp-2">Kue chiffon lembut dengan aroma pandan asli
-              yang menggugah selera</p>
+            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Ijo</h3>
+            <div x-data="{ open: false }">
+              <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
+                Kue Ijo terbuat dari tepung beras  yang telah diayak lalu dicampur dengan campuran santan kelapa fresh dan air pandan asli. Kue ini memiliki tekstur yang kenyal dan lembut bersamaan ketika dikunyah didalam mulut. Dibalut taburan dengan kelapa parut segar menambah cita rasa gurih dan manis yang menjadikan kue Ijo cocok dinikmati pada suasana apapun.
+              </p>
+              <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
+                <span x-show="!open">Selengkapnya</span>
+                <span x-show="open">Tutup</span>
+              </button>
+            </div>
             <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Rp 85.000</span>
               <button
@@ -214,18 +282,26 @@
           </div>
         </div>
 
-        <!-- Product 2: Pandan Layer Cake -->
+        <!-- Product 2: Kue Lumpur Surga -->
         <div
           class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div class="relative overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=400&q=80"
-              alt="Pandan Layer Cake"
-              class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300">
+            <img src="{{ asset('assets/homepage/product/kue-lumpur-surga.jpg') }}"
+              alt="Kue Lumpur Surga"
+              loading="lazy"
+              class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
           </div>
           <div class="p-5">
-            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Pandan Layer Cake</h3>
-            <p class="text-gray-600 text-sm mb-3 line-clamp-2">Kue berlapis dengan cream pandan yang lezat
-              dan tekstur yang sempurna</p>
+            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Lumpur Surga</h3>
+            <div x-data="{ open: false }">
+              <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
+                Kue yang memiliki dua lapisan yaitu lapisan bawah bewarna hijau yang dihasilkan dari air pandan asli dan lapisan atas mirip dengan vla yang terbuat dari santan. Kue yang memiliki tekstur lembut dan lumer dimulut sangat nikmat jika disantap dalam keadaan dingin. Memiliki Cita rasa manis dari kue nya dan gurih asin dari vla nya berpadu menghasilkan rasa nikmat yang nyaman ketika masuk dimulut.
+              </p>
+              <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
+                <span x-show="!open">Selengkapnya</span>
+                <span x-show="open">Tutup</span>
+              </button>
+            </div>
             <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Rp 120.000</span>
               <button
@@ -236,18 +312,26 @@
           </div>
         </div>
 
-        <!-- Product 3: Pandan Roll Cake -->
+        <!-- Product 3: Kue Ongol -->
         <div
           class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div class="relative overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1586985289688-ca3cf47d3e6e?auto=format&fit=crop&w=400&q=80"
-              alt="Pandan Roll Cake"
-              class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300">
+            <img src="{{ asset('assets/homepage/product/kue-ongol.jpg') }}"
+              alt="Kue Ongol"
+              loading="lazy"
+              class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
           </div>
           <div class="p-5">
-            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Pandan Roll Cake</h3>
-            <p class="text-gray-600 text-sm mb-3 line-clamp-2">Roll cake lembut dengan isian cream pandan
-              yang creamy dan segar</p>
+            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Ongol</h3>
+            <div x-data="{ open: false }">
+              <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
+                Kue Ongol kami terbuat dari tepung tapioka yang ditambahkan gula merah jawa dan sedikit tambahan air pandan asli membuat warna kue ini bewarna coklat cantik. Kue yang memiliki tekstur kenyal dan legit dan terasa manis dimulut. Kue Ongol yang memiliki wangi khas gula jawa merah sangat cocok dipadukan dengan parutan kelapa segar yang akan memadukan antara gurih dan manis pada kue ini.
+              </p>
+              <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
+                <span x-show="!open">Selengkapnya</span>
+                <span x-show="open">Tutup</span>
+              </button>
+            </div>
             <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Rp 65.000</span>
               <button
@@ -258,22 +342,29 @@
           </div>
         </div>
 
-        <!-- Product 4: Pandan Cupcakes -->
+        <!-- Product 4: Kue Pulut -->        
         <div
           class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div class="relative overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1576618148400-f54bed99fcfd?auto=format&fit=crop&w=400&q=80"
-              alt="Pandan Cupcakes"
-              class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300">
+            <img src="{{ asset('assets/homepage/product/kue-pulut.jpg') }}"
+              alt="Kue Pulut Srikaya"
+              class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
             <div
               class="absolute top-3 right-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium">
               New
             </div>
           </div>
           <div class="p-5">
-            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Pandan Cupcakes</h3>
-            <p class="text-gray-600 text-sm mb-3 line-clamp-2">Cupcake mini dengan topping cream cheese
-              pandan yang manis</p>
+            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Pulut Srikaya</h3>
+            <div x-data="{ open: false }">
+              <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
+                Kue Pulut yang dibuat dari beras ketan utuh yang akan menciptakan tekstur punel dan sedikit legit. Perpaduan warna Putih dari beras ketan dan Ungu alami dari bunga lawing (butterfly pea tea) menambah keindahan visual pada kue ini. Kue Pulut ini dilengkapi dengan saus srikaya yang membuat perpaduan antara manis dan sedikit gurih dari saus dan gurih dari kue pulut itu sendiri menjadikan perpaduan rasa yang lengkap dan lezat.
+              </p>
+              <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
+                <span x-show="!open">Selengkapnya</span>
+                <span x-show="open">Tutup</span>
+              </button>
+            </div>
             <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Rp 45.000</span>
               <button
@@ -284,18 +375,25 @@
           </div>
         </div>
 
-        <!-- Product 5: Pandan Brownies -->
+        <!-- Product 5: Kue Ubi Nanas -->        
         <div
           class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div class="relative overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=400&q=80"
-              alt="Pandan Brownies"
-              class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300">
+            <img src="xxx"
+              alt="Kue Ubi Nanas"
+              class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
           </div>
           <div class="p-5">
-            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Pandan Brownies</h3>
-            <p class="text-gray-600 text-sm mb-3 line-clamp-2">Brownies fudgy dengan perpaduan rasa pandan
-              dan cokelat yang unik</p>
+            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Ubi Nanas</h3>
+            <div x-data="{ open: false }">
+              <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
+                Kue yang terbuat dari perpaduan ubi singkong yang memiliki rasa netral dan tekstur padat dan buah nanas yang memiliki rasa manis, segar dan masam dipadukan. Kue ini memiliki tekrstur sedikit chewy dan padat hampir seperti kue talam pada umumnya. Kue ini memiliki rasa manis dan sedikit rasa segar dari buah nanas dan rasa gurih dari bahan bahan kue. Terbuat dari bahan alami sehingga aman dikonsumsi dan sehat.
+              </p>
+              <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
+                <span x-show="!open">Selengkapnya</span>
+                <span x-show="open">Tutup</span>
+              </button>
+            </div>
             <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Rp 55.000</span>
               <button
@@ -306,18 +404,25 @@
           </div>
         </div>
 
-        <!-- Product 6: Pandan Cookies -->
+        <!-- Product 6: Selai Srikaya -->
         <div
           class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div class="relative overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1499636136210-6f4ee915583e?auto=format&fit=crop&w=400&q=80"
-              alt="Pandan Cookies"
-              class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300">
+            <img src="{{ asset('assets/homepage/product/selai-srikaya.jpg') }}"
+              alt="Selai Srikaya"
+              class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
           </div>
           <div class="p-5">
-            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Pandan Cookies</h3>
-            <p class="text-gray-600 text-sm mb-3 line-clamp-2">Cookies renyah dengan aroma pandan yang cocok
-              untuk cemilan sehari-hari</p>
+            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Selai Srikaya</h3>
+            <div x-data="{ open: false }">
+              <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
+                Selai yang terbuat dari perpaduan santan kelapa, telur, air pandan dan gula merah jawa menghasilkan rasa yang gurih dan manis pada selai ini. Selai yang memiliki tekstur kental dan memiliki warna oren pekat dihasilkan dari telur dan gula merah. Selai ini cocok dipadukan dengan kue yang memiliki cita rasa netral maupun gurih untuk menambahkan cita rasa manis pada rasa kue tersebut.
+              </p>
+              <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
+                <span x-show="!open">Selengkapnya</span>
+                <span x-show="open">Tutup</span>
+              </button>
+            </div>
             <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Rp 35.000</span>
               <button
@@ -328,24 +433,86 @@
           </div>
         </div>
 
-        <!-- Product 7: Pandan Pudding -->
-        <div
-          class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+      </div>
+
+      <!-- Produk: Kategori Hampers -->
+      <div x-show="kategori === 'hampers'" x-cloak class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-12 md:py-20" data-aos="zoom-in">
+        
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div class="relative overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1551024506-0bccd828d307?auto=format&fit=crop&w=400&q=80"
-              alt="Pandan Pudding"
-              class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300">
+            <img src="{{ asset('assets/homepage/product/hampers-a.jpg') }}" alt="Hampers A (Anggun)" loading="lazy" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
+            <div class="absolute top-3 right-3 bg-[#8BA870] text-white px-2 py-1 rounded-full text-xs font-medium">Hampers</div>
           </div>
           <div class="p-5">
-            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Pandan Pudding</h3>
-            <p class="text-gray-600 text-sm mb-3 line-clamp-2">Pudding silky dengan rasa pandan yang
-              menyegarkan dan tekstur lembut</p>
+            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Hampers A (Anggun)</h3>
+            <p class="text-gray-600 text-sm mb-3 line-clamp-2">Paket kue pandan spesial untuk hadiah Lebaran, lengkap dengan kemasan eksklusif dan kartu ucapan.</p>
             <div class="flex items-center justify-between">
-              <span class="text-[#8BA870] font-bold text-lg">Rp 25.000</span>
-              <button
-                class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
-                Pesan
-              </button>
+              <span class="text-[#8BA870] font-bold text-lg">Rp 250.000</span>
+              <button class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">Pesan</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <div class="relative overflow-hidden">
+            <img src="{{ asset('assets/homepage/product/hampers-b.jpg') }}" alt="Hampers B (Bagus)" loading="lazy" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
+            <div class="absolute top-3 right-3 bg-[#8BA870] text-white px-2 py-1 rounded-full text-xs font-medium">Hampers</div>
+          </div>
+          <div class="p-5">
+            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Hampers B (Bagus)</h3>
+            <p class="text-gray-600 text-sm mb-3 line-clamp-2">Hampers kue pandan untuk momen Natal, cocok untuk keluarga dan kolega, isi 3 varian kue.</p>
+            <div class="flex items-center justify-between">
+              <span class="text-[#8BA870] font-bold text-lg">Rp 275.000</span>
+              <button class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">Pesan</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <div class="relative overflow-hidden">
+            <img src="xxx" alt="Hampers C (Cantik)" loading="lazy" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
+            <div class="absolute top-3 right-3 bg-[#8BA870] text-white px-2 py-1 rounded-full text-xs font-medium">Hampers</div>
+          </div>
+          <div class="p-5">
+            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Hampers C (Cantik)</h3>
+            <p class="text-gray-600 text-sm mb-3 line-clamp-2">Paket hampers custom, bisa pilih isi kue sesuai keinginan dan desain kemasan sendiri.</p>
+            <div class="flex items-center justify-between">
+              <span class="text-[#8BA870] font-bold text-lg">Rp 300.000</span>
+              <button class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">Pesan</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Produk: Kategori Tumpeng -->
+      <div x-show="kategori === 'tumpeng'" x-cloak class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-12 md:py-20" data-aos="zoom-in">
+        
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <div class="relative overflow-hidden">
+            <img src="{{ asset('assets/homepage/product/tumpeng-mini.jpg') }}" alt="Tumpeng Mini" loading="lazy" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
+            <div class="absolute top-3 right-3 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-medium">Tumpeng</div>
+          </div>
+          <div class="p-5">
+            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Tumpeng Mini</h3>
+            <p class="text-gray-600 text-sm mb-3 line-clamp-2">Tumpeng mini dengan lauk lengkap, cocok untuk syukuran, ulang tahun, atau acara spesial lainnya.</p>
+            <div class="flex items-center justify-between">
+              <span class="text-[#8BA870] font-bold text-lg">Rp 150.000</span>
+              <button class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">Pesan</button>
+            </div>
+          </div>
+        </div>
+       
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+          <div class="relative overflow-hidden">
+            <img src="{{ asset('assets/homepage/product/tumpeng-besar.jpg') }}" alt="Tumpeng Besar" loading="lazy" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
+            <div class="absolute top-3 right-3 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-medium">Tumpeng</div>
+          </div>
+          <div class="p-5">
+            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Tumpeng Besar</h3>
+            <p class="text-gray-600 text-sm mb-3 line-clamp-2">Tumpeng besar untuk acara keluarga, kantor, arisan, atau perayaan penting lainnya. Bisa request lauk.</p>
+            <div class="flex items-center justify-between">
+              <span class="text-[#8BA870] font-bold text-lg">Rp 350.000</span>
+              <button class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">Pesan</button>
             </div>
           </div>
         </div>
@@ -370,7 +537,7 @@
             <!-- Testimonial 1 -->
             <div class="min-w-full px-4">
               <div class="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center">
-                <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Testimoni 1"
+                <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Testimoni 1" loading="lazy"
                   class="w-20 h-20 rounded-full object-cover mb-4 border-4 border-[#8BA870]">
                 <div class="flex mb-2">
                   <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
@@ -402,7 +569,7 @@
             <!-- Testimonial 2 -->
             <div class="min-w-full px-4">
               <div class="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center">
-                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Testimoni 2"
+                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Testimoni 2" loading="lazy"
                   class="w-20 h-20 rounded-full object-cover mb-4 border-4 border-[#8BA870]">
                 <div class="flex mb-2">
                   <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
@@ -434,7 +601,7 @@
             <!-- Testimonial 3 -->
             <div class="min-w-full px-4">
               <div class="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center">
-                <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="Testimoni 3"
+                <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="Testimoni 3" loading="lazy"
                   class="w-20 h-20 rounded-full object-cover mb-4 border-4 border-[#8BA870]">
                 <div class="flex mb-2">
                   <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
@@ -476,7 +643,7 @@
         <span class="text-[#8BA870] font-medium tracking-wider text-sm mb-3 block">Outlet Location</span>
         <h2 class="text-3xl md:text-4xl font-bold text-[#2C3E50] mb-2">Lokasi Outlet Kami</h2>
         <p class="text-gray-600 max-w-2xl mx-auto text-lg leading-relaxed">
-          Temukan outlet Kue Pandan Asli Malang terdekat di kota Anda.
+          Temukan outlet Kue Pandan Asli terdekat di kota Anda.
         </p>
       </div>
       <div class="flex justify-center mb-8 gap-4" data-aos="fade-down">
@@ -500,7 +667,7 @@
         </div>
         <!-- Outlet Info -->
         <div class="w-full md:w-1/2 flex flex-col gap-4">
-          <img id="outlet-img"
+          <img id="outlet-img" loading="lazy"
             src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80"
             alt="Outlet Surabaya" class="w-full h-36 object-cover rounded-xl mb-2 shadow">
           <h3 id="outlet-title" class="text-2xl font-bold text-[#2C3E50] mb-1">Pusat Surabaya</h3>
@@ -527,12 +694,11 @@
     <div class="mx-auto w-full max-w-screen-xl p-4 py-6 lg:py-8">
       <div class="md:flex md:justify-between">
         <div class="mb-6 md:mb-0">
-          <a href="/" class="flex items-center">
-            <span class="self-center text-2xl font-semibold whitespace-nowrap">Kue Pandan Asli Malang</span>
+          <a href="/" class="flex flex-col items-start">
+            <img src="{{ asset('assets/homepage/logo.png') }}" alt="Logo" class="h-8 w-8 mb-2 rounded-full object-cover">
+            <span class="text-left text-2xl font-semibold whitespace-nowrap">Kue Pandan Asli</span>
           </a>
-          <p class="mt-2 text-gray-400 max-w-xs text-sm">Lorem ipsum dolor sit amet, consectetur adipiscing
-            elit. Sed euismod, urna eu tincidunt consectetur, nisi nisl aliquam nunc, eget aliquam massa
-            nisl quis neque.</p>
+          <p class="mt-2 text-gray-400 max-w-xs text-sm">Kue Pandan Asli, kami adalah perusahaan kuliner yang berfokus pada produksi dan pengembangan kue tradisional berbahan alami tanpa campuran pengawet dan pewarna.</p>
         </div>
         <div class="grid grid-cols-2 gap-8 sm:gap-6 sm:grid-cols-3">
           <div>
@@ -579,11 +745,10 @@
       <hr class="my-6 border-gray-700 sm:mx-auto lg:my-8" />
       <div class="sm:flex sm:items-center sm:justify-center p-4">
         <span class="text-sm text-gray-400 sm:text-center">© Copyright 2010 - 2025 <a href="#" class="hover:underline">Kue Pandan
-            Asli Malang</a><br>All Rights Reserved.
+            Asli</a><br>All Rights Reserved.
         </span>
       </div>
     </div>
   </footer>
 </body>
-
 </html>

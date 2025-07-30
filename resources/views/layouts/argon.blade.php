@@ -17,6 +17,9 @@
     <link href="resources/css/nucleo-svg.css" rel="stylesheet" /> --}}
     <script src="https://unpkg.com/@popperjs/core@2"></script>
 
+    {{--! TAMBAHKAN INI: Script untuk Alpine.js --}}
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
     {{-- Script for Sidenav --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {

@@ -79,7 +79,7 @@
             {{-- KANAN: greeting (hide on mobile) --}}
             <div class="hidden md:flex w-1/2 relative overflow-hidden rounded-tl-2xl rounded-bl-2xl">
                 <img
-                    src="https://ik.imagekit.io/cl6bug31k/login-view.png?updatedAt=1752850462437"
+                    src="{{ asset('assets/homepage/login-view.png') }}"
                     alt="Background"
                     class="absolute inset-0 w-full h-full object-cover z-0"
                     style="filter: brightness(0.55);" />

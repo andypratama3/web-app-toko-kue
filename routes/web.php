@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\KurirDashboardController;
+use App\Http\Controllers\ProductController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -35,9 +36,14 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    // Route untuk Admin
+    // Route untuk Admin Dashboard
     Route::get('/admin/dashboard/{region}', [AdminDashboardController::class, 'index'])
         ->name('admin.dashboard');
+
+    // Resource route untuk produk admin (prefix dan nama route: admin.products.*)
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::resource('products', ProductController::class);
+    });
 
     // Route untuk Kurir
     Route::get('/kurir/dashboard/{region}', [KurirDashboardController::class, 'index'])
@@ -58,6 +64,8 @@ Route::get('/dashboard', function () {
     }
     abort(403, 'Unauthorized');
 })->name('dashboard');
+
+// Route::resource('products', ProductController::class)->middleware('auth');
 
 // Route untuk profile admin
 Route::get('/admin/profile', [AdminDashboardController::class, 'profile'])->name('admin.profile');
