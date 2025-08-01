@@ -11,17 +11,20 @@ class AdminDashboardController extends Controller
     {
         $admin = Auth::user();
 
-        // Keamanan: Pastikan hanya admin dari region yang benar yang bisa mengakses
-        if ($admin->region !== $region || !$admin->hasRole('admin')) {
+        // Keamanan: Pastikan hanya admin yang bisa mengakses
+        if (!$admin->hasRole('admin')) {
             abort(403, 'AKSES DITOLAK');
         }
 
-        // Ambil data kurir HANYA dari region admin yang sedang login
-        $couriers = User::role('kurir')
-                        ->where('region', $admin->region)
-                        ->get();
+        // Ambil semua produk tanpa filter region
+        $products = \App\Models\Product::paginate(12);
 
-        return view('dashboard.admin.dashboard', compact('admin', 'couriers'));
+        // BENAR: Mengambil kurir dengan memfilter relasi 'region' berdasarkan slug
+        $couriers = User::role('kurir')->whereHas('region', function ($query) use ($region) {
+            $query->where('slug', $region);
+        })->get();
+
+        return view('dashboard.admin.dashboard', compact('products', 'couriers'));
     }
 
     public function profile()

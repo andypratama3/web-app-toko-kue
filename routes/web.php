@@ -4,6 +4,9 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\KurirDashboardController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\Admin\CourierController;
+
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -35,9 +38,21 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    // Route untuk Admin
+    // Route untuk Admin Dashboard
     Route::get('/admin/dashboard/{region}', [AdminDashboardController::class, 'index'])
         ->name('admin.dashboard');
+
+    // Resource route untuk produk admin (prefix dan nama route: admin.products.*)
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::resource('products', ProductController::class);
+    });
+
+    // Route manajemen kurir untuk admin, hanya bisa akses jika role admin
+    Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
+        Route::resource('couriers', CourierController::class, [
+            'parameters' => ['couriers' => 'courier'] // pastikan binding parameter ke model User
+        ]);
+    });
 
     // Route untuk Kurir
     Route::get('/kurir/dashboard/{region}', [KurirDashboardController::class, 'index'])
@@ -49,6 +64,7 @@ Route::get('/dashboard', function () {
     // Redirect ke dashboard sesuai role dan region jika sudah login
     if (auth()->check()) {
         $user = auth()->user();
+        // $regionSlug = strtolower($user->region->name ?? '');
         $regionSlug = strtolower($user->region->name ?? '');
         if ($user->hasRole('admin')) {
             return redirect()->route('admin.dashboard', ['region' => $regionSlug]);
@@ -58,6 +74,8 @@ Route::get('/dashboard', function () {
     }
     abort(403, 'Unauthorized');
 })->name('dashboard');
+
+// Route::resource('products', ProductController::class)->middleware('auth');
 
 // Route untuk profile admin
 Route::get('/admin/profile', [AdminDashboardController::class, 'profile'])->name('admin.profile');

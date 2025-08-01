@@ -29,7 +29,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'region',
+        'region_id',
     ];
 
     /**
@@ -61,4 +61,10 @@ class User extends Authenticatable
     protected $appends = [
         'profile_photo_url',
     ];
+
+    public function region()
+    {
+        return $this->belongsTo(Region::class);
+    }
 }
+

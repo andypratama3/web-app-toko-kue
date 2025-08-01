@@ -290,4 +290,6 @@
 <script src="/assets/argon/js/plugins/perfect-scrollbar.min.js" async></script>
 <script src="/assets/argon/js/assets/argon-dashboard-tailwind.js?v=1.0.1" async></script>
 
+</html>
+
 @endsection

@@ -12,12 +12,25 @@ class KurirDashboardController extends Controller
     {
         $kurir = Auth::user();
 
-        // Keamanan: Pastikan kurir hanya mengakses dashboard regionnya
-        if ($kurir->region !== $region || !$kurir->hasRole('kurir')) {
+        // BENAR: Membandingkan slug dari URL dengan slug dari relasi region
+        if ($kurir->region->slug !== $region || !$kurir->hasRole('kurir')) {
             abort(403, 'AKSES DITOLAK');
         }
 
         return view('dashboard.kurir.dashboard', compact('kurir'));
+    }
+
+    // controller data seller
+    public function tambahSeller(string $region)
+    {
+        $kurir = Auth::user();
+
+        // Pastikan hanya kurir dan sesuai region
+        if ($kurir->region !== $region || !$kurir->hasRole('kurir')) {
+            abort(403, 'AKSES DITOLAK');
+        }
+
+        return view('dashboards.kurir.tambah-seller', compact('kurir'));
     }
 
     // controller profile
