@@ -19,8 +19,10 @@ class AdminDashboardController extends Controller
         // Ambil semua produk tanpa filter region
         $products = \App\Models\Product::paginate(12);
 
-        // Ambil kurir sesuai region
-        $couriers = \App\Models\User::role('kurir')->where('region', $region)->get();
+        // BENAR: Mengambil kurir dengan memfilter relasi 'region' berdasarkan slug
+        $couriers = User::role('kurir')->whereHas('region', function ($query) use ($region) {
+            $query->where('slug', $region);
+        })->get();
 
         return view('dashboard.admin.dashboard', compact('products', 'couriers'));
     }

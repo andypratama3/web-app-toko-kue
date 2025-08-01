@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@yield('title', 'Dashboard')</title>
+    @section('title', 'Dashboard')
     @include('layouts.headicon')
     {{-- Vite build assets --}}
-    @vite(['resources/css/app.css', 'resources/css/argon-dashboard-tailwind.css', 'resources/js/app.js', 'resources/js/argon-dashboard-tailwind.js'])
+    @vite(['resources/css/app.css', 'resources/css/argon-dashboard-tailwind.css', 'resources/js/app.js', 'resources/js/custom.js','resources/js/argon-dashboard-tailwind.js'])
 
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
     <!-- Font Awesome CDN -->
@@ -17,8 +17,21 @@
     <link href="resources/css/nucleo-svg.css" rel="stylesheet" /> --}}
     <script src="https://unpkg.com/@popperjs/core@2"></script>
 
-    {{--! TAMBAHKAN INI: Script untuk Alpine.js --}}
+    {{--! Script untuk Alpine.js --}}
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
+
+    {{-- Script for Modal --}}
+    <script src="https://unpkg.com/flowbite@1.6.5/dist/flowbite.min.js"></script>
+
+    <!-- dropdown search -->
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Select2 -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 
     {{-- Script for Sidenav --}}
     <script>
@@ -62,7 +75,7 @@
 
 <body class="m-0 font-sans text-base antialiased font-normal dark:bg-slate-900 leading-default bg-gray-50 text-slate-500">
     {{-- Top color bar --}}
-    <div class="absolute w-full bg-greenlight dark:hidden min-h-75"></div>
+    <div class="fixed w-full bg-greenlight dark:hidden min-h-75"></div>
 
     {{-- Sidebar Overlay --}}
     <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden transition-opacity duration-200 bg-black bg-opacity-40"></div>
