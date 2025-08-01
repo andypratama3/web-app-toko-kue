@@ -1,7 +1,7 @@
 @extends('layouts.argon')
 @section('title', 'Dashboard Kurir')
 @section('content')
-@include('dashboard.kurir.modal.tmbh-seller')
+@include('dashboard.kurir.modal.tmbh-customer')
 
 <!-- cards -->
 <div class="w-full max-w full">
@@ -50,7 +50,7 @@
                         </div>
                     </a>
 
-                    <!-- Card 2: Seller -->
+                    <!-- Card 2: Cust -->
                     <button type="button"
                         class="w-1/2 px-3 mb-6"
                         data-modal-toggle="crud-modal">
@@ -62,8 +62,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <div class="text-lg font-bold text-black sm:text-2xl">Seller</div>
-                                <div class="text-xs text-black sm:text-sm">Input here!</div>
+                                <div class="text-lg font-bold text-black sm:text-2xl">Customer</div>
+                                <div class="text-xs text-left text-black sm:text-sm">Input here!</div>
                             </div>
                         </div>
                     </button>

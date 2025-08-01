@@ -64,18 +64,24 @@ Route::get('/admin/profile', [AdminDashboardController::class, 'profile'])->name
 // Route untuk profile kurir
 Route::get('/kurir/profile', [KurirDashboardController::class, 'profile'])->name('kurir.profile');
 
-// Route untuk form tambah data seller
-Route::get('/{region}/dashboard-kurir/modal/tmbh-seller', [KurirDashboardController::class, 'tambahSeller'])
+// Route untuk form tambah data customer
+Route::get('/{region}/dashboard-kurir/modal/tmbh-customer', [KurirDashboardController::class, 'tambahCust'])
     ->middleware(['auth', 'verified'])
-    ->name('kurir.modal.tmbh-seller');
+    ->name('kurir.modal.tmbh-customer');
 
 // Route untuk form tambah pesanan
 Route::get('/{region}/dashboard-kurir/pages/tmbh-pesanan', [KurirDashboardController::class, 'tambahPesanan'])
     ->middleware(['auth', 'verified'])
     ->name('kurir.pages.tmbh-pesanan');
 
-// Route untuk sidebar data-seller (menampilkan semua data seller)
-Route::get('/{region}/dashboard-kurir/pages/data-seller', [KurirDashboardController::class, 'dataSeller'])
+// Route untuk sidebar data-customer (menampilkan semua data customer)
+Route::get('/{region}/dashboard-kurir/pages/data-seller', [KurirDashboardController::class, 'dataCust'])
     ->middleware(['auth', 'verified'])
-    ->name('kurir.pages.data-seller');
+    ->name('kurir.pages.data-customer');
+
+// Route untuk menambahkan customer baru (dari modal)
+Route::post('/customer/store', [KurirDashboardController::class, 'store'])->name('customer.store');
+
+// Route untuk menampilkan data customer
+Route::get('/dashboard-kurir/pages/data-seller', [KurirDashboardController::class, 'showCustomer'])->name('customer.showCustomer');
 

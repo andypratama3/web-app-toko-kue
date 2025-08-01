@@ -83,11 +83,11 @@
             @role('kurir')
             <li class="mt-0.5 w-full">
                 <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
-                    href="{{ route('kurir.pages.data-seller', ['region' => $kurir->region]) }}">
+                    href="{{ route('kurir.pages.data-customer', ['region' => $kurir->region]) }}">
                     <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
                         <i class="fas fa-book text-red-600"></i>
                     </div>
-                    <span class="ml-1 duration-300 opacity-100 pointer-events-none ease">Data Seller</span>
+                    <span class="ml-1 duration-300 opacity-100 pointer-events-none ease">Manajemen Data Customer</span>
                 </a>
             </li>
             <li class="mt-0.5 w-full">
@@ -96,7 +96,7 @@
                     <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
                         <i class="fas fa-folder text-greenlight"></i>
                     </div>
-                    <span class="ml-1 duration-300 opacity-100 pointer-events-none ease">History</span>
+                    <span class="ml-1 duration-300 opacity-100 pointer-events-none ease">manajemen Pesanan</span>
                 </a>
 
             </li>
