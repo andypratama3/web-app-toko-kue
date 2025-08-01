@@ -1,12 +1,14 @@
 @extends('layouts.argon')
-@section('title', 'Dashboard Admin')
+@section('title', 'Admin Dashboard')
+@section('page_title', 'Admin')
 
 @section('content')
+
     <div class="row">
         <div class="col-12">
             <div class="mb-4 card">
                 <div class="pb-0 card-header">
-                    <h6>Monitoring Kurir di Region {{ Auth::user()->region }}</h6>
+                    <h6>Monitoring Kurir di Region {{ Auth::user()->region->name }}</h6>
                 </div>
                 <div class="px-0 pt-0 pb-2 card-body">
                     <div class="p-0 table-responsive">

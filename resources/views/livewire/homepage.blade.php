@@ -2,6 +2,23 @@
 <html lang="id" style="scroll-behavior: smooth;">
 
 <head>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-PRXFHTTN');</script>
+    <!-- End Google Tag Manager -->
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6GHRM0X2ZS"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-6GHRM0X2ZS');
+    </script>
+    
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="keywords" content="Kue, Kue Pandan, Kue Pandan Asli, Kue Pandan Ijo, Kue Pandan Tradisional, Kue Tradisional, Kue Ijo, Malang, Kue Malang, Oleh oleh Malang, Kue Ijo Alami, Kue Natural, Kue Asli Pandan, Kue Ketan, Kue Pulut, Kue Singkong, Kelapa, Kelapa parut, Kue Ongol, Kue Aren, Kue Talang, Kue Estetik, Kue Srikaya, Kue Coklat, Kue Manis, Kue Ubi Nanas, Kue Ubi, Kue Nanas, Lumpur Surga, Tumpeng Kue, Tumpeng Kue Tradisional, Paket Hampers, Paket Tumpeng, Kue Enak, Kue Lezat, Kue Kekinian, Kue Instagram, Kue Estetik, Camilan Kekinian, Camilan Instgramable, Kue Photogenic, Kue Lembut, Kue Pandan Wangi, Kue Pandan Lembut, Kue Homemade, Buah Tangan Malang, Kue Kuno, Kue 100% Pandan, Kue Delicious, Kue Santan, Kue Gurih, Kue Asin, Kue Tanpa Pengawet, Bahan Baku Alami, Makanan sehat, Saus Srikaya, Kue Srikaya, Kue Basah, Kue Kenyal, Kue Gula Jawa, Saus Gula Jawa, Kue Hijau, Asli Pandan, Kue Ubi Madu, Pandan Homemade">
@@ -24,6 +41,11 @@
 </div>
 
 <body class="flex flex-col min-h-screen" style="overflow-x:hidden;">
+
+        <!-- Google Tag Manager (noscript) -->
+      <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PRXFHTTN"
+      height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+        <!-- End Google Tag Manager (noscript) -->
 
   <!-- Floating WhatsApp Button -->
   <a class="fixed bottom-6 right-6 z-50"
