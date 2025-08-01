@@ -4,7 +4,6 @@
 @section('content')
 <div>
     <div class="p-0">
-        <h2 class="text-2xl font-bold text-greenlight mb-6">Pengaturan Akun</h2>
         <div class="space-y-10">
             @if (Laravel\Fortify\Features::canUpdateProfileInformation())
                 <div class="bg-gray-50 rounded-lg p-6 shadow-sm">

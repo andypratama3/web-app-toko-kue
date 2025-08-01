@@ -50,12 +50,18 @@
                             type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
                     </div>
                     {{-- password --}}
-                    <div class="mt-4">
+                    <div class="mt-4 relative">
                         <x-label for="password" value="{{ __('Password') }}" class="text-greendark" />
                         <x-input
                             id="password"
-                            class="block mt-1 w-full border-greendark rounded-full px-4 py-2 focus:ring-greenlight focus:border-greenlight"
+                            class="block mt-1 w-full border-greendark rounded-full px-4 py-2 focus:ring-greenlight focus:border-greenlight pr-10"
                             type="password" name="password" required autocomplete="current-password" />
+                        <button type="button" id="togglePassword" class="absolute right-4 top-9 text-gray-400 focus:outline-none" tabindex="-1">
+                            <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
                     </div>
                     {{-- remember --}}
                     <div class="block mt-4">
@@ -74,6 +80,21 @@
                         </x-button>
                     </div>
                 </form>
+                <script>
+                  document.addEventListener('DOMContentLoaded', function() {
+                    const passwordInput = document.getElementById('password');
+                    const togglePassword = document.getElementById('togglePassword');
+                    const eyeIcon = document.getElementById('eyeIcon');
+                    let visible = false;
+                    togglePassword.addEventListener('click', function() {
+                      visible = !visible;
+                      passwordInput.type = visible ? 'text' : 'password';
+                      eyeIcon.innerHTML = visible
+                        ? `<path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.956 9.956 0 012.442-4.362m3.31-2.547A9.953 9.953 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.96 9.96 0 01-4.422 5.255M15 12a3 3 0 11-6 0 3 3 0 016 0z' /><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M3 3l18 18' />`
+                        : `<path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M15 12a3 3 0 11-6 0 3 3 0 016 0z' /><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z' />`;
+                    });
+                  });
+                </script>
             </div>
 
             {{-- KANAN: greeting (hide on mobile) --}}

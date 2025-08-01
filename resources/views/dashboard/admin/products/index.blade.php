@@ -1,5 +1,6 @@
 @extends('layouts.argon')
 @section('title', 'Manajemen Produk')
+@section('page_title', 'Produk')
 
 @section('content')
 <div class="items-end justify-between mb-4 space-y-4 sm:flex sm:space-y-0 md:mb-8">

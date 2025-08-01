@@ -9,11 +9,11 @@
     $dashboardUrl = url('/dashboard');
 
     if (!empty($regionName)) {
-        if ($user->hasRole('admin')) {
-            $dashboardUrl = route('admin.dashboard', ['region' => $regionName]);
-        } elseif ($user->hasRole('kurir')) {
-            $dashboardUrl = route('kurir.dashboard', ['region' => $regionName]);
-        }
+    if ($user->hasRole('admin')) {
+    $dashboardUrl = route('admin.dashboard', ['region' => $regionName]);
+    } elseif ($user->hasRole('kurir')) {
+    $dashboardUrl = route('kurir.dashboard', ['region' => $regionName]);
+    }
     }
     @endphp
 
@@ -25,7 +25,7 @@
             <img src="{{ asset('assets/homepage/logo.png') }}"
                 class="inline h-full max-w-full transition-all duration-200 ease-nav-brand max-h-8" alt="main_logo" />
             <span class="ml-1 font-semibold transition-all duration-200 ease-nav-brand text-greenlight">
-                Kue Pandan Asli Malang
+                Kue Pandan Asli
             </span>
         </a>
     </div>
@@ -50,8 +50,17 @@
             {{--! PERBAIKAN: Setiap link berada di dalam <li> nya sendiri --}}
             <li class="mt-0.5 w-full">
                 {{--! PERBAIKAN: Menggunakan route 'admin.products.index' yang benar --}}
+                {{-- <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if(request()->routeIs('admin.customers.*')) bg-blue-500/13 @endif" --}}
                 <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if(request()->routeIs('admin.products.*')) bg-blue-500/13 @endif"
-                   href="{{ route('admin.products.index') }}">
+                    {{-- href="{{ route('admin.customers.index') }}"> --}}
+                    href="{{ route('admin.products.index') }}">
+                    <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
+                        <i class="text-orange-500 fas fa-users"></i>
+                    </div>
+                    <span class="ml-1 duration-300 opacity-100 pointer-events-none ease">Manajemen Customer</span>
+                </a>
+                <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if(request()->routeIs('admin.products.*')) bg-blue-500/13 @endif"
+                    href="{{ route('admin.products.index') }}">
                     <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
                         <i class="text-orange-500 fas fa-store"></i>
                     </div>
@@ -59,7 +68,8 @@
                 </a>
             </li>
             <li class="mt-0.5 w-full">
-                <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors" href="#"> {{-- Ganti # dengan route manajemen kurir --}}
+                <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if(request()->routeIs('admin.couriers.*')) bg-blue-500/13 @endif"
+                    href="">
                     <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
                         <i class="text-cyan-500 fas fa-truck"></i>
                     </div>

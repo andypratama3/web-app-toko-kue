@@ -1,7 +1,9 @@
 @extends('layouts.argon')
-@section('title', 'Dashboard Admin')
+@section('title', 'Admin Dashboard')
+@section('page_title', 'Admin')
 
 @section('content')
+
     <div class="row">
         <div class="col-12">
             <div class="mb-4 card">
