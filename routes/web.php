@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\KurirDashboardController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\Admin\CourierController;
+
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -45,6 +47,13 @@ Route::middleware([
         Route::resource('products', ProductController::class);
     });
 
+    // Route manajemen kurir untuk admin, hanya bisa akses jika role admin
+    Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
+        Route::resource('couriers', CourierController::class, [
+            'parameters' => ['couriers' => 'courier'] // pastikan binding parameter ke model User
+        ]);
+    });
+
     // Route untuk Kurir
     Route::get('/kurir/dashboard/{region}', [KurirDashboardController::class, 'index'])
         ->name('kurir.dashboard');
@@ -55,6 +64,7 @@ Route::get('/dashboard', function () {
     // Redirect ke dashboard sesuai role dan region jika sudah login
     if (auth()->check()) {
         $user = auth()->user();
+        // $regionSlug = strtolower($user->region->name ?? '');
         $regionSlug = strtolower($user->region->name ?? '');
         if ($user->hasRole('admin')) {
             return redirect()->route('admin.dashboard', ['region' => $regionSlug]);

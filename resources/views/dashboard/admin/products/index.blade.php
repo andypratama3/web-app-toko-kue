@@ -2,10 +2,10 @@
 @section('title', 'Manajemen Produk')
 
 @section('content')
-<div class="items-end justify-between mb-4 space-y-4 sm:flex sm:space-y-0 md:mb-8">
-        <div>
-            <h2 class="mt-3 text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">Manajemen Produk</h2>
-        </div>
+    <div class="items-end justify-between mb-4 space-y-4 sm:flex sm:space-y-0 md:mb-8">
+        {{-- <div>
+            <h2 class="text-2xl font-bold text-greenlight mb-6">Manajemen Produk</h2>
+        </div> --}}
         {{-- <div class="flex items-center space-x-4">
             <a href="{{ route('admin.products.create') }}" class="flex items-center justify-center w-full px-3 py-2 text-sm font-medium text-white bg-green-700 rounded-lg hover:bg-green-800 focus:ring-4 focus:ring-green-300 sm:w-auto dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
                 <svg class="w-5 h-5 mr-2 -ml-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd"></path></svg>

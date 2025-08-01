@@ -10,8 +10,8 @@ class KurirDashboardController extends Controller
     {
         $kurir = Auth::user();
 
-        // Keamanan: Pastikan kurir hanya mengakses dashboard regionnya
-        if ($kurir->region !== $region || !$kurir->hasRole('kurir')) {
+        // BENAR: Membandingkan slug dari URL dengan slug dari relasi region
+        if ($kurir->region->slug !== $region || !$kurir->hasRole('kurir')) {
             abort(403, 'AKSES DITOLAK');
         }
 
@@ -23,8 +23,8 @@ class KurirDashboardController extends Controller
     {
         $kurir = Auth::user();
 
-        // Pastikan hanya kurir dan sesuai region
-        if ($kurir->region !== $region || !$kurir->hasRole('kurir')) {
+        // BENAR: Membandingkan slug dari URL dengan slug dari relasi region
+        if ($kurir->region->slug !== $region || !$kurir->hasRole('kurir')) {
             abort(403, 'AKSES DITOLAK');
         }
 
