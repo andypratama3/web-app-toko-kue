@@ -69,7 +69,7 @@
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="#" class="flex items-center w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600">
+                                            <a href="#" data-modal-target="note-courier-modal-{{ $courier->id }}" data-modal-toggle="note-courier-modal-{{ $courier->id }}" class="flex items-center w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600">
                                                 <span class="inline-block w-6 text-center mr-2"><i class="fas fa-sticky-note"></i></span>
                                                 <span>Note</span>
                                             </a>
@@ -82,7 +82,7 @@
                                         </li>
                                     </ul>
                                     <div class="py-1">
-                                        <a href="#" class="flex items-center w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-red-500 dark:hover:text-white">
+                                        <a href="#" data-modal-target="delete-courier-modal-{{ $courier->id }}" data-modal-toggle="delete-courier-modal-{{ $courier->id }}" class="flex items-center w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-red-500 dark:hover:text-white">
                                             <span class="inline-block w-6 text-center mr-2"><i class="fas fa-trash"></i></span>
                                             <span>Delete</span>
                                         </a>
@@ -221,12 +221,64 @@
                         <i class="fas fa-save me-1"></i>
                         Simpan Perubahan
                     </button>
-
                 </form>
             </div>
         </div>
     </div>
+
+    {{-- MODAL BARU: Modal Catatan Kurir --}}
+    <div id="note-courier-modal-{{ $courier->id }}" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+        <div class="relative p-4 w-full max-w-md max-h-full">
+            <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Catatan untuk {{ $courier->name }}</h3>
+                    <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-toggle="note-courier-modal-{{ $courier->id }}">
+                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/></svg><span class="sr-only">Close modal</span>
+                    </button>
+                </div>
+                <form class="p-4 md:p-5"> {{-- NOTE: Action dan method perlu ditambahkan nanti --}}
+                    @csrf
+                    <div class="grid gap-4 mb-4 grid-cols-1">
+                        <div class="col-span-1">
+                            <label for="note-{{ $courier->id }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tulis Catatan</label>
+                            <textarea id="note-{{ $courier->id }}" name="note" rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Tulis catatan atau pengingat di sini..."></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"><i class="fas fa-save me-1"></i> Simpan Catatan</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{-- MODAL BARU: Konfirmasi Hapus Kurir --}}
+    <div id="delete-courier-modal-{{ $courier->id }}" tabindex="-1" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+        <div class="relative p-4 w-full max-w-md max-h-full">
+            <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                <button type="button" class="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="delete-courier-modal-{{ $courier->id }}">
+                    <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                    </svg>
+                    <span class="sr-only">Close modal</span>
+                </button>
+                <div class="p-4 md:p-5 text-center">
+                    <svg class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                    </svg>
+                    <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Apakah Anda yakin ingin menghapus kurir <span class="font-bold">{{ $courier->name }}</span>?</h3>
+                    <form action="{{ route('admin.couriers.destroy', $courier->id) }}" method="POST" class="inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
+                            Ya, saya yakin
+                        </button>
+                    </form>
+                    <button data-modal-hide="delete-courier-modal-{{ $courier->id }}" type="button" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Tidak, batal</button>
+                </div>
+            </div>
+        </div>
+    </div>
     @endforeach
+
 
     {{-- Skrip untuk validasi password --}}
     <script>

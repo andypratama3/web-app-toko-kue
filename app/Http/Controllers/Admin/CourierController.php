@@ -17,7 +17,6 @@ class CourierController extends Controller
      */
     public function index()
     {
-        // BENAR: Menggunakan region_id milik admin untuk filter
         $couriers = User::where('region_id', Auth::user()->region_id)
                         ->whereHas('roles', function ($query) {
                             $query->where('name', 'kurir');
@@ -28,9 +27,6 @@ class CourierController extends Controller
         return view('dashboard.admin.couriers.index', compact('couriers'));
     }
 
-    /**
-     * Method create() tidak lagi diperlukan karena form ada di dalam modal di halaman index.
-     */
     public function create()
     {
         return redirect()->route('admin.couriers.index');
@@ -58,7 +54,6 @@ class CourierController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            // BENAR: Menggunakan region_id dari admin yang membuat
             'region_id' => Auth::user()->region_id,
         ]);
 
@@ -67,10 +62,6 @@ class CourierController extends Controller
         return redirect()->route('admin.couriers.index')->with('success', 'Kurir baru berhasil ditambahkan.');
     }
 
-
-    /**
-     * Method edit() tidak lagi diperlukan karena form ada di dalam modal di halaman index.
-     */
     public function edit(User $courier)
     {
         return redirect()->route('admin.couriers.index');
@@ -116,7 +107,6 @@ class CourierController extends Controller
      */
     public function destroy(User $courier)
     {
-        // BENAR: Membandingkan region_id (angka)
         if ($courier->region_id !== Auth::user()->region_id) {
             abort(403, 'AKSES DITOLAK');
         }
