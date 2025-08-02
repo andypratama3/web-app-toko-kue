@@ -18,13 +18,21 @@ class LoginResponse implements LoginResponseContract
     {
         $user = $request->user();
 
-        if ($user->hasRole('admin')) {
-            $redirectUrl = route('admin.dashboard', ['region' => $user->region]);
-        } elseif ($user->hasRole('kurir')) {
-            $redirectUrl = route('kurir.dashboard', ['region' => $user->region]);
-        } else {
-            // Fallback ke dashboard default jika role tidak dikenali
+        // Check if user has a valid region
+        if (!$user->region || !$user->region->name) {
+            // If no region, redirect to a safe fallback
             $redirectUrl = config('fortify.home');
+        } else {
+            $regionSlug = strtolower($user->region->name);
+            
+            if ($user->hasRole('admin')) {
+                $redirectUrl = route('admin.dashboard', ['region' => $regionSlug]);
+            } elseif ($user->hasRole('kurir')) {
+                $redirectUrl = route('kurir.dashboard', ['region' => $regionSlug]);
+            } else {
+                // Fallback ke dashboard default jika role tidak dikenali
+                $redirectUrl = config('fortify.home');
+            }
         }
 
         return $request->wantsJson()

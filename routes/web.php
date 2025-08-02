@@ -64,15 +64,29 @@ Route::get('/dashboard', function () {
     // Redirect ke dashboard sesuai role dan region jika sudah login
     if (auth()->check()) {
         $user = auth()->user();
-        // $regionSlug = strtolower($user->region->name ?? '');
-        $regionSlug = strtolower($user->region->name ?? '');
+        
+        // Proper null checking for region
+        $regionSlug = null;
+        if ($user->region && $user->region->name) {
+            $regionSlug = strtolower($user->region->name);
+        }
+        
+        // If user doesn't have a region, show error message
+        if (!$regionSlug) {
+            abort(403, 'User tidak memiliki region yang valid. Silakan hubungi administrator.');
+        }
+        
         if ($user->hasRole('admin')) {
             return redirect()->route('admin.dashboard', ['region' => $regionSlug]);
         } elseif ($user->hasRole('kurir')) {
             return redirect()->route('kurir.dashboard', ['region' => $regionSlug]);
+        } else {
+            abort(403, 'User tidak memiliki role yang valid. Silakan hubungi administrator.');
         }
     }
-    abort(403, 'Unauthorized');
+    
+    // If not authenticated, redirect to login
+    return redirect()->route('login');
 })->name('dashboard');
 
 // Route::resource('products', ProductController::class)->middleware('auth');
