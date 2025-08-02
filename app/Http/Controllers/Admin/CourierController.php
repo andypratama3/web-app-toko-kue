@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules;
 
 class CourierController extends Controller
@@ -114,5 +115,36 @@ class CourierController extends Controller
         $courier->delete();
 
         return redirect()->route('admin.couriers.index')->with('success', 'Kurir berhasil dihapus.');
+    }
+
+    public function updateNote(Request $request, User $courier)
+    {
+        try {
+            // Otorisasi: Pastikan admin hanya bisa mengedit kurir di regionnya
+            if ($courier->region_id !== Auth::user()->region_id) {
+                abort(403, 'AKSES DITOLAK');
+            }
+
+            // Validasi input
+            $validated = $request->validate([
+                'note' => ['nullable', 'string', 'max:1000'], // Batasi panjang note
+            ]);
+
+            // Update catatan pada user (kurir)
+            $courier->note = $validated['note'];
+            $courier->save();
+
+            // Redirect kembali dengan pesan sukses
+            return redirect()->route('admin.couriers.index')
+                ->with('success');
+        } catch (\Exception $e) {
+            // Log error jika terjadi masalah
+            Log::error('Error updating courier note: ' . $e->getMessage());
+
+            // Redirect kembali dengan pesan error
+            return redirect()->route('admin.couriers.index')
+                ->with('error', 'Terjadi kesalahan saat menyimpan catatan.')
+                ->withInput();
+        }
     }
 }

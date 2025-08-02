@@ -54,6 +54,8 @@ Route::middleware([
         ]);
     });
 
+    Route::put('/admin/couriers/{courier}/note', [CourierController::class, 'updateNote'])->name('admin.couriers.updateNote');
+
     // Route untuk Kurir
     Route::get('/kurir/dashboard/{region}', [KurirDashboardController::class, 'index'])
         ->name('kurir.dashboard');
@@ -64,18 +66,18 @@ Route::get('/dashboard', function () {
     // Redirect ke dashboard sesuai role dan region jika sudah login
     if (auth()->check()) {
         $user = auth()->user();
-        
+
         // Proper null checking for region
         $regionSlug = null;
         if ($user->region && $user->region->name) {
             $regionSlug = strtolower($user->region->name);
         }
-        
+
         // If user doesn't have a region, show error message
         if (!$regionSlug) {
             abort(403, 'User tidak memiliki region yang valid. Silakan hubungi administrator.');
         }
-        
+
         if ($user->hasRole('admin')) {
             return redirect()->route('admin.dashboard', ['region' => $regionSlug]);
         } elseif ($user->hasRole('kurir')) {
@@ -84,12 +86,10 @@ Route::get('/dashboard', function () {
             abort(403, 'User tidak memiliki role yang valid. Silakan hubungi administrator.');
         }
     }
-    
+
     // If not authenticated, redirect to login
     return redirect()->route('login');
 })->name('dashboard');
-
-// Route::resource('products', ProductController::class)->middleware('auth');
 
 // Route untuk profile admin
 Route::get('/admin/profile', [AdminDashboardController::class, 'profile'])->name('admin.profile');
