@@ -16,7 +16,7 @@ class CourierController extends Controller
     /**
      * Menampilkan halaman manajemen kurir dengan data.
      */
-    public function index()
+    public function index(Request $request)
     {
         $couriers = User::where('region_id', Auth::user()->region_id)
                         ->whereHas('roles', function ($query) {

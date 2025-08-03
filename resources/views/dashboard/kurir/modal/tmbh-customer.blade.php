@@ -1,15 +1,15 @@
 {{-- Modal tambah Cust --}}
 <div id="crud-modal" tabindex="-1" aria-hidden="true"
-    class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 flex justify-center items-center w-full inset-0 h-full bg-black bg-opacity-50 transition-opacity duration-300">
+    class="fixed inset-0 top-0 left-0 right-0 z-50 flex items-center justify-center hidden w-full h-full overflow-x-hidden overflow-y-auto transition-opacity duration-300 bg-black bg-opacity-50">
 
-    <div class="relative p-4 w-full max-w-md lg:max-w-2xl max-h-full transition-transform duration-300 ease-out transform scale-95">
+    <div class="relative w-full max-w-md max-h-full p-4 transition-transform duration-300 ease-out transform scale-95 lg:max-w-2xl">
         <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
             <!-- Modal header -->
-            <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600 border-gray-200 bg-gray">
+            <div class="flex items-center justify-between p-4 border-b border-gray-200 rounded-t md:p-5 dark:border-gray-600 bg-gray">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                     Tambah Data Customer
                 </h3>
-                <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-toggle="crud-modal">
+                <button type="button" class="inline-flex items-center justify-center w-8 h-8 text-sm text-gray-400 bg-transparent rounded-lg hover:bg-gray-200 hover:text-gray-900 ms-auto dark:hover:bg-gray-600 dark:hover:text-white" data-modal-toggle="crud-modal">
                     <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
                     </svg>
@@ -17,9 +17,10 @@
                 </button>
             </div>
             <!-- Modal body -->
-            <form class="p-4 md:p-5" action="{{ route('customer.store') }}" method="POST">
+            {{-- <form class="p-4 md:p-5" action="{{ route('customer.store') }}" method="POST"> --}}
+            <form class="p-4 md:p-5" action="#" method="POST">
                 @csrf
-                <div class="grid gap-4 mb-4 grid-cols-2">
+                <div class="grid grid-cols-2 gap-4 mb-4">
                     <div class="col-span-2">
                         <label for="nama" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama</label>
                         <input type="text" name="nama" id="nama" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required="">
@@ -31,7 +32,7 @@
                     <div class="col-span-2">
                         <label for="input-group-1" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">No. HP</label>
                         <div class="relative">
-                            <div class="absolute inset-y-0 start-0 flex items-center px-2 pointer-events-none">
+                            <div class="absolute inset-y-0 flex items-center px-2 pointer-events-none start-0">
                                 +62
                             </div>
                             <input type="tel" name="nohp" id="nohp" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
@@ -44,7 +45,7 @@
                             <option value="sby">Surabaya</option>
                             <option value="mlg">Malang</option>
                             <option value="bali">Bali</option>
-                        </select>                                   
+                        </select>
                     </div>
 
                     <div class="col-span-2">
@@ -61,3 +62,9 @@
         </div>
     </div>
 </div>
+{{-- PERBAIKAN: Menambahkan style untuk menyembunyikan backdrop modal bawaan tema --}}
+    <style>
+        [modal-backdrop] {
+            display: none !important;
+        }
+    </style>

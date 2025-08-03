@@ -1,29 +1,31 @@
 @extends('layouts.argon')
 @section('title', 'Dashboard Kurir')
+@section('page_title', 'Dashboard')
+
 @section('content')
 @include('dashboard.kurir.modal.tmbh-customer')
 
 <!-- cards -->
 <div class="w-full max-w full">
     <div class="flex flex-wrap gap-6 -mx-3">
-        <div class="w-full max-w-full lg:flex-nome space-y-4 px-3">
-            <div class=" mb-6">
-                <div class=" max-w-full rounded-2xl p-5 shadow flex flex-col flex-none gap-4 xl:gap-0 px-4 py-4 " style="background-color: #efece8ff; ">
+        <div class="w-full max-w-full px-3 space-y-4 lg:flex-nome">
+            <div class="mb-6 ">
+                <div class="flex flex-col flex-none max-w-full gap-4 p-5 px-4 py-4 shadow rounded-2xl xl:gap-0" style="background-color: #efece8ff; ">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-2">
                             <div>
-                                <div class="font-bold text-black text-base" id="ucapan">Selamat</div>
+                                <div class="text-base font-bold text-black" id="ucapan">Selamat</div>
                                 <div class="text-xs text-black">Your Achivement Today</div>
                             </div>
                         </div>
                     </div>
-                    <div class="flex justify-between text-xs text-gray-700 opacity-80 mb-1">
+                    <div class="flex justify-between mb-1 text-xs text-gray-700 opacity-80">
                         <div class="w-1/4 text-center">TOTAL</div>
                         <div class="w-1/4 text-center">WAKTU</div>
                         <div class="w-1/4 text-center">SELESAI</div>
                         <div class="w-1/4 text-center">GAGAL</div>
                     </div>
-                    <div class="flex justify-between font-bold text-gray-800 text-lg mb-4">
+                    <div class="flex justify-between mb-4 text-lg font-bold text-gray-800">
                         <div class="w-1/4 text-center">62</div>
                         <div class="w-1/4 text-center">23</div>
                         <div class="w-1/4 text-center">45</div>
@@ -32,12 +34,13 @@
                 </div>
             </div>
 
-            <div class="grid g gap-4">
+            <div class="grid gap-4 g">
                 <div class="flex flex-wrap -mx-3">
                     <!-- Card 1: Pesanan -->
-                    <a href="{{ route('kurir.pages.tmbh-pesanan', ['region' => $kurir->region]) }}" class="w-1/2 px-3 ">
-                        <div class="flex items-center rounded-2xl p-4 bg-white shadow-lg hover:shadow-xl transition ease-in-out duration-150 transform active:scale-95">
-                            <div class="flex items-center justify-center w-12 h-6 rounded-full bg-green-100 mr-2 lg:mr-4">
+                    {{-- <a href="{{ route('kurir.pages.tmbh-pesanan', ['region' => $kurir->region]) }}" class="w-1/2 px-3 "> --}}
+                    <a href="#" class="w-1/2 px-3 ">
+                        <div class="flex items-center p-4 transition duration-150 ease-in-out transform bg-white shadow-lg rounded-2xl hover:shadow-xl active:scale-95">
+                            <div class="flex items-center justify-center w-12 h-6 mr-2 bg-green-100 rounded-full lg:mr-4">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" viewBox="0 0 24 24" fill="#fde047" stroke="#000">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M12 3v2a2 2 0 01-2 2h4a2 2 0 01-2-2V3zm-2 9h4m-4 4h4" />
@@ -54,8 +57,8 @@
                     <button type="button"
                         class="w-1/2 px-3 mb-6"
                         data-modal-toggle="crud-modal">
-                        <div class="flex items-center rounded-2xl p-4 bg-white shadow-lg hover:shadow-xl transition ease-in-out duration-150 transform active:scale-95">
-                            <div class="flex items-center justify-center w-12 h-6 rounded-full bg-yellow-100 mr-2 lg:mr-4">
+                        <div class="flex items-center p-4 transition duration-150 ease-in-out transform bg-white shadow-lg rounded-2xl hover:shadow-xl active:scale-95">
+                            <div class="flex items-center justify-center w-12 h-6 mr-2 bg-yellow-100 rounded-full lg:mr-4">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" viewBox="0 0 24 24" fill="#fde047" stroke="#000">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M18 9v6m3-3h-6M9 16a4 4 0 100-8 4 4 0 000 8zm0 0c-2.21 0-4 1.79-4 4v1h8v-1c0-2.21-1.79-4-4-4z" />
@@ -75,9 +78,9 @@
             <div class="border-black/12.5 dark:bg-slate-850 dark:shadow-dark-xl shadow-xl relative z-20 flex min-w-0 flex-col break-words rounded-2xl border-0 border-solid bg-white bg-clip-border">
                 <div class="border-black/12.5 mb-0 rounded-t-2xl border-b-0 border-solid p-6 pt-4 pb-0">
                     <h6 class="capitalize dark:text-white">Income</h6>
-                    <p class="mb-0 text-sm text-black leading-normal dark:text-white dark:opacity-60">
+                    <p class="mb-0 text-sm leading-normal text-black dark:text-white dark:opacity-60">
                         <i class="fa fa-arrow-up text-emerald-500"></i>
-                        <span class="text-xl text-black font-semibold">Rp 550.000</span>
+                        <span class="text-xl font-semibold text-black">Rp 550.000</span>
                     </p>
                 </div>
                 <div class="flex-auto p-4">
@@ -94,12 +97,12 @@
         <div class="w-full max-w-full px-3 mt-0 lg:w-7/12 lg:flex-none">
             <div class="relative flex flex-col min-w-0 mb-4 break-words bg-white border-0 border-transparent border-solid shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
                 <div class="p-6 pb-0 mb-0 border-b-0 border-b-solid rounded-t-2xl border-b-transparent">
-                    <h5 class="dark:text-white text-black">Lastes Order</h5>
+                    <h5 class="text-black dark:text-white">Lastes Order</h5>
                 </div>
                 <div class="flex-auto px-0 pt-0 pb-2">
                     <div class="p-0 overflow-x-auto">
                         <table class="items-center w-full mb-0 align-top border-collapse dark:border-white/40 text-slate-500">
-                            <thead class="align-bottom text-black">
+                            <thead class="text-black align-bottom">
                                 <tr>
                                     <th class="px-6 py-3 font-bold text-left text-black uppercase align-middle bg-transparent border-b border-collapse shadow-none dark:border-white/40 dark:text-white text-xxs border-b-solid tracking-none whitespace-nowrap text-slate-400 opacity-70">
                                         Nama</th>
@@ -146,7 +149,7 @@
                                     <td class="p-2 align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
                                         <p class="mb-0 text-xs font-semibold leading-tight dark:text-white dark:opacity-80">Gampeng</p>
                                     </td>
-                                    <td class="p-2r bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
+                                    <td class="bg-transparent border-b p-2r dark:border-white/40 whitespace-nowrap shadow-transparent">
                                         <span class="text-xs font-semibold leading-tight dark:text-white dark:opacity-80 text-slate-400">Kue Manis</span>
                                     </td>
                                     <td class="p-2 text-sm leading-normal text-center align-middle bg-transparent border-b dark:border-white/40 whitespace-nowrap shadow-transparent">
@@ -164,8 +167,8 @@
             <div class="relative flex flex-col min-w-0 break-words bg-white border-0 border-solid shadow-xl dark:bg-slate-850 dark:shadow-dark-xl dark:bg-gray-950 border-black-125 rounded-2xl bg-clip-border">
                 <div class="p-4 pb-0 mb-0 rounded-t-4">
                     <div class="flex-1">
-                        <h4 class=" text-blackfont-semibold text-xl mb-1">APAYAAA</h4>
-                        <div class="text-3xl md:text-4xl font-bold  text-black mb-4">????? </div>
+                        <h4 class="mb-1 text-xl text-blackfont-semibold">APAYAAA</h4>
+                        <div class="mb-4 text-3xl font-bold text-black md:text-4xl">????? </div>
                     </div>
                 </div>
             </div>
@@ -274,7 +277,7 @@
         document.getElementById("ucapan").textContent = getGreeting();
     });
 </script>
-<!-- 
+<!--
 <script>
     window.addEventListener('scroll', function() {
         const navbar = document.getElementById('navbar');

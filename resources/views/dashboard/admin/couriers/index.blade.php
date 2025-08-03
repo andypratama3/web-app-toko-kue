@@ -3,6 +3,13 @@
 @section('page_title', 'Kurir')
 
 @section('content')
+    {{-- PERBAIKAN: Menambahkan style untuk menyembunyikan backdrop modal bawaan tema --}}
+    <style>
+        [modal-backdrop] {
+            display: none !important;
+            /* z-index: 60; */
+        }
+    </style>
     {{-- Notifikasi Sukses/Error --}}
     @if (session('success'))
         <div id="alert-success"
@@ -55,13 +62,6 @@
             </button>
         </div>
     @endif
-
-    {{-- PERBAIKAN: Menambahkan style untuk menyembunyikan backdrop modal bawaan tema --}}
-    <style>
-        [modal-backdrop] {
-            display: none !important;
-        }
-    </style>
 
     {{-- Kontainer utama untuk tabel dan aksi --}}
     <div class="relative bg-white shadow-md dark:bg-gray-800 sm:rounded-lg">
@@ -139,7 +139,7 @@
                                                     data-modal-target="edit-courier-modal-{{ $courier->id }}"
                                                     data-modal-toggle="edit-courier-modal-{{ $courier->id }}"
                                                     class="flex items-center w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600">
-                                                    <span class="inline-block w-6 text-center mr-2"><i
+                                                    <span class="inline-block w-6 mr-2 text-center"><i
                                                             class="fas fa-edit"></i></span>
                                                     <span>Edit</span>
                                                 </a>
@@ -149,7 +149,7 @@
                                                     data-modal-target="note-courier-modal-{{ $courier->id }}"
                                                     data-modal-toggle="note-courier-modal-{{ $courier->id }}"
                                                     class="flex items-center w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600">
-                                                    <span class="inline-block w-6 text-center mr-2"><i
+                                                    <span class="inline-block w-6 mr-2 text-center"><i
                                                             class="fas fa-sticky-note"></i></span>
                                                     <span>Note</span>
                                                 </a>
@@ -157,8 +157,8 @@
                                             <li>
                                                 <a href="#"
                                                     class="flex items-center w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600">
-                                                    <span class="inline-block w-6 text-center mr-2"><i
-                                                            class="fas fa-chart-line"></i></span>
+                                                    <span class="inline-block w-6 mr-2 text-center">
+                                                        <i class="fas fa-chart-line"></i></span>
                                                     <span>Performa</span>
                                                 </a>
                                             </li>
@@ -167,8 +167,8 @@
                                             <a href="#"
                                                 data-modal-target="delete-courier-modal-{{ $courier->id }}"
                                                 data-modal-toggle="delete-courier-modal-{{ $courier->id }}"
-                                                class="flex items-center w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-red-500 dark:hover:text-white">
-                                                <span class="inline-block w-6 text-center mr-2"><i
+                                                class="flex items-center w-full px-4 py-2 text-sm text-left text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-red-500 dark:hover:text-white">
+                                                <span class="inline-block w-6 mr-2 text-center"><i
                                                         class="fas fa-trash"></i></span>
                                                 <span>Delete</span>
                                             </a>
@@ -194,17 +194,15 @@
 
     {{-- Modal Tambah Kurir --}}
     <div id="create-courier-modal" tabindex="-1" aria-hidden="true"
-        class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-        <div class="relative p-4 w-full max-w-md max-h-full">
-            <!-- Modal content -->
+        class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-[70] justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+        <div class="relative w-full max-w-md max-h-full p-4">
             <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                <!-- Modal header -->
-                <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                <div class="flex items-center justify-between p-4 border-b rounded-t md:p-5 dark:border-gray-600">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                         Tambah Kurir Baru
                     </h3>
                     <button type="button"
-                        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                        class="inline-flex items-center justify-center w-8 h-8 text-sm text-gray-400 bg-transparent rounded-lg hover:bg-gray-200 hover:text-gray-900 ms-auto dark:hover:bg-gray-600 dark:hover:text-white"
                         data-modal-toggle="create-courier-modal">
                         <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
                             viewBox="0 0 14 14">
@@ -214,10 +212,9 @@
                         <span class="sr-only">Close modal</span>
                     </button>
                 </div>
-                <!-- Modal body -->
                 <form class="p-4 md:p-5" method="POST" action="{{ route('admin.couriers.store') }}">
                     @csrf
-                    <div class="grid gap-4 mb-4 grid-cols-2">
+                    <div class="grid grid-cols-2 gap-4 mb-4">
                         <div class="col-span-2">
                             <label for="name"
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Kurir</label>
@@ -241,7 +238,7 @@
                                     required="">
                                 <button type="button"
                                     class="absolute inset-y-0 right-0 flex items-center pr-3 toggle-password">
-                                    <i class="fas fa-eye text-gray-400"></i>
+                                    <i class="text-gray-400 fas fa-eye"></i>
                                 </button>
                             </div>
                         </div>
@@ -255,7 +252,7 @@
                                     required="">
                                 <button type="button"
                                     class="absolute inset-y-0 right-0 flex items-center pr-3 toggle-password">
-                                    <i class="fas fa-eye text-gray-400"></i>
+                                    <i class="text-gray-400 fas fa-eye"></i>
                                 </button>
                             </div>
                             {{-- Elemen untuk menampilkan pesan error --}}
@@ -268,7 +265,6 @@
                         <i class="fas fa-save me-1"></i>
                         Simpan Kurir
                     </button>
-
                 </form>
             </div>
         </div>
@@ -279,16 +275,14 @@
         {{-- Modal Edit Kurir --}}
         <div id="edit-courier-modal-{{ $courier->id }}" tabindex="-1" aria-hidden="true"
             class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-            <div class="relative p-4 w-full max-w-md max-h-full">
-                <!-- Modal content -->
+            <div class="relative w-full max-w-md max-h-full p-4">
                 <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                    <!-- Modal header -->
-                    <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                    <div class="flex items-center justify-between p-4 border-b rounded-t md:p-5 dark:border-gray-600">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                             Edit Kurir
                         </h3>
                         <button type="button"
-                            class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                            class="inline-flex items-center justify-center w-8 h-8 text-sm text-gray-400 bg-transparent rounded-lg hover:bg-gray-200 hover:text-gray-900 ms-auto dark:hover:bg-gray-600 dark:hover:text-white"
                             data-modal-toggle="edit-courier-modal-{{ $courier->id }}">
                             <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
                                 viewBox="0 0 14 14">
@@ -298,11 +292,10 @@
                             <span class="sr-only">Close modal</span>
                         </button>
                     </div>
-                    <!-- Modal body -->
                     <form class="p-4 md:p-5" method="POST" action="{{ route('admin.couriers.update', $courier->id) }}">
                         @csrf
                         @method('PUT')
-                        <div class="grid gap-4 mb-4 grid-cols-2">
+                        <div class="grid grid-cols-2 gap-4 mb-4">
                             <div class="col-span-2">
                                 <label for="name-{{ $courier->id }}"
                                     class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Kurir</label>
@@ -329,7 +322,7 @@
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                     <button type="button"
                                         class="absolute inset-y-0 right-0 flex items-center pr-3 toggle-password">
-                                        <i class="fas fa-eye text-gray-400"></i>
+                                        <i class="text-gray-400 fas fa-eye"></i>
                                     </button>
                                 </div>
                             </div>
@@ -343,7 +336,7 @@
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                     <button type="button"
                                         class="absolute inset-y-0 right-0 flex items-center pr-3 toggle-password">
-                                        <i class="fas fa-eye text-gray-400"></i>
+                                        <i class="text-gray-400 fas fa-eye"></i>
                                     </button>
                                 </div>
                                 {{-- Elemen untuk menampilkan pesan error --}}
@@ -364,16 +357,14 @@
         {{-- Modal Catatan Kurir --}}
         <div id="note-courier-modal-{{ $courier->id }}" tabindex="-1" aria-hidden="true"
             class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-            <div class="relative p-4 w-full max-w-md max-h-full">
-                <!-- Modal content -->
+            <div class="relative w-full max-w-md max-h-full p-4">
                 <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                    <!-- Modal header -->
                     <div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
                         <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
                             Catatan untuk {{ $courier->name }}
                         </h3>
                         <button type="button"
-                            class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ml-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                            class="inline-flex items-center justify-center w-8 h-8 ml-auto text-sm text-gray-400 bg-transparent rounded-lg hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-600 dark:hover:text-white"
                             data-modal-hide="note-courier-modal-{{ $courier->id }}">
                             <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
                                 viewBox="0 0 14 14">
@@ -383,7 +374,6 @@
                             <span class="sr-only">Tutup modal</span>
                         </button>
                     </div>
-                    <!-- Modal body -->
                     <form action="{{ route('admin.couriers.updateNote', $courier) }}" method="POST">
                         @csrf
                         @method('PUT')
@@ -396,7 +386,6 @@
                                     placeholder="Tambahkan catatan untuk kurir ini...">{{ $courier->note }}</textarea>
                             </div>
                         </div>
-                        <!-- Modal footer -->
                         <div
                             class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
                             <button type="submit"
@@ -416,7 +405,7 @@
         </div> {{-- MODAL BARU: Konfirmasi Hapus Kurir --}}
         <div id="delete-courier-modal-{{ $courier->id }}" tabindex="-1"
             class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-            <div class="relative p-4 w-full max-w-md max-h-full">
+            <div class="relative w-full max-w-md max-h-full p-4">
                 <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
                     <button type="button"
                         class="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
@@ -428,8 +417,8 @@
                         </svg>
                         <span class="sr-only">Close modal</span>
                     </button>
-                    <div class="p-4 md:p-5 text-center">
-                        <svg class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true"
+                    <div class="p-4 text-center md:p-5">
+                        <svg class="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-200" aria-hidden="true"
                             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
@@ -530,6 +519,32 @@
                 });
             });
         });
+
+        // set the modal menu element
+        const $targetEl = document.getElementById('create-courier-modal');
+
+        // options with default values
+        const options = {
+            placement: 'bottom-right',
+            backdrop: 'dynamic',
+            backdropClasses: 'bg-gray-900/50 dark:bg-gray-900/80 fixed inset-0 z-40',
+            closable: true,
+            onHide: () => {
+                console.log('modal is hidden');
+            },
+            onShow: () => {
+                console.log('modal is shown');
+            },
+            onToggle: () => {
+                console.log('modal has been toggled');
+            },
+        };
+
+        // instance options object
+        const instanceOptions = {
+            id: 'create-courier-modal',
+            override: true
+        };
     </script>
 
 @endsection
