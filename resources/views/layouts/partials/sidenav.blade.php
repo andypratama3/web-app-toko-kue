@@ -8,15 +8,15 @@
     $regionName = ucwords(strtolower($user->region ?? ''));
     $dashboardUrl = url('/dashboard');
 
-        // BENAR: Cek relasi 'region' dan gunakan properti 'slug' dan 'name'
-        if ($user->region) {
-            $regionSlug = $user->region->slug;
-        if ($user->hasRole('admin')) {
-        $dashboardUrl = route('admin.dashboard', ['region' => $regionSlug]);
-        } elseif ($user->hasRole('kurir')) {
-        $dashboardUrl = route('kurir.dashboard', ['region' => $regionSlug]);
-        }
-        }
+    // BENAR: Cek relasi 'region' dan gunakan properti 'slug' dan 'name'
+    if ($user->region) {
+    $regionSlug = $user->region->slug;
+    if ($user->hasRole('admin')) {
+    $dashboardUrl = route('admin.dashboard', ['region' => $regionSlug]);
+    } elseif ($user->hasRole('kurir')) {
+    $dashboardUrl = route('kurir.dashboard', ['region' => $regionSlug]);
+    }
+    }
     @endphp
 
     <div class="h-19">
@@ -113,17 +113,17 @@
 
             @role('kurir')
             <li class="mt-0.5 w-full">
-                <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
-                    href="{{ route('kurir.pages.data-customer', ['region' => $kurir->region]) }}">
+                <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if(request()->routeIs('kurir.customers.*')) bg-blue-500/13 @endif"
+                    href="{{ route('kurir.customers.index') }}">
                     <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
                         <i class="fas fa-book text-red-600"></i>
                     </div>
                     <span class="ml-1 duration-300 opacity-100 pointer-events-none ease">Data Customer</span>
-                </a>
+                </a>                 
             </li>
             <li class="mt-0.5 w-full">
-                <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
-                    href="{{ url('/pengiriman') }}">
+                <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors  @if(request()->routeIs('kurir.pesanan.*')) bg-blue-500/13 @endif"
+                    href="{{ route('kurir.pesanan.index') }}">
                     <div class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
                         <i class="fas fa-folder text-greenlight"></i>
                     </div>

@@ -1,7 +1,7 @@
 @extends('layouts.argon')
 @section('title', 'Dashboard Kurir')
 @section('content')
-@include('dashboard.kurir.modal.tmbh-customer')
+@include('dashboard.kurir.customers.add')
 
 <!-- cards -->
 <div class="w-full max-w full">
@@ -35,7 +35,7 @@
             <div class="grid g gap-4">
                 <div class="flex flex-wrap -mx-3">
                     <!-- Card 1: Pesanan -->
-                    <a href="{{ route('kurir.pages.tmbh-pesanan', ['region' => $kurir->region]) }}" class="w-1/2 px-3 ">
+                    <a href="{{ route('kurir.pesanan.add') }}" class="w-1/2 px-3 ">
                         <div class="flex items-center rounded-2xl p-4 bg-white shadow-lg hover:shadow-xl transition ease-in-out duration-150 transform active:scale-95">
                             <div class="flex items-center justify-center w-12 h-6 rounded-full bg-green-100 mr-2 lg:mr-4">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" viewBox="0 0 24 24" fill="#fde047" stroke="#000">
@@ -274,17 +274,6 @@
         document.getElementById("ucapan").textContent = getGreeting();
     });
 </script>
-<!-- 
-<script>
-    window.addEventListener('scroll', function() {
-        const navbar = document.getElementById('navbar');
-        if (window.scrollY > 10) {
-            navbar.classList.add('shadow-xl');
-        } else {
-            navbar.classList.remove('shadow-xl');
-        }
-    });
-</script> -->
 
 <script src="/assets/argon/js/plugins/chartjs.min.js"></script>
 <script src="/assets/argon/js/plugins/perfect-scrollbar.min.js" async></script>

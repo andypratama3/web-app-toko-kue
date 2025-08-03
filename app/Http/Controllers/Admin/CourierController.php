@@ -17,7 +17,6 @@ class CourierController extends Controller
      */
     public function index()
     {
-        // BENAR: Menggunakan region_id milik admin untuk filter
         $couriers = User::where('region_id', Auth::user()->region_id)
                         ->whereHas('roles', function ($query) {
                             $query->where('name', 'kurir');

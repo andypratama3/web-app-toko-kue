@@ -6,7 +6,8 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\KurirDashboardController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Admin\CourierController;
-
+use App\Http\Controllers\Kurir\CustomerController;
+use App\Http\Controllers\Kurir\PesananController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -54,10 +55,36 @@ Route::middleware([
         ]);
     });
 
+
+    /**
+     * -- KURIR --
+     */
     // Route untuk Kurir
     Route::get('/kurir/dashboard/{region}', [KurirDashboardController::class, 'index'])
         ->name('kurir.dashboard');
+
+    // Route data customer untuk kurir (sidebar)
+    Route::prefix('kurir')->name('kurir.')->middleware('role:kurir')->group(function () {
+        Route::resource('customers', CustomerController::class, [
+            'parameters' => ['customers' => 'customer']
+        ]);
+    });
+
+    // Route data pesanan untuk kurir (sidebar)
+    Route::prefix('kurir')->name('kurir.')->middleware('role:kurir')->group(function () {
+        Route::resource('pesanan', PesananController::class, [
+            'parameters' => ['pesanan' => 'pesanan']
+        ]);
+    });
+
+    // Route untuk menambah pesanan (button di dashboard)
+    Route::get('/dashboard-kurir/pesanan/add', [PesananController::class, 'tambahPesanan'])
+    ->middleware(['auth', 'verified'])
+    ->name('kurir.pesanan.add');
+
+
 });
+
 
 // Route untuk menghindari error Route [dashboard] not defined
 Route::get('/dashboard', function () {
@@ -79,27 +106,6 @@ Route::get('/dashboard', function () {
 
 // Route untuk profile admin
 Route::get('/admin/profile', [AdminDashboardController::class, 'profile'])->name('admin.profile');
+
 // Route untuk profile kurir
 Route::get('/kurir/profile', [KurirDashboardController::class, 'profile'])->name('kurir.profile');
-
-// Route untuk form tambah data customer
-Route::get('/{region}/dashboard-kurir/modal/tmbh-customer', [KurirDashboardController::class, 'tambahCust'])
-    ->middleware(['auth', 'verified'])
-    ->name('kurir.modal.tmbh-customer');
-
-// Route untuk form tambah pesanan
-Route::get('/{region}/dashboard-kurir/pages/tmbh-pesanan', [KurirDashboardController::class, 'tambahPesanan'])
-    ->middleware(['auth', 'verified'])
-    ->name('kurir.pages.tmbh-pesanan');
-
-// Route untuk sidebar data-customer (menampilkan semua data customer)
-Route::get('/{region}/dashboard-kurir/pages/data-seller', [KurirDashboardController::class, 'dataCust'])
-    ->middleware(['auth', 'verified'])
-    ->name('kurir.pages.data-customer');
-
-// Route untuk menambahkan customer baru (dari modal)
-Route::post('/customer/store', [KurirDashboardController::class, 'store'])->name('customer.store');
-
-// Route untuk menampilkan data customer
-Route::get('/dashboard-kurir/pages/data-seller', [KurirDashboardController::class, 'showCustomer'])->name('customer.showCustomer');
-
