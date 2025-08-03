@@ -1,5 +1,5 @@
 <aside
-    class="fixed inset-y-0 z-50 flex-wrap items-center justify-between block w-full p-0 my-4 overflow-y-auto antialiased transition-transform duration-200 -translate-x-full bg-white border-0 shadow-xl dark:shadow-none dark:bg-slate-850 max-w-64 ease-nav-brand xl:ml-6 rounded-2xl xl:left-0 xl:translate-x-0"
+    class="fixed inset-y-0 z-40 flex-wrap items-center justify-between block w-full p-0 my-4 overflow-y-auto antialiased transition-transform duration-200 -translate-x-full bg-white border-0 shadow-xl dark:shadow-none dark:bg-slate-850 max-w-64 ease-nav-brand xl:ml-6 rounded-2xl xl:left-0 xl:translate-x-0"
     aria-expanded="false">
 
     @auth
@@ -58,9 +58,9 @@
                 @role('admin')
                     {{-- PERBAIKAN: Setiap link <a> kini berada dalam <li> nya sendiri --}}
                     <li class="mt-0.5 w-full">
-                        {{-- <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if (request()->routeIs('admin.customers.*')) bg-blue-500/13 @endif" href="{{ route('admin.customers.index') }}"> --}}
-                        <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if (request()->routeIs('admin.customers.*')) bg-blue-500/13 @endif"
-                            href="#">
+                        <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if (request()->routeIs('admin.customers.*')) bg-blue-500/13 @endif" href="{{ route('admin.customers.index') }}">
+                        {{-- <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if (request()->routeIs('admin.customers.*')) bg-blue-500/13 @endif"
+                            href="#"> --}}
                             <div
                                 class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
                                 <i class="text-orange-500 fas fa-users"></i>

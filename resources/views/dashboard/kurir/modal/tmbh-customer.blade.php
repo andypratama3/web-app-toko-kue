@@ -1,6 +1,6 @@
 {{-- Modal tambah Cust --}}
 <div id="crud-modal" tabindex="-1" aria-hidden="true"
-    class="fixed inset-0 top-0 left-0 right-0 z-50 flex items-center justify-center hidden w-full h-full overflow-x-hidden overflow-y-auto transition-opacity duration-300 bg-black bg-opacity-50">
+    class="fixed inset-0 top-0 left-0 right-0 z-50 flex items-center justify-center hidden w-full h-full overflow-x-hidden overflow-y-auto transition-opacity duration-300">
 
     <div class="relative w-full max-w-md max-h-full p-4 transition-transform duration-300 ease-out transform scale-95 lg:max-w-2xl">
         <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">

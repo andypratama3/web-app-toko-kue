@@ -8,6 +8,8 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\KurirDashboardController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Admin\CourierController;
+use App\Http\Controllers\Admin\CustomerController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -15,7 +17,7 @@ use App\Http\Controllers\Admin\CourierController;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', fn () => view('livewire.homepage'));
+Route::get('/', fn() => view('livewire.homepage'));
 
 Route::post('/logout', function (Request $request) {
     Auth::guard('web')->logout();
@@ -47,6 +49,9 @@ Route::middleware([
             ->parameters(['couriers' => 'courier']);
         Route::put('couriers/{courier}/note', [CourierController::class, 'updateNote'])
             ->name('couriers.updateNote');
+
+        // Route untuk CRUD Customer
+        Route::resource('customers', CustomerController::class)->except(['show', 'create', 'edit']);
     });
 
     // ---------- KURIR ----------
