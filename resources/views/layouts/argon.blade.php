@@ -80,12 +80,14 @@
 
     @include('layouts.partials.sidenav')
 
-    <main class="relative h-full max-h-screen transition-all duration-200 ease-in-out xl:ml-68 rounded-xl">
+    {{-- PERBAIKAN: Menambahkan id="main-content" --}}
+    <main id="main-content" class="relative h-full max-h-screen transition-all duration-200 ease-in-out xl:ml-68 rounded-xl">
         @include('layouts.partials.navbar')
 
         @include('layouts.partials.content')
         @include('layouts.partials.footer')
     </main>
 </body>
+
 
 </html>
