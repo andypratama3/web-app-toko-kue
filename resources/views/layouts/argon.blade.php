@@ -20,8 +20,6 @@
     {{--! Script untuk Alpine.js --}}
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
-
     {{-- Script for Modal --}}
     <script src="https://unpkg.com/flowbite@1.6.5/dist/flowbite.min.js"></script>
 
@@ -78,7 +76,7 @@
     <div class="fixed w-full bg-greenlight dark:hidden min-h-75"></div>
 
     {{-- Sidebar Overlay --}}
-    <div id="sidebar-overlay" class="fixed inset-0 z-40 hidden transition-opacity duration-200 bg-black bg-opacity-40"></div>
+    <div id="sidebar-overlay" class="fixed inset-0 z-30 hidden transition-opacity duration-200 bg-black bg-opacity-40"></div>
 
     @include('layouts.partials.sidenav')
 

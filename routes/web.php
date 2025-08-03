@@ -1,31 +1,24 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\KurirDashboardController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Admin\CourierController;
+// use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Kurir\CustomerController;
 use App\Http\Controllers\Kurir\PesananController;
-
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
 */
 
-Route::get('/', function () {
-    return view('livewire.homepage');
-});
+Route::get('/', fn() => view('livewire.homepage'));
 
 Route::post('/logout', function (Request $request) {
     Auth::guard('web')->logout();
@@ -34,78 +27,85 @@ Route::post('/logout', function (Request $request) {
     return redirect('/login');
 })->name('logout');
 
+// Protected: auth + jetstream session + verified
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-    // Route untuk Admin Dashboard
-    Route::get('/admin/dashboard/{region}', [AdminDashboardController::class, 'index'])
-        ->name('admin.dashboard');
 
-    // Resource route untuk produk admin (prefix dan nama route: admin.products.*)
-    Route::prefix('admin')->name('admin.')->group(function () {
-        Route::resource('products', ProductController::class);
-    });
-
-    // Route manajemen kurir untuk admin, hanya bisa akses jika role admin
+    // ---------- ADMIN ----------
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
-        Route::resource('couriers', CourierController::class, [
-            'parameters' => ['couriers' => 'courier'] // pastikan binding parameter ke model User
-        ]);
+        // Dashboard per region
+        Route::get('dashboard/{region}', [AdminDashboardController::class, 'index'])->name('dashboard');
+
+        // Profile admin
+        Route::get('profile', [AdminDashboardController::class, 'profile'])->name('profile');
+
+        // Produk (resource)
+        Route::resource('products', ProductController::class);
+
+        // Manajemen kurir
+        Route::resource('couriers', CourierController::class)
+            ->parameters(['couriers' => 'courier']);
+        Route::put('couriers/{courier}/note', [CourierController::class, 'updateNote'])
+            ->name('couriers.updateNote');
+
+        // Route untuk CRUD Customer
+        Route::resource('customers', CustomerController::class)->except(['show', 'create', 'edit']);
     });
 
-
-    /**
-     * -- KURIR --
-     */
-    // Route untuk Kurir
-    Route::get('/kurir/dashboard/{region}', [KurirDashboardController::class, 'index'])
-        ->name('kurir.dashboard');
-
-    // Route data customer untuk kurir (sidebar)
+    // ---------- KURIR ----------
     Route::prefix('kurir')->name('kurir.')->middleware('role:kurir')->group(function () {
-        Route::resource('customers', CustomerController::class, [
-            'parameters' => ['customers' => 'customer']
-        ]);
+        // Dashboard per region
+        Route::get('dashboard/{region}', [KurirDashboardController::class, 'index'])->name('dashboard');
+
+        // Profile kurir
+        Route::get('profile', [KurirDashboardController::class, 'profile'])->name('profile');
+
+        // Route untuk Kurir
+        Route::get('/kurir/dashboard/{region}', [KurirDashboardController::class, 'index'])
+            ->name('kurir.dashboard');
+
+        // Route data customer untuk kurir (sidebar)
+        
+            Route::resource('customers', CustomerController::class, [
+                'parameters' => ['customers' => 'customer']
+            ]);
+        
+
+        // Route data pesanan untuk kurir (sidebar)
+        
+            Route::resource('pesanan', PesananController::class, [
+                'parameters' => ['pesanan' => 'pesanan']
+            ]);
+        
+
+        // Route untuk menambah pesanan (button di dashboard)
+        Route::get('/dashboard-kurir/pesanan/add', [PesananController::class, 'tambahPesanan'])
+            ->middleware(['auth', 'verified'])
+            ->name('kurir.pesanan.add');
     });
 
-    // Route data pesanan untuk kurir (sidebar)
-    Route::prefix('kurir')->name('kurir.')->middleware('role:kurir')->group(function () {
-        Route::resource('pesanan', PesananController::class, [
-            'parameters' => ['pesanan' => 'pesanan']
-        ]);
-    });
+    // ---------- COMMON DASHBOARD REDIRECT ----------
+    Route::get('dashboard', function () {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
 
-    // Route untuk menambah pesanan (button di dashboard)
-    Route::get('/dashboard-kurir/pesanan/add', [PesananController::class, 'tambahPesanan'])
-    ->middleware(['auth', 'verified'])
-    ->name('kurir.pesanan.add');
-
-
-});
-
-
-// Route untuk menghindari error Route [dashboard] not defined
-Route::get('/dashboard', function () {
-    // Redirect ke dashboard sesuai role dan region jika sudah login
-    if (auth()->check()) {
         $user = auth()->user();
-        // $regionSlug = strtolower($user->region->name ?? '');
-        $regionSlug = strtolower($user->region->name ?? '');
+        $regionSlug = optional($user->region)->name ? strtolower($user->region->name) : null;
+
+        if (!$regionSlug) {
+            abort(403, 'User tidak memiliki region yang valid. Silakan hubungi administrator.');
+        }
+
         if ($user->hasRole('admin')) {
             return redirect()->route('admin.dashboard', ['region' => $regionSlug]);
         } elseif ($user->hasRole('kurir')) {
             return redirect()->route('kurir.dashboard', ['region' => $regionSlug]);
         }
-    }
-    abort(403, 'Unauthorized');
-})->name('dashboard');
 
-// Route::resource('products', ProductController::class)->middleware('auth');
-
-// Route untuk profile admin
-Route::get('/admin/profile', [AdminDashboardController::class, 'profile'])->name('admin.profile');
-
-// Route untuk profile kurir
-Route::get('/kurir/profile', [KurirDashboardController::class, 'profile'])->name('kurir.profile');
+        abort(403, 'User tidak memiliki role yang valid. Silakan hubungi administrator.');
+    })->name('dashboard');
+});

@@ -3,9 +3,9 @@
 @section('page_title', 'Produk')
 
 @section('content')
-    <div class="items-end justify-between mb-4 space-y-4 sm:flex sm:space-y-0 md:mb-8">
+    {{-- <div class="items-end justify-between mb-4 space-y-4 sm:flex sm:space-y-0 md:mb-8"> --}}
         {{-- <div>
-            <h2 class="text-2xl font-bold text-greenlight mb-6">Manajemen Produk</h2>
+            <h2 class="mb-6 text-2xl font-bold text-greenlight">Manajemen Produk</h2>
         </div> --}}
         {{-- <div class="flex items-center space-x-4">
             <a href="{{ route('admin.products.create') }}" class="flex items-center justify-center w-full px-3 py-2 text-sm font-medium text-white bg-green-700 rounded-lg hover:bg-green-800 focus:ring-4 focus:ring-green-300 sm:w-auto dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
@@ -13,7 +13,7 @@
                 Tambah Produk
             </a>
         </div> --}}
-    </div>
+    {{-- </div> --}}
 
     {{-- Product Grid --}}
     <div class="grid gap-4 mb-4 sm:grid-cols-2 md:mb-8 lg:grid-cols-3 xl:grid-cols-4">

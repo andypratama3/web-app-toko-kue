@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules;
 
 class CourierController extends Controller
@@ -15,7 +16,7 @@ class CourierController extends Controller
     /**
      * Menampilkan halaman manajemen kurir dengan data.
      */
-    public function index()
+    public function index(Request $request)
     {
         $couriers = User::where('region_id', Auth::user()->region_id)
                         ->whereHas('roles', function ($query) {
@@ -27,9 +28,6 @@ class CourierController extends Controller
         return view('dashboard.admin.couriers.index', compact('couriers'));
     }
 
-    /**
-     * Method create() tidak lagi diperlukan karena form ada di dalam modal di halaman index.
-     */
     public function create()
     {
         return redirect()->route('admin.couriers.index');
@@ -57,7 +55,6 @@ class CourierController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            // BENAR: Menggunakan region_id dari admin yang membuat
             'region_id' => Auth::user()->region_id,
         ]);
 
@@ -66,10 +63,6 @@ class CourierController extends Controller
         return redirect()->route('admin.couriers.index')->with('success', 'Kurir baru berhasil ditambahkan.');
     }
 
-
-    /**
-     * Method edit() tidak lagi diperlukan karena form ada di dalam modal di halaman index.
-     */
     public function edit(User $courier)
     {
         return redirect()->route('admin.couriers.index');
@@ -115,7 +108,6 @@ class CourierController extends Controller
      */
     public function destroy(User $courier)
     {
-        // BENAR: Membandingkan region_id (angka)
         if ($courier->region_id !== Auth::user()->region_id) {
             abort(403, 'AKSES DITOLAK');
         }
@@ -123,5 +115,36 @@ class CourierController extends Controller
         $courier->delete();
 
         return redirect()->route('admin.couriers.index')->with('success', 'Kurir berhasil dihapus.');
+    }
+
+    public function updateNote(Request $request, User $courier)
+    {
+        try {
+            // Otorisasi: Pastikan admin hanya bisa mengedit kurir di regionnya
+            if ($courier->region_id !== Auth::user()->region_id) {
+                abort(403, 'AKSES DITOLAK');
+            }
+
+            // Validasi input
+            $validated = $request->validate([
+                'note' => ['nullable', 'string', 'max:1000'], // Batasi panjang note
+            ]);
+
+            // Update catatan pada user (kurir)
+            $courier->note = $validated['note'];
+            $courier->save();
+
+            // Redirect kembali dengan pesan sukses
+            return redirect()->route('admin.couriers.index')
+                ->with('success');
+        } catch (\Exception $e) {
+            // Log error jika terjadi masalah
+            Log::error('Error updating courier note: ' . $e->getMessage());
+
+            // Redirect kembali dengan pesan error
+            return redirect()->route('admin.couriers.index')
+                ->with('error', 'Terjadi kesalahan saat menyimpan catatan.')
+                ->withInput();
+        }
     }
 }

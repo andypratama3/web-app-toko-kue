@@ -9,5 +9,24 @@ class Customer extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nama', 'alamat', 'nohp', 'region', 'note'];
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'name',
+        'address',
+        'phone',
+        'note',
+        'region_id', // <-- Tambahkan ini
+    ];
+
+    /**
+     * Mendefinisikan relasi ke model Region.
+     */
+    public function region()
+    {
+        return $this->belongsTo(Region::class);
+    }
 }
