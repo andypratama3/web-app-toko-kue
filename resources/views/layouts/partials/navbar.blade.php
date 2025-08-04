@@ -56,15 +56,16 @@
         </li>
         @endauth --}}
 
-        <li class="flex items-center pl-4 lg:hidden">
-          <a href="javascript:;" class="block p-0 text-sm text-white transition-all ease-nav-brand" sidenav-trigger>
-            <div class="w-4.5 overflow-hidden">
-              <i class="ease mb-0.75 relative block h-0.5 rounded-sm bg-white transition-all"></i>
-              <i class="ease mb-0.75 relative block h-0.5 rounded-sm bg-white transition-all"></i>
-              <i class="ease relative block h-0.5 rounded-sm bg-white transition-all"></i>
-            </div>
-          </a>
-        </li>
+<li class="flex items-center pl-4 lg:hidden">
+    {{-- PERBAIKAN: Mengganti atribut menjadi sidenav-open --}}
+    <a href="javascript:;" class="block p-0 text-sm text-white transition-all ease-nav-brand" sidenav-open>
+        <div class="w-4.5 overflow-hidden">
+            <i class="ease mb-0.75 relative block h-0.5 rounded-sm bg-white transition-all"></i>
+            <i class="ease mb-0.75 relative block h-0.5 rounded-sm bg-white transition-all"></i>
+            <i class="ease relative block h-0.5 rounded-sm bg-white transition-all"></i>
+        </div>
+    </a>
+</li>
         <!-- Avatar with dropdown settings -->
         <li class="relative flex items-center px-2 group">
           <div class="w-8 h-8 overflow-hidden border-2 border-white rounded-full cursor-pointer">

@@ -1,58 +1,103 @@
 document.addEventListener("DOMContentLoaded", function () {
+    // --- Bagian 1: Animasi Konten (Opsional) ---
     const tabContent = document.getElementById("tab-content");
-    setTimeout(function () {
-        tabContent.classList.remove("translate-x-full", "opacity-0");
-        tabContent.classList.add("translate-x-0", "opacity-100");
-    }, 100);
-});
+    if (tabContent) {
+        setTimeout(() => {
+            tabContent.classList.remove("translate-x-full", "opacity-0");
+            tabContent.classList.add("translate-x-0", "opacity-100");
+        }, 100);
+    }
 
-document.addEventListener("DOMContentLoaded", function () {
-    const SIDEBAR_STATE_KEY = "sidebarCollapsed";
+    // --- Bagian 2: Logika Sidebar (Mobile & Desktop) ---
+
+    // A. PEMILIHAN SEMUA ELEMEN
     const sidebar = document.getElementById("sidebar");
-    const toggleButton = document.getElementById("sidebar-toggle-button");
     const mainContent = document.getElementById("main-content");
-    const logoLink = document.getElementById("sidebar-logo-link");
-    const icon = toggleButton.querySelector("i");
+    
+    // Elemen untuk Mobile
+    const overlay = document.getElementById('sidebar-overlay');
+    const openButtons = document.querySelectorAll('[sidenav-open]');
+    const closeButtons = document.querySelectorAll('[sidenav-close]');
 
-    // Fungsi untuk menerapkan state (buka/tutup)
-    const applySidebarState = (isCollapsed) => {
-        if (isCollapsed) {
-            sidebar.classList.remove("max-w-64");
-            sidebar.classList.add("max-w-20");
-            mainContent.classList.remove("xl:ml-68");
-            mainContent.classList.add("xl:ml-20");
-            logoLink.classList.remove("px-8");
-            logoLink.classList.add("px-4", "justify-center");
-            document.querySelectorAll(".sidenav-text").forEach((text) => {
-                text.classList.add("hidden", "opacity-0");
-            });
-            icon.classList.add("rotate-180");
-        } else {
-            sidebar.classList.add("max-w-64");
-            sidebar.classList.remove("max-w-20");
-            mainContent.classList.add("xl:ml-68");
-            mainContent.classList.remove("xl:ml-20");
-            logoLink.classList.add("px-8");
-            logoLink.classList.remove("px-4", "justify-center");
-            document.querySelectorAll(".sidenav-text").forEach((text) => {
-                text.classList.remove("hidden", "opacity-0");
-            });
-            icon.classList.remove("rotate-180");
+    // Elemen untuk Desktop
+    const SIDEBAR_STATE_KEY = "sidebarCollapsed";
+    const toggleButton = document.querySelector("a[sidenav-trigger]");
+    const logoLink = document.getElementById("sidebar-logo-link");
+
+    // B. FUNGSI-FUNGSI
+    const openSidebarMobile = () => {
+        if (sidebar && overlay) {
+            sidebar.classList.add('translate-x-0');
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
         }
     };
 
-    // Cek state dari localStorage saat halaman dimuat
-    const isCollapsed = localStorage.getItem(SIDEBAR_STATE_KEY) === "true";
-    if (sidebar && mainContent && logoLink && icon) {
-        applySidebarState(isCollapsed);
-    }
+    const closeSidebarMobile = () => {
+        if (sidebar && overlay) {
+            sidebar.classList.remove('translate-x-0');
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+        }
+    };
 
-    // Event listener untuk tombol toggle
+    const applySidebarState = (isCollapsed) => {
+        if (!sidebar || !mainContent || !logoLink) return;
+
+        sidebar.classList.toggle("max-w-64", !isCollapsed);
+        sidebar.classList.toggle("max-w-20", isCollapsed);
+
+        mainContent.classList.toggle("xl:ml-68", !isCollapsed);
+        mainContent.classList.toggle("xl:ml-24", isCollapsed);
+
+        logoLink.classList.toggle("px-8", !isCollapsed);
+        logoLink.classList.toggle("px-4", isCollapsed);
+        logoLink.classList.toggle("justify-center", isCollapsed);
+
+        document.querySelectorAll(".sidenav-text").forEach((text) => {
+            text.classList.toggle("hidden", isCollapsed);
+            text.classList.toggle("opacity-0", isCollapsed);
+        });
+
+        const logoImg = document.getElementById("sidebar-logo-img");
+        if (logoImg) {
+            if (logoImg.dataset.logoFull && logoImg.dataset.logoIcon) {
+                logoImg.src = isCollapsed ? logoImg.dataset.logoIcon : logoImg.dataset.logoFull;
+            }
+            logoImg.classList.toggle('w-8', isCollapsed);
+            logoImg.classList.toggle('flex-shrink-0', isCollapsed);
+            logoImg.classList.toggle('w-auto', !isCollapsed);
+        }
+        
+        const icon = toggleButton.querySelector("i");
+        if (icon) {
+            icon.classList.toggle("rotate-180", isCollapsed);
+        }
+    };
+
+    // C. PEMASANGAN EVENT LISTENERS
+    
+    // Listeners untuk Mobile
+    openButtons.forEach(btn => btn.addEventListener('click', openSidebarMobile));
+    closeButtons.forEach(btn => btn.addEventListener('click', closeSidebarMobile));
+    if (overlay) {
+        overlay.addEventListener('click', closeSidebarMobile);
+    }
+    
+    // Listeners untuk Desktop
     if (toggleButton) {
         toggleButton.addEventListener("click", () => {
-            const currentState = sidebar.classList.contains("max-w-20");
-            applySidebarState(!currentState);
-            localStorage.setItem(SIDEBAR_STATE_KEY, !currentState);
+            const isCurrentlyCollapsed = sidebar.classList.contains("max-w-20");
+            const newState = !isCurrentlyCollapsed;
+            applySidebarState(newState);
+            localStorage.setItem(SIDEBAR_STATE_KEY, newState);
         });
+
+        // --- PERUBAHAN DI SINI ---
+        // Terapkan state awal HANYA JIKA di layar desktop (xl breakpoint = 1280px)
+        if (window.innerWidth >= 1280) {
+            const initialCollapsedState = localStorage.getItem(SIDEBAR_STATE_KEY) === "true";
+            applySidebarState(initialCollapsedState);
+        }
     }
 });
