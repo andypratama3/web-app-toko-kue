@@ -519,6 +519,28 @@
                 });
             });
         });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Logika untuk membuka modal EDIT jika ada error dari session
+            const errorModalId = '{{ session('error_modal_id') }}';
+            if (errorModalId) {
+                const modal = document.getElementById(errorModalId);
+                if (modal) {
+                    const modalInstance = new Modal(modal);
+                    modalInstance.show();
+                    return; // Hentikan eksekusi agar tidak membuka modal create
+                }
+            }
+
+            // Logika untuk membuka modal CREATE jika ada error validasi di form 'create'
+            @if ($errors->hasBag('create'))
+                const createModal = document.getElementById('create-courier-modal');
+                if (createModal) {
+                    const modalInstance = new Modal(createModal);
+                    modalInstance.show();
+                }
+            @endif
+        });
     </script>
 
 @endsection

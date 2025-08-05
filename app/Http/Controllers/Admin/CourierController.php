@@ -19,11 +19,11 @@ class CourierController extends Controller
     public function index(Request $request)
     {
         $couriers = User::where('region_id', Auth::user()->region_id)
-                        ->whereHas('roles', function ($query) {
-                            $query->where('name', 'kurir');
-                        })
-                        ->latest()
-                        ->paginate(10);
+            ->whereHas('roles', function ($query) {
+                $query->where('name', 'kurir');
+            })
+            ->latest()
+            ->paginate(10);
 
         return view('dashboard.admin.couriers.index', compact('couriers'));
     }
@@ -40,15 +40,22 @@ class CourierController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         if ($validator->fails()) {
-            return redirect()->route('admin.couriers.index')
-                ->withErrors($validator, 'create')
-                ->withInput()
-                ->with('error_modal_id', 'create-courier-modal');
+            $redirect = redirect()->route('admin.couriers.index')
+                ->withErrors($validator, 'create') // Menggunakan error bag 'create'
+                ->withInput();
+
+            // PERBAIKAN: Cek jika error spesifiknya adalah email duplikat
+            if ($validator->errors()->has('email')) {
+                // Tambahkan flash message error untuk ditampilkan di notifikasi banner
+                $redirect->with('error', 'Email yang Anda masukkan sudah terdaftar. Silakan gunakan email lain.');
+            }
+
+            return $redirect;
         }
 
         $user = User::create([
@@ -80,13 +87,13 @@ class CourierController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:'.User::class.',email,'.$courier->id],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:' . User::class . ',email,' . $courier->id],
             'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
         ]);
 
         if ($validator->fails()) {
             return redirect()->route('admin.couriers.index')
-                ->withErrors($validator, 'edit_'.$courier->id)
+                ->withErrors($validator, 'edit_' . $courier->id)
                 ->withInput()
                 ->with('error_modal_id', 'edit-courier-modal-' . $courier->id);
         }
