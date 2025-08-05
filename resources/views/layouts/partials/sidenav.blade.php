@@ -41,7 +41,7 @@
             class="flex-shrink-0 h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent dark:bg-gradient-to-r dark:from-transparent dark:via-white dark:to-transparent" />
 
         {{-- Area menu yang bisa di-scroll --}}
-        <div class="flex-grow w-full overflow-y-auto mt-2">
+        <div class="flex-grow w-full overflow-y-auto overflow-x-hidden mt-2">
             <ul class="flex flex-col pl-0 mb-0">
 
                 <li class="w-full mt-4 mb-4">
