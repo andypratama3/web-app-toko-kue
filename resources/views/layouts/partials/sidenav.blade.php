@@ -210,8 +210,11 @@
             </ul>
         </div>
         
-        {{-- Sidenav Toggler --}}
-        {{-- Pindahkan toggle button ke navbar --}}
-        {{-- Hapus toggle button di sidebar --}}
+        {{-- Sidenav Toggler - positioned at bottom --}}
+        <div class="flex justify-center items-center p-4 border-t border-gray-200 dark:border-gray-700">
+            <a href="javascript:;" class="hidden p-2 text-slate-700 dark:text-white transition-all ease-nav-brand xl:block hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg" id="sidebar-toggle-bottom" sidenav-trigger>
+                <i class="fas fa-chevron-left text-lg transition-transform duration-300"></i>
+            </a>
+        </div>
     @endauth
 </aside>

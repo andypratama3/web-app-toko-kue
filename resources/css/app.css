@@ -25,14 +25,17 @@
         z-index: 40;
     }
     
-/* Ensure main content has proper margin on desktop */
+/* Ensure main content has proper margin and padding for fixed navbar */
 .main-content {
     margin-left: 17rem; /* Default expanded sidebar width (256px + 24px margin) */
+    padding-top: 5rem !important; /* Space for fixed navbar */
     transition: margin-left 0.3s ease-in-out;
     width: calc(100vw - 17rem);
     max-width: calc(100vw - 17rem);
-    padding-left: 5%;
-    padding-right: 5%;
+    padding-left: 1.5rem; /* 24px to align with content */
+    padding-right: 1.5rem;
+    min-height: calc(100vh - 5rem); /* Full height minus navbar */
+    position: relative !important;
 }
     
     .main-content.sidebar-collapsed {
@@ -195,6 +198,31 @@
     
     .main-content {
         margin-left: 0 !important;
+        padding-top: 5rem !important; /* Keep space for fixed navbar on mobile */
+    }
+    
+    /* Mobile navbar positioning */
+    #navbar-main {
+        left: 0 !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        position: fixed !important;
+        top: 0 !important;
+        z-index: 30 !important;
+        height: 5rem !important;
+        min-height: 5rem !important;
+        max-height: 5rem !important;
+        overflow: hidden !important;
+        background-color: #97b67d !important; /* Greenlight background */
+    }
+    
+    /* Mobile navbar container */
+    #navbar-main > div {
+        padding-left: 1.5rem !important; /* Slightly increased for mobile */
+        padding-right: 1rem !important;
+        height: 5rem !important;
+        min-height: 5rem !important;
+        max-height: 5rem !important;
     }
     
     /* Reset icon containers for mobile */
@@ -212,23 +240,65 @@ html, body {
     max-width: 100vw;
 }
 
+/* Ensure navbar stays fixed and doesn't scroll with content */
+body {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+}
+
+/* Main content should not affect navbar positioning */
+.main-content {
+    position: relative !important;
+}
+
 /* Additional fixes for content width */
 @media (min-width: 1280px) {
-/* Ensure navbar also adjusts properly */
+/* Fixed navbar styling */
 #navbar-main {
-    margin-left: 17rem;
-    width: calc(100vw - 17rem);
-    max-width: calc(100vw - 17rem);
-    transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out;
-    overflow-x: hidden;
-    padding-left: 5%;
-    padding-right: 5%;
+    position: fixed !important;
+    top: 0 !important;
+    left: 18rem !important; /* Align with sidebar */
+    right: 0 !important;
+    width: calc(100vw - 17rem) !important;
+    max-width: calc(100vw - 17rem) !important;
+    transition: left 0.3s ease-in-out, width 0.3s ease-in-out;
+    overflow: hidden !important;
+    padding: 0 !important; /* Remove default padding */
+    z-index: 30 !important; /* Lower than sidebar z-index (50) */
+    background-color: #97b67d !important; /* Darker green to match bottom area */
+    height: 5rem !important; /* Fixed height */
+    min-height: 5rem !important;
+    max-height: 5rem !important;
+}
+
+/* Ensure navbar content doesn't scroll */
+#navbar-main * {
+    overflow: visible !important;
+}
+
+/* Navbar container styling */
+#navbar-main > div {
+    height: 5rem !important;
+    min-height: 5rem !important;
+    max-height: 5rem !important;
+    padding-left: 2.5rem !important; /* Increased left padding to move breadcrumb right */
+    padding-right: 1.5rem !important;
+}
+
+/* Sidebar toggle button styling */
+#sidebar-toggle-bottom {
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Rotate arrow when sidebar is collapsed */
+#sidebar.w-16 #sidebar-toggle-bottom i {
+    transform: rotate(180deg);
 }
     
     .main-content.sidebar-collapsed #navbar-main {
-        margin-left: 5.5rem;
-        width: calc(100vw - 5.5rem);
-        max-width: calc(100vw - 5.5rem);
+        left: 5.5rem !important; /* Adjust navbar position when sidebar collapsed */
+        width: calc(100vw - 5.5rem) !important;
+        max-width: calc(100vw - 5.5rem) !important;
         overflow-x: hidden;
     }
     
