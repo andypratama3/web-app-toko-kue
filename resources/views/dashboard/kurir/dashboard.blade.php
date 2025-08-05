@@ -3,8 +3,6 @@
 @section('page_title', 'Dashboard')
 
 @section('content')
-{{-- @include('dashboard.kurir.customers.create') --}}
-
 <!-- cards -->
 <div class="w-full max-w full">
     <div class="flex flex-wrap gap-6 -mx-3">
@@ -53,8 +51,9 @@
                     </a>
 
                     <!-- Card 2: Cust -->
-                    <button type="button"
-                        class="w-1/2 px-3 mb-6"
+                    <button type="button" id="add-customer"
+                        class="w-1/2 px-3 mb-6 transition duration-150 ease-in-out transform hover:scale-105"
+                        data-modal-target="crud-modal"
                         data-modal-toggle="crud-modal">
                         <div class="flex items-center p-4 transition duration-150 ease-in-out transform bg-white shadow-lg rounded-2xl hover:shadow-xl active:scale-95">
                             <div class="flex items-center justify-center w-12 h-6 mr-2 bg-yellow-100 rounded-full lg:mr-4">
@@ -65,7 +64,7 @@
                             </div>
                             <div>
                                 <div class="text-lg font-bold text-black sm:text-2xl">Customer</div>
-                                <div class="text-xs text-left text-black sm:text-sm">Input here!</div>
+                                <div class="text-xs text-left text-black sm:text-sm">Tambah customer baru</div>
                             </div>
                         </div>
                     </button>
@@ -175,7 +174,39 @@
     </div>
 </div>
 <!-- end cards -->
-<!-- </body> -->
+
+@include('dashboard.kurir.customers.create')
+
+<!-- Script untuk modal -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inisialisasi modal
+        const modalToggle = document.querySelector('[data-modal-toggle="crud-modal"]');
+        const modal = document.getElementById('crud-modal');
+
+        if (modalToggle && modal) {
+            // Handler untuk membuka modal
+            modalToggle.addEventListener('click', function() {
+                modal.classList.remove('hidden');
+            });
+
+            // Handler untuk menutup modal ketika mengklik di luar modal
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+
+            // Handler untuk tombol close di modal
+            const closeButton = modal.querySelector('[data-modal-toggle="crud-modal"]');
+            if (closeButton) {
+                closeButton.addEventListener('click', function() {
+                    modal.classList.add('hidden');
+                });
+            }
+        }
+    });
+</script>
 
 <!-- plugin for charts  -->
 <script>

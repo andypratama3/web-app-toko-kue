@@ -78,18 +78,13 @@ Route::middleware([
          Route::get('/kurir/dashboard/{region}', [KurirDashboardController::class, 'index'])
             ->name('kurir.dashboard');
 
-        // Route data customer untuk kurir (sidebar)
+        // Route resource untuk manajemen customer oleh kurir
+        Route::resource('customers', KurirCustomerController::class)
+            ->parameters(['customers' => 'customer']);
 
-            Route::resource('customers', KurirCustomerController::class, [
-                'parameters' => ['customers' => 'customer']
-            ]);
-
-        // Tambah customer baru (dari modal)
-        Route::post('customer/store', [KurirDashboardController::class, 'store'])->name('customers.store');
-        // Route::resource('customers', KurirCustomerController::class)->except(['show', 'create', 'edit']);
-        // Route untuk manajemen customer oleh kurir
-        Route::get('customers', [KurirCustomerController::class, 'index'])->name('customers.index');
-        Route::post('customers', [KurirCustomerController::class, 'store'])->name('customers.store');
+        // Route untuk update note customer
+        Route::put('customers/{customer}/note', [KurirCustomerController::class, 'updateNote'])
+            ->name('customers.update-note');
     });
 
     // ---------- COMMON DASHBOARD REDIRECT ----------

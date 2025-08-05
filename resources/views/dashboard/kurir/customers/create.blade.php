@@ -25,6 +25,15 @@
             <!-- Modal body -->
             <form class="p-4 md:p-5" action="{{ route('kurir.customers.store') }}" method="POST">
                 @csrf
+                @if ($errors->any())
+                    <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400">
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 <div class="grid grid-cols-2 gap-4 mb-4">
                     <div class="col-span-2">
                         <label for="name"

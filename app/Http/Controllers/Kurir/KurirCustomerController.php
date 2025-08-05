@@ -73,4 +73,51 @@ class KurirCustomerController extends Controller
 
         return redirect()->route('kurir.customers.index')->with('success', 'Customer berhasil ditambahkan!');
     }
+
+    /**
+     * Update data customer
+     */
+    public function update(Request $request, Customer $customer)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'address' => 'required|string',
+            'phone' => 'required|string|max:20',
+            'note' => 'nullable|string',
+        ]);
+
+        $customer->update([
+            'name' => $request->name,
+            'address' => $request->address,
+            'phone' => $this->formatPhoneNumber($request->phone),
+            'note' => $request->note
+        ]);
+
+        return redirect()->route('kurir.customers.index')->with('success', 'Customer berhasil diupdate!');
+    }
+
+    /**
+     * Update note customer
+     */
+    public function updateNote(Request $request, Customer $customer)
+    {
+        $request->validate([
+            'note' => 'required|string',
+        ]);
+
+        $customer->update([
+            'note' => $request->note
+        ]);
+
+        return response()->json(['message' => 'Note berhasil diupdate!']);
+    }
+
+    /**
+     * Hapus data customer
+     */
+    public function destroy(Customer $customer)
+    {
+        $customer->delete();
+        return redirect()->route('kurir.customers.index')->with('success', 'Customer berhasil dihapus!');
+    }
 }

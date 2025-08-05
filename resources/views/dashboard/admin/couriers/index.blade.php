@@ -3,12 +3,6 @@
 @section('page_title', 'Kurir')
 
 @section('content')
-    {{-- PERBAIKAN: Menambahkan style untuk menyembunyikan backdrop modal bawaan tema --}}
-    <style>
-        [modal-backdrop] {
-            display: none !important;
-        }
-    </style>
     {{-- Notifikasi Sukses/Error --}}
     @if (session('success'))
         <div id="alert-success"

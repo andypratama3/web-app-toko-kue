@@ -1,5 +1,5 @@
 <aside id="sidebar"
-    class="fixed inset-y-0 z-50 flex flex-col w-full p-0 my-4 overflow-y-hidden antialiased transition-all duration-200 -translate-x-full bg-white border-0 shadow-xl dark:shadow-none dark:bg-slate-850 max-w-64 ease-nav-brand xl:ml-6 rounded-2xl xl:left-0 xl:translate-x-0"
+    class="fixed inset-y-0 z-50 flex flex-col w-64 p-0 my-4 overflow-y-hidden antialiased transition-all duration-300 -translate-x-full bg-white border-0 shadow-xl dark:shadow-none dark:bg-slate-850 ease-nav-brand xl:ml-6 rounded-2xl xl:left-0 xl:translate-x-0"
     aria-expanded="false">
 
     @auth
@@ -19,21 +19,19 @@
         @endphp
 
         {{-- Bagian Logo --}}
-        <div class="flex-shrink-0 h-19">
-            <i class="absolute top-0 right-0 p-4 opacity-50 cursor-pointer fas fa-times dark:text-white text-slate-400 xl:hidden"
-                sidenav-close></i>
+        <div class="border-b border-gray-200 sidebar-logo-container">
             <a id="sidebar-logo-link"
-                class="flex items-center block px-8 py-6 m-0 text-base whitespace-nowrap dark:text-white text-slate-700"
+                class="flex items-center justify-center block w-full px-4 py-4 m-0 text-base whitespace-nowrap dark:text-white text-slate-700"
                 href="{{ $dashboardUrl }}">
 
                 {{-- PERUBAHAN: Menambahkan id dan data-attributes untuk logo --}}
                 <img id="sidebar-logo-img" src="{{ asset('assets/homepage/logo.png') }}"
                     data-logo-full="{{ asset('assets/homepage/logo.png') }}"
                     data-logo-icon="{{ asset('assets/homepage/logo.png') }}"
-                    class="h-8 transition-all duration-200 ease-nav-brand" alt="main_logo" />
+                    class="flex-shrink-0 h-10 transition-all duration-200 ease-nav-brand" alt="main_logo" />
 
                 <span id="sidebar-logo-text"
-                    class="ml-2 text-xl font-semibold transition-all duration-200 ease-nav-brand text-greenlight sidenav-text">
+                    class="hidden ml-2 text-xl font-semibold transition-all duration-200 ease-nav-brand text-greenlight sidenav-text">
                     Kue Pandan Asli
                 </span>
             </a>
@@ -43,20 +41,20 @@
             class="flex-shrink-0 h-px mt-0 bg-transparent bg-gradient-to-r from-transparent via-black/40 to-transparent dark:bg-gradient-to-r dark:from-transparent dark:via-white dark:to-transparent" />
 
         {{-- Area menu yang bisa di-scroll --}}
-        <div class="flex-grow w-full overflow-y-auto">
+        <div class="flex-grow w-full mt-2 overflow-x-hidden overflow-y-auto">
             <ul class="flex flex-col pl-0 mb-0">
 
                 <li class="w-full mt-4 mb-4">
-                    <h6 class="pl-6 ml-2 text-xs font-bold leading-tight uppercase sidenav-text dark:text-white opacity-60">
+                    <h6
+                        class="pl-6 ml-2 text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60">
                         Dashboard Pages
                     </h6>
                 </li>
 
                 <li class="mt-0.5 w-full">
-                    <a class="py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap rounded-lg px-4 font-semibold text-slate-700 transition-colors @if (request()->routeIs('admin.dashboard') || request()->routeIs('kurir.dashboard')) bg-blue-500/13 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif"
-                        href="{{ $dashboardUrl }}">
-                        <div
-                            class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
+                    <a class="sidebar-menu-item py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap rounded-lg px-4 font-semibold text-slate-700 transition-colors @if (request()->routeIs('admin.dashboard') || request()->routeIs('kurir.dashboard')) bg-blue-500/13 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif"
+                        href="{{ $dashboardUrl }}" data-tooltip="Dashboard">
+                        <div class="mr-2 sidebar-icon-container">
                             <i
                                 class="fas fa-house-user @if (request()->routeIs('admin.dashboard') || request()->routeIs('kurir.dashboard')) text-blue-500 @else text-slate-400 @endif"></i>
                         </div>
@@ -66,15 +64,15 @@
 
                 @role('admin')
                     <li class="w-full mt-4 mb-4">
-                        <h6 class="pl-6 ml-2 text-xs font-bold leading-tight uppercase sidenav-text dark:text-white opacity-60">
+                        <h6
+                            class="pl-6 ml-2 text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60">
                             Management Section
                         </h6>
                     </li>
                     <li class="mt-0.5 w-full">
                         <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if (request()->routeIs('admin.customers.*')) bg-blue-500/13 @endif"
-                            href="{{ route('admin.customers.index') }}">
-                            <div
-                                class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
+                            href="{{ route('admin.customers.index') }}" data-tooltip="Manajemen Customer">
+                            <div class="mr-2 sidebar-icon-container">
                                 <i class="text-orange-500 fas fa-users"></i>
                             </div>
                             <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Manajemen
@@ -82,10 +80,9 @@
                         </a>
                     </li>
                     <li class="mt-0.5 w-full">
-                        <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if (request()->routeIs('admin.products.*')) bg-blue-500/13 @endif"
-                            href="{{ route('admin.products.index') }}">
-                            <div
-                                class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
+                        <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if (request()->routeIs('admin.products.*')) bg-blue-500/13 @endif"
+                            href="{{ route('admin.products.index') }}" data-tooltip="Manajemen Produk">
+                            <div class="mr-2 sidebar-icon-container">
                                 <i class="text-orange-500 fas fa-store"></i>
                             </div>
                             <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Manajemen
@@ -93,10 +90,9 @@
                         </a>
                     </li>
                     <li class="mt-0.5 w-full">
-                        <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if (request()->routeIs('admin.couriers.*')) bg-blue-500/13 @endif"
-                            href="{{ route('admin.couriers.index') }}">
-                            <div
-                                class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
+                        <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if (request()->routeIs('admin.couriers.*')) bg-blue-500/13 @endif"
+                            href="{{ route('admin.couriers.index') }}" data-tooltip="Manajemen Kurir">
+                            <div class="mr-2 sidebar-icon-container">
                                 <i class="text-cyan-500 fas fa-truck"></i>
                             </div>
                             <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Manajemen
@@ -105,26 +101,25 @@
                     </li>
 
                     <li class="w-full mt-4 mb-4">
-                        <h6 class="pl-6 ml-2 text-xs font-bold leading-tight uppercase sidenav-text dark:text-white opacity-60">
+                        <h6
+                            class="pl-6 ml-2 text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60">
                             Order Section
                         </h6>
                     </li>
 
                     <li class="mt-0.5 w-full">
-                        <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
-                            href="#">
-                            <div
-                                class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
+                        <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
+                            href="#" data-tooltip="Pesanan">
+                            <div class="mr-2 sidebar-icon-container">
                                 <i class="text-emerald-500 fas fa-cart-arrow-down"></i>
                             </div>
                             <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Pesanan</span>
                         </a>
                     </li>
                     <li class="mt-0.5 w-full">
-                        <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
-                            href="#">
-                            <div
-                                class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
+                        <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
+                            href="#" data-tooltip="History Pesanan">
+                            <div class="mr-2 sidebar-icon-container">
                                 <i class="text-red-500 fas fa-list"></i>
                             </div>
                             <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">History
@@ -133,17 +128,17 @@
                     </li>
 
                     <li class="w-full mt-4 mb-4">
-                        <h6 class="pl-6 ml-2 text-xs font-bold leading-tight uppercase sidenav-text dark:text-white opacity-60">
+                        <h6
+                            class="pl-6 ml-2 text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60">
                             Performa
                             Section
                         </h6>
                     </li>
 
                     <li class="mt-0.5 w-full">
-                        <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
-                            href="#">
-                            <div
-                                class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
+                        <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
+                            href="#" data-tooltip="Performa Customer">
+                            <div class="mr-2 sidebar-icon-container">
                                 <i class="fas fa-chart-line"></i>
                             </div>
                             <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Performa
@@ -152,10 +147,9 @@
                     </li>
 
                     <li class="mt-0.5 w-full">
-                        <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
-                            href="#">
-                            <div
-                                class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
+                        <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
+                            href="#" data-tooltip="Performa Kurir">
+                            <div class="mr-2 sidebar-icon-container">
                                 <i class="fas fa-chart-line"></i>
                             </div>
                             <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Performa
@@ -164,15 +158,15 @@
                     </li>
 
                     <li class="w-full mt-4 mb-4">
-                        <h6 class="pl-6 ml-2 text-xs font-bold leading-tight uppercase sidenav-text dark:text-white opacity-60">
+                        <h6
+                            class="pl-6 ml-2 text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60">
                             Account Settings
                         </h6>
                     </li>
                     <li class="mt-0.5 w-full">
-                        <a class="py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg font-semibold @if (request()->routeIs('admin.profile')) bg-blue-500/13 text-blue-700 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif"
-                            href="{{ route('admin.profile') }}">
-                            <div
-                                class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
+                        <a class="sidebar-menu-item py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg font-semibold @if (request()->routeIs('admin.profile')) bg-blue-500/13 text-blue-700 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif"
+                            href="{{ route('admin.profile') }}" data-tooltip="Profil Saya">
+                            <div class="mr-2 sidebar-icon-container">
                                 <i
                                     class="fas fa-user @if (request()->routeIs('admin.profile')) text-blue-500 @else text-slate-700 @endif"></i>
                             </div>
@@ -183,9 +177,9 @@
 
                 @role('kurir')
                     <li class="mt-0.5 w-full">
-                        <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if (request()->routeIs('kurir.customers.*')) bg-blue-500/13 @endif" href="{{ route('kurir.customers.index') }}">
-                            <div
-                                class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
+                        <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if (request()->routeIs('kurir.customers.*')) bg-blue-500/13 @endif"
+                            href="{{ route('kurir.customers.index') }}" data-tooltip="Data Customer">
+                            <div class="mr-2 sidebar-icon-container">
                                 <i class="text-red-600 fas fa-book"></i>
                             </div>
                             <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Data
@@ -193,28 +187,35 @@
                         </a>
                     </li>
                     <li class="mt-0.5 w-full">
-                        <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
-                            href="{{ url('/pengiriman') }}">
-                            <div
-                                class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
+                        <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
+                            href="#" data-tooltip="Pesanan">
+                            <div class="mr-2 sidebar-icon-container">
+                                <i class="text-emerald-500 fas fa-cart-arrow-down"></i>
+                            </div>
+                            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Pesanan</span>
+                        </a>
+                    </li>
+                    <li class="mt-0.5 w-full">
+                        <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
+                            href="{{ url('/pengiriman') }}" data-tooltip="History Pesanan">
+                            <div class="mr-2 sidebar-icon-container">
                                 <i class="fas fa-folder text-greenlight"></i>
                             </div>
                             <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">History
                                 Pesanan</span>
                         </a>
-
                     </li>
 
                     <li class="w-full mt-4 mb-4">
-                        <h6 class="pl-6 ml-2 text-xs font-bold leading-tight uppercase sidenav-text dark:text-white opacity-60">
+                        <h6
+                            class="pl-6 ml-2 text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60">
                             Account Pages
                         </h6>
                     </li>
                     <li class="mt-0.5 w-full">
-                        <a class="py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg font-semibold @if (request()->routeIs('kurir.profile')) bg-blue-500/13 text-blue-700 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif"
-                            href="{{ route('kurir.profile') }}">
-                            <div
-                                class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
+                        <a class="sidebar-menu-item py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg font-semibold @if (request()->routeIs('kurir.profile')) bg-blue-500/13 text-blue-700 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif"
+                            href="{{ route('kurir.profile') }}" data-tooltip="Profil Saya">
+                            <div class="mr-2 sidebar-icon-container">
                                 <i
                                     class="fas fa-user @if (request()->routeIs('kurir.profile')) text-blue-500 @else text-slate-700 @endif"></i>
                             </div>
@@ -227,11 +228,10 @@
                 <li class="mt-0.5 w-full">
                     <form method="POST" action="{{ route('logout') }}" class="inline">
                         @csrf
-                        <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
-                            href="{{ route('logout') }}"
-                            onclick="event.preventDefault(); this.closest('form').submit();">
-                            <div
-                                class="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-center text-center xl:p-2.5">
+                        <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
+                            href="{{ route('logout') }}" onclick="event.preventDefault(); this.closest('form').submit();"
+                            data-tooltip="Logout">
+                            <div class="mr-2 sidebar-icon-container">
                                 <i class="text-red-600 fas fa-sign-out-alt"></i>
                             </div>
                             <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Logout</span>
@@ -241,13 +241,34 @@
             </ul>
         </div>
 
-        {{-- Sidenav Toggler --}}
-        <div class="flex-shrink-0 p-4 mx-4">
-            {{-- PERBAIKAN: Menggunakan tag <a> dengan atribut sidenav-trigger --}}
+        <div id="dropdown-cta" class="p-4 mt-6 rounded-lg bg-green-50 dark:bg-green-900" role="alert">
+            <div class="flex items-center mb-3">
+                <span
+                    class="bg-orange-100 text-orange-800 text-sm font-semibold me-2 px-2.5 py-0.5 rounded-sm dark:bg-orange-200 dark:text-orange-900">Development</span>
+
+                <button type="button"
+                    class="ms-auto -mx-1.5 -my-1.5 bg-green-50 inline-flex justify-center items-center w-6 h-6 text-green-900 rounded-lg focus:ring-2 focus:ring-green-400 p-1 hover:bg-green-200 dark:bg-green-900 dark:text-green-400 dark:hover:bg-green-800"
+                    data-dismiss-target="#dropdown-cta" aria-label="Close">
+                    <span class="sr-only">Close</span>
+                    <svg class="w-2.5 h-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                    </svg>
+                </button>
+            </div>
+
+            <p class="text-sm font-medium text-green-800 dark:text-green-300">
+                This Web App Version 1.0.0
+            </p>
+        </div>
+
+        {{-- Sidenav Toggler - positioned at bottom --}}
+        <div class="flex items-center justify-center p-4 border-t border-gray-200 dark:border-gray-700">
             <a href="javascript:;"
-                class="items-center justify-center hidden w-full p-3 text-white rounded-full xl:flex bg-greenlight hover:bg-black dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-black focus:outline-none"
-                sidenav-trigger>
-                <i class="transition-transform duration-300 fas fa-chevron-left"></i>
+                class="hidden p-2 transition-all rounded-lg text-slate-700 dark:text-white ease-nav-brand xl:block hover:bg-gray-100 dark:hover:bg-slate-800"
+                id="sidebar-toggle-bottom" sidenav-trigger>
+                <i class="text-lg transition-transform duration-300 fas fa-chevron-left"></i>
             </a>
         </div>
     @endauth
