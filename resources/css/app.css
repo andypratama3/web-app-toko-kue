@@ -27,7 +27,7 @@
     
 /* Ensure main content has proper margin and padding for fixed navbar */
 .main-content {
-    margin-left: 17rem; /* Default expanded sidebar width (256px + 24px margin) */
+    margin-left: 18rem; /* Default expanded sidebar width (256px + 24px margin) */
     padding-top: 5rem !important; /* Space for fixed navbar */
     transition: margin-left 0.3s ease-in-out;
     width: calc(100vw - 17rem);
@@ -130,6 +130,35 @@
     display: none !important;
 }
 
+/* Hide all dropdowns when sidebar is collapsed */
+#sidebar.w-16 .dropdown,
+#sidebar.w-16 .dropdown-menu,
+#sidebar.w-16 [data-dropdown],
+#sidebar.w-16 .group:hover .absolute,
+#sidebar.w-16 .relative .absolute {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* Hide profile dropdown specifically when sidebar collapsed */
+#sidebar.w-16 .group-hover\:opacity-100,
+#sidebar.w-16 .group-hover\:scale-100,
+#sidebar.w-16 .group-hover\:pointer-events-auto {
+    opacity: 0 !important;
+    transform: scale(0.95) !important;
+    pointer-events: none !important;
+}
+
+/* Hide CTA dropdown specifically when sidebar collapsed */
+#sidebar.w-16 #dropdown-cta {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
 /* Menu item hover effects */
 .sidebar-menu-item {
     transition: all 0.3s ease-in-out;
@@ -213,7 +242,7 @@
         min-height: 5rem !important;
         max-height: 5rem !important;
         overflow: hidden !important;
-        background-color: #97b67d !important; /* Greenlight background */
+        background-color: transparent !important; /* Remove green background on mobile */
     }
     
     /* Mobile navbar container */
