@@ -261,6 +261,73 @@
         min-width: 2rem !important;
         min-height: 2rem !important;
     }
+    
+    /* Ensure profile section is visible on mobile/tablet */
+    #navbar-main .flex.items-center.justify-end {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    /* Profile avatar on mobile/tablet */
+    #navbar-main .w-8.h-8.overflow-hidden {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        width: 2rem !important;
+        height: 2rem !important;
+    }
+    
+    /* Profile list on mobile/tablet */
+    #navbar-main ul.flex.flex-row {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    /* Profile image inside avatar container */
+    #navbar-main .w-8.h-8.overflow-hidden img {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+    }
+    
+    /* Profile dropdown modal on mobile - ensure it appears above content */
+    #navbar-main .group .absolute {
+        z-index: 9999 !important; /* Very high z-index to appear above all content */
+        position: fixed !important; /* Use fixed positioning */
+        top: 4rem !important; /* Position below navbar */
+        right: 0.5rem !important; /* Align to right edge with small margin */
+        left: 0.5rem !important; /* Add left margin for mobile */
+        transform: none !important; /* Remove transform to prevent positioning issues */
+        margin-top: 0 !important;
+        width: auto !important; /* Auto width for mobile */
+        max-width: calc(100vw - 1rem) !important; /* Prevent overflow on mobile */
+    }
+    
+    /* Profile dropdown styling improvements for mobile */
+    #navbar-main .group .absolute.bg-white {
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+        border: 1px solid rgba(0, 0, 0, 0.1) !important;
+        border-radius: 0.5rem !important;
+    }
+    
+    /* Last Activity text styling for mobile */
+    #navbar-main .group .absolute .text-xs.text-gray-500 {
+        color: #6b7280 !important; /* Ensure text is visible */
+        font-weight: 500 !important;
+        line-height: 1.4 !important;
+    }
+    
+    /* Last Activity value styling for mobile */
+    #navbar-main .group .absolute .block.mt-1 {
+        color: #374151 !important; /* Darker color for better visibility */
+        font-weight: 600 !important;
+        font-size: 0.875rem !important; /* Slightly larger text */
+    }
 }
 
 /* Prevent horizontal scroll on body and html */
@@ -331,11 +398,57 @@ body {
         overflow-x: hidden;
     }
     
-    /* Ensure profile image in navbar is visible */
-    #navbar-main .relative.flex.items-center.px-4 {
+    /* Ensure profile image in navbar is visible on all devices */
+    #navbar-main .relative.flex.items-center.px-2 {
         display: flex !important;
         visibility: visible !important;
         opacity: 1 !important;
+    }
+    
+    /* Ensure profile section is visible on all screen sizes */
+    #navbar-main ul li {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    /* Profile avatar styling for all devices */
+    #navbar-main .w-8.h-8 {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    /* Profile dropdown modal - ensure it appears above content */
+    #navbar-main .group .absolute {
+        z-index: 9999 !important; /* Very high z-index to appear above all content */
+        position: fixed !important; /* Use fixed positioning */
+        top: 4rem !important; /* Position below navbar */
+        right: 1rem !important; /* Align to right edge */
+        transform: none !important; /* Remove transform to prevent positioning issues */
+        margin-top: 0 !important;
+    }
+    
+    /* Profile dropdown styling improvements */
+    #navbar-main .group .absolute.bg-white {
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+        border: 1px solid rgba(0, 0, 0, 0.1) !important;
+        min-width: 280px !important; /* Wider modal for better readability */
+        max-width: 320px !important;
+    }
+    
+    /* Last Activity text styling */
+    #navbar-main .group .absolute .text-xs.text-gray-500 {
+        color: #6b7280 !important; /* Ensure text is visible */
+        font-weight: 500 !important;
+        line-height: 1.4 !important;
+    }
+    
+    /* Last Activity value styling */
+    #navbar-main .group .absolute .block.mt-1 {
+        color: #374151 !important; /* Darker color for better visibility */
+        font-weight: 600 !important;
+        font-size: 0.875rem !important; /* Slightly larger text */
     }
 }
 

@@ -35,8 +35,8 @@
        </div>
       </div>
 
-      {{-- Right side: Profile section - only visible on desktop --}}
-      <div class="hidden xl:flex items-center justify-end h-full">
+      {{-- Right side: Profile section - visible on all devices --}}
+      <div class="flex items-center justify-end h-full">
         <ul class="flex flex-row items-center justify-end pl-0 mb-0 list-none h-full">
           <!-- Avatar with dropdown settings -->
           <li class="relative flex items-center px-2 group h-full">
@@ -50,7 +50,7 @@
               <img src="{{ asset($avatarSrc) }}" alt="User Avatar" class="object-cover w-full h-full" />
             </div>
             <div class="absolute right-0 z-50 w-64 mt-40 transition duration-200 ease-out origin-top-right scale-95 bg-white rounded-md shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:scale-100 group-hover:pointer-events-auto">
-              <div class="px-4 py-2 text-sm text-gray-700 border-b">
+              <div class="px-4 py-3 text-sm text-gray-700 border-b border-gray-200">
                 @php
                   use Illuminate\Support\Facades\DB;
                   $user = Auth::user();
@@ -58,14 +58,17 @@
                     ->where('user_id', Auth::id())
                     ->orderByDesc('last_activity')
                     ->first();
-                  $lastLogin = $lastSession ? \Carbon\Carbon::createFromTimestamp($lastSession->last_activity)->setTimezone('Asia/Jakarta')->format('d-m-Y H:i:s') : '-';
+                  $lastLogin = $lastSession ? \Carbon\Carbon::createFromTimestamp($lastSession->last_activity)->setTimezone('Asia/Jakarta')->format('d M Y, H:i:s') : 'Tidak tersedia';
                 @endphp
-                <span class="font-semibold">Name - {{ $user->name ?? '-' }}</span>
-                <span class="block text-xs text-gray-500">Region : {{ $user->region->name ?? '-' }}</span>
-                <span class="block mb-1 text-xs text-gray-500">Email : {{ $user->email ?? '-' }}</span>
-                <div class="my-2 border-b border-gray-200"></div>
-                <span class="font-semibold">Last Activity:</span>
-                <span class="block mt-1">{{ $lastLogin }}</span>
+                <div class="mb-2">
+                  <span class="font-semibold text-gray-900">{{ $user->name ?? 'User' }}</span>
+                  <span class="block text-xs text-gray-500 mt-1">Region: {{ $user->region->name ?? 'Tidak ada region' }}</span>
+                  <span class="block text-xs text-gray-500">Email: {{ $user->email ?? 'Tidak ada email' }}</span>
+                </div>
+                <div class="pt-2 border-t border-gray-100">
+                  <span class="font-semibold text-gray-900 text-sm">Last Activity:</span>
+                  <span class="block mt-1 text-sm text-gray-700 font-medium">{{ $lastLogin }}</span>
+                </div>
               </div>
               @php
                 $profileUrl = route('profile.show');
