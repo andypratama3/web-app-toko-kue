@@ -1,12 +1,22 @@
 {{-- FIXED: Added flex-wrap, responsive widths, and updated breakpoints --}}
-<nav class="relative flex flex-wrap items-center justify-between px-0 py-2 mx-6 transition-all ease-in shadow-none duration-250 rounded-2xl lg:flex-nowrap lg:justify-start" navbar-main navbar-scroll="false">
-  <div class="flex flex-wrap items-center justify-between w-full px-4 py-1 mx-auto">
-{{-- <nav class="relative flex flex-wrap items-center justify-between px-0 py-2 mx-6 transition-all ease-in shadow-none duration-250 rounded-2xl lg:flex-nowrap lg:justify-start" navbar-main navbar-scroll="false">
-  <div class="flex flex-wrap items-center justify-between w-full px-4 py-1 mx-auto"> --}}
+<nav id="navbar-main" class="relative flex flex-wrap items-center justify-between px-0 py-2 mx-6 transition-all ease-in shadow-none duration-250 rounded-2xl lg:flex-nowrap lg:justify-start" navbar-main navbar-scroll="false">
+    <div class="flex flex-wrap items-center justify-between w-full px-4 py-1 mx-auto">
+      {{-- <nav class="relative flex flex-wrap items-center justify-between px-0 py-2 mx-6 transition-all ease-in shadow-none duration-250 rounded-2xl lg:flex-nowrap lg:justify-start" navbar-main navbar-scroll="false">
+        <div class="flex flex-wrap items-center justify-between w-full px-4 py-1 mx-auto"> --}}
 
-<nav>
-      <ol class="flex flex-wrap pt-1 mr-12 bg-transparent rounded-lg sm:mr-16">
-        <li class="text-sm leading-normal">
+      {{-- Mobile Hamburger Toggle Button --}}
+      <a href="javascript:;" class="block p-2 text-white transition-all ease-nav-brand xl:hidden" id="mobile-toggle" sidenav-trigger>
+          <i class="fas fa-bars text-xl"></i>
+      </a>
+
+      {{-- Desktop Arrow Toggle Button --}}
+      <a href="javascript:;" class="hidden p-2 text-white transition-all ease-nav-brand xl:block" id="desktop-toggle" sidenav-trigger>
+          <i class="fas fa-chevron-left text-xl transition-transform duration-300"></i>
+      </a>
+
+ <nav>
+       <ol class="flex flex-wrap pt-1 mr-12 bg-transparent rounded-lg sm:mr-16">
+         <li class="text-sm leading-normal">
           @php
             $user = Auth::user();
             $region = $user->region ?? null;
@@ -56,16 +66,6 @@
         </li>
         @endauth --}}
 
-<li class="flex items-center pl-4 lg:hidden">
-    {{-- PERBAIKAN: Mengganti atribut menjadi sidenav-open --}}
-    <a href="javascript:;" class="block p-0 text-sm text-white transition-all ease-nav-brand" sidenav-open>
-        <div class="w-4.5 overflow-hidden">
-            <i class="ease mb-0.75 relative block h-0.5 rounded-sm bg-white transition-all"></i>
-            <i class="ease mb-0.75 relative block h-0.5 rounded-sm bg-white transition-all"></i>
-            <i class="ease relative block h-0.5 rounded-sm bg-white transition-all"></i>
-        </div>
-    </a>
-</li>
         <!-- Avatar with dropdown settings -->
         <li class="relative flex items-center px-2 group">
           <div class="w-8 h-8 overflow-hidden border-2 border-white rounded-full cursor-pointer">

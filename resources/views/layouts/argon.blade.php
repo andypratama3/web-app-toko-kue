@@ -7,7 +7,7 @@
     @section('title', 'Dashboard')
     @include('layouts.headicon')
     {{-- Vite build assets --}}
-    @vite(['resources/css/app.css', 'resources/css/argon-dashboard-tailwind.css', 'resources/js/app.js', 'resources/js/custom.js','resources/js/argon-dashboard-tailwind.js'])
+    @vite(['resources/css/app.css', 'resources/css/argon-dashboard-tailwind.css', 'resources/js/app.js', 'resources/js/custom.js','resources/js/argon-dashboard-tailwind.js', 'resources/js/sidenav-burger.js'])
 
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
     <!-- Font Awesome CDN -->
@@ -41,7 +41,7 @@
     @include('layouts.partials.sidenav')
 
     {{-- PERBAIKAN: Menambahkan id="main-content" --}}
-    <main id="main-content" class="relative h-full max-h-screen transition-all duration-200 ease-in-out xl:ml-68 rounded-xl">
+    <main id="main-content" class="main-content relative h-full max-h-screen transition-all duration-200 ease-in-out rounded-xl">
         @include('layouts.partials.navbar')
 
         @include('layouts.partials.content')
