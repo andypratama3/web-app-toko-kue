@@ -3,7 +3,7 @@
 @section('page_title', 'Dashboard')
 
 @section('content')
-@include('dashboard.kurir.modal.tmbh-customer')
+{{-- @include('dashboard.kurir.customers.create') --}}
 
 <!-- cards -->
 <div class="w-full max-w full">
@@ -37,7 +37,6 @@
             <div class="grid gap-4 g">
                 <div class="flex flex-wrap -mx-3">
                     <!-- Card 1: Pesanan -->
-                    {{-- <a href="{{ route('kurir.pages.tmbh-pesanan', ['region' => $kurir->region]) }}" class="w-1/2 px-3 "> --}}
                     <a href="#" class="w-1/2 px-3 ">
                         <div class="flex items-center p-4 transition duration-150 ease-in-out transform bg-white shadow-lg rounded-2xl hover:shadow-xl active:scale-95">
                             <div class="flex items-center justify-center w-12 h-6 mr-2 bg-green-100 rounded-full lg:mr-4">
@@ -277,17 +276,6 @@
         document.getElementById("ucapan").textContent = getGreeting();
     });
 </script>
-<!--
-<script>
-    window.addEventListener('scroll', function() {
-        const navbar = document.getElementById('navbar');
-        if (window.scrollY > 10) {
-            navbar.classList.add('shadow-xl');
-        } else {
-            navbar.classList.remove('shadow-xl');
-        }
-    });
-</script> -->
 
 <script src="/assets/argon/js/plugins/chartjs.min.js"></script>
 <script src="/assets/argon/js/plugins/perfect-scrollbar.min.js" async></script>

@@ -9,7 +9,8 @@ use App\Http\Controllers\KurirDashboardController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Admin\CourierController;
 use App\Http\Controllers\Admin\CustomerController;
-
+use App\Http\Controllers\Kurir\KurirCustomerController;
+use App\Http\Controllers\Kurir\PesananController;
 
 /*
 |--------------------------------------------------------------------------
@@ -62,24 +63,33 @@ Route::middleware([
         // Profile kurir
         Route::get('profile', [KurirDashboardController::class, 'profile'])->name('profile');
 
-        // Modal tambah customer (dalam konteks region)
-        Route::get('dashboard/{region}/modal/tambah-customer', [KurirDashboardController::class, 'tambahCust'])
-            ->name('modal.tambah-customer');
+        // Modal create customer (dalam konteks region)
+        Route::get('dashboard/{region}/create', [KurirCustomerController::class, 'create'])
+            ->name('customers.create');
 
         // Halaman tambah pesanan
         Route::get('dashboard/{region}/pages/tambah-pesanan', [KurirDashboardController::class, 'tambahPesanan'])
             ->name('pages.tambah-pesanan');
 
         // Sidebar data customer (tampilkan semua)
-        Route::get('dashboard/{region}/pages/data-seller', [KurirDashboardController::class, 'dataCust'])
-            ->name('pages.data-customer');
+        // Route::get('dashboard/{region}/pages/data-seller', [KurirDashboardController::class, 'dataCust'])
+        //     ->name('pages.data-customer');
+
+         Route::get('/kurir/dashboard/{region}', [KurirDashboardController::class, 'index'])
+            ->name('kurir.dashboard');
+
+        // Route data customer untuk kurir (sidebar)
+
+            Route::resource('customers', KurirCustomerController::class, [
+                'parameters' => ['customers' => 'customer']
+            ]);
 
         // Tambah customer baru (dari modal)
-        Route::post('customer/store', [KurirDashboardController::class, 'store'])->name('customer.store');
-
-        // Tampilkan customer (jika ini berbeda dari dataCust)
-        Route::get('dashboard-kurir/pages/data-seller', [KurirDashboardController::class, 'showCustomer'])
-            ->name('customer.showCustomer');
+        Route::post('customer/store', [KurirDashboardController::class, 'store'])->name('customers.store');
+        // Route::resource('customers', KurirCustomerController::class)->except(['show', 'create', 'edit']);
+        // Route untuk manajemen customer oleh kurir
+        Route::get('customers', [KurirCustomerController::class, 'index'])->name('customers.index');
+        Route::post('customers', [KurirCustomerController::class, 'store'])->name('customers.store');
     });
 
     // ---------- COMMON DASHBOARD REDIRECT ----------

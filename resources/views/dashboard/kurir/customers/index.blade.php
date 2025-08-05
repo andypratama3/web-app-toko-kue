@@ -1,14 +1,14 @@
 @extends('layouts.argon')
 @section('title', 'Dashboard Kurir')
+@section('page_title', 'Customer')
 @section('content')
-@include('dashboard.kurir.modal.tmbh-customer')
 
 <div class="flex flex-wrap -mx-3">
     <div class="flex-none w-full max-w-full px-3">
         <div class="p-3 pb-0 mb-0 border-b-0 border-b-solid rounded-t-2xl border-b-transparent">
-            <h6 class="dark:text-white mb-4">Data Customer</h6>
+            <h6 class="mb-4 dark:text-white">Data Customer</h6>
 
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+            <div class="flex flex-col gap-3 mb-4 md:flex-row md:items-center md:justify-between">
                 <!-- Search -->
                 <form class="flex w-full md:max-w-md">
                     <label for="simple-search" class="sr-only">Search</label>
@@ -27,30 +27,30 @@
 
                 <!-- Tombol Tambah -->
                 <button type="button" data-modal-toggle="crud-modal"
-                    class="w-full md:w-auto px-3 py-2 text-sm font-medium text-white bg-blue-700 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                    class="w-full px-3 py-2 text-sm font-medium text-white bg-blue-700 rounded-lg md:w-auto hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                     Tambah Data
                 </button>
             </div>
         </div>
 
-        <div class="relative overflow-x-auto mx-3">
-            <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+        <div class="relative mx-3 overflow-x-auto">
+            <table class="w-full text-sm text-left text-gray-500 rtl:text-right dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
                         <th scope="col" class="px-6 py-3">
                             Nama Customer
                         </th>
                         <th scope="col" class="px-6 py-3">
-                            No. HP
+                            Nomor Telepon
                         </th>
                         <th scope="col" class="px-6 py-3">
                             Alamat
                         </th>
                         <th scope="col" class="px-6 py-3">
-                            region
+                            Region
                         </th>
                         <th scope="col" class="px-6 py-3">
-                            Catatan
+                            Note
                         </th>
                         <th scope="col" class="px-6 py-3">
                             Action
@@ -59,21 +59,21 @@
                 </thead>
                 <tbody>
                     @foreach ($customers as $customer)
-                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600">
+                    <tr class="bg-white border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                         <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                            {{ $customer->nama }}
+                            {{ $customer->name }}
                         </th>
                         <td class="px-6 py-4">
-                            {{ $customer->nohp }}
+                            {{ $customer->phone }}
                         </td>
                         <td class="px-6 py-4">
-                            {{ $customer->alamat }}
+                            {{ $customer->address }}
                         </td>
                         <td class="px-6 py-4">
-                            {{ $customer->region }}
+                            {{ $customer->region->name }}
                         </td>
                         <td class="px-6 py-4">
-                            {{ $customer->catatan }}
+                            {{ $customer->note }}
                         </td>
                         <td class="px-6 py-4">
                             <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Edit</a>
@@ -87,8 +87,8 @@
 </div>
 </div>
 
-<script src="/assets/argon/js/plugins/chartjs.min.js"></script>
+{{-- <script src="/assets/argon/js/plugins/chartjs.min.js"></script>
 <script src="/assets/argon/js/plugins/perfect-scrollbar.min.js" async></script>
-<script src="/assets/argon/js/assets/argon-dashboard-tailwind.js?v=1.0.1" async></script>
+<script src="/assets/argon/js/assets/argon-dashboard-tailwind.js?v=1.0.1" async></script> --}}
 
 @endsection

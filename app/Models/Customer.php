@@ -19,7 +19,7 @@ class Customer extends Model
         'address',
         'phone',
         'note',
-        'region_id', // <-- Tambahkan ini
+        'region_id',
     ];
 
     /**
