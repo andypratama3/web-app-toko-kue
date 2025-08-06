@@ -2,22 +2,24 @@
 <html lang="id" style="scroll-behavior: smooth;">
 
 <head>
-    <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  <!-- Google Tag Manager -->
+  <script>
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
     j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-PRXFHTTN');</script>
-    <!-- End Google Tag Manager -->
+    })(window,document,'script','dataLayer','GTM-PRXFHTTN');
+  </script>
+  <!-- End Google Tag Manager -->
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-6GHRM0X2ZS"></script>
-    <script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-6GHRM0X2ZS"></script>
+  <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'G-6GHRM0X2ZS');
-    </script>
+  </script>
     
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -28,10 +30,12 @@
   @include('layouts.headicon')
   @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/script_homepage.js'])
   
+  <!-- External Scripts -->
   <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/dist/medium-zoom.min.js"></script>
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-
+  
+  <!-- External Styles -->
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 
@@ -41,11 +45,12 @@
 </div>
 
 <body class="flex flex-col min-h-screen" style="overflow-x:hidden;">
-
-        <!-- Google Tag Manager (noscript) -->
-      <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PRXFHTTN"
-      height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-        <!-- End Google Tag Manager (noscript) -->
+  <!-- Google Tag Manager (noscript) -->
+  <noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PRXFHTTN"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe>
+  </noscript>
+  <!-- End Google Tag Manager (noscript) -->
 
   <!-- Floating WhatsApp Button -->
   <a class="fixed bottom-6 right-6 z-50"
@@ -77,7 +82,7 @@
     <div class="flex items-center gap-2 pl-2 md:pl-6 flex-shrink-0">
       <img src="{{ asset('assets/homepage/logo.png') }}"
         alt="Logo" class="h-10 w-10 rounded-full object-cover">
-      <a href="/" class="font-semibold text-[#8BA870] text-xl tracking-tight hover:text-black active:text-black transition-colors duration-200">Kue Pandan Asli</a>
+      <a href="/" class="font-semibold text-[#8BA870] text-xl tracking-tight hover:text-black active:text-black transition-colors duration-200 md:hidden lg:inline">Kue Pandan Asli</a>
     </div>
     <!-- Menu Tengah Absolute Center Boxed -->
     <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] max-w-full">
@@ -98,32 +103,18 @@
     </div>
     <!-- Search & Order Kanan -->
     <div class="flex items-center gap-3 pr-2 md:pr-6 flex-shrink-0">
-      <!-- Icon button (tambahkan isi button jika perlu) -->
-      <button class="text-gray-500 hover:text-green-600 focus:outline-none">
-        <!-- <i class="your-icon-class"></i> -->
-      </button>
-
       <!-- Form wrapper untuk tombol Login -->
       <form action="{{ route('login') }}" method="GET" class="hidden md:block">
-        <button
-          type="submit"
-          class="bg-[#8BA870]
-                   text-white
-                   rounded-full
-                   px-5 py-1.5
-                   font-medium text-sm
-                   hover:bg-[#7a965e]
-                   transition">
+        <button type="submit" class="bg-[#8BA870] text-white rounded-full px-5 py-1.5 font-medium text-sm hover:bg-[#7a965e] transition">
           Login
         </button>
       </form>
     </div>
 
-    </div>
     <!-- Hamburger Menu (Mobile) -->
-    <div class="md:hidden flex items-center ml-2">
-      <button id="hamburger-btn" class="text-gray-600 focus:outline-none">
-        <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+    <div class="md:hidden flex items-center ml-2 mr-4">
+      <button id="hamburger-btn" class="text-white bg-[#8BA870]/80 hover:bg-[#8BA870] focus:outline-none rounded-lg p-2 transition-all duration-200 active:scale-95 active:bg-[#7a965e] transform hover:scale-105">
+        <svg class="h-6 w-6 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
       </button>
@@ -162,7 +153,7 @@
       <h1 class="text-white text-4xl md:text-6xl font-extrabold mb-4 drop-shadow-lg">Kue Pandan Asli</h1>
       <p class="text-white text-lg md:text-2xl font-medium drop-shadow mb-8 max-w-2xl text-center">Kue Ijo Adalah Kue tradisional Indonesia, cocok untuk semua acara spesial Anda.</p>
       <a href="https://api.whatsapp.com/send/?phone=6282131338971&text=Hai+admin+%2APandan+Asli+Malang%2A%2C+perkenalan+nama+saya+%28isi+nama+anda%29+.+Saya+ingin+..&type=phone_number&app_absent=0"
-        class="bg-white text-[#7a965e] font-semibold px-8 py-3 rounded-full shadow hover:bg-[#8BA870] hover:text-white transition text-lg border border-[#8BA870]">Pesan
+        class="bg-white text-[#7a965e] font-semibold px-8 py-3 rounded-full shadow hover:bg-[#8BA870] hover:text-white transition-all duration-300 text-lg border border-[#8BA870] transform hover:scale-105 active:scale-95 hover:shadow-xl active:shadow-md">Pesan
         Sekarang</a>
     </div>
     <div class="absolute inset-0 bg-gradient-to-t from-[#8BA870]/40 to-transparent"></div>
@@ -250,10 +241,10 @@
   </section>
 
   <!-- Products Section -->
-  <section id="produk-kami" class="w-full bg-white py-8">
+  <section id="produk-kami" class="w-full bg-white pt-4 pb-8">
     <div class="w-[90%] max-w-7xl mx-auto" x-data="{ kategori: 'produk' }">
       <!-- Section Header -->
-      <div class="text-center mb-8">
+      <div class="text-center mb-6">
         <span class="text-[#8BA870] font-medium tracking-wider text-sm mb-3 block">PRODUK UNGGULAN</span>
         <h2 class="text-4xl md:text-5xl font-bold text-[#2C3E50] mb-6">Produk Kami</h2>
         <p class="text-gray-600 max-w-3xl mx-auto text-lg leading-relaxed">
@@ -269,7 +260,14 @@
       </div>
 
       <!-- Produk: Kategori Produk -->
-      <div x-show="kategori === 'produk'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-12 md:py-20" data-aos="zoom-in">
+      <div x-show="kategori === 'produk'" 
+           x-transition:enter="transition ease-out duration-500"
+           x-transition:enter-start="opacity-0 transform scale-95"
+           x-transition:enter-end="opacity-100 transform scale-100"
+           x-transition:leave="transition ease-in duration-300"
+           x-transition:leave-start="opacity-100 transform scale-100"
+           x-transition:leave-end="opacity-0 transform scale-95"
+           class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-8 md:py-12" data-aos="zoom-in">
         <!-- Product 1: Kue Ijo -->
         <div
           class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
@@ -401,7 +399,7 @@
         <div
           class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div class="relative overflow-hidden">
-            <img src="xxx"
+            <img src="{{ asset('assets/homepage/product/kue-ubi-nanas.jpeg') }}"
               alt="Kue Ubi Nanas"
               class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
           </div>
@@ -458,14 +456,21 @@
       </div>
 
       <!-- Produk: Kategori Hampers -->
-      <div x-show="kategori === 'hampers'" x-cloak class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-12 md:py-20" data-aos="zoom-in">
+      <div x-show="kategori === 'hampers'" 
+           x-transition:enter="transition ease-out duration-500"
+           x-transition:enter-start="opacity-0 transform translate-y-4"
+           x-transition:enter-end="opacity-100 transform translate-y-0"
+           x-transition:leave="transition ease-in duration-300"
+           x-transition:leave-start="opacity-100 transform translate-y-0"
+           x-transition:leave-end="opacity-0 transform translate-y-4"
+           class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-8 md:py-12">
         
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div class="relative overflow-hidden">
             <img src="{{ asset('assets/homepage/product/hampers-a.jpg') }}" alt="Hampers A (Anggun)" loading="lazy" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
             <div class="absolute top-3 right-3 bg-[#8BA870] text-white px-2 py-1 rounded-full text-xs font-medium">Hampers</div>
           </div>
-          <div class="p-5">
+          <div class="p-5" data-aos="fade-left">
             <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Hampers A (Anggun)</h3>
             <p class="text-gray-600 text-sm mb-3 line-clamp-2">Paket kue pandan spesial untuk hadiah Lebaran, lengkap dengan kemasan eksklusif dan kartu ucapan.</p>
             <div class="flex items-center justify-between">
@@ -492,7 +497,7 @@
         
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div class="relative overflow-hidden">
-            <img src="xxx" alt="Hampers C (Cantik)" loading="lazy" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
+            <img src="{{ asset('assets/homepage/product/hampers-c.png') }}" alt="Hampers C (Cantik)" loading="lazy" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
             <div class="absolute top-3 right-3 bg-[#8BA870] text-white px-2 py-1 rounded-full text-xs font-medium">Hampers</div>
           </div>
           <div class="p-5">
@@ -507,7 +512,14 @@
       </div>
 
       <!-- Produk: Kategori Tumpeng -->
-      <div x-show="kategori === 'tumpeng'" x-cloak class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-12 md:py-20" data-aos="zoom-in">
+      <div x-show="kategori === 'tumpeng'" 
+           x-transition:enter="transition ease-out duration-500"
+           x-transition:enter-start="opacity-0 transform -translate-x-4"
+           x-transition:enter-end="opacity-100 transform translate-x-0"
+           x-transition:leave="transition ease-in duration-300"
+           x-transition:leave-start="opacity-100 transform translate-x-0"
+           x-transition:leave-end="opacity-0 transform -translate-x-4"
+           class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-8 md:py-12" data-aos="zoom-in">
         
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div class="relative overflow-hidden">
@@ -559,7 +571,7 @@
             <!-- Testimonial 1 -->
             <div class="min-w-full px-4">
               <div class="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center">
-                <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Testimoni 1" loading="lazy"
+                <img src="{{ asset('assets/homepage/testimonial/testimoni-3.png') }}" alt="Testimoni 1" loading="lazy"
                   class="w-20 h-20 rounded-full object-cover mb-4 border-4 border-[#8BA870]">
                 <div class="flex mb-2">
                   <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
@@ -591,7 +603,7 @@
             <!-- Testimonial 2 -->
             <div class="min-w-full px-4">
               <div class="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center">
-                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Testimoni 2" loading="lazy"
+                <img src="{{ asset('assets/homepage/testimonial/testimoni-2.png') }}" alt="Testimoni 2" loading="lazy"
                   class="w-20 h-20 rounded-full object-cover mb-4 border-4 border-[#8BA870]">
                 <div class="flex mb-2">
                   <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
@@ -623,7 +635,7 @@
             <!-- Testimonial 3 -->
             <div class="min-w-full px-4">
               <div class="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center">
-                <img src="https://randomuser.me/api/portraits/women/65.jpg" alt="Testimoni 3" loading="lazy"
+                <img src="{{ asset('assets/homepage/testimonial/testimoni-1.png') }}" alt="Testimoni 3" loading="lazy"
                   class="w-20 h-20 rounded-full object-cover mb-4 border-4 border-[#8BA870]">
                 <div class="flex mb-2">
                   <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
@@ -649,7 +661,7 @@
                 </div>
                 <p class="text-gray-700 text-center mb-4">"Pandan brownies-nya unik, rasa pandan dan
                   cokelatnya pas banget! Pengiriman juga cepat dan aman."</p>
-                <span class="font-semibold text-[#2C3E50]">Sari, Jakarta</span>
+                <span class="font-semibold text-[#2C3E50]">Adhitya, Denpasar</span>
               </div>
             </div>
           </div>
@@ -690,7 +702,7 @@
         <!-- Outlet Info -->
         <div class="w-full md:w-1/2 flex flex-col gap-4">
           <img id="outlet-img" loading="lazy"
-            src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80"
+            src="{{ asset('assets/homepage/b1.jpg') }}"
             alt="Outlet Surabaya" class="w-full h-36 object-cover rounded-xl mb-2 shadow">
           <h3 id="outlet-title" class="text-2xl font-bold text-[#2C3E50] mb-1">Pusat Surabaya</h3>
           <p id="outlet-address" class="text-gray-700 mb-1">Jalan Lebak Jaya II no. 26A Gading, Tambaksari, Surabaya, Jawa Timur 60134 (Rumah pagar hitam)</p>
@@ -772,5 +784,16 @@
       </div>
     </div>
   </footer>
+
+  <!-- Pass asset URLs to JavaScript -->
+  <script>
+    window.assetUrls = {
+      outletImages: {
+        surabaya: "{{ asset('assets/homepage/b1.jpg') }}",
+        malang: "{{ asset('assets/homepage/b2.jpg') }}",
+        denpasar: "{{ asset('assets/homepage/b3.jpg') }}"
+      }
+    };
+  </script>
 </body>
 </html>
