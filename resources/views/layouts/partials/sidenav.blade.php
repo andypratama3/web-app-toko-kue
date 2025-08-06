@@ -177,7 +177,7 @@
 
                 @role('kurir')
                     <li class="mt-0.5 w-full">
-                        <a class="dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if (request()->routeIs('kurir.customers.*')) bg-blue-500/13 @endif"
+                        <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if (request()->routeIs('kurir.customers.*')) bg-blue-500/13 @endif"
                             href="{{ route('kurir.customers.index') }}" data-tooltip="Data Customer">
                             <div class="mr-2 sidebar-icon-container">
                                 <i class="text-red-600 fas fa-book"></i>
