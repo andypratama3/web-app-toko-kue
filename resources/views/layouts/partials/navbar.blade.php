@@ -1,5 +1,5 @@
 {{-- FIXED: Fixed navbar with proper alignment between breadcrumb and profile --}}
-<nav id="navbar-main" class="fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-0 py-0 transition-all ease-in shadow-none duration-250 lg:flex-nowrap lg:justify-start" navbar-main navbar-scroll="false">
+<nav id="navbar-main" class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-0 py-0 transition-all ease-in duration-300 lg:flex-nowrap lg:justify-start bg-greenlight" navbar-main navbar-scroll="true">
     <div class="flex items-center justify-between w-full h-20 px-6">
 
       {{-- Left side: Mobile toggle + Breadcrumb --}}
