@@ -11,3 +11,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // Note: Sidebar functionality is now handled by sidenav-burger.js
     // This file is kept for other custom functionality that doesn't conflict with sidebar
 });
+
+window.addEventListener("load", function () {
+    const preloader = document.getElementById("preloader");
+    preloader.style.display = "none";
+});

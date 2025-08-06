@@ -5,8 +5,13 @@
     <!-- PRELOADER -->
     <script>
         window.addEventListener("load", function() {
+            // Ambil elemen preloader
             const preloader = document.getElementById("preloader");
-            preloader.style.display = "none";
+
+            // Atur jeda waktu sebelum menyembunyikan preloader
+            setTimeout(function() {
+                preloader.style.display = "none";
+            }, 1500); // <-- Atur delay di sini (dalam milidetik). 1000 = 1 detik.
         });
     </script>
     <div id="preloader" class="fixed top-0 left-0 w-full h-full bg-white flex justify-center items-center z-50">
