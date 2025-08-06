@@ -62,11 +62,11 @@
                 @endphp
                 <div class="mb-2">
                   <span class="font-semibold text-gray-900">{{ $user->name ?? 'User' }}</span>
-                  <span class="block text-xs text-gray-500 mt-1">Region: {{ $user->region->name ?? 'Tidak ada region' }}</span>
+                  <span class="block text-xs text-gray-500 mt-1">📍 Region: {{ $user->region->name ?? 'Tidak ada region' }}</span>
                   <span class="block text-xs text-gray-500">Email: {{ $user->email ?? 'Tidak ada email' }}</span>
                 </div>
                 <div class="pt-2 border-t border-gray-100">
-                  <span class="font-semibold text-gray-900 text-sm">Last Activity:</span>
+                  <span class="font-semibold text-gray-900 text-sm">👨🏻‍💻 Last Activity:</span>
                   <span class="block mt-1 text-sm text-gray-700 font-medium">{{ $lastLogin }}</span>
                 </div>
               </div>
@@ -78,10 +78,10 @@
                   $profileUrl = url('/kurir/profile');
                 }
               @endphp
-              <a href="{{ $profileUrl }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Profile</a>
+              <a href="{{ $profileUrl }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">👤 My Profile</a>
               <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" class="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100">Logout</button>
+                <button type="submit" class="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100">🏃 Logout</button>
               </form>
             </div>
           </li>
