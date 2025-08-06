@@ -4,11 +4,20 @@
 <head>
   <!-- Google Tag Manager -->
   <script>
-    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-PRXFHTTN');
+    (function(w, d, s, l, i) {
+      w[l] = w[l] || [];
+      w[l].push({
+        'gtm.start': new Date().getTime(),
+        event: 'gtm.js'
+      });
+      var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s),
+        dl = l != 'dataLayer' ? '&l=' + l : '';
+      j.async = true;
+      j.src =
+        'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+      f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', 'GTM-PRXFHTTN');
   </script>
   <!-- End Google Tag Manager -->
 
@@ -16,25 +25,28 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-6GHRM0X2ZS"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
     gtag('js', new Date());
     gtag('config', 'G-6GHRM0X2ZS');
   </script>
-    
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="keywords" content="Kue, Kue Pandan, Kue Pandan Asli, Kue Pandan Ijo, Kue Pandan Tradisional, Kue Tradisional, Kue Ijo, Malang, Kue Malang, Oleh oleh Malang, Kue Ijo Alami, Kue Natural, Kue Asli Pandan, Kue Ketan, Kue Pulut, Kue Singkong, Kelapa, Kelapa parut, Kue Ongol, Kue Aren, Kue Talang, Kue Estetik, Kue Srikaya, Kue Coklat, Kue Manis, Kue Ubi Nanas, Kue Ubi, Kue Nanas, Lumpur Surga, Tumpeng Kue, Tumpeng Kue Tradisional, Paket Hampers, Paket Tumpeng, Kue Enak, Kue Lezat, Kue Kekinian, Kue Instagram, Kue Estetik, Camilan Kekinian, Camilan Instgramable, Kue Photogenic, Kue Lembut, Kue Pandan Wangi, Kue Pandan Lembut, Kue Homemade, Buah Tangan Malang, Kue Kuno, Kue 100% Pandan, Kue Delicious, Kue Santan, Kue Gurih, Kue Asin, Kue Tanpa Pengawet, Bahan Baku Alami, Makanan sehat, Saus Srikaya, Kue Srikaya, Kue Basah, Kue Kenyal, Kue Gula Jawa, Saus Gula Jawa, Kue Hijau, Asli Pandan, Kue Ubi Madu, Pandan Homemade">
   <meta name="description" content="Kue Pandan Asli, kami adalah perusahaan kuliner yang berfokus pada produksi dan pengembangan kue tradisional berbahan alami tanpa campuran pengawet dan pewarna. Kami berfokus pada bahan bahan alami mulai dari pewarna kami menggunakan 100% pandan pada seluruh produk kami. Kami berkomitmen menghadirkan kue tradisional dengan bahan baku premium, alami dan kekinian.">
-  
+
   @section('title', 'Homepage')
   @include('layouts.headicon')
   @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/script_homepage.js'])
-  
+
   <!-- External Scripts -->
   <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/dist/medium-zoom.min.js"></script>
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-  
+
   <!-- External Styles -->
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
@@ -48,7 +60,7 @@
   <!-- Google Tag Manager (noscript) -->
   <noscript>
     <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PRXFHTTN"
-            height="0" width="0" style="display:none;visibility:hidden"></iframe>
+      height="0" width="0" style="display:none;visibility:hidden"></iframe>
   </noscript>
   <!-- End Google Tag Manager (noscript) -->
 
@@ -194,16 +206,20 @@
                 <span x-show="!open">
                   Kue Pandan Asli, kami adalah perusahaan kuliner yang berfokus pada produksi dan pengembangan kue tradisional berbahan alami tanpa campuran pengawet dan pewarna. Kami berfokus pada bahan bahan alami mulai dari pewarna kami menggunakan 100% pandan pada seluruh produk kami. Kami berkomitmen menghadirkan kue tradisional dengan bahan baku premium, alami dan kekinian.<br>
                   <button @click="open = true" class="inline-flex items-center gap-2 bg-[#8BA870] text-white px-4 py-1.5 rounded-full font-semibold shadow hover:bg-[#7a965e] transition mt-8 group">
-                    <svg class="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                    <svg class="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
                     <span>Selengkapnya</span>
                   </button>
                 </span>
                 <span x-show="open">
                   Kue Pandan Asli, kami adalah perusahaan kuliner yang berfokus pada produksi dan pengembangan kue tradisional berbahan alami tanpa campuran pengawet dan pewarna. Kami berfokus pada bahan bahan alami mulai dari pewarna kami menggunakan 100% pandan pada seluruh produk kami. Kami berkomitmen menghadirkan kue tradisional dengan bahan baku premium, alami dan kekinian.<br><br>
                   Kue Pandan Asli mengelakan kembali warisan kuliner nusantara melalui produk-produk unggulan seperti Kue Ijo Pandan, Kue Pulut Srikaya, Kue Lumpur Surga, Kue Ongol, Kue Ubi Nanas dengan mengedepankan 100% bahan alami yang telah melalui quality control tim kami mulai dari pemilihan daun pandan yang hijau tua segar, gula jawa murni dari suplier sampai dengan pemilihan nanas langsung dari petani lokal. Mengangkat Kue Tradisional yang dikemas secara premium, cantik dan estetik agar sesuai dengan perkembangan zaman.<br><br>
-                  Kami percaya bahwasanya makanan tidak hanya soal rasa, tetapi juga pengalaman dan nilai budaya. Oleh karena itu, setiap produk kami dikemas dengan visual yang photogenic dan instagramable, menjadikannya pilihan utama sebagai oleh-oleh yang tersedia mulai dari Paket Hampers A (Anggun),  Hampers B (Bagus) dan Hampers C (Cantik) dan Paket Tumpeng kue tradisional mulai dari Tumpeng Mini dan Tumpeng Besar yang cocok untuk berbagai acara.<br>
+                  Kami percaya bahwasanya makanan tidak hanya soal rasa, tetapi juga pengalaman dan nilai budaya. Oleh karena itu, setiap produk kami dikemas dengan visual yang photogenic dan instagramable, menjadikannya pilihan utama sebagai oleh-oleh yang tersedia mulai dari Paket Hampers A (Anggun), Hampers B (Bagus) dan Hampers C (Cantik) dan Paket Tumpeng kue tradisional mulai dari Tumpeng Mini dan Tumpeng Besar yang cocok untuk berbagai acara.<br>
                   <button @click="open = false" class="inline-flex items-center gap-2 bg-gray-200 text-[#8BA870] px-4 py-1.5 rounded-full font-semibold shadow hover:bg-gray-300 transition mt-8 group">
-                    <svg class="w-4 h-4 text-[#8BA870] group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16l-4-4m0 0l4-4m-4 4h18"/></svg>
+                    <svg class="w-4 h-4 text-[#8BA870] group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+                    </svg>
                     <span>Tutup Selengkapnya</span>
                   </button>
                 </span>
@@ -235,8 +251,8 @@
             </ul>
           </div>
         </div>
-        </div>
       </div>
+    </div>
     </div>
   </section>
 
@@ -260,14 +276,14 @@
       </div>
 
       <!-- Produk: Kategori Produk -->
-      <div x-show="kategori === 'produk'" 
-           x-transition:enter="transition ease-out duration-500"
-           x-transition:enter-start="opacity-0 transform scale-95"
-           x-transition:enter-end="opacity-100 transform scale-100"
-           x-transition:leave="transition ease-in duration-300"
-           x-transition:leave-start="opacity-100 transform scale-100"
-           x-transition:leave-end="opacity-0 transform scale-95"
-           class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-8 md:py-12" data-aos="zoom-in">
+      <div x-show="kategori === 'produk'"
+        x-transition:enter="transition ease-out duration-500"
+        x-transition:enter-start="opacity-0 transform scale-95"
+        x-transition:enter-end="opacity-100 transform scale-100"
+        x-transition:leave="transition ease-in duration-300"
+        x-transition:leave-start="opacity-100 transform scale-100"
+        x-transition:leave-end="opacity-0 transform scale-95"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-8 md:py-12" data-aos="zoom-in">
         <!-- Product 1: Kue Ijo -->
         <div
           class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
@@ -285,7 +301,7 @@
             <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Ijo</h3>
             <div x-data="{ open: false }">
               <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
-                Kue Ijo terbuat dari tepung beras  yang telah diayak lalu dicampur dengan campuran santan kelapa fresh dan air pandan asli. Kue ini memiliki tekstur yang kenyal dan lembut bersamaan ketika dikunyah didalam mulut. Dibalut taburan dengan kelapa parut segar menambah cita rasa gurih dan manis yang menjadikan kue Ijo cocok dinikmati pada suasana apapun.
+                Kue Ijo terbuat dari tepung beras yang telah diayak lalu dicampur dengan campuran santan kelapa fresh dan air pandan asli. Kue ini memiliki tekstur yang kenyal dan lembut bersamaan ketika dikunyah didalam mulut. Dibalut taburan dengan kelapa parut segar menambah cita rasa gurih dan manis yang menjadikan kue Ijo cocok dinikmati pada suasana apapun.
               </p>
               <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
                 <span x-show="!open">Selengkapnya</span>
@@ -362,7 +378,7 @@
           </div>
         </div>
 
-        <!-- Product 4: Kue Pulut -->        
+        <!-- Product 4: Kue Pulut -->
         <div
           class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div class="relative overflow-hidden">
@@ -395,7 +411,7 @@
           </div>
         </div>
 
-        <!-- Product 5: Kue Ubi Nanas -->        
+        <!-- Product 5: Kue Ubi Nanas -->
         <div
           class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div class="relative overflow-hidden">
@@ -456,15 +472,15 @@
       </div>
 
       <!-- Produk: Kategori Hampers -->
-      <div x-show="kategori === 'hampers'" 
-           x-transition:enter="transition ease-out duration-500"
-           x-transition:enter-start="opacity-0 transform translate-y-4"
-           x-transition:enter-end="opacity-100 transform translate-y-0"
-           x-transition:leave="transition ease-in duration-300"
-           x-transition:leave-start="opacity-100 transform translate-y-0"
-           x-transition:leave-end="opacity-0 transform translate-y-4"
-           class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-8 md:py-12">
-        
+      <div x-show="kategori === 'hampers'"
+        x-transition:enter="transition ease-out duration-500"
+        x-transition:enter-start="opacity-0 transform translate-y-4"
+        x-transition:enter-end="opacity-100 transform translate-y-0"
+        x-transition:leave="transition ease-in duration-300"
+        x-transition:leave-start="opacity-100 transform translate-y-0"
+        x-transition:leave-end="opacity-0 transform translate-y-4"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-8 md:py-12">
+
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div class="relative overflow-hidden">
             <img src="{{ asset('assets/homepage/product/hampers-a.jpg') }}" alt="Hampers A (Anggun)" loading="lazy" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
@@ -479,7 +495,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div class="relative overflow-hidden">
             <img src="{{ asset('assets/homepage/product/hampers-b.jpg') }}" alt="Hampers B (Bagus)" loading="lazy" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
@@ -494,7 +510,7 @@
             </div>
           </div>
         </div>
-        
+
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div class="relative overflow-hidden">
             <img src="{{ asset('assets/homepage/product/hampers-c.png') }}" alt="Hampers C (Cantik)" loading="lazy" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
@@ -512,15 +528,15 @@
       </div>
 
       <!-- Produk: Kategori Tumpeng -->
-      <div x-show="kategori === 'tumpeng'" 
-           x-transition:enter="transition ease-out duration-500"
-           x-transition:enter-start="opacity-0 transform -translate-x-4"
-           x-transition:enter-end="opacity-100 transform translate-x-0"
-           x-transition:leave="transition ease-in duration-300"
-           x-transition:leave-start="opacity-100 transform translate-x-0"
-           x-transition:leave-end="opacity-0 transform -translate-x-4"
-           class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-8 md:py-12" data-aos="zoom-in">
-        
+      <div x-show="kategori === 'tumpeng'"
+        x-transition:enter="transition ease-out duration-500"
+        x-transition:enter-start="opacity-0 transform -translate-x-4"
+        x-transition:enter-end="opacity-100 transform translate-x-0"
+        x-transition:leave="transition ease-in duration-300"
+        x-transition:leave-start="opacity-100 transform translate-x-0"
+        x-transition:leave-end="opacity-0 transform -translate-x-4"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-8 md:py-12" data-aos="zoom-in">
+
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div class="relative overflow-hidden">
             <img src="{{ asset('assets/homepage/product/tumpeng-mini.jpg') }}" alt="Tumpeng Mini" loading="lazy" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
@@ -535,7 +551,7 @@
             </div>
           </div>
         </div>
-       
+
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
           <div class="relative overflow-hidden">
             <img src="{{ asset('assets/homepage/product/tumpeng-besar.jpg') }}" alt="Tumpeng Besar" loading="lazy" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
@@ -796,4 +812,5 @@
     };
   </script>
 </body>
+
 </html>
