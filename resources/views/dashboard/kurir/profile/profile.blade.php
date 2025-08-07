@@ -5,20 +5,32 @@
 <div>
     <div class="p-0">
         <div class="space-y-10">
+            <!-- Success Message -->
+            @if (session('success'))
+                <div class="p-4 rounded-lg bg-green-50 border border-green-200">
+                    <p class="text-green-800">{{ session('success') }}</p>
+                </div>
+            @endif
+
+            <!-- Profile Information -->
             @if (Laravel\Fortify\Features::canUpdateProfileInformation())
                 <div class="p-6 rounded-lg shadow-sm bg-gray-50">
                     <h3 class="mb-4 text-lg font-semibold text-slate-700">Informasi Profil</h3>
-                    @livewire('profile.update-profile-information-form')
+                    <p class="mb-4 text-sm text-gray-600">Update your account's profile information and email address.</p>
+                    @include('dashboard.kurir.profile.update-profile-form')
                 </div>
             @endif
 
+            <!-- Update Password -->
             @if (Laravel\Fortify\Features::enabled(Laravel\Fortify\Features::updatePasswords()))
                 <div class="p-6 rounded-lg shadow-sm bg-gray-50">
                     <h3 class="mb-4 text-lg font-semibold text-slate-700">Ubah Password</h3>
-                    @livewire('profile.update-password-form')
+                    <p class="mb-4 text-sm text-gray-600">Ensure your account is using a long, random password to stay secure.</p>
+                    @include('dashboard.kurir.profile.update-password-form')
                 </div>
             @endif
 
+            <!-- Two Factor Authentication (Keep Livewire for this complex feature) -->
             @if (Laravel\Fortify\Features::canManageTwoFactorAuthentication())
                 <div class="p-6 rounded-lg shadow-sm bg-gray-50">
                     <h3 class="mb-4 text-lg font-semibold text-slate-700">Keamanan 2 Faktor</h3>
@@ -26,11 +38,13 @@
                 </div>
             @endif
 
+            <!-- Logout Other Browser Sessions (Keep Livewire for this complex feature) -->
             <div class="p-6 rounded-lg shadow-sm bg-gray-50">
                 <h3 class="mb-4 text-lg font-semibold text-slate-700">Logout dari Sesi Lain</h3>
                 @livewire('profile.logout-other-browser-sessions-form')
             </div>
 
+            <!-- Delete Account (Keep Livewire for this complex feature) -->
             @if (Laravel\Jetstream\Jetstream::hasAccountDeletionFeatures())
                 <div class="p-6 rounded-lg shadow-sm bg-red-50">
                     <h3 class="mb-4 text-lg font-semibold text-red-600">Hapus Akun</h3>

@@ -41,6 +41,8 @@ Route::middleware([
 
         // Profile admin
         Route::get('profile', [AdminDashboardController::class, 'profile'])->name('profile');
+        Route::put('profile', [AdminDashboardController::class, 'updateProfile'])->name('profile.update');
+        Route::put('profile/password', [AdminDashboardController::class, 'updatePassword'])->name('profile.password');
 
         // Produk (resource)
         Route::resource('products', ProductController::class);
@@ -62,6 +64,8 @@ Route::middleware([
 
         // Profile kurir
         Route::get('profile', [KurirDashboardController::class, 'profile'])->name('profile');
+        Route::put('profile', [KurirDashboardController::class, 'updateProfile'])->name('profile.update');
+        Route::put('profile/password', [KurirDashboardController::class, 'updatePassword'])->name('profile.password');
 
         // Modal create customer (dalam konteks region)
         Route::get('dashboard/{region}/create', [KurirCustomerController::class, 'create'])

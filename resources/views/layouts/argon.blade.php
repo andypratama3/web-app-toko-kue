@@ -29,6 +29,9 @@
     <!-- Select2 -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- Livewire Styles -->
+    @livewireStyles
 </head>
 
 <body class="m-0 overflow-x-hidden font-sans text-base antialiased font-normal dark:bg-slate-900 leading-default bg-gray-50 text-slate-500">
@@ -51,6 +54,11 @@
         @include('layouts.partials.content')
         @include('layouts.partials.footer')
     </main>
+
+    @stack('modals')
+
+    <!-- Livewire Scripts -->
+    @livewireScripts
 </body>
 
 
