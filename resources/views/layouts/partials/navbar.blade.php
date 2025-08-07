@@ -1,5 +1,5 @@
 {{-- FIXED: Fixed navbar with proper alignment between breadcrumb and profile --}}
-<nav id="navbar-main" class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-0 py-0 transition-all ease-in duration-300 lg:flex-nowrap lg:justify-start bg-greenlight" navbar-main navbar-scroll="true">
+<nav id="navbar-main" class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-0 py-0 transition-all ease-in duration-300 lg:flex-nowrap lg:justify-start bg-greenlight dark:shadow-none dark:bg-slate-850" navbar-main navbar-scroll="true">
     <div class="flex items-center justify-between w-full h-20 px-6">
 
       {{-- Left side: Mobile toggle + Breadcrumb --}}
@@ -34,6 +34,17 @@
          <h6 class="mb-0 font-bold text-white capitalize">@yield('page_title', 'Dashboard')</h6>
        </div>
       </div>
+
+      {{-- Toogle Lightmode - Darkmode --}}
+      <label for="theme-toggle-checkbox" class="relative inline-flex items-center cursor-pointer">
+          <input type="checkbox" value="" id="theme-toggle-checkbox" class="sr-only peer" dark-toggle>
+          <div class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:bg-blue-600"></div>
+          <div
+              class="absolute top-0.5 left-[2px] bg-white border-gray-300 border rounded-full h-5 w-5 transition-all peer-checked:translate-x-full flex items-center justify-center">
+              <span id="theme-toggle-light-icon" class="text-sm">☀️</span>
+              <span id="theme-toggle-dark-icon" class="text-sm hidden">🌙</span>
+          </div>
+      </label>
 
       {{-- Right side: Profile section - visible on all devices with proper margin --}}
       <div class="flex items-center justify-end h-full pr-4">
