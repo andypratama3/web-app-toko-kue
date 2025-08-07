@@ -245,10 +245,20 @@
     /* Mobile navbar container */
     #navbar-main > div {
         padding-left: 1.5rem !important; /* Slightly increased for mobile */
-        padding-right: 1rem !important;
+        padding-right: 1.5rem !important; /* Increased right padding for mobile */
         height: 5rem !important;
         min-height: 5rem !important;
         max-height: 5rem !important;
+    }
+    
+    /* Mobile profile section positioning */
+    #navbar-main .flex.items-center.justify-end {
+        padding-right: 0.1rem !important; /* Reduced right padding to move profile more to the right */
+    }
+    
+    /* Mobile profile avatar container */
+    #navbar-main .relative.flex.items-center.px-3 {
+        margin-right: 0.01rem !important; /* Reduced margin to move profile picture more to the right within red box */
     }
     
     /* Reset icon containers for mobile */
@@ -297,12 +307,12 @@
         z-index: 9999 !important; /* Very high z-index to appear above all content */
         position: fixed !important; /* Use fixed positioning */
         top: 4rem !important; /* Position below navbar */
-        right: 0.5rem !important; /* Align to right edge with small margin */
-        left: 0.5rem !important; /* Add left margin for mobile */
+        right: 0.75rem !important; /* Align with new mobile profile position moved more to the right */
+        left: 1rem !important; /* Add left margin for mobile */
         transform: none !important; /* Remove transform to prevent positioning issues */
         margin-top: 0 !important;
         width: auto !important; /* Auto width for mobile */
-        max-width: calc(100vw - 1rem) !important; /* Prevent overflow on mobile */
+        max-width: calc(100vw - 1.75rem) !important; /* Prevent overflow on mobile with updated margins */
     }
     
     /* Profile dropdown styling improvements for mobile */
@@ -375,7 +385,17 @@ body {
     min-height: 5rem !important;
     max-height: 5rem !important;
     padding-left: 2.5rem !important; /* Increased left padding to move breadcrumb right */
-    padding-right: 1.5rem !important;
+    padding-right: 2rem !important; /* Increased right padding to prevent profile from reaching edge */
+}
+
+/* Profile section positioning - ensure it stays within bounds */
+#navbar-main .flex.items-center.justify-end {
+    padding-right: 1rem !important; /* Additional right padding for profile section */
+}
+
+/* Profile avatar container - prevent edge positioning */
+#navbar-main .relative.flex.items-center.px-3 {
+    margin-right: 0.5rem !important; /* Additional margin to keep profile away from edge */
 }
 
 /* Sidebar toggle button styling */
@@ -421,7 +441,7 @@ body {
         z-index: 9999 !important; /* Very high z-index to appear above all content */
         position: fixed !important; /* Use fixed positioning */
         top: 4rem !important; /* Position below navbar */
-        right: 1rem !important; /* Align to right edge */
+        right: 2rem !important; /* Align with new profile position */
         transform: none !important; /* Remove transform to prevent positioning issues */
         margin-top: 0 !important;
     }

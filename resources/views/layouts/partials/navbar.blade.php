@@ -35,11 +35,11 @@
        </div>
       </div>
 
-      {{-- Right side: Profile section - visible on all devices --}}
-      <div class="flex items-center justify-end h-full">
+      {{-- Right side: Profile section - visible on all devices with proper margin --}}
+      <div class="flex items-center justify-end h-full pr-4">
         <ul class="flex flex-row items-center justify-end pl-0 mb-0 list-none h-full">
           <!-- Avatar with dropdown settings -->
-          <li class="relative flex items-center px-2 group h-full">
+          <li class="relative flex items-center px-3 group h-full">
             <div class="w-8 h-8 overflow-hidden border-2 border-white rounded-full cursor-pointer">
               @php
                 $avatarSrc = '/assets/icon/admin.png';
