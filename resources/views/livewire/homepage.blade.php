@@ -258,147 +258,203 @@
     </div>
   </section>
 
-  <!-- Products Section -->
-  <section id="produk-kami" class="w-full bg-white pt-4 pb-8">
-    <div class="w-[90%] max-w-7xl mx-auto" x-data="{ kategori: 'produk' }">
-      <!-- Section Header -->
-      <div class="text-center mb-6">
-        <span class="text-[#8BA870] font-medium tracking-wider text-sm mb-3 block">PRODUK UNGGULAN</span>
-        <h2 class="text-4xl md:text-5xl font-bold text-[#2C3E50] mb-6">Produk Kami</h2>
-        <p class="text-gray-600 max-w-3xl mx-auto text-lg leading-relaxed">
-          Nikmati berbagai varian kue pandan berkualitas tinggi yang dibuat dengan resep tradisional dan
-          bahan-bahan pilihan
-        </p>
+<!-- Products Section -->
+<section id="produk-kami" class="w-full bg-white pt-4 pb-8">
+  <div class="w-[90%] max-w-7xl mx-auto" x-data="{ kategori: 'produk' }">
+    <!-- Section Header -->
+    <div class="text-center mb-6">
+      <span class="text-[#8BA870] font-medium tracking-wider text-sm mb-3 block">PRODUK UNGGULAN</span>
+      <h2 class="text-4xl md:text-5xl font-bold text-[#2C3E50] mb-6">Produk Kami</h2>
+      <p class="text-gray-600 max-w-3xl mx-auto text-lg leading-relaxed">
+        Nikmati berbagai varian kue pandan berkualitas tinggi yang dibuat dengan resep tradisional dan
+        bahan-bahan pilihan
+      </p>
+    </div>
+    <!-- Tombol Filter Kategori -->
+    <div class="flex justify-center gap-4 mb-4">
+      <button @click="kategori = 'produk'" :class="kategori === 'produk' ? 'bg-[#8BA870] text-white' : 'bg-gray-100 text-[#2C3E50]'" class="px-5 py-2 rounded-full font-semibold shadow transition">Produk</button>
+      <button @click="kategori = 'hampers'" :class="kategori === 'hampers' ? 'bg-[#8BA870] text-white' : 'bg-gray-100 text-[#2C3E50]'" class="px-5 py-2 rounded-full font-semibold shadow transition">Hampers</button>
+      <button @click="kategori = 'tumpeng'" :class="kategori === 'tumpeng' ? 'bg-[#8BA870] text-white' : 'bg-gray-100 text-[#2C3E50]'" class="px-5 py-2 rounded-full font-semibold shadow transition">Tumpeng</button>
+    </div>
+
+    <!-- Kategori: Produk -->
+    <div x-show="kategori === 'produk'"
+      x-transition:enter="transition ease-out duration-500"
+      x-transition:enter-start="opacity-0 transform scale-95"
+      x-transition:enter-end="opacity-100 transform scale-100"
+      x-transition:leave="transition ease-in duration-300"
+      x-transition:leave-start="opacity-100 transform scale-100"
+      x-transition:leave-end="opacity-0 transform scale-95"
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-8 md:py-12">
+      
+      <!-- Product 1: Kue Ijo with Dropdown -->
+      <div 
+        class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative" 
+        data-aos="zoom-in"
+        x-data="{ 
+          open: false, 
+          prices: [
+            { label: 'Isi 3 Kemasan Mika', value: 9000 },
+            { label: 'Isi 5 Kemasan Mika', value: 15000 },
+            { label: 'Isi 12 Kemasan Thinwall', value: 36000 }
+          ],
+          selectedPrice: { label: 'Isi 3 Kemasan Mika', value: 9000 }
+        }"
+        :class="open ? 'z-30' : 'z-0'">
+        <div class="relative overflow-hidden rounded-t-2xl">
+          <img src="{{ asset('assets/homepage/product/kue-ijo.jpg') }}"
+            alt="Kue Ijo"
+            loading="lazy"
+            class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
+          <div class="absolute top-3 right-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+            Ala Carte
+          </div>
+        </div>
+        <div class="p-5">
+          <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Ijo</h3>
+          <div x-data="{ open: false }">
+            <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
+              Kue Ijo terbuat dari tepung beras yang telah diayak lalu dicampur dengan campuran santan kelapa fresh dan air pandan asli. Kue ini memiliki tekstur yang kenyal dan lembut bersamaan ketika dikunyah didalam mulut. Dibalut taburan dengan kelapa parut segar menambah cita rasa gurih dan manis yang menjadikan kue Ijo cocok dinikmati pada suasana apapun.
+            </p>
+            <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
+              <span x-show="!open">Selengkapnya</span>
+              <span x-show="open">Tutup</span>
+            </button>
+          </div>
+          <div class="flex items-center justify-between mt-4">
+            <div class="relative w-full">
+              <button @click="open = !open" class="flex items-center justify-between w-full px-3 py-2 text-left border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8BA870]">
+                <div>
+                  <span class="text-xs text-gray-500" x-text="selectedPrice.label"></span>
+                  <span class="block font-bold text-lg text-[#8BA870]">Rp <span x-text="selectedPrice.value.toLocaleString('id-ID')"></span></span>
+                </div>
+                <svg class="w-4 h-4 text-gray-500 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+              </button>
+              <div x-show="open" 
+                   @click.away="open = false" 
+                   x-transition
+                   class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                <ul>
+                  <template x-for="price in prices" :key="price.label">
+                    <li @click="selectedPrice = price; open = false" class="cursor-pointer hover:bg-gray-100 p-3">
+                      <span class="font-semibold text-gray-800" x-text="price.label"></span>
+                      <span class="block text-sm text-[#8BA870]">Rp <span x-text="price.value.toLocaleString('id-ID')"></span></span>
+                    </li>
+                  </template>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <!-- Tombol Filter Kategori (pindah ke bawah judul) -->
-      <div class="flex justify-center gap-4 mb-4">
-        <button @click="kategori = 'produk'" :class="kategori === 'produk' ? 'bg-[#8BA870] text-white' : 'bg-gray-100 text-[#2C3E50]'" class="px-5 py-2 rounded-full font-semibold shadow transition">Produk</button>
-        <button @click="kategori = 'hampers'" :class="kategori === 'hampers' ? 'bg-[#8BA870] text-white' : 'bg-gray-100 text-[#2C3E50]'" class="px-5 py-2 rounded-full font-semibold shadow transition">Hampers</button>
-        <button @click="kategori = 'tumpeng'" :class="kategori === 'tumpeng' ? 'bg-[#8BA870] text-white' : 'bg-gray-100 text-[#2C3E50]'" class="px-5 py-2 rounded-full font-semibold shadow transition">Tumpeng</button>
+
+      <!-- Product 2: Kue Lumpur Surga -->
+      <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="zoom-in">
+        <div class="relative overflow-hidden rounded-t-2xl">
+          <img src="{{ asset('assets/homepage/product/kue-lumpur-surga.jpg') }}"
+            alt="Kue Lumpur Surga"
+            loading="lazy"
+            class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
+          <div class="absolute top-3 right-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+            Ala Carte
+          </div>
+        </div>
+        <div class="p-5">
+          <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Lumpur Surga</h3>
+          <div x-data="{ open: false }">
+            <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
+              Kue yang memiliki dua lapisan yaitu lapisan bawah bewarna hijau yang dihasilkan dari air pandan asli dan lapisan atas mirip dengan vla yang terbuat dari santan. Kue yang memiliki tekstur lembut dan lumer dimulut sangat nikmat jika disantap dalam keadaan dingin. Memiliki Cita rasa manis dari kue nya dan gurih asin dari vla nya berpadu menghasilkan rasa nikmat yang nyaman ketika masuk dimulut.
+            </p>
+            <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
+              <span x-show="!open">Selengkapnya</span>
+              <span x-show="open">Tutup</span>
+            </button>
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-[#8BA870] font-bold text-lg">Rp 6.000</span>
+          </div>
+        </div>
       </div>
 
-      <!-- Produk: Kategori Produk -->
-      <div x-show="kategori === 'produk'"
-        x-transition:enter="transition ease-out duration-500"
-        x-transition:enter-start="opacity-0 transform scale-95"
-        x-transition:enter-end="opacity-100 transform scale-100"
-        x-transition:leave="transition ease-in duration-300"
-        x-transition:leave-start="opacity-100 transform scale-100"
-        x-transition:leave-end="opacity-0 transform scale-95"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-8 md:py-12" data-aos="zoom-in">
-        <!-- Product 1: Kue Ijo -->
-        <div
-          class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div class="relative overflow-hidden">
-            <img src="{{ asset('assets/homepage/product/kue-ijo.jpg') }}"
-              alt="Kue Ijo"
-              loading="lazy"
-              class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
-            <div
-              class="absolute top-3 right-3 bg-[#8BA870] text-white px-2 py-1 rounded-full text-xs font-medium">
-              Best Seller
-            </div>
+      <!-- Product 3: Kue Ongol with Dropdown -->
+      <div 
+        class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative" 
+        data-aos="zoom-in"
+        x-data="{ 
+          open: false, 
+          prices: [
+            { label: 'Isi 10 Kemasan Mika', value: 10000 },
+            { label: 'Isi 30 Kemasan Thinwall', value: 35000 }
+          ],
+          selectedPrice: { label: 'Isi 10 Kemasan Mika', value: 10000 }
+        }"
+        :class="open ? 'z-30' : 'z-0'">
+        <div class="relative overflow-hidden rounded-t-2xl">
+          <img src="{{ asset('assets/homepage/product/kue-ongol.jpg') }}"
+            alt="Kue Ongol"
+            loading="lazy"
+            class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
+          <div class="absolute top-3 right-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+            Ala Carte
           </div>
-          <div class="p-5">
-            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Ijo</h3>
-            <div x-data="{ open: false }">
-              <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
-                Kue Ijo terbuat dari tepung beras yang telah diayak lalu dicampur dengan campuran santan kelapa fresh dan air pandan asli. Kue ini memiliki tekstur yang kenyal dan lembut bersamaan ketika dikunyah didalam mulut. Dibalut taburan dengan kelapa parut segar menambah cita rasa gurih dan manis yang menjadikan kue Ijo cocok dinikmati pada suasana apapun.
-              </p>
-              <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
-                <span x-show="!open">Selengkapnya</span>
-                <span x-show="open">Tutup</span>
+        </div>
+        <div class="p-5">
+          <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Ongol Ongol</h3>
+          <div x-data="{ open: false }">
+            <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
+              Kue Ongol kami terbuat dari tepung tapioka yang ditambahkan gula merah jawa dan sedikit tambahan air pandan asli membuat warna kue ini bewarna coklat cantik. Kue yang memiliki tekstur kenyal dan legit dan terasa manis dimulut. Kue Ongol yang memiliki wangi khas gula jawa merah sangat cocok dipadukan dengan parutan kelapa segar yang akan memadukan antara gurih dan manis pada kue ini.
+            </p>
+            <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
+              <span x-show="!open">Selengkapnya</span>
+              <span x-show="open">Tutup</span>
+            </button>
+          </div>
+          <div class="flex items-center justify-between mt-4">
+            <div class="relative w-full">
+              <button @click="open = !open" class="flex items-center justify-between w-full px-3 py-2 text-left border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8BA870]">
+                <div>
+                  <span class="text-xs text-gray-500" x-text="selectedPrice.label"></span>
+                  <span class="block font-bold text-lg text-[#8BA870]">Rp <span x-text="selectedPrice.value.toLocaleString('id-ID')"></span></span>
+                </div>
+                <svg class="w-4 h-4 text-gray-500 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
               </button>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-[#8BA870] font-bold text-lg">Rp 85.000</span>
-              <!-- Tombol Pesan dinonaktifkan sementara -->
-              <!--
-  <button
-    class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
-    Pesan
-  </button>
-  -->
+              <div x-show="open"
+                  @click.away="open = false"
+                  x-transition
+                  class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                  <ul>
+                    <template x-for="price in prices" :key="price.label">
+                      <li @click="selectedPrice = price; open = false" class="cursor-pointer hover:bg-gray-100 p-3">
+                        <span class="font-semibold text-gray-800" x-text="price.label"></span>
+                        <span class="block text-sm text-[#8BA870]">Rp <span x-text="price.value.toLocaleString('id-ID')"></span></span>
+                      </li>
+                    </template>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Product 2: Kue Lumpur Surga -->
+        <!-- Product 4: Kue Pulut with Dropdown -->
         <div
-          class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div class="relative overflow-hidden">
-            <img src="{{ asset('assets/homepage/product/kue-lumpur-surga.jpg') }}"
-              alt="Kue Lumpur Surga"
-              loading="lazy"
-              class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
-          </div>
-          <div class="p-5">
-            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Lumpur Surga</h3>
-            <div x-data="{ open: false }">
-              <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
-                Kue yang memiliki dua lapisan yaitu lapisan bawah bewarna hijau yang dihasilkan dari air pandan asli dan lapisan atas mirip dengan vla yang terbuat dari santan. Kue yang memiliki tekstur lembut dan lumer dimulut sangat nikmat jika disantap dalam keadaan dingin. Memiliki Cita rasa manis dari kue nya dan gurih asin dari vla nya berpadu menghasilkan rasa nikmat yang nyaman ketika masuk dimulut.
-              </p>
-              <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
-                <span x-show="!open">Selengkapnya</span>
-                <span x-show="open">Tutup</span>
-              </button>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-[#8BA870] font-bold text-lg">Rp 120.000</span>
-              <!-- Tombol Pesan dinonaktifkan sementara -->
-              <!--
-  <button
-    class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
-    Pesan
-  </button>
-  -->
-            </div>
-          </div>
-        </div>
-
-        <!-- Product 3: Kue Ongol -->
-        <div
-          class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div class="relative overflow-hidden">
-            <img src="{{ asset('assets/homepage/product/kue-ongol.jpg') }}"
-              alt="Kue Ongol"
-              loading="lazy"
-              class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
-          </div>
-          <div class="p-5">
-            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Ongol</h3>
-            <div x-data="{ open: false }">
-              <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
-                Kue Ongol kami terbuat dari tepung tapioka yang ditambahkan gula merah jawa dan sedikit tambahan air pandan asli membuat warna kue ini bewarna coklat cantik. Kue yang memiliki tekstur kenyal dan legit dan terasa manis dimulut. Kue Ongol yang memiliki wangi khas gula jawa merah sangat cocok dipadukan dengan parutan kelapa segar yang akan memadukan antara gurih dan manis pada kue ini.
-              </p>
-              <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
-                <span x-show="!open">Selengkapnya</span>
-                <span x-show="open">Tutup</span>
-              </button>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-[#8BA870] font-bold text-lg">Rp 65.000</span>
-              <!-- Tombol Pesan dinonaktifkan sementara -->
-              <!--
-  <button
-    class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
-    Pesan
-  </button>
-  -->
-            </div>
-          </div>
-        </div>
-
-        <!-- Product 4: Kue Pulut -->
-        <div
-          class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div class="relative overflow-hidden">
+          class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative"
+          data-aos="zoom-in"
+          x-data="{ 
+          open: false, 
+          prices: [
+            { label: 'Isi 5 Kemasan Mika', value: 17500 },
+            { label: 'Isi 10 Kemasan Thinwall', value: 35500 }
+          ],
+          selectedPrice: { label: 'Isi 5 Kemasan Mika', value: 17500 }
+        }"
+          :class="open ? 'z-30' : 'z-0'">
+          <div class="relative overflow-hidden rounded-t-2xl">
             <img src="{{ asset('assets/homepage/product/kue-pulut.jpg') }}"
               alt="Kue Pulut Srikaya"
               class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
-            <div
-              class="absolute top-3 right-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-              New
+            <div class="absolute top-3 right-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+              Ala Carte
             </div>
           </div>
           <div class="p-5">
@@ -412,32 +468,50 @@
                 <span x-show="open">Tutup</span>
               </button>
             </div>
-            <div class="flex items-center justify-between">
-              <span class="text-[#8BA870] font-bold text-lg">Rp 45.000</span>
-              <!-- Tombol Pesan dinonaktifkan sementara -->
-              <!--
-  <button
-    class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
-    Pesan
-  </button>
-  -->
+            <div class="flex items-center justify-between mt-4">
+              <div class="relative w-full">
+                <button @click="open = !open" class="flex items-center justify-between w-full px-3 py-2 text-left border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8BA870]">
+                  <div>
+                    <span class="text-xs text-gray-500" x-text="selectedPrice.label"></span>
+                    <span class="block font-bold text-lg text-[#8BA870]">Rp <span x-text="selectedPrice.value.toLocaleString('id-ID')"></span></span>
+                  </div>
+                  <svg class="w-4 h-4 text-gray-500 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </button>
+                <div x-show="open"
+                  @click.away="open = false"
+                  x-transition
+                  class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                  <ul>
+                    <template x-for="price in prices" :key="price.label">
+                      <li @click="selectedPrice = price; open = false" class="cursor-pointer hover:bg-gray-100 p-3">
+                        <span class="font-semibold text-gray-800" x-text="price.label"></span>
+                        <span class="block text-sm text-[#8BA870]">Rp <span x-text="price.value.toLocaleString('id-ID')"></span></span>
+                      </li>
+                    </template>
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Product 5: Kue Ubi Nanas -->
-        <div
-          class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div class="relative overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="zoom-in">
+          <div class="relative overflow-hidden rounded-t-2xl">
             <img src="{{ asset('assets/homepage/product/kue-ubi-nanas.jpeg') }}"
               alt="Kue Ubi Nanas"
               class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
+            <div class="absolute top-3 right-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+              Ala Carte
+            </div>
           </div>
           <div class="p-5">
             <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Ubi Nanas</h3>
             <div x-data="{ open: false }">
               <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
-                Kue yang terbuat dari perpaduan ubi singkong yang memiliki rasa netral dan tekstur padat dan buah nanas yang memiliki rasa manis, segar dan masam dipadukan. Kue ini memiliki tekrstur sedikit chewy dan padat hampir seperti kue talam pada umumnya. Kue ini memiliki rasa manis dan sedikit rasa segar dari buah nanas dan rasa gurih dari bahan bahan kue. Terbuat dari bahan alami sehingga aman dikonsumsi dan sehat.
+                Kue yang terbuat dari perpaduan ubi singkong yang memiliki rasa netral dan tekstur padat dan buah nanas yang memiliki rasa manis, segar dan masam dipadukan. Kue ini memiliki tekrstur sedikit chewy dan padat hampir seperti kue talam pada umumnya. Kue ini memiliki rasa manis dan sedikit rasa segar dari buah nanas dan rasa gurih dari bahan bahan kue. Terbuat dari bahan alami sehingga aman dikonsumsi dan sehat. Kue ubi nanas berisi 4 potong kue.
               </p>
               <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
                 <span x-show="!open">Selengkapnya</span>
@@ -445,31 +519,26 @@
               </button>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-[#8BA870] font-bold text-lg">Rp 55.000</span>
-              <!-- Tombol Pesan dinonaktifkan sementara -->
-              <!--
-  <button
-    class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
-    Pesan
-  </button>
-  -->
+              <span class="text-[#8BA870] font-bold text-lg">Rp 10.000</span>
             </div>
           </div>
         </div>
 
         <!-- Product 6: Selai Srikaya -->
-        <div
-          class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div class="relative overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="zoom-in">
+          <div class="relative overflow-hidden rounded-t-2xl">
             <img src="{{ asset('assets/homepage/product/selai-srikaya.jpg') }}"
               alt="Selai Srikaya"
               class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
+            <div class="absolute top-3 right-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+              Ala Carte
+            </div>
           </div>
           <div class="p-5">
             <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Selai Srikaya</h3>
             <div x-data="{ open: false }">
               <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
-                Selai yang terbuat dari perpaduan santan kelapa, telur, air pandan dan gula merah jawa menghasilkan rasa yang gurih dan manis pada selai ini. Selai yang memiliki tekstur kental dan memiliki warna oren pekat dihasilkan dari telur dan gula merah. Selai ini cocok dipadukan dengan kue yang memiliki cita rasa netral maupun gurih untuk menambahkan cita rasa manis pada rasa kue tersebut.
+                Selai yang terbuat dari perpaduan santan kelapa, telur, air pandan dan gula merah jawa menghasilkan rasa yang gurih dan manis pada selai ini. Selai yang memiliki tekstur kental dan memiliki warna oren pekat dihasilkan dari telur dan gula merah. Selai ini cocok dipadukan dengan kue yang memiliki cita rasa netral maupun gurih untuk menambahkan cita rasa manis pada rasa kue tersebut. Kemasan Botol 160ml yang praktis dan mudah dibawa kemana saja.
               </p>
               <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
                 <span x-show="!open">Selengkapnya</span>
@@ -477,21 +546,13 @@
               </button>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-[#8BA870] font-bold text-lg">Rp 35.000</span>
-              <!-- Tombol Pesan dinonaktifkan sementara -->
-              <!--
-  <button
-    class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
-    Pesan
-  </button>
-  -->
+              <span class="text-[#8BA870] font-bold text-lg">Rp 60.000</span>
             </div>
           </div>
         </div>
-
       </div>
 
-      <!-- Produk: Kategori Hampers -->
+      <!-- Kategori: Hampers -->
       <div x-show="kategori === 'hampers'"
         x-transition:enter="transition ease-out duration-500"
         x-transition:enter-start="opacity-0 transform translate-y-4"
@@ -501,71 +562,50 @@
         x-transition:leave-end="opacity-0 transform translate-y-4"
         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-8 md:py-12">
 
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div class="relative overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="fade-left">
+          <div class="relative overflow-hidden rounded-t-2xl">
             <img src="{{ asset('assets/homepage/product/hampers-a.jpg') }}" alt="Hampers A (Anggun)" loading="lazy" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
-            <div class="absolute top-3 right-3 bg-[#8BA870] text-white px-2 py-1 rounded-full text-xs font-medium">Hampers</div>
+            <div class="absolute top-3 right-3 bg-[#7079a8] text-white px-2 py-1 rounded-full text-xs font-medium">Hampers</div>
           </div>
-          <div class="p-5" data-aos="fade-left">
+          <div class="p-5">
             <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Hampers A (Anggun)</h3>
-            <p class="text-gray-600 text-sm mb-3 line-clamp-2">Paket kue pandan spesial untuk hadiah Lebaran, lengkap dengan kemasan eksklusif dan kartu ucapan.</p>
+            <p class="text-gray-600 text-sm mb-3">Berisi: Kue Ijo (12 pcs), Kue Ongol-ongol (30 pcs), Kue Pulut Srikaya (10 pcs), Lumpur Surga (4 cup @100ml).</p>
             <div class="flex items-center justify-between">
-              <span class="text-[#8BA870] font-bold text-lg">Rp 250.000</span>
-              <!-- Tombol Pesan dinonaktifkan sementara -->
-              <!--
-  <button
-    class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
-    Pesan
-  </button>
-  -->
+              <span class="text-[#8BA870] font-bold text-lg">Rp 160.000</span>
             </div>
           </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div class="relative overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="fade-left">
+          <div class="relative overflow-hidden rounded-t-2xl">
             <img src="{{ asset('assets/homepage/product/hampers-b.jpg') }}" alt="Hampers B (Bagus)" loading="lazy" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
-            <div class="absolute top-3 right-3 bg-[#8BA870] text-white px-2 py-1 rounded-full text-xs font-medium">Hampers</div>
+            <div class="absolute top-3 right-3 bg-[#7079a8] text-white px-2 py-1 rounded-full text-xs font-medium">Hampers</div>
           </div>
           <div class="p-5">
             <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Hampers B (Bagus)</h3>
-            <p class="text-gray-600 text-sm mb-3 line-clamp-2">Hampers kue pandan untuk momen Natal, cocok untuk keluarga dan kolega, isi 3 varian kue.</p>
+            <p class="text-gray-600 text-sm mb-3">Berisi: Kue Ijo (12 pcs), Kue Ongol-ongol (30 pcs), Kue Pulut Srikaya (10 pcs).</p>
             <div class="flex items-center justify-between">
-              <span class="text-[#8BA870] font-bold text-lg">Rp 275.000</span>
-              <!-- Tombol Pesan dinonaktifkan sementara -->
-              <!--
-  <button
-    class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
-    Pesan
-  </button>
-  -->
+              <span class="text-[#8BA870] font-bold text-lg">Rp 115.000</span>
             </div>
           </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div class="relative overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="fade-left">
+          <div class="relative overflow-hidden rounded-t-2xl">
             <img src="{{ asset('assets/homepage/product/hampers-c.png') }}" alt="Hampers C (Cantik)" loading="lazy" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
-            <div class="absolute top-3 right-3 bg-[#8BA870] text-white px-2 py-1 rounded-full text-xs font-medium">Hampers</div>
+            <div class="absolute top-3 right-3 bg-[#7079a8] text-white px-2 py-1 rounded-full text-xs font-medium">Hampers</div>
           </div>
           <div class="p-5">
             <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Hampers C (Cantik)</h3>
-            <p class="text-gray-600 text-sm mb-3 line-clamp-2">Paket hampers custom, bisa pilih isi kue sesuai keinginan dan desain kemasan sendiri.</p>
+            <p class="text-gray-600 text-sm mb-3 line-clamp-2">BELUM ADA DATA</p>
             <div class="flex items-center justify-between">
-              <span class="text-[#8BA870] font-bold text-lg">Rp 300.000</span>
-              <!-- Tombol Pesan dinonaktifkan sementara -->
-              <!--
-  <button
-    class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
-    Pesan
-  </button>
-  -->
+              <span class="text-[#8BA870] font-bold text-lg">Rp BELUM ADA DATA</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Produk: Kategori Tumpeng -->
+      <!-- Kategori: Tumpeng -->
       <div x-show="kategori === 'tumpeng'"
         x-transition:enter="transition ease-out duration-500"
         x-transition:enter-start="opacity-0 transform -translate-x-4"
@@ -573,52 +613,40 @@
         x-transition:leave="transition ease-in duration-300"
         x-transition:leave-start="opacity-100 transform translate-x-0"
         x-transition:leave-end="opacity-0 transform -translate-x-4"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-8 md:py-12" data-aos="zoom-in">
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-8 md:py-12">
 
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div class="relative overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="fade-right">
+          <div class="relative overflow-hidden rounded-t-2xl">
             <img src="{{ asset('assets/homepage/product/tumpeng-mini.jpg') }}" alt="Tumpeng Mini" loading="lazy" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
             <div class="absolute top-3 right-3 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-medium">Tumpeng</div>
           </div>
           <div class="p-5">
-            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Tumpeng Mini</h3>
-            <p class="text-gray-600 text-sm mb-3 line-clamp-2">Tumpeng mini dengan lauk lengkap, cocok untuk syukuran, ulang tahun, atau acara spesial lainnya.</p>
+            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Tumpeng Mini Mix</h3>
+            <p class="text-gray-600 text-sm mb-3 ">Berisi: Kue Ijo (25 pcs), Kue Pulut (20 pcs), Kue Ongol-ongol (50 pcs), Lumpur Surga (6 cup). Tumpeng mini mix ini cocok untuk syukuran, ulang tahun, atau acara spesial lainnya.</p>
             <div class="flex items-center justify-between">
-              <span class="text-[#8BA870] font-bold text-lg">Rp 150.000</span>
-              <!-- Tombol Pesan dinonaktifkan sementara -->
-              <!--
-  <button
-    class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
-    Pesan
-  </button>
-  -->
+              <span class="text-[#8BA870] font-bold text-lg">Rp 250.000</span>
             </div>
           </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          <div class="relative overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="fade-right">
+          <div class="relative overflow-hidden rounded-t-2xl">
             <img src="{{ asset('assets/homepage/product/tumpeng-besar.jpg') }}" alt="Tumpeng Besar" loading="lazy" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
             <div class="absolute top-3 right-3 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-medium">Tumpeng</div>
           </div>
           <div class="p-5">
-            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Tumpeng Besar</h3>
-            <p class="text-gray-600 text-sm mb-3 line-clamp-2">Tumpeng besar untuk acara keluarga, kantor, arisan, atau perayaan penting lainnya. Bisa request lauk.</p>
+            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Tumpeng Besar Mix</h3>
+            <p class="text-gray-600 text-sm mb-3">Berisi: Kue Ijo (50 pcs), Kue Pulut (40 pcs), Kue Ongol-ongol (100 pcs), Lumpur Surga (12 cup). Tumpeng besar mix untuk acara keluarga, kantor, arisan, atau perayaan penting lainnya.</p>
             <div class="flex items-center justify-between">
-              <span class="text-[#8BA870] font-bold text-lg">Rp 350.000</span>
-              <!-- Tombol Pesan dinonaktifkan sementara -->
-              <!--
-  <button
-    class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
-    Pesan
-  </button>
-  -->
+              <span class="text-[#8BA870] font-bold text-lg">Rp 500.000</span>
             </div>
           </div>
         </div>
       </div>
     </div>
   </section>
+
+
 
   <!-- Testimonials Section -->
   <section id="testimoni" class="w-full bg-white py-8" style="background-color: #f2f6f5;">
