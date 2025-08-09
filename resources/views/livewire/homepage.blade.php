@@ -68,7 +68,7 @@
 
   <!-- Floating WhatsApp Button -->
   <a class="fixed bottom-6 right-6 z-50"
-    href="https://wa.me/6282131338971?text=Hai%20admin%20*Pandan%20Asli%20Malang*%2C%20perkenalan%20nama%20saya%20(isi%20nama%20anda)%20.%20Saya%20ingin%20.."
+    href="https://wa.me/6282144834303?text=Hai%20admin%20*Pandan%20Asli%20Malang*%2C%20perkenalan%20nama%20saya%20(isi%20nama%20anda)%20.%20Saya%20ingin%20.."
     target="_blank" aria-label="Chat via WhatsApp" style="
     background-color: #212121;
     border-radius: 40px;
@@ -166,9 +166,9 @@
     <div class="absolute inset-0 flex flex-col items-center justify-center z-10" data-aos="fade-down">
       <h1 class="text-white text-4xl md:text-6xl font-extrabold mb-4 drop-shadow-lg">Kue Pandan Asli</h1>
       <p class="text-white text-lg md:text-2xl font-medium drop-shadow mb-8 max-w-2xl text-center">Kue Ijo Adalah Kue tradisional Indonesia, cocok untuk semua acara spesial Anda.</p>
-      <a href="https://api.whatsapp.com/send/?phone=6282131338971&text=Hai+admin+%2APandan+Asli+Malang%2A%2C+perkenalan+nama+saya+%28isi+nama+anda%29+.+Saya+ingin+..&type=phone_number&app_absent=0"
+      <a href="https://api.whatsapp.com/send/?phone=6282144834303&text=Hai+admin+%2APandan+Asli+Malang%2A%2C+perkenalan+nama+saya+%28isi+nama+anda%29+.+Saya+ingin+..&type=phone_number&app_absent=0" target="_blank"
         class="bg-white text-[#7a965e] font-semibold px-8 py-3 rounded-full shadow hover:bg-[#8BA870] hover:text-white transition-all duration-300 text-lg border border-[#8BA870] transform hover:scale-105 active:scale-95 hover:shadow-xl active:shadow-md">Pesan
-        Sekarang</a>
+        Sekarang</a> 
     </div>
     <div class="absolute inset-0 bg-gradient-to-t from-[#8BA870]/40 to-transparent"></div>
   </section>
