@@ -49,6 +49,8 @@
 
   <!-- External Styles -->
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
 
 <!-- PRELOADER -->
@@ -611,9 +613,8 @@
                       points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
                   </svg>
                 </div>
-                <p class="text-gray-700 text-center mb-4">"Kuenya lembut banget, aroma pandannya terasa
-                  alami. Anak-anak dan keluarga saya suka sekali! Pelayanan juga ramah dan cepat."</p>
-                <span class="font-semibold text-[#2C3E50]">Rina, Malang</span>
+                <p class="text-gray-700 text-center mb-4">"Sebenarnya saya tau ini dari temen yang kasih rekomendasi, baru beberapa kali coba cocok dan kedepan akan jadi langganan terus sih sepertinya."</p>
+                <span class="font-semibold text-[#2C3E50]">Mbak Muanansa, Malang</span>
               </div>
             </div>
             <!-- Testimonial 2 -->
@@ -643,9 +644,8 @@
                       points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
                   </svg>
                 </div>
-                <p class="text-gray-700 text-center mb-4">"Saya sudah langganan di sini. Pandan roll
-                  cake-nya favorit keluarga! Harga terjangkau, kualitas premium."</p>
-                <span class="font-semibold text-[#2C3E50]">Budi, Surabaya</span>
+                <p class="text-gray-700 text-center mb-4">"Saya sekeluarga cocok, kalau ada acara kantor langsung pesen kesini, orang orang kantor juga pada nanyain beli dimana? Saya beli di kue pandan asli di sby tambaksari"</p>
+                <span class="font-semibold text-[#2C3E50]">Pak Handoko, Surabaya</span>
               </div>
             </div>
             <!-- Testimonial 3 -->
@@ -675,8 +675,7 @@
                       points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
                   </svg>
                 </div>
-                <p class="text-gray-700 text-center mb-4">"Pandan brownies-nya unik, rasa pandan dan
-                  cokelatnya pas banget! Pengiriman juga cepat dan aman."</p>
+                <p class="text-gray-700 text-center mb-4">"Kue langganan keluarga , dari dulu sering beli sampe kalau mau kasih hampers mau ngasih oleh oleh pasti langsung beli di kue pandan asli, semua orang dikeluarga suka dan cocok sama rasanya."</p>
                 <span class="font-semibold text-[#2C3E50]">Adhitya, Denpasar</span>
               </div>
             </div>
@@ -711,7 +710,7 @@
         <div class="w-full md:w-1/2 flex justify-center items-center">
           <iframe id="outlet-map"
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3957.9681779681105!2d112.775769691843!3d-7.244461222219543!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7f9b0b298d195%3A0x1b301a8958c157c6!2sKue%20Ijo%20Pandan%20Asli!5e0!3m2!1sid!2sid!4v1753154879994!5m2!1sid!2sid"
-            width="100%" height="450"
+            width="100%" height="500"
             style="border:0; border-radius:1rem; box-shadow:0 2px 16px 0 rgba(44,62,80,0.08); max-width: 480px; min-width: 320px; display: block; margin: 0 auto; background: #eee;"
             allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
         </div>
@@ -722,9 +721,40 @@
             alt="Outlet Surabaya" class="w-full h-36 object-cover rounded-xl mb-2 shadow">
           <h3 id="outlet-title" class="text-2xl font-bold text-[#2C3E50] mb-1">Pusat Surabaya</h3>
           <p id="outlet-address" class="text-gray-700 mb-1">Jalan Lebak Jaya II no. 26A Gading, Tambaksari, Surabaya, Jawa Timur 60134 (Rumah pagar hitam)</p>
-          <p id="outlet-hours" class="text-gray-500 text-sm mb-1">Senin - Minggu, 08.00 - 20.00</p>
-          <p id="outlet-contact" class="text-gray-500 text-sm mb-2">Telp: 083849268988</p>
-          <p id="outlet-email" class="text-gray-500 text-sm mb-2">Email: pandanaslisbyadm@gmail.com</p>
+          <!-- Jam Buka -->
+          <p id="outlet-hours" class="flex items-center gap-2 text-gray-500 text-sm mb-1">
+            <i class="far fa-clock text-lg"></i>
+            Senin - Minggu, 08.00 - 20.00
+          </p>
+
+          <!-- WhatsApp -->
+          <a id="outlet-contact" href="#" target="_blank"
+            class="flex items-center gap-2 text-gray-500 text-sm mb-2 hover:text-green-600 transition">
+            <i class="fab fa-whatsapp text-lg"></i>
+            <span id="outlet-contact-text">Telp: -</span>
+          </a>
+
+          <!-- Email -->
+          <a id="outlet-email"
+            href="#"
+            class="flex items-center gap-2 text-gray-500 text-sm hover:text-blue-600 transition">
+            <i class="far fa-envelope text-lg"></i>
+            <span id="outlet-email-text">pandanaslisbyadm@gmail.com</span>
+          </a>
+
+          <!-- Sosial Media -->
+          <div class="flex items-center gap-4 text-2xl text-gray-600">
+            <a id="social-tiktok" href="#" target="_blank" class="hover:text-black transition" aria-label="TikTok">
+              <i class="fab fa-tiktok"></i>
+            </a>
+            <a id="social-instagram" href="#" target="_blank" class="hover:text-pink-500 transition" aria-label="Instagram">
+              <i class="fab fa-instagram"></i>
+            </a>
+            <a id="social-facebook" href="#" target="_blank" class="hover:text-blue-600 transition" aria-label="Facebook">
+              <i class="fab fa-facebook"></i>
+            </a>
+          </div>
+
           <div class="w-full">
             <a
               id="outlet-directions"
@@ -734,8 +764,8 @@
               Get Directions
             </a>
           </div>
-
         </div>
+
       </div>
   </section>
 
