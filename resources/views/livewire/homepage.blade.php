@@ -168,7 +168,7 @@
       <p class="text-white text-lg md:text-2xl font-medium drop-shadow mb-8 max-w-2xl text-center">Kue Ijo Adalah Kue tradisional Indonesia, cocok untuk semua acara spesial Anda.</p>
       <a href="https://api.whatsapp.com/send/?phone=6282144834303&text=Hai+admin+%2APandan+Asli+Malang%2A%2C+perkenalan+nama+saya+%28isi+nama+anda%29+.+Saya+ingin+..&type=phone_number&app_absent=0" target="_blank"
         class="bg-white text-[#7a965e] font-semibold px-8 py-3 rounded-full shadow hover:bg-[#8BA870] hover:text-white transition-all duration-300 text-lg border border-[#8BA870] transform hover:scale-105 active:scale-95 hover:shadow-xl active:shadow-md">Pesan
-        Sekarang</a> 
+        Sekarang</a>
     </div>
     <div class="absolute inset-0 bg-gradient-to-t from-[#8BA870]/40 to-transparent"></div>
   </section>
@@ -312,10 +312,13 @@
             </div>
             <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Rp 85.000</span>
-              <button
-                class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
-                Pesan
-              </button>
+              <!-- Tombol Pesan dinonaktifkan sementara -->
+              <!--
+  <button
+    class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
+    Pesan
+  </button>
+  -->
             </div>
           </div>
         </div>
@@ -342,10 +345,13 @@
             </div>
             <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Rp 120.000</span>
-              <button
-                class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
-                Pesan
-              </button>
+              <!-- Tombol Pesan dinonaktifkan sementara -->
+              <!--
+  <button
+    class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
+    Pesan
+  </button>
+  -->
             </div>
           </div>
         </div>
@@ -372,10 +378,13 @@
             </div>
             <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Rp 65.000</span>
-              <button
-                class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
-                Pesan
-              </button>
+              <!-- Tombol Pesan dinonaktifkan sementara -->
+              <!--
+  <button
+    class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
+    Pesan
+  </button>
+  -->
             </div>
           </div>
         </div>
@@ -405,10 +414,13 @@
             </div>
             <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Rp 45.000</span>
-              <button
-                class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
-                Pesan
-              </button>
+              <!-- Tombol Pesan dinonaktifkan sementara -->
+              <!--
+  <button
+    class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
+    Pesan
+  </button>
+  -->
             </div>
           </div>
         </div>
@@ -434,10 +446,13 @@
             </div>
             <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Rp 55.000</span>
-              <button
-                class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
-                Pesan
-              </button>
+              <!-- Tombol Pesan dinonaktifkan sementara -->
+              <!--
+  <button
+    class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
+    Pesan
+  </button>
+  -->
             </div>
           </div>
         </div>
@@ -463,10 +478,13 @@
             </div>
             <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Rp 35.000</span>
-              <button
-                class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
-                Pesan
-              </button>
+              <!-- Tombol Pesan dinonaktifkan sementara -->
+              <!--
+  <button
+    class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
+    Pesan
+  </button>
+  -->
             </div>
           </div>
         </div>
@@ -493,7 +511,13 @@
             <p class="text-gray-600 text-sm mb-3 line-clamp-2">Paket kue pandan spesial untuk hadiah Lebaran, lengkap dengan kemasan eksklusif dan kartu ucapan.</p>
             <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Rp 250.000</span>
-              <button class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">Pesan</button>
+              <!-- Tombol Pesan dinonaktifkan sementara -->
+              <!--
+  <button
+    class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
+    Pesan
+  </button>
+  -->
             </div>
           </div>
         </div>
@@ -508,7 +532,13 @@
             <p class="text-gray-600 text-sm mb-3 line-clamp-2">Hampers kue pandan untuk momen Natal, cocok untuk keluarga dan kolega, isi 3 varian kue.</p>
             <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Rp 275.000</span>
-              <button class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">Pesan</button>
+              <!-- Tombol Pesan dinonaktifkan sementara -->
+              <!--
+  <button
+    class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
+    Pesan
+  </button>
+  -->
             </div>
           </div>
         </div>
@@ -523,7 +553,13 @@
             <p class="text-gray-600 text-sm mb-3 line-clamp-2">Paket hampers custom, bisa pilih isi kue sesuai keinginan dan desain kemasan sendiri.</p>
             <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Rp 300.000</span>
-              <button class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">Pesan</button>
+              <!-- Tombol Pesan dinonaktifkan sementara -->
+              <!--
+  <button
+    class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
+    Pesan
+  </button>
+  -->
             </div>
           </div>
         </div>
@@ -549,7 +585,13 @@
             <p class="text-gray-600 text-sm mb-3 line-clamp-2">Tumpeng mini dengan lauk lengkap, cocok untuk syukuran, ulang tahun, atau acara spesial lainnya.</p>
             <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Rp 150.000</span>
-              <button class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">Pesan</button>
+              <!-- Tombol Pesan dinonaktifkan sementara -->
+              <!--
+  <button
+    class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
+    Pesan
+  </button>
+  -->
             </div>
           </div>
         </div>
@@ -564,7 +606,13 @@
             <p class="text-gray-600 text-sm mb-3 line-clamp-2">Tumpeng besar untuk acara keluarga, kantor, arisan, atau perayaan penting lainnya. Bisa request lauk.</p>
             <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Rp 350.000</span>
-              <button class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">Pesan</button>
+              <!-- Tombol Pesan dinonaktifkan sementara -->
+              <!--
+  <button
+    class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
+    Pesan
+  </button>
+  -->
             </div>
           </div>
         </div>
@@ -743,17 +791,21 @@
           </a>
 
           <!-- Sosial Media -->
-          <div class="flex items-center gap-4 text-2xl text-gray-600">
-            <a id="social-tiktok" href="#" target="_blank" class="hover:text-black transition" aria-label="TikTok">
-              <i class="fab fa-tiktok"></i>
-            </a>
-            <a id="social-instagram" href="#" target="_blank" class="hover:text-pink-500 transition" aria-label="Instagram">
-              <i class="fab fa-instagram"></i>
-            </a>
-            <a id="social-facebook" href="#" target="_blank" class="hover:text-blue-600 transition" aria-label="Facebook">
-              <i class="fab fa-facebook"></i>
-            </a>
+          <div class="flex items-center gap-4 text-gray-600">
+            <span class="text-base font-medium">Social Media :</span>
+            <div class="flex items-center gap-4 text-base">
+              <a id="social-tiktok" href="#" target="_blank" class="hover:text-black transition" aria-label="TikTok">
+                <i class="fab fa-tiktok"></i>
+              </a>
+              <a id="social-instagram" href="#" target="_blank" class="hover:text-pink-500 transition" aria-label="Instagram">
+                <i class="fab fa-instagram"></i>
+              </a>
+              <a id="social-facebook" href="#" target="_blank" class="hover:text-blue-600 transition" aria-label="Facebook">
+                <i class="fab fa-facebook"></i>
+              </a>
+            </div>
           </div>
+
 
           <div class="w-full">
             <a
