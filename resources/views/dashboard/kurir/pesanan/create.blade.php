@@ -8,19 +8,34 @@
         <div class="flex flex-wrap -mx-3">
             <!-- NAMA CUSTOMER -->
             <div class="relative group w-full max-w-full px-3 shrink-0 md:w-6/12 md:flex-0 mb-4">
-                <label for="dropdown-button" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Nama Customer</label>
-                <select id="dropdown-button" class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                    <option value="">- Pilih Customer -</option>
-                    @foreach($customers as $customer)
-                    <option
-                        value="{{ $customer->id }}"
-                        data-phone="{{ $customer->phone }}"
-                        data-address="{{ $customer->address }}">
-                        {{ $customer->name }}
-                    </option>
-                    @endforeach
-                </select>
-            </div>    
+                <label for="search-input" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Nama Customer</label>
+                
+                <div class="relative">
+                    <button id="dropdown-button" type="button" class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-left">
+                        <span id="selected-customer">- Pilih Customer -</span>
+                    </button>
+                    
+                    <div id="dropdown-menu" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg hidden dark:bg-gray-700">
+                        <div class="p-2">
+                            <input type="text" id="search-input" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none dark:bg-gray-600 dark:border-gray-500 dark:text-white" placeholder="Cari customer...">
+                        </div>
+                        
+                        <ul id="customer-list" class="max-h-60 overflow-y-auto">
+                            @foreach($customers as $customer)
+                            <li>
+                                <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                                    data-value="{{ $customer->id }}"
+                                    data-phone="{{ $customer->phone }}"
+                                    data-address="{{ $customer->address }}">
+                                    {{ $customer->name }}
+                                </a>
+                            </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+                <input type="hidden" name="customer_id" id="customer-id-input">
+            </div>
 
             <!-- NO HP -->
             <div class="w-full max-w-full px-3 shrink-0 md:w-6/12 md:flex-0">
@@ -81,15 +96,25 @@
             </div>
 
             <!-- METODE BAYAR-->
-            <div class="w-full max-w-full px-3 shrink-0 md:w-full md:flex-0 mt-4">
+            <div class="w-full max-w-full px-3 shrink-0 md:w-full md:flex-0 mt-4 bg:white">
                 <div class="mb-4">
-                    <label for="payment_method" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Metode Pembayaran</label>
-                    <select id="lokasi" name="lokasi" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                        <option selected disabled>-Pilih metode-</option>
-                        <option value="cash">Cash (Tunai)</option>
-                        <option value="tf">Transfer Bank</option>
-                        <option value="qr">QRIS</option>
-                    </select>
+                    <label for="lokasi" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Metode Pembayaran</label>
+                    <div class="relative inline-block w-full text-left">
+                        <button id="payment-method-button" type="button" class="inline-flex justify-between items-center w-full rounded-lg border border-gray-300 shadow-sm px-4 py-2.5 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600">
+                            <span id="selected-payment-method">-Pilih metode pembayaran -</span>
+                            <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                        <div id="payment-method-menu" class="hidden absolute left-0 mt-1 w-full rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-700" role="menu">
+                            <div class="py-2" role="none">
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600" data-value="cash" role="menuitem">Cash (Tunai)</a>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600" data-value="tf" role="menuitem">Transfer Bank</a>
+                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600" data-value="qr" role="menuitem">QRIS</a>
+                            </div>
+                        </div>
+                        <input type="hidden" id="lokasi" name="lokasi">
+                    </div>
                 </div>
             </div>
         </div>
@@ -105,14 +130,6 @@
                     <textarea type="text" name="note" value="" class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"></textarea>
                 </div>
             </div>
-
-            <!-- <div class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-300 p-4 flex justify-between items-center z-50">
-                <p id="cart-total" class="font-bold text-lg">Total: Rp 0</p> 
-                <button onclick="checkout()" 
-                    class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
-                    Checkout
-                </button>
-            </div> -->
         </div>
     </div>
 </div>
@@ -125,6 +142,7 @@
     </button>
 </div>
 
+<!-- SCRIPT JS -->
 <!-- tambah produk -->
 <script>
     function addProduct() {
@@ -152,57 +170,71 @@
 </script>
 
 <!-- dropdown search -->
-<script>
-    const dropdownButton = document.getElementById('dropdown-button');
-    const dropdownMenu = document.getElementById('dropdown-menu');
-    const searchInput = document.getElementById('search-input');
-    const selectedItem = document.getElementById('selected-item');
-    const hiddenInput = document.getElementById('customer-id');
-    const items = document.querySelectorAll('#customer-list a');
+ <script>
+// --- Inisialisasi Dropdown Customer ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropdownButton = document.getElementById('dropdown-button');
+        const dropdownMenu = document.getElementById('dropdown-menu');
+        const searchInput = document.getElementById('search-input');
+        const selectedCustomerSpan = document.getElementById('selected-customer');
+        const hiddenCustomerIdInput = document.getElementById('customer-id-input');
+        const phoneInput = document.getElementById('phone');
+        const addressInput = document.getElementById('address');
+        const customerList = document.getElementById('customer-list');
 
-    let isOpen = false;
-
-    // Toggle dropdown
-    dropdownButton.addEventListener('click', (e) => {
-        e.stopPropagation();
-        isOpen = !isOpen;
-        dropdownMenu.classList.toggle('hidden', !isOpen);
-        searchInput.value = '';
-        items.forEach(item => item.style.display = 'block');
-    });
-
-    // Close on outside click
-    document.addEventListener('click', () => {
-        dropdownMenu.classList.add('hidden');
-        isOpen = false;
-    });
-
-    // Prevent close when inside dropdown
-    dropdownMenu.addEventListener('click', (e) => {
-        e.stopPropagation();
-    });
-
-    // Search filter
-    searchInput.addEventListener('input', () => {
-        const searchTerm = searchInput.value.toLowerCase();
-        items.forEach((item) => {
-            const text = item.textContent.toLowerCase();
-            item.style.display = text.includes(searchTerm) ? 'block' : 'none';
+        // Mengatur visibilitas dropdown saat tombol diklik
+        dropdownButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            dropdownMenu.classList.toggle('hidden');
+            searchInput.focus();
         });
-    });
 
-    // Select item
-    items.forEach(item => {
-        item.addEventListener('click', (e) => {
-            e.preventDefault();
-            selectedItem.textContent = item.textContent;
-            hiddenInput.value = item.getAttribute('data-value');
-            dropdownMenu.classList.add('hidden');
-            isOpen = false;
+        // Menyembunyikan dropdown saat klik di luar area dropdown
+        document.addEventListener('click', function(e) {
+            if (!dropdownMenu.contains(e.target) && !dropdownButton.contains(e.target)) {
+                dropdownMenu.classList.add('hidden');
+            }
+        });
+
+        // Memfilter daftar pelanggan berdasarkan input pencarian
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            Array.from(customerList.children).forEach(li => {
+                const customerName = li.textContent.toLowerCase();
+                if (customerName.includes(searchTerm)) {
+                    li.style.display = 'block';
+                } else {
+                    li.style.display = 'none';
+                }
+            });
+        });
+
+        // Menangani pemilihan pelanggan dari daftar
+        customerList.addEventListener('click', function(e) {
+            if (e.target.tagName === 'A') {
+                e.preventDefault();
+                const selectedLink = e.target;
+                
+                // Mengambil data pelanggan dari atribut 'data-'
+                const customerId = selectedLink.getAttribute('data-value');
+                const customerName = selectedLink.textContent.trim();
+                const phone = selectedLink.getAttribute('data-phone');
+                const address = selectedLink.getAttribute('data-address');
+
+                // Memperbarui teks yang terlihat dan input tersembunyi
+                selectedCustomerSpan.textContent = customerName;
+                hiddenCustomerIdInput.value = customerId;
+
+                // Mengisi kolom nomor telepon dan alamat
+                phoneInput.value = phone;
+                addressInput.value = address;
+                
+                // Menutup menu dropdown
+                dropdownMenu.classList.add('hidden');
+            }
         });
     });
 </script>
-
 
 <!-- untuk menambahkan produk -->
 <script>
@@ -346,30 +378,16 @@
     document.addEventListener("DOMContentLoaded", getProduk);
 </script>
 
-<!-- select nama cust -->
-<script>
-    document.getElementById('dropdown-button').addEventListener('change', function() {
-        let selected = this.options[this.selectedIndex];
-
-        // Ambil data dari atribut option
-        let phone = selected.getAttribute('data-phone') || '';
-        let address = selected.getAttribute('data-address') || '';
-
-        // Set ke input
-        document.getElementById('phone').value = phone;
-        document.getElementById('address').value = address;
-    });
-</script>
 
 <!-- fungsi button checkout -->
  <script>
     async function checkout() {
-        // Mendapatkan data dari form
-        const customerId = document.getElementById('dropdown-button').value;
+        // Mengambil ID pelanggan dari input tersembunyi
+        const customerId = document.getElementById('customer-id-input').value;
         const paymentMethod = document.getElementById('lokasi').value;
         const note = document.querySelector('textarea[name="note"]').value;
 
-        // Validasi data
+         // Validasi
         if (!customerId) {
             alert('Silakan pilih customer terlebih dahulu.');
             return;
@@ -428,6 +446,43 @@
             alert('Terjadi kesalahan saat checkout. Mohon coba lagi.');
         }
     }
+</script>
+
+<!--  JavaScript untuk dropdown Metode Pembayaran -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const button = document.getElementById('payment-method-button');
+    const menu = document.getElementById('payment-method-menu');
+    const selectedText = document.getElementById('selected-payment-method');
+    const hiddenInput = document.getElementById('lokasi');
+
+    button.addEventListener('click', function(e) {
+        e.stopPropagation();
+        menu.classList.toggle('hidden');
+    });
+
+    menu.addEventListener('click', function(e) {
+        if (e.target.tagName === 'A') {
+            e.preventDefault();
+            const value = e.target.getAttribute('data-value');
+            const text = e.target.textContent;
+
+            // Perbarui teks yang terlihat dan nilai input tersembunyi
+            selectedText.textContent = text;
+            hiddenInput.value = value;
+            
+            // Sembunyikan menu
+            menu.classList.add('hidden');
+        }
+    });
+
+    // Sembunyikan menu saat mengklik di luar
+    document.addEventListener('click', function(e) {
+        if (!button.contains(e.target) && !menu.contains(e.target)) {
+            menu.classList.add('hidden');
+        }
+    });
+});
 </script>
 
 
