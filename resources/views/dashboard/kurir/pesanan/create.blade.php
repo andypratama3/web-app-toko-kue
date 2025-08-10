@@ -6,13 +6,16 @@
         <p class="leading-normal uppercase dark:text-white dark:opacity-60 text-sm mb-4">Data Customer</p>
 
         <div class="flex flex-wrap -mx-3">
-            <!-- NAMA CUSTOMER -->
+            <!-- NAMA CUSTOMER (CUSTOM DROPDOWN WITH SEARCH) -->
             <div class="relative group w-full max-w-full px-3 shrink-0 md:w-6/12 md:flex-0 mb-4">
                 <label for="search-input" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Nama Customer</label>
                 
                 <div class="relative">
                     <button id="dropdown-button" type="button" class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-left">
                         <span id="selected-customer">- Pilih Customer -</span>
+                        <svg class="-mr-1 ml-2 h-5 w-5 absolute right-3 top-1/2 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
                     </button>
                     
                     <div id="dropdown-menu" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg hidden dark:bg-gray-700">
@@ -35,7 +38,7 @@
                     </div>
                 </div>
                 <input type="hidden" name="customer_id" id="customer-id-input">
-            </div>
+            </div>   
 
             <!-- NO HP -->
             <div class="w-full max-w-full px-3 shrink-0 md:w-6/12 md:flex-0">
@@ -63,7 +66,7 @@
                 <!-- Tombol Tambah Produk -->
                 <div class="flex justify-end mb-4">
                     <button onclick="showProdukModal()"
-                        class="bg-black text-white px-6 py-2 rounded hover:bg-gray-800 transition">
+                        class="bg-[#345c7c] text-white px-6 py-2 rounded hover:bg-[#2a4964] transition">
                         + Tambah Produk
                     </button>
                 </div>
@@ -91,12 +94,10 @@
 
                 <!-- Cart -->
                 <div id="cart-list"></div>
-                <!-- <p id="cart-total" class="text-right mt-4 font-bold text-lg"></p> -->
-
             </div>
 
-            <!-- METODE BAYAR-->
-            <div class="w-full max-w-full px-3 shrink-0 md:w-full md:flex-0 mt-4 bg:white">
+            <!-- METODE BAYAR (CUSTOM DROPDOWN) -->
+            <div class="w-full max-w-full px-3 shrink-0 md:w-full md:flex-0 mt-4">
                 <div class="mb-4">
                     <label for="lokasi" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Metode Pembayaran</label>
                     <div class="relative inline-block w-full text-left">
@@ -106,7 +107,7 @@
                                 <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                             </svg>
                         </button>
-                        <div id="payment-method-menu" class="hidden absolute left-0 mt-1 w-full rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-700" role="menu">
+                        <div id="payment-method-menu" class="absolute left-0 mt-1 w-full rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-700 hidden" role="menu">
                             <div class="py-2" role="none">
                                 <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600" data-value="cash" role="menuitem">Cash (Tunai)</a>
                                 <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600" data-value="tf" role="menuitem">Transfer Bank</a>
@@ -126,55 +127,119 @@
             <!-- NOTE -->
             <div class="w-full max-w-full px-3 shrink-0 md:w-full md:flex-0">
                 <div class="mb-4">
-                    <label for="about me" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Text Here!</label>
-                    <textarea type="text" name="note" value="" class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"></textarea>
+                    <label for="note" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Text Here!</label>
+                    <textarea type="text" name="note" class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"></textarea>
+                </div>
+            </div>
+            <!-- BUTTON CHECKOUT UNTUK WEBSITE (TAMBAHAN) -->
+            <div class="w-full max-w-full px-3 shrink-0 md:w-full md:flex-0 mt-4 hidden xl:block">
+                <div class="flex justify-end">
+                    <button onclick="checkout()" 
+                        class="bg-[#748c54] text-white px-6 py-2 rounded hover:bg-[#5a6e40] transition">
+                        Checkout
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<!-- Tombol Checkout Fix di Bawah -->
+
+<!-- Tombol Checkout Fix di Bawah (UNTUK MOBILE) -->
 <div class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-300 p-4 flex justify-between items-center z-50 xl:hidden">
-    <p id="cart-total" class="font-bold text-lg">Total: Rp 0</p> 
+    <p id="cart-total" class="font-bold text-lg">Rp 0</p> 
     <button onclick="checkout()" 
-        class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+        class="bg-[#748c54] text-white px-6 py-2 rounded hover:bg-[#5a6e40] transition">
         Checkout
     </button>
 </div>
 
-<!-- SCRIPT JS -->
-<!-- tambah produk -->
+<!-- Modal Sukses Tersimpan -->
+<div id="successModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-sm p-6 text-center">
+        <div class="text-green-500 text-5xl mb-4">✔</div>
+        <h2 class="text-xl font-bold mb-2">Sukses!</h2>
+        <p id="success-message" class="text-gray-700 mb-4">Pesanan berhasil disimpan.</p>
+        <button onclick="hideSuccessModal()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">Tutup</button>
+    </div>
+</div>
+
+<!-- Elemen Toast Notifikasi -->
+<div id="toast-notification" class="hidden fixed top-8 right-4 bg-white text-gray-800 px-4 py-3 rounded-lg shadow-lg z-[60] text-sm transform transition-all duration-300 ease-out flex items-center space-x-3 min-w-[250px]">
+    <div id="toast-icon-wrapper" class="flex-shrink-0">
+        <!-- Ikon akan disuntikkan di sini oleh JavaScript -->
+    </div>
+    <span id="toast-message" class="flex-grow"></span>
+    <button onclick="hideToast()" class="flex-shrink-0 text-gray-500 hover:text-gray-700 ml-auto">
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    </button>
+</div>
+
+{{-- Semua JavaScript terkait fungsionalitas aplikasi berada di sini --}}
 <script>
-    function addProduct() {
-        const container = document.getElementById('order-items');
-        const newRow = document.createElement('div');
-        newRow.className = 'grid grid-cols-3 gap-4 items-center group';
-        newRow.innerHTML = `
-            <input type="text" name="product_name[]" placeholder="Nama Produk"
-                class="block w-full border border-gray-300 rounded-md py-2 text-sm focus:ring focus:border-blue-300" />
-            <input type="number" name="quantity[]" placeholder="Jumlah"
-                class="block w-full border border-gray-300 rounded-md py-2 text-sm focus:ring focus:border-blue-300" />
-            <div class="relative">
-                <input type="tel" name="price[]" placeholder="Harga Satuan"
-                    class="block w-full border border-gray-300 rounded-md py-2 text-sm focus:ring focus:border-blue-300" />
-                <button type="button" onclick="removeProduct(this)"
-                    class="absolute top-1/2 right-2 -translate-y-1/2 text-red-600 hover:text-red-800 text-xs">Hapus</button>
-            </div>
-        `;
-        container.appendChild(newRow);
+    // --- Data dan State Global ---
+    let produkList = []; // Daftar semua produk yang tersedia
+    let cart = [];       // Keranjang belanja
+
+    // --- Fungsi Toast Notifikasi ---
+    let toastTimeout; // Untuk menyimpan ID timeout agar bisa dibersihkan
+
+    function showToast(message, type = 'info', duration = 3000) {
+        const toast = document.getElementById('toast-notification');
+        const toastMessage = document.getElementById('toast-message');
+        const toastIconWrapper = document.getElementById('toast-icon-wrapper');
+
+        // Reset kelas background dan ikon
+        toast.classList.remove('bg-white', 'border-green-400', 'border-red-400', 'border-orange-400');
+        toastIconWrapper.innerHTML = ''; // Kosongkan ikon sebelumnya
+
+        let iconSvg = '';
+        let borderColorClass = '';
+
+        if (type === 'success') {
+            borderColorClass = 'border-green-400';
+            iconSvg = `<svg class="h-6 w-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+        } else if (type === 'error') {
+            borderColorClass = 'border-red-400';
+            iconSvg = `<svg class="h-6 w-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+        } else if (type === 'warning') {
+            borderColorClass = 'border-orange-400';
+            iconSvg = `<svg class="h-6 w-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+        } else { // Default to info
+            borderColorClass = 'border-blue-400';
+            iconSvg = `<svg class="h-6 w-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+        }
+
+        toastIconWrapper.innerHTML = iconSvg;
+        toast.classList.add('bg-white', borderColorClass, 'border'); // Tambahkan border sebagai pemisah visual
+        toastMessage.textContent = message;
+        
+        // Atur posisi agar sedikit lebih ke bawah
+        toast.style.right = '1rem'; 
+        toast.style.top = '4rem';   
+
+        toast.classList.remove('hidden'); // Tampilkan toast
+        
+        // Bersihkan timeout sebelumnya jika ada
+        if (toastTimeout) {
+            clearTimeout(toastTimeout);
+        }
+
+        // Sembunyikan toast setelah durasi tertentu
+        toastTimeout = setTimeout(() => {
+            hideToast();
+        }, duration);
     }
 
-    function removeProduct(button) {
-        button.closest('.grid').remove();
+    function hideToast() {
+        const toast = document.getElementById('toast-notification');
+        toast.classList.add('hidden'); // Sembunyikan toast
     }
-</script>
 
-<!-- dropdown search -->
- <script>
-// --- Inisialisasi Dropdown Customer ---
+    // --- Inisialisasi DOM dan Event Listeners ---
     document.addEventListener('DOMContentLoaded', function() {
-        const dropdownButton = document.getElementById('dropdown-button');
-        const dropdownMenu = document.getElementById('dropdown-menu');
+        // --- Logic Dropdown Customer (Searchable) ---
+        const customerDropdownButton = document.getElementById('dropdown-button');
+        const customerDropdownMenu = document.getElementById('dropdown-menu');
         const searchInput = document.getElementById('search-input');
         const selectedCustomerSpan = document.getElementById('selected-customer');
         const hiddenCustomerIdInput = document.getElementById('customer-id-input');
@@ -182,151 +247,266 @@
         const addressInput = document.getElementById('address');
         const customerList = document.getElementById('customer-list');
 
-        // Mengatur visibilitas dropdown saat tombol diklik
-        dropdownButton.addEventListener('click', function(e) {
-            e.stopPropagation();
-            dropdownMenu.classList.toggle('hidden');
-            searchInput.focus();
+        // Toggle visibilitas dropdown pelanggan
+        customerDropdownButton.addEventListener('click', function(e) {
+            e.stopPropagation(); 
+            customerDropdownMenu.classList.toggle('hidden');
+            searchInput.focus(); 
         });
 
-        // Menyembunyikan dropdown saat klik di luar area dropdown
-        document.addEventListener('click', function(e) {
-            if (!dropdownMenu.contains(e.target) && !dropdownButton.contains(e.target)) {
-                dropdownMenu.classList.add('hidden');
-            }
-        });
-
-        // Memfilter daftar pelanggan berdasarkan input pencarian
+        // Filter daftar pelanggan berdasarkan input pencarian
         searchInput.addEventListener('input', function() {
             const searchTerm = this.value.toLowerCase();
             Array.from(customerList.children).forEach(li => {
                 const customerName = li.textContent.toLowerCase();
                 if (customerName.includes(searchTerm)) {
-                    li.style.display = 'block';
+                    li.style.display = 'block'; 
                 } else {
-                    li.style.display = 'none';
+                    li.style.display = 'none'; 
                 }
             });
         });
 
-        // Menangani pemilihan pelanggan dari daftar
+        // Tangani pemilihan pelanggan dari daftar
         customerList.addEventListener('click', function(e) {
-            if (e.target.tagName === 'A') {
+            if (e.target.tagName === 'A') { 
                 e.preventDefault();
                 const selectedLink = e.target;
                 
-                // Mengambil data pelanggan dari atribut 'data-'
+                // Ambil data pelanggan dari atribut 'data-' pada link
                 const customerId = selectedLink.getAttribute('data-value');
                 const customerName = selectedLink.textContent.trim();
                 const phone = selectedLink.getAttribute('data-phone');
                 const address = selectedLink.getAttribute('data-address');
 
-                // Memperbarui teks yang terlihat dan input tersembunyi
+                // Perbarui teks yang terlihat pada tombol dropdown dan nilai input tersembunyi
                 selectedCustomerSpan.textContent = customerName;
                 hiddenCustomerIdInput.value = customerId;
 
-                // Mengisi kolom nomor telepon dan alamat
+                // Isi kolom nomor telepon dan alamat
                 phoneInput.value = phone;
                 addressInput.value = address;
                 
-                // Menutup menu dropdown
-                dropdownMenu.classList.add('hidden');
+                // Sembunyikan menu dropdown setelah pemilihan
+                customerDropdownMenu.classList.add('hidden');
             }
         });
+
+        // --- Logic Dropdown Metode Pembayaran (Custom) ---
+        const paymentButton = document.getElementById('payment-method-button');
+        const paymentMenu = document.getElementById('payment-method-menu');
+        const selectedPaymentText = document.getElementById('selected-payment-method');
+        const hiddenPaymentInput = document.getElementById('lokasi'); 
+
+        // Toggle visibilitas dropdown metode pembayaran
+        paymentButton.addEventListener('click', function(e) {
+            e.stopPropagation(); 
+            paymentMenu.classList.toggle('hidden');
+        });
+
+        // Tangani pemilihan metode pembayaran dari daftar
+        paymentMenu.addEventListener('click', function(e) {
+            if (e.target.tagName === 'A') { 
+                e.preventDefault();
+                const value = e.target.getAttribute('data-value'); 
+                const text = e.target.textContent; 
+
+                // Perbarui teks yang terlihat pada tombol dropdown dan nilai input tersembunyi
+                selectedPaymentText.textContent = text;
+                hiddenPaymentInput.value = value;
+                
+                // Sembunyikan menu dropdown setelah pemilihan
+                paymentMenu.classList.add('hidden');
+            }
+        });
+
+        // --- Menutup semua dropdown saat mengklik di luar area dropdown ---
+        document.addEventListener('click', function(e) {
+            // Untuk dropdown pelanggan
+            if (!customerDropdownButton.contains(e.target) && !customerDropdownMenu.contains(e.target)) {
+                customerDropdownMenu.classList.add('hidden');
+            }
+            // Untuk dropdown metode pembayaran
+            if (!paymentButton.contains(e.target) && !paymentMenu.contains(e.target)) {
+                paymentMenu.classList.add('hidden');
+            }
+        });
+
+        // --- Inisialisasi Produk dan Keranjang ---
+        getProduk(); 
     });
-</script>
 
-<!-- untuk menambahkan produk -->
-<script>
-    let produkList = [];
-    let cart = [];
+    // --- Fungsi Checkout ---
+    async function checkout() {
+        // Mendapatkan data dari form
+        const customerId = document.getElementById('customer-id-input').value; 
+        const paymentMethod = document.getElementById('lokasi').value; 
+        const note = document.querySelector('textarea[name="note"]').value;
+        const phone = document.getElementById('phone').value; 
+        const address = document.getElementById('address').value; 
 
-    // Ambil data produk dari backend
+        // Validasi data sebelum checkout
+        if (!customerId) {
+            showToast('Silakan pilih customer terlebih dahulu.', 'error');
+            return;
+        }
+
+        if (cart.length === 0) {
+            showToast('Keranjang belanja kosong. Tambahkan produk terlebih dahulu.', 'error');
+            return;
+        }
+
+        if (!paymentMethod || paymentMethod === "-Pilih metode pembayaran -") { 
+            showToast('Silakan pilih metode pembayaran.', 'error');
+            return;
+        }
+
+        // Siapkan data pesanan untuk dikirim ke API
+        const orderData = {
+            customer_id: customerId,
+            phone: phone, 
+            address: address, 
+            payment_method: paymentMethod,
+            note: note,
+            products: cart.map(item => ({
+                product_id: item.id,
+                product_name: item.nama,
+                quantity: item.qty,
+                price: item.harga,
+            }))
+        };
+
+        try {
+            // Mengirim data ke API
+            const response = await fetch('/api/orders/checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify(orderData)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                showSuccessModal(result.message); 
+                // Reset form setelah berhasil checkout
+                cart = []; 
+                renderCart(); 
+                // Reset tampilan dropdown pelanggan
+                document.getElementById('selected-customer').textContent = '- Pilih Customer -';
+                document.getElementById('customer-id-input').value = '';
+                document.getElementById('phone').value = '';
+                document.getElementById('address').value = '';
+                // Reset tampilan dropdown metode pembayaran
+                document.getElementById('selected-payment-method').textContent = '-Pilih metode pembayaran -';
+                document.getElementById('lokasi').value = '';
+                document.querySelector('textarea[name="note"]').value = ''; 
+            } else {
+                showToast('Gagal menyimpan pesanan: ' + result.message, 'error'); 
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('Terjadi kesalahan saat checkout. Mohon coba lagi.', 'error'); 
+        }
+    }
+    
+    // --- Logic Produk dan Keranjang ---
+
+    // Mengambil daftar produk dari API backend
     async function getProduk() {
         try {
             const res = await fetch('/api/products');
             produkList = await res.json();
-            tampilkanPilihanProduk();
+            tampilkanPilihanProduk(); 
         } catch (err) {
             console.error("Gagal ambil produk:", err);
+            showToast('Gagal memuat daftar produk.', 'error');
         }
     }
 
+    // Menampilkan modal pilihan produk
     function showProdukModal() {
-        tampilkanPilihanProduk();
+        tampilkanPilihanProduk(); 
         document.getElementById('produkModal').classList.remove('hidden');
     }
 
+    // Menyembunyikan modal pilihan produk
     function hideProdukModal() {
         document.getElementById('produkModal').classList.add('hidden');
     }
 
+    // Menampilkan pilihan produk di dalam modal
     function tampilkanPilihanProduk() {
         const pilihDiv = document.getElementById('pilihan-produk');
-        pilihDiv.innerHTML = '';
+        pilihDiv.innerHTML = ''; 
 
         produkList.forEach(p => {
-            const sudahDipilih = cart.some(c => c.id === p.id);
-
+            const sudahDipilih = cart.some(c => c.id === p.id); 
             pilihDiv.innerHTML += `
-        <button onclick="tambahKeCart(${p.id})" 
-            class="w-full flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-100 transition relative"
-            ${sudahDipilih ? 'disabled' : ''}>
-            
-            <img src="${p.gambar}" alt="${p.nama}" class="w-12 h-12 object-cover rounded">
-
-            <div class="flex flex-col text-left">
-                <span class="font-medium text-gray-800">${p.nama}</span>
-                <span class="text-gray-500">Rp ${p.harga.toLocaleString()}</span>
-            </div>
-
-            ${sudahDipilih ? `
-                <span class="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
-                    ✔
-                </span>` : ``}
-        </button>
-    `;
+                <button onclick="tambahKeCart(${p.id})" 
+                    class="w-full flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-100 transition relative"
+                    ${sudahDipilih ? 'disabled' : ''}>
+                    <img src="${p.gambar}" alt="${p.nama}" class="w-12 h-12 object-cover rounded">
+                    <div class="flex flex-col text-left">
+                        <span class="font-medium text-gray-800">${p.nama}</span>
+                        <span class="text-gray-500">Rp ${p.harga.toLocaleString()}</span>
+                    </div>
+                    ${sudahDipilih ? `<span class="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded">✔</span>` : ``}
+                </button>
+            `;
         });
     }
 
-    // Tambah ke cart
+    // Menambahkan produk ke keranjang atau menambah kuantitasnya
     function tambahKeCart(id) {
         const item = produkList.find(p => p.id === id);
         const existing = cart.find(c => c.id === id);
         if (existing) {
-            existing.qty++;
+            existing.qty++; 
+            showToast(`Kuantitas ${item.nama} ditambahkan menjadi ${existing.qty}.`, 'info');
         } else {
-            cart.push({
-                ...item,
-                qty: 1
-            });
+            cart.push({...item, qty: 1}); 
+            showToast(`${item.nama} ditambahkan ke keranjang.`, 'success');
         }
-        renderCart();
-        tampilkanPilihanProduk();
-        hideProdukModal();
+        renderCart(); 
+        tampilkanPilihanProduk(); 
+        hideProdukModal(); 
     }
 
+    // Mengubah kuantitas produk di keranjang
     function ubahQty(id, change) {
         const item = cart.find(p => p.id === id);
         item.qty += change;
-        if (item.qty < 1) item.qty = 1;
-        renderCart();
+        if (item.qty < 1) {
+            item.qty = 1; 
+            showToast('Kuantitas tidak bisa kurang dari 1.', 'warning'); 
+        }
+        renderCart(); 
     }
 
+    // Menghapus produk dari keranjang
     function hapusProduk(id) {
-        cart = cart.filter(p => p.id !== id);
-        renderCart();
-        tampilkanPilihanProduk();
+        const itemToRemove = cart.find(p => p.id === id);
+        // Mengganti confirm() dengan toast notifikasi untuk konfirmasi hapus
+        // Untuk mengganti ini dengan interaksi UI yang lebih baik, Anda perlu menambahkan modal konfirmasi kustom.
+        // Saat ini, kita akan langsung menghapus dan memberikan notifikasi toast.
+        cart = cart.filter(p => p.id !== id); 
+        renderCart(); 
+        tampilkanPilihanProduk(); 
+        showToast(`${itemToRemove.nama} dihapus dari keranjang.`, 'info');
     }
 
+    // Merender (menampilkan) isi keranjang
     function renderCart() {
         const cartDiv = document.getElementById('cart-list');
-        cartDiv.innerHTML = '';
-        let total = 0;
+        cartDiv.innerHTML = ''; 
+        let total = 0; 
 
         cart.forEach(item => {
             const subtotal = item.qty * item.harga;
-            total += subtotal;
+            total += subtotal; 
 
             cartDiv.innerHTML += `
                 <div class="border p-4 rounded mb-2 relative flex flex-row items-start gap-4">
@@ -364,134 +544,17 @@
                             </div>
                             <div class="mt-2 flex justify-between">
                                 <span class="text-black font-medium"></span>
-                                <span class="text-black font-medium mt-2">Total Rp ${subtotal.toLocaleString()}</span>
+                                <span class="text-black font-medium mt-2">Rp ${subtotal.toLocaleString()}</span>
                             </div>
                         </div>
                     </div>
                 </div>
-    `;
+            `;
         });
-
-        document.getElementById('cart-total').textContent = `Total: Rp ${total.toLocaleString()}`;
+        document.getElementById('cart-total').textContent = `Rp ${total.toLocaleString()}`; 
     }
 
-    document.addEventListener("DOMContentLoaded", getProduk);
-</script>
-
-
-<!-- fungsi button checkout -->
- <script>
-    async function checkout() {
-        // Mengambil ID pelanggan dari input tersembunyi
-        const customerId = document.getElementById('customer-id-input').value;
-        const paymentMethod = document.getElementById('lokasi').value;
-        const note = document.querySelector('textarea[name="note"]').value;
-
-         // Validasi
-        if (!customerId) {
-            alert('Silakan pilih customer terlebih dahulu.');
-            return;
-        }
-
-        if (cart.length === 0) {
-            alert('Keranjang belanja kosong. Tambahkan produk terlebih dahulu.');
-            return;
-        }
-
-        if (!paymentMethod || paymentMethod === "-Pilih metode-") {
-            alert('Silakan pilih metode pembayaran.');
-            return;
-        }
-
-        const orderData = {
-            customer_id: customerId,
-            payment_method: paymentMethod,
-            note: note,
-            products: cart.map(item => ({
-                product_id: item.id,
-                product_name: item.nama,
-                quantity: item.qty,
-                price: item.harga,
-            }))
-        };
-
-        try {
-            // Mengirim data ke API
-            const response = await fetch('/api/orders/checkout', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify(orderData)
-            });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                showSuccessModal(result.message);
-                // Mereset form setelah berhasil
-                cart = [];
-                renderCart();
-                document.getElementById('dropdown-button').value = '';
-                document.getElementById('phone').value = '';
-                document.getElementById('address').value = '';
-                document.getElementById('lokasi').value = '';
-                document.querySelector('textarea[name="note"]').value = '';
-            } else {
-                alert('Gagal menyimpan pesanan: ' + result.message);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Terjadi kesalahan saat checkout. Mohon coba lagi.');
-        }
-    }
-</script>
-
-<!--  JavaScript untuk dropdown Metode Pembayaran -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const button = document.getElementById('payment-method-button');
-    const menu = document.getElementById('payment-method-menu');
-    const selectedText = document.getElementById('selected-payment-method');
-    const hiddenInput = document.getElementById('lokasi');
-
-    button.addEventListener('click', function(e) {
-        e.stopPropagation();
-        menu.classList.toggle('hidden');
-    });
-
-    menu.addEventListener('click', function(e) {
-        if (e.target.tagName === 'A') {
-            e.preventDefault();
-            const value = e.target.getAttribute('data-value');
-            const text = e.target.textContent;
-
-            // Perbarui teks yang terlihat dan nilai input tersembunyi
-            selectedText.textContent = text;
-            hiddenInput.value = value;
-            
-            // Sembunyikan menu
-            menu.classList.add('hidden');
-        }
-    });
-
-    // Sembunyikan menu saat mengklik di luar
-    document.addEventListener('click', function(e) {
-        if (!button.contains(e.target) && !menu.contains(e.target)) {
-            menu.classList.add('hidden');
-        }
-    });
-});
-</script>
-
-
-<script src="/assets/argon/js/plugins/chartjs.min.js"></script>
-<script src="/assets/argon/js/plugins/perfect-scrollbar.min.js" async></script>
-<script src="/assets/argon/js/assets/argon-dashboard-tailwind.js?v=1.0.1" async></script>
-
-<!-- script modal -->
- <script>
+    // --- Fungsi Modal Sukses ---
     function showSuccessModal(message) {
         document.getElementById('success-message').textContent = message;
         document.getElementById('successModal').classList.remove('hidden');
@@ -502,15 +565,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 </script>
 
-<!-- modal sukses tersimpan -->
-<div id="successModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-sm p-6 text-center">
-        <div class="text-green-500 text-5xl mb-4">✔</div>
-        <h2 class="text-xl font-bold mb-2">Sukses!</h2>
-        <p id="success-message" class="text-gray-700 mb-4">Pesanan berhasil disimpan.</p>
-        <button onclick="hideSuccessModal()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition">Tutup</button>
-    </div>
-</div>
-
+{{-- Script eksternal yang mungkin dibutuhkan oleh layout atau fitur dashboard lainnya --}}
+<script src="/assets/argon/js/plugins/chartjs.min.js"></script>
+<script src="/assets/argon/js/plugins/perfect-scrollbar.min.js" async></script>
+<script src="/assets/argon/js/assets/argon-dashboard-tailwind.js?v=1.0.1" async></script>
 
 @endsection
