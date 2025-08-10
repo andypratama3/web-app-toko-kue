@@ -36,7 +36,7 @@
                 <div class="grid gap-4 g">
                     <div class="flex flex-wrap -mx-3">
                         <!-- Card 1: Pesanan -->
-                        <a href="#" class="w-1/2 px-3 ">
+                        <a href="{{ route('kurir.pesanan.create') }}" class="w-1/2 px-3 ">
                             <div
                                 class="flex items-center p-4 transition duration-150 ease-in-out transform bg-white shadow-lg rounded-2xl hover:shadow-xl active:scale-95">
                                 <div
@@ -70,7 +70,7 @@
                                 </div>
                                 <div>
                                     <div class="text-lg font-bold text-black sm:text-2xl">Customer</div>
-                                    <div class="text-xs text-left text-black sm:text-sm">Tambah customer baru</div>
+                                    <div class="text-xs text-left text-black sm:text-sm">Input here!</div>
                                 </div>
                             </div>
                         </button>
@@ -236,6 +236,7 @@
         </div>
     </div>
     <!-- end cards -->
+</div>
 
     @include('dashboard.kurir.customers.create')
 

@@ -120,4 +120,5 @@ class KurirCustomerController extends Controller
         $customer->delete();
         return redirect()->route('kurir.customers.index')->with('success', 'Customer berhasil dihapus!');
     }
+
 }
