@@ -84,7 +84,9 @@ Route::middleware([
         //Route untuk ambil data customer dipesanan
         Route::get('kurir/dashboard/create', [PesananController::class, 'showCustomer'])
             ->name('customer.showCustomer');
-            
+
+        Route::post('/orders/checkout', [PesananController::class, 'checkout'])
+            ->name('orders.checkout');
     });
 
     // ---------- COMMON DASHBOARD REDIRECT ----------

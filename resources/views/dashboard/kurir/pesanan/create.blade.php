@@ -3,152 +3,164 @@
 @section('content')
 
     <div class="flex-auto p-4">
-        <p class="leading-normal uppercase dark:text-white dark:opacity-60 text-sm mb-4">Data Customer</p>
+        {{-- FORM UTAMA UNTUK DATA PESANAN --}}
+        {{-- Action diset ke endpoint API. Submission dihandle oleh JavaScript (Fetch API). --}}
+        {{-- Pastikan route 'orders.checkout' ada di backend Laravel Anda. --}}
+        <form class="p-0 m-0" action="{{ route('orders.checkout') }}" method="POST" id="order-form">
+            @csrf {{-- Tambahkan token CSRF untuk keamanan Laravel --}}
 
-        <div class="flex flex-wrap -mx-3">
-            <!-- NAMA CUSTOMER (CUSTOM DROPDOWN WITH SEARCH) -->
-            <div class="relative group w-full max-w-full px-3 shrink-0 md:w-6/12 md:flex-0 mb-4">
-                <label for="search-input" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Nama Customer</label>
-                
-                <div class="relative">
-                    <button id="dropdown-button" type="button" class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-left">
-                        <span id="selected-customer">- Pilih Customer -</span>
-                        <svg class="-mr-1 ml-2 h-5 w-5 absolute right-3 top-1/2 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                        </svg>
-                    </button>
-                    
-                    <div id="dropdown-menu" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg hidden dark:bg-gray-700">
-                        <div class="p-2">
-                            <input type="text" id="search-input" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none dark:bg-gray-600 dark:border-gray-500 dark:text-white" placeholder="Cari customer...">
+            <!-- MAIN LAYOUT: TWO COLUMNS FOR XL SCREENS, STACKED FOR SMALLER -->
+            <div class="flex flex-col xl:flex-row -mx-7">
+                {{-- KOLOM KIRI: DETAIL PRODUK --}}
+                {{-- Di mobile: order-2 (tengah), Di desktop: order-1 (kiri) --}}
+                <div class="w-full max-w-full px-3 shrink-0 xl:w-7/12 xl:flex-0 order-2 xl:order-1 mt-4 xl:mb-0 mb-12">
+                    <div class="p-3 rounded-xl border border-gray-200 shadow-md bg-white dark:bg-gray-800 dark:border-gray-700">
+                        <p class="leading-normal uppercase dark:text-white dark:opacity-60 text-sm mb-4">Detail Produk</p>
+                        <div class="flex justify-end mb-4">
+                            <button type="button" onclick="showProdukModal()"
+                                class="bg-[#345c7c] text-white px-6 py-2 rounded hover:bg-[#2a4964] transition">
+                                + Tambah Produk
+                            </button>
                         </div>
-                        
-                        <ul id="customer-list" class="max-h-60 overflow-y-auto">
-                            @foreach($customers as $customer)
-                            <li>
-                                <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
-                                    data-value="{{ $customer->id }}"
-                                    data-phone="{{ $customer->phone }}"
-                                    data-address="{{ $customer->address }}">
-                                    {{ $customer->name }}
-                                </a>
-                            </li>
-                            @endforeach
-                        </ul>
-                    </div>
-                </div>
-                <input type="hidden" name="customer_id" id="customer-id-input">
-            </div>   
 
-            <!-- NO HP -->
-            <div class="w-full max-w-full px-3 shrink-0 md:w-6/12 md:flex-0">
-                <div class="mb-4">
-                    <label for="phone" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">No. HP</label>
-                    <input type="text" name="phone" id="phone" class="mb-6 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 cursor-not-allowed" disabled>
-                </div>
-            </div>
-
-            <!-- ADDRESS -->
-            <div class="w-full max-w-full px-3 shrink-0 md:w-full md:flex-0">
-                <div class="mb-4">
-                    <label for="address" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Address</label>
-                    <textarea id="address" class="mb-6 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 cursor-not-allowed" disabled></textarea>
-                </div>
-            </div>
-        </div>
-
-        <hr class="h-px mx-0 my-4 bg-transparent border-0 opacity-25 bg-gradient-to-r from-transparent via-black/40 to-transparent dark:bg-gradient-to-r dark:from-transparent dark:via-white dark:to-transparent " />
-        <p class="leading-normal uppercase dark:text-white dark:opacity-60 text-sm mb-4">Detail Produk</p>
-
-        <div class="flex flex-wrap -mx-3">
-
-            <div class="w-full max-w-full px-3 shrink-0 md:w-full md:flex-0">
-                <!-- Tombol Tambah Produk -->
-                <div class="flex justify-end mb-4">
-                    <button onclick="showProdukModal()"
-                        class="bg-[#345c7c] text-white px-6 py-2 rounded hover:bg-[#2a4964] transition">
-                        + Tambah Produk
-                    </button>
-                </div>
-
-                <!-- Modal Pilihan Produk -->
-                <div id="produkModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-4">
-                        <div class="flex justify-between items-center border-b pb-2 mb-4">
-                            <h2 class="text-lg font-bold">Pilih Produk</h2>
-                            <button onclick="hideProdukModal()" class="text-gray-500 hover:text-black">✕</button>
-                        </div>
-                        <div id="pilihan-produk" class="space-y-2"></div>
-                    </div>
-                </div>
-
-                <!-- Judul Kolom untuk Desktop -->
-                <div class="hidden md:flex justify-between px-4 py-2 border-b border-gray-300 font-bold text-black">
-                    <p class=" ml-28"></p>
-                    <p class="w-1/4">Nama Produk</p>
-                    <p class="w-1/6 text-center">Harga Satuan</p>
-                    <p class="w-1/6 text-center -ml-4">Qty</p>
-                    <p class="w-1/6 text-center">Total</p>
-                    <p class="w-1/6 text-center">Aksi</p>
-                </div>
-
-                <!-- Cart -->
-                <div id="cart-list"></div>
-            </div>
-
-            <!-- METODE BAYAR (CUSTOM DROPDOWN) -->
-            <div class="w-full max-w-full px-3 shrink-0 md:w-full md:flex-0 mt-4">
-                <div class="mb-4">
-                    <label for="lokasi" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Metode Pembayaran</label>
-                    <div class="relative inline-block w-full text-left">
-                        <button id="payment-method-button" type="button" class="inline-flex justify-between items-center w-full rounded-lg border border-gray-300 shadow-sm px-4 py-2.5 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600">
-                            <span id="selected-payment-method">-Pilih metode pembayaran -</span>
-                            <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                            </svg>
-                        </button>
-                        <div id="payment-method-menu" class="absolute left-0 mt-1 w-full rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-700 hidden" role="menu">
-                            <div class="py-2" role="none">
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600" data-value="cash" role="menuitem">Cash (Tunai)</a>
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600" data-value="tf" role="menuitem">Transfer Bank</a>
-                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600" data-value="qr" role="menuitem">QRIS</a>
+                        <!-- Modal Pilihan Produk -->
+                        <div id="produkModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                            <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-4">
+                                <div class="flex justify-between items-center border-b pb-2 mb-4">
+                                    <h2 class="text-lg font-bold">Pilih Produk</h2>
+                                    <button type="button" onclick="hideProdukModal()" class="text-gray-500 hover:text-black">✕</button>
+                                </div>
+                                <div id="pilihan-produk" class="space-y-2"></div>
                             </div>
                         </div>
-                        <input type="hidden" id="lokasi" name="lokasi">
+
+                        <!-- Judul Kolom untuk Desktop -->
+                        <div class="hidden md:flex justify-between px-4 py-2 border-b border-gray-300 font-bold text-black">
+                            <p class=" ml-28"></p>
+                            <p class="w-1/4">Nama Produk</p>
+                            <p class="w-1/6 text-center -ml-4">Qty</p>
+                            <p class="w-1/6 text-center">Total</p>
+                            <p class="w-1/6 text-center">Aksi</p>
+                        </div>
+
+                        <!-- Cart -->
+                        <div id="cart-list" class="min-h-[200px]"></div> {{-- Tambahkan min-height agar tidak kosong --}}
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <hr class="h-px mx-0 my-4 bg-transparent border-0 opacity-25 bg-gradient-to-r from-transparent via-black/40 to-transparent dark:bg-gradient-to-r dark:from-transparent dark:via-white dark:to-transparent " />
-        <p class="leading-normal uppercase dark:text-white dark:opacity-60 text-sm mb-4">Note</p>
+                {{-- KOLOM KANAN --}}
+                {{-- Di mobile: order-1 untuk Data Customer, order-3 untuk Pembayaran/Catatan --}}
+                {{-- Di desktop: order-2 untuk kedua box (berada di kolom kanan) --}}
+                <div class="w-full max-w-full px-3 shrink-0 xl:w-5/12 xl:flex-0 order-1 xl:order-2 xl:mt-4 xl:mt-0 xl:mr-4">
+                    {{-- Box 1 Kanan: DATA CUSTOMER (Nama, No HP, Alamat) --}}
+                    <div class="p-3 rounded-xl border border-gray-200 shadow-md bg-white dark:bg-gray-800 dark:border-gray-700 mb-4">
+                        <p class="leading-normal uppercase dark:text-white dark:opacity-60 text-sm mb-4">Data Customer</p>
+                        
+                        <!-- NAMA CUSTOMER (CUSTOM DROPDOWN WITH SEARCH) -->
+                        <div class="relative group w-full mb-4">
+                            <label for="search-input" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Nama Customer</label>
+                            <div class="relative">
+                                <button id="dropdown-button" type="button" class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-left">
+                                    <span id="selected-customer">- Pilih Customer -</span>
+                                    <svg class="-mr-1 ml-2 h-5 w-5 absolute right-3 top-1/2 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                                
+                                <div id="dropdown-menu" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg hidden dark:bg-gray-700">
+                                    <div class="p-2">
+                                        <input type="text" id="search-input" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none dark:bg-gray-600 dark:border-gray-500 dark:text-white" placeholder="Cari customer...">
+                                    </div>
+                                    
+                                    <ul id="customer-list" class="max-h-60 overflow-y-auto">
+                                        @foreach($customers as $customer)
+                                        <li>
+                                            <a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                                                data-value="{{ $customer->id }}"
+                                                data-phone="{{ $customer->phone }}"
+                                                data-address="{{ $customer->address }}">
+                                                {{ $customer->name }}
+                                            </a>
+                                        </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            </div>
+                            <input type="hidden" name="customer_id" id="customer-id-input">
+                        </div>   
 
-        <div class="flex flex-wrap -mx-3 pb-14">
-            <!-- NOTE -->
-            <div class="w-full max-w-full px-3 shrink-0 md:w-full md:flex-0">
-                <div class="mb-4">
-                    <label for="note" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Text Here!</label>
-                    <textarea type="text" name="note" class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"></textarea>
+                        <!-- NO HP -->
+                        <div class="mb-4">
+                            <label for="phone" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">No. HP</label>
+                            <input type="text" name="phone" id="phone" class="mb-6 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 cursor-not-allowed" disabled>
+                        </div>
+
+                        <!-- ADDRESS -->
+                        <div class="mb-4">
+                            <label for="address" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Alamat</label>
+                            <textarea id="address" name="address" class="mb-6 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 cursor-not-allowed" disabled></textarea>
+                        </div>
+                    </div>
+
+                    {{-- Box 2 Kanan: METODE PEMBAYARAN & CATATAN --}}
+                    <div class="p-3 rounded-xl border border-gray-200 shadow-md bg-white dark:bg-gray-800 dark:border-gray-700 mt-4">
+                        <p class="leading-normal uppercase dark:text-white dark:opacity-60 text-sm mb-4">Detail Pembayaran & Catatan</p>
+                        
+                        <!-- METODE BAYAR (CUSTOM DROPDOWN) -->
+                        <div class="mb-4">
+                            <label for="payment-method-input" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Metode Pembayaran</label>
+                            <div class="relative inline-block w-full text-left">
+                                <button id="payment-method-button" type="button" class="inline-flex justify-between items-center w-full rounded-lg border border-gray-300 shadow-sm px-4 py-2.5 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600">
+                                    <span id="selected-payment-method">-Pilih metode pembayaran -</span>
+                                    <svg class="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                                <div id="payment-method-menu" class="absolute left-0 mt-1 w-full rounded-xl shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-700 hidden" role="menu">
+                                    <div class="py-2" role="none">
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600" data-value="cash" role="menuitem">Cash (Tunai)</a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600" data-value="tf" role="menuitem">Transfer Bank</a>
+                                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600" data-value="qr" role="menuitem">QRIS</a>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="payment-method-input" name="payment_method_selected"> {{-- Ini akan digunakan oleh JS --}}
+                            </div>
+                        </div>
+
+                        <!-- Form Upload Bukti Pembayaran (Kondisional) -->
+                        <div id="payment-proof-upload" class="mb-4 hidden">
+                            <label for="payment-proof" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Bukti Pembayaran</label>
+                            <input type="file" name="payment_proof" id="payment-proof" accept="image/*" class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
+                            <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG. Ukuran maksimal: 2MB.</p>
+                        </div>
+
+                        <!-- NOTE -->
+                        <div class="mb-4">
+                            <label for="note" class="inline-block mb-2 ml-1 font-bold text-xs text-slate-700 dark:text-white/80">Catatan</label>
+                            <textarea type="text" name="note" id="note" class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"></textarea>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            </div> {{-- Penutup flex kolom kiri dan kanan --}}
+
             <!-- BUTTON CHECKOUT UNTUK WEBSITE (TAMBAHAN) -->
             <div class="w-full max-w-full px-3 shrink-0 md:w-full md:flex-0 mt-4 hidden xl:block">
                 <div class="flex justify-end">
-                    <button onclick="checkout()" 
-                        class="bg-[#748c54] text-white px-6 py-2 rounded hover:bg-[#5a6e40] transition">
+                    <button type="button" onclick="checkout()" 
+                        class="bg-[#748c54] text-white px-6 py-2 rounded-xl hover:bg-[#5a6e40] transition shadow-md">
                         Checkout
                     </button>
                 </div>
             </div>
-        </div>
+        </form> {{-- PENUTUP FORM --}}
     </div>
 </div>
 
 <!-- Tombol Checkout Fix di Bawah (UNTUK MOBILE) -->
 <div class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-300 p-4 flex justify-between items-center z-50 xl:hidden">
-    <p id="cart-total" class="font-bold text-lg">Rp 0</p> 
-    <button onclick="checkout()" 
-        class="bg-[#748c54] text-white px-6 py-2 rounded hover:bg-[#5a6e40] transition">
+    <p id="cart-total" class="font-bold text-lg">Total: Rp 0</p> 
+    <button type="button" onclick="checkout()" 
+        class="bg-[#748c54] text-white px-6 py-2 rounded-xl hover:bg-[#5a6e40] transition shadow-md">
         Checkout
     </button>
 </div>
@@ -189,7 +201,7 @@
         const toastIconWrapper = document.getElementById('toast-icon-wrapper');
 
         // Reset kelas background dan ikon
-        toast.classList.remove('bg-white', 'border-green-400', 'border-red-400', 'border-orange-400');
+        toast.classList.remove('bg-white', 'border-green-400', 'border-red-400', 'border-orange-400', 'border-blue-400'); // Tambahkan border-blue-400
         toastIconWrapper.innerHTML = ''; // Kosongkan ikon sebelumnya
 
         let iconSvg = '';
@@ -296,7 +308,8 @@
         const paymentButton = document.getElementById('payment-method-button');
         const paymentMenu = document.getElementById('payment-method-menu');
         const selectedPaymentText = document.getElementById('selected-payment-method');
-        const hiddenPaymentInput = document.getElementById('lokasi'); 
+        const hiddenPaymentInput = document.getElementById('payment-method-input');
+        const paymentProofUploadDiv = document.getElementById('payment-proof-upload');
 
         // Toggle visibilitas dropdown metode pembayaran
         paymentButton.addEventListener('click', function(e) {
@@ -315,6 +328,14 @@
                 selectedPaymentText.textContent = text;
                 hiddenPaymentInput.value = value;
                 
+                // Tampilkan/sembunyikan form upload bukti pembayaran
+                if (value === 'tf' || value === 'qr') {
+                    paymentProofUploadDiv.classList.remove('hidden');
+                } else {
+                    paymentProofUploadDiv.classList.add('hidden');
+                    document.getElementById('payment-proof').value = ''; // Kosongkan input file jika disembunyikan
+                }
+
                 // Sembunyikan menu dropdown setelah pemilihan
                 paymentMenu.classList.add('hidden');
             }
@@ -340,10 +361,11 @@
     async function checkout() {
         // Mendapatkan data dari form
         const customerId = document.getElementById('customer-id-input').value; 
-        const paymentMethod = document.getElementById('lokasi').value; 
-        const note = document.querySelector('textarea[name="note"]').value;
-        const phone = document.getElementById('phone').value; 
+        const paymentMethod = document.getElementById('payment-method-input').value; 
+        const note = document.getElementById('note').value; 
+        const phone = document.getElementById('phone').value; // Hanya ada satu input phone sekarang
         const address = document.getElementById('address').value; 
+        const paymentProofFile = document.getElementById('payment-proof').files[0];
 
         // Validasi data sebelum checkout
         if (!customerId) {
@@ -361,30 +383,60 @@
             return;
         }
 
-        // Siapkan data pesanan untuk dikirim ke API
-        const orderData = {
-            customer_id: customerId,
-            phone: phone, 
-            address: address, 
-            payment_method: paymentMethod,
-            note: note,
-            products: cart.map(item => ({
+        // Validasi bukti pembayaran jika metode transfer/QRIS
+        if ((paymentMethod === 'tf' || paymentMethod === 'qr') && !paymentProofFile) {
+            showToast('Silakan unggah bukti pembayaran.', 'error');
+            return;
+        }
+
+        // Siapkan data pesanan
+        let requestBody;
+        let headers = {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        };
+
+        if (paymentProofFile) {
+            // Gunakan FormData jika ada file yang diupload
+            const formData = new FormData();
+            formData.append('customer_id', customerId);
+            formData.append('phone', phone);
+            formData.append('address', address);
+            formData.append('payment_method', paymentMethod);
+            formData.append('note', note);
+            formData.append('payment_proof', paymentProofFile);
+            formData.append('products', JSON.stringify(cart.map(item => ({ // Stringify products array
                 product_id: item.id,
                 product_name: item.nama,
                 quantity: item.qty,
                 price: item.harga,
-            }))
-        };
+            }))));
+            requestBody = formData;
+            // Hapus Content-Type header karena FormData akan mengaturnya ke multipart/form-data
+            // delete headers['Content-Type']; // Tidak perlu dihapus secara eksplisit, browser akan mengaturnya
+        } else {
+            // Gunakan JSON jika tidak ada file yang diupload
+            requestBody = JSON.stringify({
+                customer_id: customerId,
+                phone: phone, 
+                address: address, 
+                payment_method: paymentMethod,
+                note: note,
+                products: cart.map(item => ({
+                    product_id: item.id,
+                    product_name: item.nama,
+                    quantity: item.qty,
+                    price: item.harga,
+                }))
+            });
+            headers['Content-Type'] = 'application/json';
+        }
 
         try {
             // Mengirim data ke API
             const response = await fetch('/api/orders/checkout', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify(orderData)
+                headers: headers, // Gunakan headers yang sudah disiapkan
+                body: requestBody
             });
 
             const result = await response.json();
@@ -401,8 +453,10 @@
                 document.getElementById('address').value = '';
                 // Reset tampilan dropdown metode pembayaran
                 document.getElementById('selected-payment-method').textContent = '-Pilih metode pembayaran -';
-                document.getElementById('lokasi').value = '';
-                document.querySelector('textarea[name="note"]').value = ''; 
+                document.getElementById('payment-method-input').value = '';
+                document.getElementById('payment-proof').value = ''; // Kosongkan input file
+                document.getElementById('payment-proof-upload').classList.add('hidden'); // Sembunyikan lagi
+                document.getElementById('note').value = ''; 
             } else {
                 showToast('Gagal menyimpan pesanan: ' + result.message, 'error'); 
             }
@@ -445,10 +499,10 @@
         produkList.forEach(p => {
             const sudahDipilih = cart.some(c => c.id === p.id); 
             pilihDiv.innerHTML += `
-                <button onclick="tambahKeCart(${p.id})" 
+                <button type="button" onclick="tambahKeCart(${p.id})" 
                     class="w-full flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-100 transition relative"
                     ${sudahDipilih ? 'disabled' : ''}>
-                    <img src="${p.gambar}" alt="${p.nama}" class="w-12 h-12 object-cover rounded">
+                    <img src="${p.gambar}" class="w-12 h-12 object-cover rounded">
                     <div class="flex flex-col text-left">
                         <span class="font-medium text-gray-800">${p.nama}</span>
                         <span class="text-gray-500">Rp ${p.harga.toLocaleString()}</span>
@@ -489,9 +543,6 @@
     // Menghapus produk dari keranjang
     function hapusProduk(id) {
         const itemToRemove = cart.find(p => p.id === id);
-        // Mengganti confirm() dengan toast notifikasi untuk konfirmasi hapus
-        // Untuk mengganti ini dengan interaksi UI yang lebih baik, Anda perlu menambahkan modal konfirmasi kustom.
-        // Saat ini, kita akan langsung menghapus dan memberikan notifikasi toast.
         cart = cart.filter(p => p.id !== id); 
         renderCart(); 
         tampilkanPilihanProduk(); 
@@ -512,46 +563,53 @@
                 <div class="border p-4 rounded mb-2 relative flex flex-row items-start gap-4">
                     <img src="${item.gambar}" class="w-24 h-24 rounded object-cover" />
                     <div class="flex-1">
+                        {{-- Mobile View --}}
                         <div class="flex justify-between md:hidden">
                             <div>
                                 <p class="font-bold text-black">${item.nama}</p>
                                 <p class="text-black">Rp ${item.harga.toLocaleString()}</p>
                             </div>
                         </div>
-                        <div class="hidden md:flex justify-between items-center px-4 py-2 border-b border-gray-100">
-                            <p class="w-1/4 text-black">${item.nama}</p>
-                            <p class="w-1/6 text-center text-black">Rp ${item.harga.toLocaleString()}</p>
-                            <div class="w-1/6 flex justify-center items-center gap-2">
-                                <button onclick="ubahQty(${item.id}, -1)" class="px-2 bg-gray-200 rounded text-black">–</button>
-                                <span class="text-black">${item.qty}</span>
-                                <button onclick="ubahQty(${item.id}, 1)" class="px-2 bg-gray-200 rounded text-black">+</button>
-                            </div>
-                            <p class="w-1/6 text-center text-black font-medium">Rp ${subtotal.toLocaleString()}</p>
-                            <div class="w-1/6 flex justify-center">
-                                <button onclick="hapusProduk(${item.id})" class="text-red-500 text-xl">🗑</button>
-                            </div>
-                        </div>
-                        <div class="md:hidden mt-3">
+                         <div class="md:hidden mt-3">
                             <div class="flex items-center gap-2">
                                 <div class="flex items-center gap-2">
-                                    <button onclick="ubahQty(${item.id}, -1)" class="px-2 bg-gray-200 rounded text-black">–</button>
+                                    <button type="button" onclick="ubahQty(${item.id}, -1)" class="px-2 bg-gray-200 rounded text-black">–</button>
                                     <span class="text-black">${item.qty}</span>
-                                    <button onclick="ubahQty(${item.id}, 1)" class="px-2 bg-gray-200 rounded text-black">+</button>
+                                    <button type="button" onclick="ubahQty(${item.id}, 1)" class="px-2 bg-gray-200 rounded text-black">+</button>
                                 </div>
                                 <div class="ml-auto">
-                                    <button onclick="hapusProduk(${item.id})" class="text-red-500 text-xl">🗑</button>
+                                    <button type="button" onclick="hapusProduk(${item.id})" class="text-red-500 text-xl">🗑</button>
                                 </div>
                             </div>
                             <div class="mt-2 flex justify-between">
                                 <span class="text-black font-medium"></span>
-                                <span class="text-black font-medium mt-2">Rp ${subtotal.toLocaleString()}</span>
+                                <span class="text-black font-medium mt-2">Total Rp ${subtotal.toLocaleString()}</span>
                             </div>
                         </div>
+
+                        {{-- Desktop View --}}
+                        <div class="hidden md:flex flex-1 items-center justify-between">
+                            <div class="w-[30%] text-left"> {{-- Combined Nama Produk and Harga Satuan --}}
+                                <p class="font-bold text-black">${item.nama}</p>
+                                <p class="text-gray-500">Rp ${item.harga.toLocaleString()}</p>
+                            </div>
+                            <div class="w-[20%] flex justify-center items-center gap-2"> {{-- Qty --}}
+                                <button type="button" onclick="ubahQty(${item.id}, -1)" class="px-2 bg-gray-200 rounded text-black">–</button>
+                                <span class="text-black">${item.qty}</span>
+                                <button type="button" onclick="ubahQty(${item.id}, 1)" class="px-2 bg-gray-200 rounded text-black">+</button>
+                            </div>
+                            <p class="w-[25%] text-center text-black font-medium">Rp ${subtotal.toLocaleString()}</p> {{-- Total --}}
+                            <div class="w-[15%] flex justify-center"> {{-- Aksi --}}
+                                <button type="button" onclick="hapusProduk(${item.id})" class="text-red-500 text-xl">🗑</button>
+                            </div>
+                        </div>
+                        
+                       
                     </div>
                 </div>
             `;
         });
-        document.getElementById('cart-total').textContent = `Rp ${total.toLocaleString()}`; 
+        document.getElementById('cart-total').textContent = `Total: Rp ${total.toLocaleString()}`; 
     }
 
     // --- Fungsi Modal Sukses ---

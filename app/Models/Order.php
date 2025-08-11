@@ -9,11 +9,15 @@ class Order extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
+   protected $fillable = [
         'customer_id',
-        'total_price',
+        'phone', // Tambahkan ke fillable
+        'address', // Tambahkan ke fillable
         'payment_method',
         'note',
+        'total_amount',
+        'status',
+        'courier_id', // Jika ada
     ];
 
     public function customer()
@@ -21,7 +25,7 @@ class Order extends Model
         return $this->belongsTo(Customer::class);
     }
 
-    public function orderDetails()
+    public function items()
     {
         return $this->hasMany(OrderDetail::class);
     }

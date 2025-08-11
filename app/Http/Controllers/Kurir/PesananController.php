@@ -36,54 +36,67 @@ class PesananController extends Controller
 
 
     //controler form simpan pesanan
-    public function store(Request $request)
+    public function checkout(Request $request)
     {
-        // 1. Validasi data yang masuk
-        $request->validate([
+        dd($request->all());
+        // 1. Validasi Data yang Masuk
+        $validatedData = $request->validate([
             'customer_id' => 'required|exists:customers,id',
-            'payment_method' => 'required|string',
-            'note' => 'nullable|string',
-            'products' => 'required|array',
-            'products.*.product_id' => 'required|integer',
-            'products.*.product_name' => 'required|string',
+            'phone' => 'nullable|string|max:20', // Tambahkan validasi untuk phone
+            'address' => 'nullable|string|max:255', // Tambahkan validasi untuk address
+            'payment_method' => 'required|string|in:cash,tf,qr',
+            'note' => 'nullable|string|max:500',
+            'products' => 'required|array|min:1',
+            'products.*.product_id' => 'required|exists:products,id',
+            'products.*.product_name' => 'required|string|max:255', // Tambahkan jika ingin disimpan
             'products.*.quantity' => 'required|integer|min:1',
             'products.*.price' => 'required|numeric|min:0',
         ]);
 
         try {
+            // Memulai transaksi database
             DB::beginTransaction();
 
-            // 2. Hitung total harga
-            $totalPrice = collect($request->products)->sum(function ($product) {
-                return $product['quantity'] * $product['price'];
-            });
-
-            // 3. Buat record pesanan utama
+            // 2. Buat Entri Order Utama
             $order = Order::create([
-                'customer_id' => $request->customer_id,
-                'total_price' => $totalPrice,
-                'payment_method' => $request->payment_method,
-                'note' => $request->note,
+                'customer_id' => $validatedData['customer_id'],
+                'phone' => $validatedData['phone'], // Simpan phone
+                'address' => $validatedData['address'], // Simpan address
+                'payment_method' => $validatedData['payment_method'],
+                'note' => $validatedData['note'],
+                'total_amount' => 0, // Akan dihitung nanti
+                'status' => 'pending', // Atau status awal lainnya
+                // Anda mungkin perlu menambahkan user_id jika ada sistem otentikasi kurir
+                // 'courier_id' => auth()->id(),
             ]);
 
-            // 4. Buat detail pesanan untuk setiap produk
-            foreach ($request->products as $product) {
+            $totalAmount = 0;
+            // 3. Simpan Detail Item Pesanan
+            foreach ($validatedData['products'] as $product) {
                 OrderDetail::create([
                     'order_id' => $order->id,
                     'product_id' => $product['product_id'],
-                    'product_name' => $product['product_name'],
+                    'product_name' => $product['product_name'], // Simpan nama produk
                     'quantity' => $product['quantity'],
                     'price' => $product['price'],
                     'subtotal' => $product['quantity'] * $product['price'],
                 ]);
+                $totalAmount += ($product['quantity'] * $product['price']);
             }
 
+            // 4. Perbarui Total Jumlah Order
+            $order->update(['total_amount' => $totalAmount]);
+
+            // Commit transaksi
             DB::commit();
 
-            return response()->json(['message' => 'Pesanan berhasil disimpan!'], 201);
+            return response()->json(['message' => 'Pesanan berhasil disimpan!', 'order_id' => $order->id], 200);
+
         } catch (\Exception $e) {
+            // Rollback transaksi jika terjadi kesalahan
             DB::rollBack();
-            return response()->json(['message' => 'Gagal menyimpan pesanan.', 'error' => $e->getMessage()], 500);
+            \Log::error('Checkout Error: ' . $e->getMessage()); // Catat error
+            return response()->json(['message' => 'Terjadi kesalahan saat menyimpan pesanan. ' . $e->getMessage()], 500);
         }
     }
 }

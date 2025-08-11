@@ -30,6 +30,4 @@ Route::get('/products', function () {
     )->get();
 });
 
-Route::post('/orders/checkout', [PesananController::class, 'store']);
-
-Route::post('/orders/checkout', [PesananController::class, 'store'])->name('orders.store');
+Route::post('/orders/checkout', [PesananController::class, 'checkout'])->name('orders.checkout');
