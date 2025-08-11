@@ -256,33 +256,5 @@ if (navbar) {
   buttonNavbarFixed.setAttribute("disabled", "true");
 }
 
-var dark_mode_toggle = document.querySelector("[dark-toggle]");
-var root_html = document.querySelector("html");
-var theme_toggle_light_icon = document.getElementById("theme-toggle-light-icon");
-var theme_toggle_dark_icon = document.getElementById("theme-toggle-dark-icon");
-
-// Check if dark mode is already enabled on page load
-if (root_html.classList.contains("dark")) {
-  dark_mode_toggle.checked = true;
-  if (theme_toggle_light_icon) theme_toggle_light_icon.classList.add("hidden");
-  if (theme_toggle_dark_icon) theme_toggle_dark_icon.classList.remove("hidden");
-} else {
-  dark_mode_toggle.checked = false;
-  if (theme_toggle_light_icon) theme_toggle_light_icon.classList.remove("hidden");
-  if (theme_toggle_dark_icon) theme_toggle_dark_icon.classList.add("hidden");
-}
-
-dark_mode_toggle.addEventListener("change", function () {
-  dark_mode_toggle.setAttribute("manual", "true");
-  if (this.checked) {
-    root_html.classList.add("dark");
-    // Show moon icon, hide sun icon
-    if (theme_toggle_light_icon) theme_toggle_light_icon.classList.add("hidden");
-    if (theme_toggle_dark_icon) theme_toggle_dark_icon.classList.remove("hidden");
-  } else {
-    root_html.classList.remove("dark");
-    // Show sun icon, hide moon icon
-    if (theme_toggle_light_icon) theme_toggle_light_icon.classList.remove("hidden");
-    if (theme_toggle_dark_icon) theme_toggle_dark_icon.classList.add("hidden");
-  }
-});
+// DARK MODE FUNCTIONALITY MOVED TO dark-mode-toggle.js
+// This section has been moved to a separate file to avoid conflicts
