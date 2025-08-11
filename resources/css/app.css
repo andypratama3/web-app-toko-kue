@@ -64,8 +64,13 @@
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    border-radius: 0.5rem; /* rounded-lg */
+    border-radius: 0 !important; /* Remove border radius that might cause background issues */
     transition: all 0.3s ease-in-out;
+    background-color: transparent !important; /* Ensure transparent background */
+    background-image: none !important;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 /* Ensure icons inside containers maintain size */
@@ -78,6 +83,64 @@
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    background-color: transparent !important; /* Ensure icons have transparent background */
+}
+
+/* Dark mode specific fixes for sidebar icons */
+.dark .sidebar-icon-container {
+    background-color: transparent !important;
+}
+
+.dark .sidebar-icon-container i {
+    background-color: transparent !important;
+}
+
+/* Additional fixes for FontAwesome icons in dark mode */
+.dark .sidebar-icon-container i.fas,
+.dark .sidebar-icon-container i.far,
+.dark .sidebar-icon-container i.fab,
+.dark .sidebar-icon-container i[class*="fa-"] {
+    background-color: transparent !important;
+    background-image: none !important;
+    background: transparent !important;
+}
+
+/* Force transparent background for all icon elements in sidebar */
+.dark #sidebar .sidebar-icon-container,
+.dark #sidebar .sidebar-icon-container *,
+.dark #sidebar .sidebar-icon-container i,
+.dark #sidebar .sidebar-icon-container i::before,
+.dark #sidebar .sidebar-icon-container i::after {
+    background-color: transparent !important;
+    background-image: none !important;
+    background: transparent !important;
+}
+
+/* Ultra-specific override for dark mode sidebar icons - nuclear option */
+html.dark #sidebar .sidebar-icon-container,
+html.dark #sidebar .sidebar-icon-container *,
+html.dark #sidebar .sidebar-icon-container i,
+html.dark #sidebar .sidebar-icon-container i.fas,
+html.dark #sidebar .sidebar-icon-container i.far,
+html.dark #sidebar .sidebar-icon-container i.fab,
+html.dark #sidebar .sidebar-icon-container i[class*="fa-"],
+html.dark #sidebar .sidebar-icon-container i::before,
+html.dark #sidebar .sidebar-icon-container i::after,
+body.dark #sidebar .sidebar-icon-container,
+body.dark #sidebar .sidebar-icon-container *,
+body.dark #sidebar .sidebar-icon-container i,
+body.dark #sidebar .sidebar-icon-container i.fas,
+body.dark #sidebar .sidebar-icon-container i.far,
+body.dark #sidebar .sidebar-icon-container i.fab,
+body.dark #sidebar .sidebar-icon-container i[class*="fa-"],
+body.dark #sidebar .sidebar-icon-container i::before,
+body.dark #sidebar .sidebar-icon-container i::after {
+    background-color: transparent !important;
+    background-image: none !important;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
 }
 
 /* Collapsed sidebar specific styles */
@@ -110,6 +173,18 @@
     width: 100%;
     height: 5rem; /* h-20 */
     flex-shrink: 0;
+    background-color: transparent !important;
+}
+
+/* Dark mode logo fixes */
+.dark .sidebar-logo-container {
+    background-color: transparent !important;
+}
+
+.dark #sidebar-logo-img {
+    background-color: transparent !important;
+    background: transparent !important;
+    filter: brightness(0.9) contrast(1.1); /* Slightly adjust for dark mode visibility */
 }
 
 #sidebar.w-16 .sidebar-logo-container {
