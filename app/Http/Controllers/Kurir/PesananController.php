@@ -38,7 +38,6 @@ class PesananController extends Controller
     //controler form simpan pesanan
     public function checkout(Request $request)
     {
-        dd($request->all());
         // 1. Validasi Data yang Masuk
         $validatedData = $request->validate([
             'customer_id' => 'required|exists:customers,id',
@@ -95,7 +94,7 @@ class PesananController extends Controller
         } catch (\Exception $e) {
             // Rollback transaksi jika terjadi kesalahan
             DB::rollBack();
-            \Log::error('Checkout Error: ' . $e->getMessage()); // Catat error
+            Log::error('Checkout Error: ' . $e->getMessage()); // Catat error
             return response()->json(['message' => 'Terjadi kesalahan saat menyimpan pesanan. ' . $e->getMessage()], 500);
         }
     }

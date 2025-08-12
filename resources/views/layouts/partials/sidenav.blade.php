@@ -182,17 +182,16 @@
                             <div class="mr-2 sidebar-icon-container">
                                 <i class="text-red-600 fas fa-book"></i>
                             </div>
-                            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Data
-                                Customer</span>
+                            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Data Customer</span>
                         </a>
                     </li>
                     <li class="mt-0.5 w-full">
                         <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
-                            href="#" data-tooltip="Pesanan">
+                            href="{{ route('kurir.pesanan.index') }}" data-tooltip="Pesanan">
                             <div class="mr-2 sidebar-icon-container">
                                 <i class="text-emerald-500 fas fa-cart-arrow-down"></i>
                             </div>
-                            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Pesanan</span>
+                            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Order History</span>
                         </a>
                     </li>
                     <li class="mt-0.5 w-full">
@@ -201,8 +200,7 @@
                             <div class="mr-2 sidebar-icon-container">
                                 <i class="fas fa-folder text-greenlight"></i>
                             </div>
-                            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">History
-                                Pesanan</span>
+                            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">????</span>
                         </a>
                     </li>
 

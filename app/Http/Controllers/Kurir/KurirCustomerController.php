@@ -3,13 +3,10 @@
 namespace App\Http\Controllers\Kurir;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rules;
 use App\Models\Customer;
+use App\Models\Region; // Pastikan untuk mengimpor model Region jika belum
 
 class KurirCustomerController extends Controller
 {
@@ -33,12 +30,36 @@ class KurirCustomerController extends Controller
 
     /**
      * Menampilkan halaman manajemen customer dengan data.
+     * Mengelola fungsionalitas pencarian berdasarkan nama, telepon, alamat, region, atau catatan.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $customers = Customer::where('region_id', Auth::user()->region_id)
-            ->latest()
-            ->paginate(10);
+        // Dapatkan nilai pencarian dari request
+        $search = $request->input('search');
+
+        // Ambil ID region pengguna yang sedang login
+        $userRegionId = Auth::user()->region_id;
+
+        // Mulai query Eloquent untuk customer di region pengguna
+        $customersQuery = Customer::where('region_id', $userRegionId)
+            ->with('region'); // Eager load relasi region untuk menghindari N+1 problem
+
+        // Jika ada nilai pencarian, terapkan filter
+        if ($search) {
+            $customersQuery->where(function ($query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%')
+                      ->orWhere('phone', 'like', '%' . $search . '%')
+                      ->orWhere('address', 'like', '%' . $search . '%')
+                      ->orWhere('note', 'like', '%' . $search . '%');
+            })
+            ->orWhereHas('region', function ($query) use ($search) {
+                // Tambahkan pencarian berdasarkan nama region
+                $query->where('name', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Dapatkan hasil yang difilter atau semua hasil jika tidak ada pencarian, dan lakukan paginasi
+        $customers = $customersQuery->latest()->paginate(10);
 
         return view('dashboard.kurir.customers.index', compact('customers'));
     }
@@ -120,5 +141,4 @@ class KurirCustomerController extends Controller
         $customer->delete();
         return redirect()->route('kurir.customers.index')->with('success', 'Customer berhasil dihapus!');
     }
-
 }

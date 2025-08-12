@@ -1,6 +1,6 @@
 {{-- Modal tambah Cust --}}
 <div id="crud-modal" tabindex="-1" aria-hidden="true"
-    class="fixed inset-0 top-0 left-0 right-0 z-50 flex items-center justify-center hidden w-full h-full overflow-x-hidden overflow-y-auto transition-opacity duration-300 bg-black bg-opacity-50">
+    class="fixed inset-0 top-0 left-0 right-0 z-50 flex items-center justify-center hidden w-full h-full overflow-x-hidden overflow-y-auto transition-opacity duration-300 ">
 
     <div
         class="relative w-full max-w-md max-h-full p-4 transition-transform duration-300 ease-out transform scale-95 lg:max-w-2xl">
@@ -61,11 +61,11 @@
                                 required="">
                         </div>
                     </div>
-                    <div class="col-span-2">
+                    <!-- <div class="col-span-2">
                         <label for="region_id"
                             class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Region</label>
                         <input type="hidden" name="region_id" value="{{ Auth::user()->region_id }}">
-
+                    </div> -->
                     <div class="col-span-2">
                         <label for="note"
                             class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Note</label>

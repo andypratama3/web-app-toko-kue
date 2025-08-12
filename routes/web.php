@@ -73,9 +73,12 @@ Route::middleware([
             Route::get('/create', [PesananController::class, 'create'])->name('create');
         });
 
-        // Route resource untuk manajemen customer oleh kurir
+        // Route resource untuk data customer oleh kurir
         Route::resource('customers', KurirCustomerController::class)
             ->parameters(['customers' => 'customer']);
+
+        Route::get('/pesanan', [PesananController::class, 'index'])
+            ->name('pesanan.index');
 
         // Route untuk update note customer
         Route::put('customers/{customer}/note', [KurirCustomerController::class, 'updateNote'])
