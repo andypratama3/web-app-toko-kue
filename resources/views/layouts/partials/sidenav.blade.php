@@ -23,14 +23,11 @@
             <a id="sidebar-logo-link"
                 class="flex items-center justify-center block w-full px-4 py-4 m-0 text-base whitespace-nowrap dark:text-white text-slate-700"
                 href="{{ $dashboardUrl }}">
-
-                {{-- PERUBAHAN: Menambahkan id dan data-attributes untuk logo --}}
                 <img id="sidebar-logo-img" src="{{ asset('assets/homepage/logo.png') }}"
                     data-logo-full="{{ asset('assets/homepage/logo.png') }}"
                     data-logo-icon="{{ asset('assets/homepage/logo.png') }}"
                     class="flex-shrink-0 h-10 transition-all duration-200 ease-nav-brand" alt="main_logo" 
                     style="background: transparent !important; background-color: transparent !important; border-radius: 50%; padding: 0.25rem;" />
-
                 <span id="sidebar-logo-text"
                     class="hidden ml-2 text-xl font-semibold transition-all duration-200 ease-nav-brand text-greenlight sidenav-text">
                     Kue Pandan Asli
@@ -45,194 +42,165 @@
         <div class="flex-grow w-full mt-2 overflow-x-hidden overflow-y-auto">
             <ul class="flex flex-col pl-0 mb-0">
 
-                <li class="w-full mt-4 mb-4">
-                    <h6
-                        class="pl-6 ml-2 text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60">
+                {{-- Dashboard Pages Section --}}
+                <li class="w-full mt-4">
+                    <h6 class="pl-6 ml-2 text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60">
                         Dashboard Pages
                     </h6>
                 </li>
-
                 <li class="mt-0.5 w-full">
                     <a class="sidebar-menu-item py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap rounded-lg px-4 font-semibold text-slate-700 transition-colors @if (request()->routeIs('admin.dashboard') || request()->routeIs('kurir.dashboard')) bg-blue-500/13 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif"
                         href="{{ $dashboardUrl }}" data-tooltip="Dashboard">
-                        <div class="mr-2 sidebar-icon-container" style="background: transparent !important; background-color: transparent !important;">
-                            <i
-                                class="fas fa-house-user @if (request()->routeIs('admin.dashboard') || request()->routeIs('kurir.dashboard')) text-blue-500 @else text-slate-400 @endif" style="background: transparent !important; background-color: transparent !important;"></i>
+                        <div class="mr-2 sidebar-icon-container">
+                            <i class="fas fa-house-user @if (request()->routeIs('admin.dashboard') || request()->routeIs('kurir.dashboard')) text-blue-500 @else text-slate-400 @endif"></i>
                         </div>
                         <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Dashboard</span>
                     </a>
                 </li>
 
                 @role('admin')
-                    <li class="w-full mt-4 mb-4">
-                        <h6
-                            class="pl-6 ml-2 text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60">
-                            Management Section
-                        </h6>
-                    </li>
-                    <li class="mt-0.5 w-full">
-                        <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if (request()->routeIs('admin.customers.*')) bg-blue-500/13 @endif"
-                            href="{{ route('admin.customers.index') }}" data-tooltip="Manajemen Customer">
-                            <div class="mr-2 sidebar-icon-container" style="background: transparent !important; background-color: transparent !important;">
-                                <i class="text-orange-500 fas fa-users" style="background: transparent !important; background-color: transparent !important;"></i>
-                            </div>
-                            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Manajemen
-                                Customer</span>
-                        </a>
-                    </li>
-                    <li class="mt-0.5 w-full">
-                        <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if (request()->routeIs('admin.products.*')) bg-blue-500/13 @endif"
-                            href="{{ route('admin.products.index') }}" data-tooltip="Manajemen Produk">
-                            <div class="mr-2 sidebar-icon-container" style="background: transparent !important; background-color: transparent !important;">
-                                <i class="text-orange-500 fas fa-store" style="background: transparent !important; background-color: transparent !important;"></i>
-                            </div>
-                            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Manajemen
-                                Produk</span>
-                        </a>
-                    </li>
-                    <li class="mt-0.5 w-full">
-                        <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if (request()->routeIs('admin.couriers.*')) bg-blue-500/13 @endif"
-                            href="{{ route('admin.couriers.index') }}" data-tooltip="Manajemen Kurir">
-                            <div class="mr-2 sidebar-icon-container" style="background: transparent !important; background-color: transparent !important;">
-                                <i class="text-cyan-500 fas fa-truck" style="background: transparent !important; background-color: transparent !important;"></i>
-                            </div>
-                            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Manajemen
-                                Kurir</span>
-                        </a>
+                    {{-- Management Section (Collapsible) --}}
+                    <li class="w-full mt-4" x-data="{ open: true }">
+                        <button @click="open = !open" class="w-full flex justify-between items-center pl-6 pr-4 py-2 text-left text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80 transition-opacity">
+                            <span>Management Section</span>
+                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <ul x-show="open" x-transition class="mt-1 space-y-0.5">
+                            <li>
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('admin.customers.*')) bg-blue-500/13 @endif" href="{{ route('admin.customers.index') }}" data-tooltip="Manajemen Customer">
+                                    <div class="mr-2 sidebar-icon-container"><i class="text-orange-500 fas fa-users"></i></div>
+                                    <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Manajemen Customer</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('admin.products.*')) bg-blue-500/13 @endif" href="{{ route('admin.products.index') }}" data-tooltip="Manajemen Produk">
+                                    <div class="mr-2 sidebar-icon-container"><i class="text-orange-500 fas fa-store"></i></div>
+                                    <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Manajemen Produk</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('admin.couriers.*')) bg-blue-500/13 @endif" href="{{ route('admin.couriers.index') }}" data-tooltip="Manajemen Kurir">
+                                    <div class="mr-2 sidebar-icon-container"><i class="text-cyan-500 fas fa-truck"></i></div>
+                                    <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Manajemen Kurir</span>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
 
-                    <li class="w-full mt-4 mb-4">
-                        <h6
-                            class="pl-6 ml-2 text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60">
-                            Order Section
-                        </h6>
+                    {{-- Order Section (Collapsible) --}}
+                    <li class="w-full mt-4" x-data="{ open: true }">
+                        <button @click="open = !open" class="w-full flex justify-between items-center pl-6 pr-4 py-2 text-left text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80 transition-opacity">
+                            <span>Order Section</span>
+                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <ul x-show="open" x-transition class="mt-1 space-y-0.5">
+                            <li>
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg" href="#" data-tooltip="Pesanan">
+                                    <div class="mr-2 sidebar-icon-container"><i class="text-emerald-500 fas fa-cart-arrow-down"></i></div>
+                                    <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Pesanan</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg" href="#" data-tooltip="History Pesanan">
+                                    <div class="mr-2 sidebar-icon-container"><i class="text-red-500 fas fa-list"></i></div>
+                                    <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">History Pesanan</span>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
 
-                    <li class="mt-0.5 w-full">
-                        <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
-                            href="#" data-tooltip="Pesanan">
-                            <div class="mr-2 sidebar-icon-container">
-                                <i class="text-emerald-500 fas fa-cart-arrow-down"></i>
-                            </div>
-                            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Pesanan</span>
-                        </a>
-                    </li>
-                    <li class="mt-0.5 w-full">
-                        <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
-                            href="#" data-tooltip="History Pesanan">
-                            <div class="mr-2 sidebar-icon-container" style="background: transparent !important; background-color: transparent !important;">
-                                <i class="text-red-500 fas fa-list" style="background: transparent !important; background-color: transparent !important;"></i>
-                            </div>
-                            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">History
-                                Pesanan</span>
-                        </a>
-                    </li>
-
-                    <li class="w-full mt-4 mb-4">
-                        <h6
-                            class="pl-6 ml-2 text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60">
-                            Performa
-                            Section
-                        </h6>
+                    {{-- Performa Section (Collapsible) --}}
+                    <li class="w-full mt-4" x-data="{ open: true }">
+                        <button @click="open = !open" class="w-full flex justify-between items-center pl-6 pr-4 py-2 text-left text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80 transition-opacity">
+                            <span>Performa Section</span>
+                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <ul x-show="open" x-transition class="mt-1 space-y-0.5">
+                            <li>
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg" href="#" data-tooltip="Performa Customer">
+                                    <div class="mr-2 sidebar-icon-container"><i class="fas fa-chart-line"></i></div>
+                                    <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Performa Customer</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg" href="#" data-tooltip="Performa Kurir">
+                                    <div class="mr-2 sidebar-icon-container"><i class="fas fa-chart-line"></i></div>
+                                    <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Performa Kurir</span>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
 
-                    <li class="mt-0.5 w-full">
-                        <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
-                            href="#" data-tooltip="Performa Customer">
-                            <div class="mr-2 sidebar-icon-container">
-                                <i class="fas fa-chart-line"></i>
-                            </div>
-                            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Performa
-                                Customer</span>
-                        </a>
-                    </li>
-
-                    <li class="mt-0.5 w-full">
-                        <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
-                            href="#" data-tooltip="Performa Kurir">
-                            <div class="mr-2 sidebar-icon-container">
-                                <i class="fas fa-chart-line"></i>
-                            </div>
-                            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Performa
-                                Kurir</span>
-                        </a>
-                    </li>
-
-                    <li class="w-full mt-4 mb-4">
-                        <h6
-                            class="pl-6 ml-2 text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60">
-                            Account Settings
-                        </h6>
-                    </li>
-                    <li class="mt-0.5 w-full">
-                        <a class="sidebar-menu-item py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg font-semibold @if (request()->routeIs('admin.profile')) bg-blue-500/13 text-blue-700 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif"
-                            href="{{ route('admin.profile') }}" data-tooltip="Profil Saya">
-                            <div class="mr-2 sidebar-icon-container">
-                                <i
-                                    class="fas fa-user @if (request()->routeIs('admin.profile')) text-blue-500 @else text-slate-700 @endif"></i>
-                            </div>
-                            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Profil Saya</span>
-                        </a>
+                    {{-- Account Settings Section (Collapsible) --}}
+                    <li class="w-full mt-4" x-data="{ open: true }">
+                        <button @click="open = !open" class="w-full flex justify-between items-center pl-6 pr-4 py-2 text-left text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80 transition-opacity">
+                            <span>Account Settings</span>
+                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <ul x-show="open" x-transition class="mt-1 space-y-0.5">
+                            <li>
+                                <a class="sidebar-menu-item py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg font-semibold @if (request()->routeIs('admin.profile')) bg-blue-500/13 text-blue-700 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif" href="{{ route('admin.profile') }}" data-tooltip="Profil Saya">
+                                    <div class="mr-2 sidebar-icon-container"><i class="fas fa-user @if (request()->routeIs('admin.profile')) text-blue-500 @else text-slate-700 @endif"></i></div>
+                                    <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Profil Saya</span>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                 @endrole
 
                 @role('kurir')
-                    <li class="mt-0.5 w-full">
-                        <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if (request()->routeIs('kurir.customers.*')) bg-blue-500/13 @endif"
-                            href="{{ route('kurir.customers.index') }}" data-tooltip="Data Customer">
-                            <div class="mr-2 sidebar-icon-container">
-                                <i class="text-emerald-600 fas fa-book"></i>
-                            </div>
-                            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Data Customer</span>
-                        </a>
-                    </li>
-                    <li class="mt-0.5 w-full">
-                        <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
-                            href="{{ url('/pengiriman') }}" data-tooltip="History Pesanan">
-                            <div class="mr-2 sidebar-icon-container">
-                                <i class="text-orange-500 fas fa-truck"></i>
-                            </div>
-                            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Order Tracking</span>
-                        </a>
-                    </li>
-                    <li class="mt-0.5 w-full">
-                        <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
-                            href="{{ route('kurir.pesanan.index') }}" data-tooltip="Pesanan">
-                            <div class="mr-2 sidebar-icon-container">
-                                <i class="text-yellow-500 fas fa-hourglass-half"></i>
-                            </div>
-                            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Order History</span>
-                        </a>
+                    {{-- Kurir Menu (Collapsible) --}}
+                    <li class="w-full mt-4" x-data="{ open: true }">
+                        <button @click="open = !open" class="w-full flex justify-between items-center pl-6 pr-4 py-2 text-left text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80 transition-opacity">
+                            <span>Menu Kurir</span>
+                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <ul x-show="open" x-transition class="mt-1 space-y-0.5">
+                            <li>
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('kurir.customers.*')) bg-blue-500/13 @endif" href="{{ route('kurir.customers.index') }}" data-tooltip="Data Customer">
+                                    <div class="mr-2 sidebar-icon-container"><i class="text-emerald-600 fas fa-book"></i></div>
+                                    <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Data Customer</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg" href="{{ url('/pengiriman') }}" data-tooltip="History Pesanan">
+                                    <div class="mr-2 sidebar-icon-container"><i class="text-orange-500 fas fa-truck"></i></div>
+                                    <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Order Tracking</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg" href="{{ route('kurir.pesanan.index') }}" data-tooltip="Pesanan">
+                                    <div class="mr-2 sidebar-icon-container"><i class="text-yellow-500 fas fa-hourglass-half"></i></div>
+                                    <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Order History</span>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
 
-                    <li class="w-full mt-4 mb-4">
-                        <h6
-                            class="pl-6 ml-2 text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60">
-                            Account Pages
-                        </h6>
-                    </li>
-                    <li class="mt-0.5 w-full">
-                        <a class="sidebar-menu-item py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg font-semibold @if (request()->routeIs('kurir.profile')) bg-blue-500/13 text-blue-700 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif"
-                            href="{{ route('kurir.profile') }}" data-tooltip="Profil Saya">
-                            <div class="mr-2 sidebar-icon-container">
-                                <i
-                                    class="fas fa-user @if (request()->routeIs('kurir.profile')) text-blue-500 @else text-slate-700 @endif"></i>
-                            </div>
-                            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Profil
-                                Saya</span>
-                        </a>
+                    {{-- Account Pages Section (Collapsible) --}}
+                    <li class="w-full mt-4" x-data="{ open: true }">
+                        <button @click="open = !open" class="w-full flex justify-between items-center pl-6 pr-4 py-2 text-left text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80 transition-opacity">
+                            <span>Account Pages</span>
+                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        <ul x-show="open" x-transition class="mt-1 space-y-0.5">
+                            <li>
+                                <a class="sidebar-menu-item py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg font-semibold @if (request()->routeIs('kurir.profile')) bg-blue-500/13 text-blue-700 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif" href="{{ route('kurir.profile') }}" data-tooltip="Profil Saya">
+                                    <div class="mr-2 sidebar-icon-container"><i class="fas fa-user @if (request()->routeIs('kurir.profile')) text-blue-500 @else text-slate-700 @endif"></i></div>
+                                    <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Profil Saya</span>
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                 @endrole
 
                 <li class="mt-0.5 w-full">
                     <form method="POST" action="{{ route('logout') }}" class="inline">
                         @csrf
-                        <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
+                        <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg"
                             href="{{ route('logout') }}" onclick="event.preventDefault(); this.closest('form').submit();"
                             data-tooltip="Logout">
-                            <div class="mr-2 sidebar-icon-container">
-                                <i class="text-red-600 fas fa-sign-out-alt"></i>
-                            </div>
+                            <div class="mr-2 sidebar-icon-container"><i class="text-red-600 fas fa-sign-out-alt"></i></div>
                             <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Logout</span>
                         </a>
                     </form>
@@ -242,21 +210,16 @@
 
         <div id="dropdown-cta" class="p-4 mt-6 rounded-lg bg-green-50 dark:bg-green-900" role="alert">
             <div class="flex items-center mb-3">
-                <span
-                    class="bg-orange-100 text-orange-800 text-sm font-semibold me-2 px-2.5 py-0.5 rounded-sm dark:bg-orange-200 dark:text-orange-900">Development</span>
-
+                <span class="bg-orange-100 text-orange-800 text-sm font-semibold me-2 px-2.5 py-0.5 rounded-sm dark:bg-orange-200 dark:text-orange-900">Development</span>
                 <button type="button"
                     class="ms-auto -mx-1.5 -my-1.5 bg-green-50 inline-flex justify-center items-center w-6 h-6 text-green-900 rounded-lg focus:ring-2 focus:ring-green-400 p-1 hover:bg-green-200 dark:bg-green-900 dark:text-green-400 dark:hover:bg-green-800"
                     data-dismiss-target="#dropdown-cta" aria-label="Close">
                     <span class="sr-only">Close</span>
-                    <svg class="w-2.5 h-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                        viewBox="0 0 14 14">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                    <svg class="w-2.5 h-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
                     </svg>
                 </button>
             </div>
-
             <p class="text-sm font-medium text-green-800 dark:text-green-300">
                 This Web App Version 1.0.0
             </p>
