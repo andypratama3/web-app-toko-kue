@@ -11,7 +11,7 @@ use App\Http\Controllers\Admin\CourierController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Kurir\KurirCustomerController;
 use App\Http\Controllers\Kurir\PesananController;
-
+use App\Models\Product;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -50,6 +50,7 @@ Route::middleware([
         // Manajemen kurir
         Route::resource('couriers', CourierController::class)
             ->parameters(['couriers' => 'courier']);
+
         Route::put('couriers/{courier}/note', [CourierController::class, 'updateNote'])
             ->name('couriers.updateNote');
 
@@ -71,24 +72,28 @@ Route::middleware([
         Route::get('dashboard/{region}/create', [KurirCustomerController::class, 'create'])
             ->name('customers.create');
 
-        // Halaman tambah pesanan
-        Route::get('dashboard/{region}/pages/tambah-pesanan', [KurirDashboardController::class, 'tambahPesanan'])
-            ->name('pages.tambah-pesanan');
+        //routing button pesanan (dashboard) 
+        Route::prefix('pesanan')->name('pesanan.')->group(function () {
+            Route::get('/create', [PesananController::class, 'create'])->name('create');
+        });
 
-        // Sidebar data customer (tampilkan semua)
-        // Route::get('dashboard/{region}/pages/data-seller', [KurirDashboardController::class, 'dataCust'])
-        //     ->name('pages.data-customer');
-
-         Route::get('/kurir/dashboard/{region}', [KurirDashboardController::class, 'index'])
-            ->name('kurir.dashboard');
-
-        // Route resource untuk manajemen customer oleh kurir
+        // Route resource untuk data customer oleh kurir
         Route::resource('customers', KurirCustomerController::class)
             ->parameters(['customers' => 'customer']);
+
+        Route::get('/pesanan', [PesananController::class, 'index'])
+            ->name('pesanan.index');
 
         // Route untuk update note customer
         Route::put('customers/{customer}/note', [KurirCustomerController::class, 'updateNote'])
             ->name('customers.update-note');
+
+        //Route untuk ambil data customer dipesanan
+        Route::get('kurir/dashboard/create', [PesananController::class, 'showCustomer'])
+            ->name('customer.showCustomer');
+
+        Route::post('/orders/checkout', [PesananController::class, 'checkout'])
+            ->name('orders.checkout');
     });
 
     // ---------- COMMON DASHBOARD REDIRECT ----------
