@@ -28,7 +28,8 @@
                 <img id="sidebar-logo-img" src="{{ asset('assets/homepage/logo.png') }}"
                     data-logo-full="{{ asset('assets/homepage/logo.png') }}"
                     data-logo-icon="{{ asset('assets/homepage/logo.png') }}"
-                    class="flex-shrink-0 h-10 transition-all duration-200 ease-nav-brand" alt="main_logo" />
+                    class="flex-shrink-0 h-10 transition-all duration-200 ease-nav-brand" alt="main_logo" 
+                    style="background: transparent !important; background-color: transparent !important; border-radius: 50%; padding: 0.25rem;" />
 
                 <span id="sidebar-logo-text"
                     class="hidden ml-2 text-xl font-semibold transition-all duration-200 ease-nav-brand text-greenlight sidenav-text">
@@ -54,9 +55,9 @@
                 <li class="mt-0.5 w-full">
                     <a class="sidebar-menu-item py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap rounded-lg px-4 font-semibold text-slate-700 transition-colors @if (request()->routeIs('admin.dashboard') || request()->routeIs('kurir.dashboard')) bg-blue-500/13 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif"
                         href="{{ $dashboardUrl }}" data-tooltip="Dashboard">
-                        <div class="mr-2 sidebar-icon-container">
+                        <div class="mr-2 sidebar-icon-container" style="background: transparent !important; background-color: transparent !important;">
                             <i
-                                class="fas fa-house-user @if (request()->routeIs('admin.dashboard') || request()->routeIs('kurir.dashboard')) text-blue-500 @else text-slate-400 @endif"></i>
+                                class="fas fa-house-user @if (request()->routeIs('admin.dashboard') || request()->routeIs('kurir.dashboard')) text-blue-500 @else text-slate-400 @endif" style="background: transparent !important; background-color: transparent !important;"></i>
                         </div>
                         <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Dashboard</span>
                     </a>
@@ -72,8 +73,8 @@
                     <li class="mt-0.5 w-full">
                         <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if (request()->routeIs('admin.customers.*')) bg-blue-500/13 @endif"
                             href="{{ route('admin.customers.index') }}" data-tooltip="Manajemen Customer">
-                            <div class="mr-2 sidebar-icon-container">
-                                <i class="text-orange-500 fas fa-users"></i>
+                            <div class="mr-2 sidebar-icon-container" style="background: transparent !important; background-color: transparent !important;">
+                                <i class="text-orange-500 fas fa-users" style="background: transparent !important; background-color: transparent !important;"></i>
                             </div>
                             <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Manajemen
                                 Customer</span>
@@ -82,8 +83,8 @@
                     <li class="mt-0.5 w-full">
                         <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if (request()->routeIs('admin.products.*')) bg-blue-500/13 @endif"
                             href="{{ route('admin.products.index') }}" data-tooltip="Manajemen Produk">
-                            <div class="mr-2 sidebar-icon-container">
-                                <i class="text-orange-500 fas fa-store"></i>
+                            <div class="mr-2 sidebar-icon-container" style="background: transparent !important; background-color: transparent !important;">
+                                <i class="text-orange-500 fas fa-store" style="background: transparent !important; background-color: transparent !important;"></i>
                             </div>
                             <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Manajemen
                                 Produk</span>
@@ -92,8 +93,8 @@
                     <li class="mt-0.5 w-full">
                         <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors @if (request()->routeIs('admin.couriers.*')) bg-blue-500/13 @endif"
                             href="{{ route('admin.couriers.index') }}" data-tooltip="Manajemen Kurir">
-                            <div class="mr-2 sidebar-icon-container">
-                                <i class="text-cyan-500 fas fa-truck"></i>
+                            <div class="mr-2 sidebar-icon-container" style="background: transparent !important; background-color: transparent !important;">
+                                <i class="text-cyan-500 fas fa-truck" style="background: transparent !important; background-color: transparent !important;"></i>
                             </div>
                             <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Manajemen
                                 Kurir</span>
@@ -119,8 +120,8 @@
                     <li class="mt-0.5 w-full">
                         <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors"
                             href="#" data-tooltip="History Pesanan">
-                            <div class="mr-2 sidebar-icon-container">
-                                <i class="text-red-500 fas fa-list"></i>
+                            <div class="mr-2 sidebar-icon-container" style="background: transparent !important; background-color: transparent !important;">
+                                <i class="text-red-500 fas fa-list" style="background: transparent !important; background-color: transparent !important;"></i>
                             </div>
                             <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">History
                                 Pesanan</span>

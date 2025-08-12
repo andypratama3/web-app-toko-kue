@@ -36,117 +36,127 @@
     }
     @endphp
 
-<div class="bg-green-100 dark:bg-green-800 p-6 rounded-lg shadow">
-  <div>
-    <h2 class="text-2xl font-bold text-gray-800 dark:text-white">
-      Hai, {{ $greeting }} <span class="text-violet-600 dark:text-violet-400">{{ $user->name ?? 'User' }}</span>! {{ $icon }}
-    </h2>
-    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-      Senang melihat Anda kembali. Berikut ringkasan aktivitas hari ini.
-    </p>
-  </div>
+<!-- Welcome Card Section -->
+<div class="p-6">
+    <div class="bg-green-100 dark:bg-slate-850 dark:shadow-dark-xl p-6 rounded-lg shadow">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800 dark:text-white">
+                Hai, {{ $greeting }} <span class="text-violet-600 dark:text-violet-400">{{ $user->name ?? 'User' }}</span>! {{ $icon }}
+            </h2>
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                Senang melihat Anda kembali. Berikut ringkasan aktivitas hari ini.
+            </p>
+        </div>
+    </div>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 p-6">
-
-    <div class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
-        <div class="flex-auto p-4">
-            <div class="flex flex-row -mx-3">
-                <div class="flex-none w-2/3 max-w-full px-3">
-                    <div>
-                        <p class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">
-                            INCOME</p>
-                        <h5 class="mb-2 font-bold dark:text-white">IDR 5.000.000</h5>
-                        <p class="mb-0 dark:text-white dark:opacity-60">
-                            <span class="text-sm font-bold leading-normal text-emerald-500">+55%</span>
-                            since yesterday
-                        </p>
+<!-- Stats Cards Section -->
+<div class="p-6">
+        <h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-black sm:text-2xl">💰 Resume Hari Ini</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Income Card -->
+        <div class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
+            <div class="flex-auto p-4">
+                <div class="flex flex-row -mx-3">
+                    <div class="flex-none w-2/3 max-w-full px-3">
+                        <div>
+                            <p class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">
+                                INCOME</p>
+                            <h5 class="mb-2 font-bold dark:text-white">IDR 5.000.000</h5>
+                            <p class="mb-0 dark:text-white dark:opacity-60">
+                                <span class="text-sm font-bold leading-normal text-emerald-500">+55%</span>
+                                since yesterday
+                            </p>
+                        </div>
+                    </div>
+                    <div class="px-3 text-right basis-1/3">
+                        <div class="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-blue-500 to-violet-500">
+                            <i class="fas fa-dollar-sign leading-none text-lg relative top-3.5 text-white"></i>
+                        </div>
                     </div>
                 </div>
-                <div class="px-3 text-right basis-1/3">
-                    <div class="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-blue-500 to-violet-500">
-                        <i class="fas fa-dollar-sign leading-none text-lg relative top-3.5 text-white"></i>
+            </div>
+        </div>
+
+        <!-- Total Sales Card -->
+        <div class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
+            <div class="flex-auto p-4">
+                <div class="flex flex-row -mx-3">
+                    <div class="flex-none w-2/3 max-w-full px-3">
+                        <div>
+                            <p class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">
+                                Total Sales</p>
+                            <h5 class="mb-2 font-bold dark:text-white">120</h5>
+                            <p class="mb-0 dark:text-white dark:opacity-60">
+                                <span class="text-sm font-bold leading-normal text-emerald-500">+5%</span>
+                                than last month
+                            </p>
+                        </div>
+                    </div>
+                    <div class="px-3 text-right basis-1/3">
+                        <div class="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-orange-500 to-yellow-500">
+                            <i class="fas fa-chart-line leading-none text-lg relative top-3.5 text-white"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Card -->
+        <div class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
+            <div class="flex-auto p-4">
+                <div class="flex flex-row -mx-3">
+                    <div class="flex-none w-2/3 max-w-full px-3">
+                        <div>
+                            <p class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">
+                                Customer {{ $user->region->name ?? 'Tidak ada region' }}</p>
+                            <h5 class="mb-2 font-bold dark:text-white">2,300</h5>
+                            <p class="mb-0 dark:text-white dark:opacity-60">
+                                <span class="text-sm font-bold leading-normal text-emerald-500">+3%</span>
+                                since last week
+                            </p>
+                        </div>
+                    </div>
+                    <div class="px-3 text-right basis-1/3">
+                        <div class="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-red-600 to-orange-600">
+                            <i class="fas fa-users leading-none text-lg relative top-3.5 text-white"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Customer Card -->
+        <div class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
+            <div class="flex-auto p-4">
+                <div class="flex flex-row -mx-3">
+                    <div class="flex-none w-2/3 max-w-full px-3">
+                        <div>
+                            <p class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">
+                                New Customer</p>
+                            <h5 class="mb-2 font-bold dark:text-white">+3,462</h5>
+                            <p class="mb-0 dark:text-white dark:opacity-60">
+                                <span class="text-sm font-bold leading-normal text-red-600">-2%</span>
+                                since last quarter
+                            </p>
+                        </div>
+                    </div>
+                    <div class="px-3 text-right basis-1/3">
+                        <div class="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-emerald-500 to-teal-400">
+                            <i class="fas fa-user-plus leading-none text-lg relative top-3.5 text-white"></i>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
-        <div class="flex-auto p-4">
-            <div class="flex flex-row -mx-3">
-                <div class="flex-none w-2/3 max-w-full px-3">
-                    <div>
-                        <p class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">
-                            Total Sales</p>
-                        <h5 class="mb-2 font-bold dark:text-white">120</h5>
-                        <p class="mb-0 dark:text-white dark:opacity-60">
-                            <span class="text-sm font-bold leading-normal text-emerald-500">+5%</span>
-                            than last month
-                        </p>
-                    </div>
-                </div>
-                <div class="px-3 text-right basis-1/3">
-                    <div class="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-orange-500 to-yellow-500">
-                        <i class="fas fa-chart-line leading-none text-lg relative top-3.5 text-white"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
-        <div class="flex-auto p-4">
-            <div class="flex flex-row -mx-3">
-                <div class="flex-none w-2/3 max-w-full px-3">
-                    <div>
-                        <p class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">
-                            Customer {{ $user->region->name ?? 'Tidak ada region' }}</p>
-                        <h5 class="mb-2 font-bold dark:text-white">2,300</h5>
-                        <p class="mb-0 dark:text-white dark:opacity-60">
-                            <span class="text-sm font-bold leading-normal text-emerald-500">+3%</span>
-                            since last week
-                        </p>
-                    </div>
-                </div>
-                <div class="px-3 text-right basis-1/3">
-                    <div class="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-red-600 to-orange-600">
-                        <i class="fas fa-users leading-none text-lg relative top-3.5 text-white"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
-        <div class="flex-auto p-4">
-            <div class="flex flex-row -mx-3">
-                <div class="flex-none w-2/3 max-w-full px-3">
-                    <div>
-                        <p class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">
-                            New Customer</p>
-                        <h5 class="mb-2 font-bold dark:text-white">+3,462</h5>
-                        <p class="mb-0 dark:text-white dark:opacity-60">
-                            <span class="text-sm font-bold leading-normal text-red-600">-2%</span>
-                            since last quarter
-                        </p>
-                    </div>
-                </div>
-                <div class="px-3 text-right basis-1/3">
-                    <div class="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-emerald-500 to-teal-400">
-                        <i class="fas fa-user-plus leading-none text-lg relative top-3.5 text-white"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div>
-        <h2 class="mt-3 text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">📊 Grafik</h2>
-    </div>
-    <div class="md:col-span-2 xl:col-span-4 w-full bg-white rounded-lg shadow-xl dark:bg-gray-800 p-4 md:p-6">
+<!-- Chart Section -->
+<div class="p-6">
+    <h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-black sm:text-2xl">📊 Grafik</h2>
+    <div class="w-full bg-white rounded-lg shadow-xl dark:bg-gray-800 p-4 md:p-6">
         <div class="flex justify-between mb-5">
-
             <div>
                 <h5 class="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">$12,423</h5>
                 <p class="text-base font-normal text-gray-500 dark:text-gray-400">Sales this week</p>
@@ -195,48 +205,44 @@
             </div>
         </div>
     </div>
-
 </div>
 
-
-<div class="w-full p-6">
-    <div class="w-full overflow-hidden bg-white rounded-2xl shadow-xl dark:bg-slate-850">
-        
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-            📦 Monitoring Kurir di Region {{ Auth::user()->region->name }}
-            </h3>
+<!-- Monitoring Kurir Section -->
+<div class="p-6">
+    <h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-black sm:text-2xl">🛵 Monitoring Kurir</h2>
+    <div class="relative bg-white shadow-md dark:bg-gray-800 sm:rounded-lg">
+        <div class="flex flex-col items-center justify-between p-4 space-y-3 md:flex-row md:space-y-0 md:space-x-4">
+            <div class="w-full">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                📦 Monitoring Kurir di Region {{ Auth::user()->region->name }}
+                </h3>
+            </div>
         </div>
-
         <div class="overflow-x-auto">
-            <table class="min-w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                
+            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
-                        <th scope="col" class="px-6 py-3">
-                            Nama Kurir
-                        </th>
-                        <th scope="col" class="px-6 py-3">
-                            Email
-                        </th>
+                        <th scope="col" class="px-4 py-3">Nama Kurir</th>
+                        <th scope="col" class="px-4 py-3">Email</th>
+                        <th scope="col" class="px-4 py-3">Status</th>
                     </tr>
                 </thead>
-
                 <tbody>
                     @forelse($couriers as $kurir)
-                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                    <tr class="border-b dark:border-gray-700">
+                        <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                             {{ $kurir->name }}
                         </th>
-                        <td class="px-6 py-4">
-                            {{ $kurir->email }}
+                        <td class="px-4 py-3">{{ $kurir->email }}</td>
+                        <td class="px-4 py-3">
+                            <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
+                                Aktif
+                            </span>
                         </td>
                     </tr>
                     @empty
-                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                        <td colspan="2" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                            Tidak ada data kurir di region ini.
-                        </td>
+                    <tr class="border-b dark:border-gray-700">
+                        <td colspan="3" class="px-4 py-3 text-center text-gray-500">Tidak ada data kurir di region ini.</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -245,71 +251,49 @@
     </div>
 </div>
 
-
-{{-- Dynamic Product Section --}}
-{{-- <div class="max-w-screen-xl px-4 mx-auto 2xl:px-0"> --}}
-<div class="items-end justify-between mb-4 space-y-4 sm:flex sm:space-y-0 md:mb-8">
-    <div>
-        <h2 class="mt-3 text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">Data Produk</h2>
+<!-- Products Section -->
+<div class="p-6">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-black sm:text-2xl">📦 Data Produk</h2>
     </div>
-    {{-- <div class="flex items-center space-x-4">
-            <a href="{{ route('admin.products.create') }}" class="flex items-center justify-center w-full px-3 py-2
-    text-sm font-medium text-white bg-green-700 rounded-lg hover:bg-green-800 focus:ring-4 focus:ring-green-300
-    sm:w-auto dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
-    <svg class="w-5 h-5 mr-2 -ml-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-        <path fill-rule="evenodd"
-            d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-            clip-rule="evenodd"></path>
-    </svg>
-    Tambah Produk
-    </a>
-</div> --}}
-</div>
-
-{{-- Product Grid --}}
-<div class="grid gap-4 mb-4 sm:grid-cols-2 md:mb-8 lg:grid-cols-3 xl:grid-cols-4">
-    @forelse ($products as $product)
-    <div
-        class="overflow-hidden transition-all duration-300 bg-white shadow-lg rounded-2xl hover:shadow-xl hover:-translate-y-1">
-        <div class="relative overflow-hidden">
-            <img src="{{ asset($product->image) }}" alt="{{ $product->name }}" loading="lazy"
-                class="object-cover w-full h-48 transition-transform duration-300 hover:scale-105 cursor-zoom-in zoomable">
-        </div>
-        <div class="p-5">
-            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">{{ $product->name }}</h3>
-            {{-- Deskripsi dengan toggle --}}
-            <div x-data="{ open: false }">
-                <p class="mb-3 text-sm text-gray-600" :class="open ? '' : 'line-clamp-2'">
-                    {{ $product->description }}
+    
+    <!-- Product Cards Grid -->
+    <div class="grid gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+        @forelse ($products->take(12) as $product)
+        <div class="bg-white dark:bg-slate-850 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
+            <div class="relative overflow-hidden">
+                <img src="{{ asset($product->image) }}" alt="{{ $product->name }}" loading="lazy"
+                    class="object-cover w-full h-40 transition-transform duration-300 hover:scale-105">
+            </div>
+            <div class="p-4">
+                <h3 class="font-semibold text-sm text-gray-900 dark:text-white mb-2 truncate">{{ $product->name }}</h3>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                    {{ Str::limit($product->description, 50) }}
                 </p>
-                {{-- Tombol hanya muncul jika teksnya panjang --}}
-                @if (strlen($product->description) > 100)
-                {{-- Sesuaikan panjang karakter jika perlu --}}
-                <button @click="open = !open"
-                    class="mb-2 text-xs font-semibold text-blue-600 focus:outline-none hover:underline">
-                    <span x-show="!open">Selengkapnya</span>
-                    <span x-show="open">Tutup</span>
-                </button>
-                @endif
-            </div>
-            <div class="flex items-center justify-between">
-                <span class="text-[#8BA870] font-bold text-lg">Rp
-                    {{ number_format($product->price, 0, ',', '.') }}</span>
-                <button
-                    class="bg-[#8BA870] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#7a965e] transition">
-                    Detail
-                </button>
+                <div class="flex items-center justify-between">
+                    <span class="text-green-600 dark:text-green-400 font-bold text-sm">
+                        Rp {{ number_format($product->price, 0, ',', '.') }}
+                    </span>
+                    <button class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded text-xs transition-colors">
+                        Detail
+                    </button>
+                </div>
             </div>
         </div>
+        @empty
+        <div class="col-span-full p-8 text-center text-gray-500 dark:text-gray-400">
+            <p>Belum ada produk yang ditambahkan.</p>
+        </div>
+        @endforelse
     </div>
-    @empty
-    <div class="p-6 text-center text-gray-500 col-span-full dark:text-gray-400">
-        <p>Belum ada produk yang ditambahkan.</p>
+    
+    @if($products->count() > 12)
+    <div class="mt-6 text-center">
+        <a href="#" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium">
+            Lihat Semua Produk ({{ $products->count() }})
+        </a>
     </div>
-    @endforelse
+    @endif
 </div>
-<div class="w-full text-center">
-    {{ $products->links() }}
-</div>
-{{-- </div> --}}
+
 @endsection

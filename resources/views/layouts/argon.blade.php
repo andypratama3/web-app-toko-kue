@@ -7,7 +7,7 @@
     @section('title', 'Dashboard')
     @include('layouts.headicon')
     {{-- Vite build assets --}}
-    @vite(['resources/css/app.css', 'resources/css/argon-dashboard-tailwind.css', 'resources/js/app.js', 'resources/js/custom.js','resources/js/argon-dashboard-tailwind.js', 'resources/js/sidenav-burger.js', 'resources/js/navbar-scroll-fix.js'])
+    @vite(['resources/css/app.css', 'resources/css/argon-dashboard-tailwind.css', 'resources/js/app.js', 'resources/js/custom.js','resources/js/argon-dashboard-tailwind.js', 'resources/js/sidenav-burger.js', 'resources/js/navbar-scroll-fix.js', 'resources/js/dark-mode-toggle.js'])
 
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
     <!-- Font Awesome CDN -->
@@ -32,6 +32,34 @@
 
     <!-- Livewire Styles -->
     @livewireStyles
+
+    <!-- IMPROVED DARKMODE SCRIPT - PREVENTS FOUC AND SYNCS WITH TOGGLE -->
+    <script>
+    // Reset and initialize theme properly
+    (function() {
+        // For debugging - clear localStorage if there are conflicts
+        // Uncomment the next line if you want to reset theme to light mode
+        // localStorage.removeItem('color-theme');
+        
+        const savedTheme = localStorage.getItem('color-theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        let isDark;
+        if (savedTheme) {
+            isDark = savedTheme === 'dark';
+        } else {
+            // Default to light mode if no preference is saved
+            isDark = false; // Changed from systemPrefersDark to false for default light mode
+            localStorage.setItem('color-theme', 'light');
+        }
+        
+        if (isDark) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    })();
+    </script>
 </head>
 
 <body class="m-0 overflow-x-hidden font-sans text-base antialiased font-normal dark:bg-slate-900 leading-default bg-gray-50 text-slate-500">

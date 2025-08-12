@@ -256,14 +256,5 @@ if (navbar) {
   buttonNavbarFixed.setAttribute("disabled", "true");
 }
 
-var dark_mode_toggle = document.querySelector("[dark-toggle]");
-var root_html = document.querySelector("html");
-
-dark_mode_toggle.addEventListener("change", function () {
-  dark_mode_toggle.setAttribute("manual", "true");
-  if (this.checked) {
-    root_html.classList.add("dark");
-  } else {
-    root_html.classList.remove("dark");
-  }
-});
+// DARK MODE FUNCTIONALITY MOVED TO dark-mode-toggle.js
+// This section has been moved to a separate file to avoid conflicts
