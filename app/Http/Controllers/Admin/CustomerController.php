@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule; // Import Rule class
+use Illuminate\Validation\Rule;
 
 class CustomerController extends Controller
 {
@@ -55,7 +55,6 @@ class CustomerController extends Controller
             'address' => [
                 'required',
                 'string',
-                // Validasi unik untuk kombinasi alamat, nomor telepon, dan region
                 Rule::unique('customers')->where(function ($query) use ($formattedPhone) {
                     return $query->where('phone', $formattedPhone)
                                  ->where('region_id', Auth::user()->region_id);
@@ -67,7 +66,7 @@ class CustomerController extends Controller
             'address.unique' => 'Customer dengan alamat dan nomor telepon ini sudah terdaftar di region Anda.'
         ]);
 
-        Customer::create([
+        $customer = Customer::create([
             'name' => $request->name,
             'address' => $request->address,
             'phone' => $formattedPhone,
@@ -75,7 +74,7 @@ class CustomerController extends Controller
             'region_id' => Auth::user()->region_id,
         ]);
 
-        return redirect()->route('admin.customers.index')->with('success', 'Customer baru berhasil ditambahkan.');
+        return redirect()->route('admin.customers.index')->with('success', 'Customer "' . $customer->name . '" berhasil ditambahkan.');
     }
 
     public function update(Request $request, Customer $customer)
@@ -92,7 +91,6 @@ class CustomerController extends Controller
             'address' => [
                 'required',
                 'string',
-                 // Validasi unik untuk kombinasi, mengabaikan customer saat ini
                 Rule::unique('customers')->where(function ($query) use ($formattedPhone) {
                     return $query->where('phone', $formattedPhone)
                                  ->where('region_id', Auth::user()->region_id);
@@ -111,7 +109,7 @@ class CustomerController extends Controller
             'note' => $request->note,
         ]);
 
-        return redirect()->route('admin.customers.index')->with('success', 'Data customer berhasil diperbarui.');
+        return redirect()->route('admin.customers.index')->with('success', 'Data customer "' . $customer->name . '" berhasil diperbarui.');
     }
 
     public function updateNote(Request $request, Customer $customer)
@@ -128,7 +126,7 @@ class CustomerController extends Controller
             'note' => $request->note,
         ]);
 
-        return redirect()->route('admin.customers.index')->with('success', 'Catatan customer berhasil diperbarui.');
+        return redirect()->route('admin.customers.index')->with('success', 'Catatan untuk "' . $customer->name . '" berhasil diperbarui.');
     }
 
     public function destroy(Customer $customer)
@@ -137,8 +135,9 @@ class CustomerController extends Controller
             abort(403, 'AKSES DITOLAK');
         }
 
+        $customerName = $customer->name;
         $customer->delete();
 
-        return redirect()->route('admin.customers.index')->with('success', 'Customer berhasil dihapus.');
+        return redirect()->route('admin.customers.index')->with('success', 'Customer "' . $customerName . '" berhasil dihapus.');
     }
 }

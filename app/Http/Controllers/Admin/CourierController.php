@@ -46,13 +46,11 @@ class CourierController extends Controller
 
         if ($validator->fails()) {
             $redirect = redirect()->route('admin.couriers.index')
-                ->withErrors($validator, 'create') // Menggunakan error bag 'create'
+                ->withErrors($validator, 'create')
                 ->withInput();
 
-            // PERBAIKAN: Cek jika error spesifiknya adalah email duplikat
             if ($validator->errors()->has('email')) {
-                // Tambahkan flash message error untuk ditampilkan di notifikasi banner
-                $redirect->with('error', 'Email yang Anda masukkan sudah terdaftar. Silakan gunakan email lain.');
+                $redirect->with('error', 'Email yang Anda masukkan sudah terdaftar.');
             }
 
             return $redirect;
@@ -67,7 +65,7 @@ class CourierController extends Controller
 
         $user->assignRole('kurir');
 
-        return redirect()->route('admin.couriers.index')->with('success', 'Kurir baru berhasil ditambahkan.');
+        return redirect()->route('admin.couriers.index')->with('success', 'Kurir "' . $user->name . '" berhasil ditambahkan.');
     }
 
     public function edit(User $courier)
@@ -80,7 +78,6 @@ class CourierController extends Controller
      */
     public function update(Request $request, User $courier)
     {
-        // BENAR: Membandingkan region_id (angka)
         if ($courier->region_id !== Auth::user()->region_id) {
             abort(403, 'AKSES DITOLAK');
         }
@@ -107,7 +104,7 @@ class CourierController extends Controller
 
         $courier->save();
 
-        return redirect()->route('admin.couriers.index')->with('success', 'Data kurir berhasil diperbarui.');
+        return redirect()->route('admin.couriers.index')->with('success', 'Data kurir "' . $courier->name . '" berhasil diperbarui.');
     }
 
     /**
@@ -119,36 +116,31 @@ class CourierController extends Controller
             abort(403, 'AKSES DITOLAK');
         }
 
+        $courierName = $courier->name;
         $courier->delete();
 
-        return redirect()->route('admin.couriers.index')->with('success', 'Kurir berhasil dihapus.');
+        return redirect()->route('admin.couriers.index')->with('success', 'Kurir "' . $courierName . '" berhasil dihapus.');
     }
 
     public function updateNote(Request $request, User $courier)
     {
         try {
-            // Otorisasi: Pastikan admin hanya bisa mengedit kurir di regionnya
             if ($courier->region_id !== Auth::user()->region_id) {
                 abort(403, 'AKSES DITOLAK');
             }
 
-            // Validasi input
             $validated = $request->validate([
-                'note' => ['nullable', 'string', 'max:1000'], // Batasi panjang note
+                'note' => ['nullable', 'string', 'max:1000'],
             ]);
 
-            // Update catatan pada user (kurir)
             $courier->note = $validated['note'];
             $courier->save();
 
-            // Redirect kembali dengan pesan sukses
             return redirect()->route('admin.couriers.index')
-                ->with('success');
+                ->with('success', 'Catatan untuk kurir "' . $courier->name . '" berhasil diperbarui.');
         } catch (\Exception $e) {
-            // Log error jika terjadi masalah
             Log::error('Error updating courier note: ' . $e->getMessage());
 
-            // Redirect kembali dengan pesan error
             return redirect()->route('admin.couriers.index')
                 ->with('error', 'Terjadi kesalahan saat menyimpan catatan.')
                 ->withInput();

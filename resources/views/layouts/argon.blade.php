@@ -40,10 +40,10 @@
         // For debugging - clear localStorage if there are conflicts
         // Uncomment the next line if you want to reset theme to light mode
         // localStorage.removeItem('color-theme');
-        
+
         const savedTheme = localStorage.getItem('color-theme');
         const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        
+
         let isDark;
         if (savedTheme) {
             isDark = savedTheme === 'dark';
@@ -52,7 +52,7 @@
             isDark = false; // Changed from systemPrefersDark to false for default light mode
             localStorage.setItem('color-theme', 'light');
         }
-        
+
         if (isDark) {
             document.documentElement.classList.add('dark');
         } else {
@@ -63,6 +63,9 @@
 </head>
 
 <body class="m-0 overflow-x-hidden font-sans text-base antialiased font-normal dark:bg-slate-900 leading-default bg-gray-50 text-slate-500">
+    {{-- KOMPONEN TOAST --}}
+    <x-toast />
+
     <!-- PRELOADER -->
     <div id="preloader" class="fixed top-0 left-0 w-full h-full bg-white flex justify-center items-center z-50">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500"></div>
