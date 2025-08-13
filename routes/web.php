@@ -8,8 +8,9 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\KurirDashboardController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Admin\CourierController;
-use App\Http\Controllers\Admin\CustomerController;
-use App\Http\Controllers\Kurir\KurirCustomerController;
+use App\Http\Controllers\CustomerController;
+// use App\Http\Controllers\Admin\CustomerController;
+// use App\Http\Controllers\Kurir\KurirCustomerController;
 use App\Http\Controllers\Kurir\PesananController;
 use App\Models\Product;
 /*
@@ -54,9 +55,9 @@ Route::middleware([
         Route::put('couriers/{courier}/note', [CourierController::class, 'updateNote'])
             ->name('couriers.updateNote');
 
-        // Route untuk CRUD Customer
+        // Route untuk CRUD Customer menggunakan controller gabungan
         Route::resource('customers', CustomerController::class)->except(['show', 'create', 'edit']);
-        Route::put('/admin/customers/{customer}/note', [CustomerController::class, 'updateNote'])->name('customers.updateNote');
+        Route::put('customers/{customer}/note', [CustomerController::class, 'updateNote'])->name('customers.updateNote');
     });
 
     // ---------- KURIR ----------
@@ -70,24 +71,24 @@ Route::middleware([
         Route::put('profile/password', [KurirDashboardController::class, 'updatePassword'])->name('profile.password');
 
         // Modal create customer (dalam konteks region)
-        Route::get('dashboard/{region}/create', [KurirCustomerController::class, 'create'])
-            ->name('customers.create');
+        // Route::get('dashboard/{region}/create', [KurirCustomerController::class, 'create'])
+        //     ->name('customers.create');
 
         //routing button pesanan (dashboard)
         Route::prefix('pesanan')->name('pesanan.')->group(function () {
             Route::get('/create', [PesananController::class, 'create'])->name('create');
         });
 
-        // Route resource untuk data customer oleh kurir
-        Route::resource('customers', KurirCustomerController::class)
+        // Route resource untuk data customer menggunakan controller gabungan
+        Route::resource('customers', CustomerController::class)
             ->parameters(['customers' => 'customer']);
+
+        // Route untuk update note customer
+        Route::put('customers/{customer}/note', [CustomerController::class, 'updateNote'])
+            ->name('customers.update-note');
 
         Route::get('/pesanan', [PesananController::class, 'index'])
             ->name('pesanan.index');
-
-        // Route untuk update note customer
-        Route::put('customers/{customer}/note', [KurirCustomerController::class, 'updateNote'])
-            ->name('customers.update-note');
 
         //Route untuk ambil data customer dipesanan
         Route::get('kurir/dashboard/create', [PesananController::class, 'showCustomer'])
