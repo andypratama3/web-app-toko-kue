@@ -46,7 +46,8 @@ Route::middleware([
         Route::put('profile/password', [AdminDashboardController::class, 'updatePassword'])->name('profile.password');
 
         // Produk (resource)
-        Route::resource('products', ProductController::class);
+        // Route::resource('products', ProductController::class);
+        Route::resource('products', ProductController::class)->only(['index']);
 
         // Manajemen kurir
         Route::resource('couriers', CourierController::class)
@@ -65,6 +66,9 @@ Route::middleware([
         // Dashboard per region
         Route::get('dashboard/{region}', [KurirDashboardController::class, 'index'])->name('dashboard');
 
+        // Tambahkan route produk untuk kurir (hanya lihat)
+        Route::get('products', [ProductController::class, 'index'])->name('products.index');
+        
         // Profile kurir
         Route::get('profile', [KurirDashboardController::class, 'profile'])->name('profile');
         Route::put('profile', [KurirDashboardController::class, 'updateProfile'])->name('profile.update');

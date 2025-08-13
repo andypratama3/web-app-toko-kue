@@ -9,15 +9,22 @@ class Product extends Model
 {
     use HasFactory;
 
-    // ROUTE DI API
-    // Jadi ini cukup kalau nama tabelnya sesuai
-    protected $table = 'products';
-
-    // Kolom yang bisa diisi mass-assignment
     protected $fillable = [
+        'category_id',
         'name',
         'description',
-        'price',
-        'image'
+        'image_path',
+        'tag',
+        'is_active'
     ];
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function variants()
+    {
+        return $this->hasMany(ProductVariant::class);
+    }
 }
