@@ -117,13 +117,15 @@
     </div>
     <!-- Search & Order Kanan -->
     <div class="flex items-center gap-3 pr-2 md:pr-6 flex-shrink-0">
-      <!-- Form wrapper untuk tombol Login -->
-      <form action="{{ route('login') }}" method="GET" class="hidden md:block">
-        <button type="submit" class="bg-[#8BA870] text-white rounded-full px-5 py-1.5 font-medium text-sm hover:bg-[#7a965e] transition">
-          Login
-        </button>
-      </form>
-    </div>
+  <!-- Form wrapper untuk tombol Login -->
+  <form action="{{ route('login') }}" method="GET" class="hidden md:block">
+    <button type="submit" class="flex items-center gap-2 bg-[#8BA870] text-white rounded-full px-5 py-1.5 font-medium text-sm hover:bg-[#7a965e] transition">
+      <!-- Ikon Login Font Awesome -->
+      <i class="fas fa-sign-in-alt"></i>
+      <span>Login</span>
+    </button>
+  </form>
+</div>
 
     <!-- Hamburger Menu (Mobile) -->
     <div class="md:hidden flex items-center ml-2 mr-4">
@@ -558,7 +560,7 @@
         <!-- Product 7: Kue Mix Tradisional -->
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="zoom-in">
           <div class="relative overflow-hidden rounded-t-2xl">
-            <img src="https://via.placeholder.com/400x300/8BA870/FFFFFF?text=Kue+Mix+Tradisional"
+            <img src="{{ asset('assets/homepage/product/kue-mix-mini.jpeg') }}"
               alt="Kue Mix Tradisional"
               loading="lazy"
               class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
@@ -567,10 +569,15 @@
             </div>
           </div>
           <div class="p-5">
-            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Mix Tradisional</h3>
+            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Mix Mini</h3>
             <div x-data="{ open: false }">
               <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
-                Paket kue mix tradisional yang berisi kombinasi berbagai kue pandan asli pilihan terbaik. Terdiri dari Kue Ijo, Kue Ongol, dan Kue Lumpur Surga yang dikemas dalam satu paket praktis. Cocok untuk acara keluarga, arisan, atau sebagai oleh-oleh khas yang menggabungkan cita rasa tradisional dalam satu kemasan. Semua kue dibuat dengan bahan alami tanpa pengawet dan pewarna buatan.
+                Kue MIX mini ( Kemasan Mika)
+                Berisi :
+                Kue ijo 3 pcs,
+                Kue Ongol-ongol 4 pcs dan
+                Kue Pulut Srikaya 2 pcs
+                Kue ini cocok untuk dijadikan sebagai oleh-oleh atau sebagai cemilan ringan
               </p>
               <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
                 <span x-show="!open">Selengkapnya</span>
@@ -578,7 +585,7 @@
               </button>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-[#8BA870] font-bold text-lg">Rp 25.000</span>
+              <span class="text-[#8BA870] font-bold text-lg">Rp 20.000</span>
             </div>
           </div>
         </div>
@@ -586,7 +593,7 @@
         <!-- Product 8: Kue Mix Premium -->
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="zoom-in">
           <div class="relative overflow-hidden rounded-t-2xl">
-            <img src="https://via.placeholder.com/400x300/7079a8/FFFFFF?text=Kue+Mix+Premium"
+            <img src="{{ asset('assets/homepage/product/kue-mix-kueijo.jpeg') }}"
               alt="Kue Mix Premium"
               loading="lazy"
               class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
@@ -595,10 +602,10 @@
             </div>
           </div>
           <div class="p-5">
-            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Mix Premium</h3>
+            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Mix (Kue Ijo & Kue Pulut)</h3>
             <div x-data="{ open: false }">
               <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
-                Paket kue mix premium dengan koleksi lengkap kue pandan asli terbaik. Berisi Kue Ijo, Kue Pulut Srikaya, Kue Ongol, Kue Lumpur Surga, dan Kue Ubi Nanas dalam kemasan eksklusif. Dibuat dengan bahan premium pilihan dan dikemas dengan cantik, cocok untuk hadiah spesial, acara penting, atau sebagai sajian istimewa untuk tamu. Setiap kue dipilih dengan kualitas terbaik dan cita rasa autentik.
+                Kue MIX (Kemasan Thinwall) Berisi : Kue ijo 4 pcs, Kue Pulut Srikaya 5 pcs
               </p>
               <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
                 <span x-show="!open">Selengkapnya</span>
@@ -606,7 +613,7 @@
               </button>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-[#8BA870] font-bold text-lg">Rp 40.000</span>
+              <span class="text-[#8BA870] font-bold text-lg">Rp 35.000</span>
             </div>
           </div>
         </div>
