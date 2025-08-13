@@ -6,12 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule; // Import Rule class
 
 class CustomerController extends Controller
 {
     /**
-     * Format nomor telepon ke standar +62.
-     * Menghapus awalan 0, 62, atau +62 yang mungkin ada sebelum menambahkan +62.
+     * Format nomor telepon ke standar 62.
      *
      * @param string|null $phone
      * @return string|null
@@ -21,20 +21,19 @@ class CustomerController extends Controller
         if (empty($phone)) {
             return null;
         }
-
-        // Hapus karakter selain angka, kecuali tanda '+' di awal
-        $cleanedPhone = preg_replace('/[^\d+]/', '', $phone);
-
-        // Hapus awalan umum (0, 62, +62) untuk mendapatkan nomor dasar
-        $baseNumber = preg_replace('/^(0|\+?62)/', '', $cleanedPhone);
-
-        return '62' . $baseNumber;
+        $cleanedPhone = preg_replace('/[^\d]/', '', $phone);
+        if (substr($cleanedPhone, 0, 1) === '0') {
+            return '62' . substr($cleanedPhone, 1);
+        }
+        if (substr($cleanedPhone, 0, 2) === '62') {
+            return $cleanedPhone;
+        }
+        return '62' . $cleanedPhone;
     }
 
     public function index(Request $request)
     {
         $search = $request->input('search');
-
         $customers = Customer::where('region_id', Auth::user()->region_id)
             ->when($search, function ($query, $searchTerm) {
                 $query->where('name', 'like', "%{$searchTerm}%")
@@ -48,17 +47,30 @@ class CustomerController extends Controller
 
     public function store(Request $request)
     {
+        $formattedPhone = $this->formatPhoneNumber($request->phone);
+        $request->merge(['phone' => $formattedPhone]);
+
         $request->validate([
             'name' => 'required|string|max:255',
-            'address' => 'required|string',
+            'address' => [
+                'required',
+                'string',
+                // Validasi unik untuk kombinasi alamat, nomor telepon, dan region
+                Rule::unique('customers')->where(function ($query) use ($formattedPhone) {
+                    return $query->where('phone', $formattedPhone)
+                                 ->where('region_id', Auth::user()->region_id);
+                }),
+            ],
             'phone' => 'required|string|max:20',
             'note' => 'nullable|string',
+        ], [
+            'address.unique' => 'Customer dengan alamat dan nomor telepon ini sudah terdaftar di region Anda.'
         ]);
 
         Customer::create([
             'name' => $request->name,
             'address' => $request->address,
-            'phone' => $this->formatPhoneNumber($request->phone), // Gunakan fungsi format
+            'phone' => $formattedPhone,
             'note' => $request->note,
             'region_id' => Auth::user()->region_id,
         ]);
@@ -72,21 +84,51 @@ class CustomerController extends Controller
             abort(403, 'AKSES DITOLAK');
         }
 
+        $formattedPhone = $this->formatPhoneNumber($request->phone);
+        $request->merge(['phone' => $formattedPhone]);
+
         $request->validate([
             'name' => 'required|string|max:255',
-            'address' => 'required|string',
+            'address' => [
+                'required',
+                'string',
+                 // Validasi unik untuk kombinasi, mengabaikan customer saat ini
+                Rule::unique('customers')->where(function ($query) use ($formattedPhone) {
+                    return $query->where('phone', $formattedPhone)
+                                 ->where('region_id', Auth::user()->region_id);
+                })->ignore($customer->id),
+            ],
             'phone' => 'required|string|max:20',
             'note' => 'nullable|string',
+        ], [
+            'address.unique' => 'Customer dengan alamat dan nomor telepon ini sudah terdaftar untuk customer lain.'
         ]);
 
         $customer->update([
             'name' => $request->name,
             'address' => $request->address,
-            'phone' => $this->formatPhoneNumber($request->phone), // Gunakan fungsi format
+            'phone' => $formattedPhone,
             'note' => $request->note,
         ]);
 
         return redirect()->route('admin.customers.index')->with('success', 'Data customer berhasil diperbarui.');
+    }
+
+    public function updateNote(Request $request, Customer $customer)
+    {
+        if ($customer->region_id !== Auth::user()->region_id) {
+            abort(403, 'AKSES DITOLAK');
+        }
+
+        $request->validate([
+            'note' => 'nullable|string',
+        ]);
+
+        $customer->update([
+            'note' => $request->note,
+        ]);
+
+        return redirect()->route('admin.customers.index')->with('success', 'Catatan customer berhasil diperbarui.');
     }
 
     public function destroy(Customer $customer)

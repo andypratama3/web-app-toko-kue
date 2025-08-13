@@ -84,9 +84,3 @@
         </div>
     </div>
 </div>
-{{-- PERBAIKAN: Menambahkan style untuk menyembunyikan backdrop modal bawaan tema --}}
-<style>
-    [modal-backdrop] {
-        display: none !important;
-    }
-</style>

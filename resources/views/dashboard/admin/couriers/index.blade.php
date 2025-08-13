@@ -97,6 +97,7 @@
                         <th scope="col" class="px-4 py-3">Nama Kurir</th>
                         <th scope="col" class="px-4 py-3">Email</th>
                         <th scope="col" class="px-4 py-3">Region</th>
+                        <th scope="col" class="px-4 py-3">Note</th>
                         <th scope="col" class="px-4 py-3">Tanggal Bergabung</th>
                         <th scope="col" class="px-4 py-3"><span class="sr-only">Aksi</span></th>
                     </tr>
@@ -109,62 +110,56 @@
                                 {{ $courier->name }}</th>
                             <td class="px-4 py-3">{{ $courier->email }}</td>
                             <td class="px-4 py-3">{{ $courier->region->name }}</td>
+                            <td class="px-4 py-3">{{ Str::limit($courier->note, 20) }}</td>
                             <td class="px-4 py-3">{{ $courier->created_at->format('d M Y') }}</td>
                             <td class="px-4 py-3 text-right">
                                 <div class="relative inline-block">
-                                    <button id="courier-actions-button-{{ $courier->id }}"
-                                        data-dropdown-toggle="courier-actions-dropdown-{{ $courier->id }}"
-                                        data-dropdown-placement="bottom-end"
-                                        class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100"
-                                        type="button">
-                                        <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20"
-                                            xmlns="http://www.w3.org/2000/svg">
-                                            <path
-                                                d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
-                                        </svg>
+                                    <button data-dropdown-toggle="courier-actions-dropdown-{{ $courier->id }}"
+                                        class="px-2 py-1 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-2 focus:ring-gray-100 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+                                        <i class="fas fa-ellipsis-v"></i>
                                     </button>
                                     <div id="courier-actions-dropdown-{{ $courier->id }}"
                                         class="z-50 hidden bg-white divide-y divide-gray-100 rounded shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
                                         <ul class="py-1 text-sm text-gray-700 dark:text-gray-200"
                                             aria-labelledby="courier-actions-button-{{ $courier->id }}">
                                             <li>
-                                                <a href="#"
+                                                <button type="button"
                                                     data-modal-target="edit-courier-modal-{{ $courier->id }}"
                                                     data-modal-toggle="edit-courier-modal-{{ $courier->id }}"
                                                     class="flex items-center w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600">
                                                     <span class="inline-block w-6 mr-2 text-center"><i
                                                             class="fas fa-edit"></i></span>
                                                     <span>Edit</span>
-                                                </a>
+                                                </button>
                                             </li>
                                             <li>
-                                                <a href="#"
+                                                <button type="button"
                                                     data-modal-target="note-courier-modal-{{ $courier->id }}"
                                                     data-modal-toggle="note-courier-modal-{{ $courier->id }}"
                                                     class="flex items-center w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600">
                                                     <span class="inline-block w-6 mr-2 text-center"><i
                                                             class="fas fa-sticky-note"></i></span>
                                                     <span>Note</span>
-                                                </a>
+                                                </button>
                                             </li>
                                             <li>
-                                                <a href="#"
+                                                <button type="button"
                                                     class="flex items-center w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600">
                                                     <span class="inline-block w-6 mr-2 text-center">
                                                         <i class="fas fa-chart-line"></i></span>
                                                     <span>Performa</span>
-                                                </a>
+                                                </button>
                                             </li>
                                         </ul>
                                         <div class="py-1">
-                                            <a href="#"
+                                            <button type="button"
                                                 data-modal-target="delete-courier-modal-{{ $courier->id }}"
                                                 data-modal-toggle="delete-courier-modal-{{ $courier->id }}"
                                                 class="flex items-center w-full px-4 py-2 text-sm text-left text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-red-500 dark:hover:text-white">
                                                 <span class="inline-block w-6 mr-2 text-center"><i
                                                         class="fas fa-trash"></i></span>
                                                 <span>Delete</span>
-                                            </a>
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -172,294 +167,55 @@
                         </tr>
                     @empty
                         <tr class="border-b dark:border-gray-700">
-                            <td colspan="5" class="px-4 py-3 text-center text-gray-500">Belum ada data kurir di region
+                            <td colspan="6" class="px-4 py-3 text-center text-gray-500">Belum ada data kurir di region
                                 ini.</td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-        <nav class="flex flex-col items-start justify-between p-4 space-y-3 md:flex-row md:items-center md:space-y-0"
-            aria-label="Table navigation">
+        <nav class="flex justify-center md:justify-end w-full p-4" aria-label="Table navigation">
             {{ $couriers->links() }}
         </nav>
     </div>
 
-    {{-- Modal Tambah Kurir --}}
-    <div id="create-courier-modal" tabindex="-1" aria-hidden="true"
-        class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-        <div class="relative w-full max-w-md max-h-full p-4">
-            <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                <div class="flex items-center justify-between p-4 border-b rounded-t md:p-5 dark:border-gray-600">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                        Tambah Kurir Baru
-                    </h3>
-                    <button type="button"
-                        class="inline-flex items-center justify-center w-8 h-8 text-sm text-gray-400 bg-transparent rounded-lg hover:bg-gray-200 hover:text-gray-900 ms-auto dark:hover:bg-gray-600 dark:hover:text-white"
-                        data-modal-toggle="create-courier-modal">
-                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 14 14">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                        </svg>
-                        <span class="sr-only">Close modal</span>
-                    </button>
-                </div>
-                <form class="p-4 md:p-5" method="POST" action="{{ route('admin.couriers.store') }}">
-                    @csrf
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div class="col-span-2">
-                            <label for="name"
-                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Kurir</label>
-                            <input type="text" name="name" id="name"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                placeholder="Ketik nama kurir" required="">
-                        </div>
-                        <div class="col-span-2">
-                            <label for="email"
-                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
-                            <input type="email" name="email" id="email"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                placeholder="contoh@email.com" required="">
-                        </div>
-                        <div class="col-span-2 sm:col-span-1">
-                            <label for="password"
-                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password</label>
-                            <div class="relative">
-                                <input type="password" name="password" id="password"
-                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                    required="">
-                                <button type="button"
-                                    class="absolute inset-y-0 right-0 flex items-center pr-3 toggle-password">
-                                    <i class="text-gray-400 fas fa-eye"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="col-span-2 sm:col-span-1">
-                            <label for="password_confirmation"
-                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Konfirmasi
-                                Password</label>
-                            <div class="relative">
-                                <input type="password" name="password_confirmation" id="password_confirmation"
-                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                    required="">
-                                <button type="button"
-                                    class="absolute inset-y-0 right-0 flex items-center pr-3 toggle-password">
-                                    <i class="text-gray-400 fas fa-eye"></i>
-                                </button>
-                            </div>
-                            {{-- Elemen untuk menampilkan pesan error --}}
-                            <p id="create_password_error" class="hidden mt-1 text-sm text-red-600">Password tidak cocok.
-                            </p>
-                        </div>
-                    </div>
-                    <button type="submit"
-                        class="text-white inline-flex items-center bg-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-800">
-                        <i class="fas fa-save me-1"></i>
-                        Simpan Kurir
-                    </button>
+@endsection
 
-                </form>
-            </div>
-        </div>
-    </div>
 
-    {{-- Loop untuk semua Modal --}}
+@push('modals')
+    {{-- Memanggil modal tambah kurir --}}
+    @include('dashboard.admin.couriers.create')
+
+    {{-- Loop untuk memanggil modal lainnya untuk setiap kurir --}}
     @foreach ($couriers as $courier)
-        {{-- Modal Edit Kurir --}}
-        <div id="edit-courier-modal-{{ $courier->id }}" tabindex="-1" aria-hidden="true"
-            class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-            <div class="relative w-full max-w-md max-h-full p-4">
-                <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                    <div class="flex items-center justify-between p-4 border-b rounded-t md:p-5 dark:border-gray-600">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                            Edit Kurir
-                        </h3>
-                        <button type="button"
-                            class="inline-flex items-center justify-center w-8 h-8 text-sm text-gray-400 bg-transparent rounded-lg hover:bg-gray-200 hover:text-gray-900 ms-auto dark:hover:bg-gray-600 dark:hover:text-white"
-                            data-modal-toggle="edit-courier-modal-{{ $courier->id }}">
-                            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 14 14">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                            </svg>
-                            <span class="sr-only">Close modal</span>
-                        </button>
-                    </div>
-                    <form class="p-4 md:p-5" method="POST" action="{{ route('admin.couriers.update', $courier->id) }}">
-                        @csrf
-                        @method('PUT')
-                        <div class="grid grid-cols-2 gap-4 mb-4">
-                            <div class="col-span-2">
-                                <label for="name-{{ $courier->id }}"
-                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Kurir</label>
-                                <input type="text" name="name" id="name-{{ $courier->id }}"
-                                    value="{{ old('name', $courier->name) }}"
-                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                    required="">
-                            </div>
-                            <div class="col-span-2">
-                                <label for="email-{{ $courier->id }}"
-                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email</label>
-                                <input type="email" name="email" id="email-{{ $courier->id }}"
-                                    value="{{ old('email', $courier->email) }}"
-                                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                    required="">
-                            </div>
-                            <div class="col-span-2 sm:col-span-1">
-                                <label for="password-{{ $courier->id }}"
-                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password Baru
-                                    (Opsional)
-                                </label>
-                                <div class="relative">
-                                    <input type="password" name="password" id="password-{{ $courier->id }}"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                    <button type="button"
-                                        class="absolute inset-y-0 right-0 flex items-center pr-3 toggle-password">
-                                        <i class="text-gray-400 fas fa-eye"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="col-span-2 sm:col-span-1">
-                                <label for="password_confirmation-{{ $courier->id }}"
-                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Konfirmasi
-                                    Password</label>
-                                <div class="relative">
-                                    <input type="password" name="password_confirmation"
-                                        id="password_confirmation-{{ $courier->id }}"
-                                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                                    <button type="button"
-                                        class="absolute inset-y-0 right-0 flex items-center pr-3 toggle-password">
-                                        <i class="text-gray-400 fas fa-eye"></i>
-                                    </button>
-                                </div>
-                                {{-- Elemen untuk menampilkan pesan error --}}
-                                <p id="edit_password_error-{{ $courier->id }}" class="hidden mt-1 text-sm text-red-600">
-                                    Password tidak cocok.</p>
-                            </div>
-                        </div>
-                        <button type="submit"
-                            class="text-white inline-flex items-center bg-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-800">
-                            <i class="fas fa-save me-1"></i>
-                            Simpan Perubahan
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        {{-- Modal Catatan Kurir --}}
-        <div id="note-courier-modal-{{ $courier->id }}" tabindex="-1" aria-hidden="true"
-            class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-            <div class="relative w-full max-w-md max-h-full p-4">
-                <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                    <div class="flex items-start justify-between p-4 border-b rounded-t dark:border-gray-600">
-                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-                            Catatan untuk {{ $courier->name }}
-                        </h3>
-                        <button type="button"
-                            class="inline-flex items-center justify-center w-8 h-8 ml-auto text-sm text-gray-400 bg-transparent rounded-lg hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-600 dark:hover:text-white"
-                            data-modal-hide="note-courier-modal-{{ $courier->id }}">
-                            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 14 14">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                    stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                            </svg>
-                            <span class="sr-only">Tutup modal</span>
-                        </button>
-                    </div>
-                    <form action="{{ route('admin.couriers.updateNote', $courier) }}" method="POST">
-                        @csrf
-                        @method('PUT')
-                        <div class="p-6 space-y-6">
-                            <div>
-                                <label for="note-{{ $courier->id }}"
-                                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Catatan</label>
-                                <textarea id="note-{{ $courier->id }}" name="note" rows="4"
-                                    class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                    placeholder="Tambahkan catatan untuk kurir ini...">{{ $courier->note }}</textarea>
-                            </div>
-                        </div>
-                        <div
-                            class="flex items-center p-6 space-x-2 border-t border-gray-200 rounded-b dark:border-gray-600">
-                            <button type="submit"
-                                class="text-white inline-flex items-center bg-green-600 hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-green-500 dark:hover:bg-green-600 dark:focus:ring-green-800">
-                                <i class="fas fa-save me-1"></i>
-                                Simpan Catatan
-                            </button>
-                            <button type="button"
-                                class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600"
-                                data-modal-hide="note-courier-modal-{{ $courier->id }}">
-                                Batal
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div> {{-- MODAL BARU: Konfirmasi Hapus Kurir --}}
-        <div id="delete-courier-modal-{{ $courier->id }}" tabindex="-1"
-            class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-            <div class="relative w-full max-w-md max-h-full p-4">
-                <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                    <button type="button"
-                        class="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-                        data-modal-hide="delete-courier-modal-{{ $courier->id }}">
-                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 14 14">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                        </svg>
-                        <span class="sr-only">Close modal</span>
-                    </button>
-                    <div class="p-4 text-center md:p-5">
-                        <svg class="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-200" aria-hidden="true"
-                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                        </svg>
-                        <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Apakah Anda yakin ingin
-                            menghapus kurir <span class="font-bold">{{ $courier->name }}</span>?</h3>
-                        <form action="{{ route('admin.couriers.destroy', $courier->id) }}" method="POST"
-                            class="inline">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit"
-                                class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
-                                Ya, saya yakin
-                            </button>
-                        </form>
-                        <button data-modal-hide="delete-courier-modal-{{ $courier->id }}" type="button"
-                            class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Tidak,
-                            batal</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        @include('dashboard.admin.couriers.edit', ['courier' => $courier])
+        @include('dashboard.admin.couriers.note', ['courier' => $courier])
+        @include('dashboard.admin.couriers.delete', ['courier' => $courier])
     @endforeach
+@endpush
 
 
-    {{-- Skrip untuk validasi password --}}
+@push('scripts')
+    {{-- Skrip untuk validasi password dan fungsionalitas lainnya --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // --- Validasi untuk Form Tambah Kurir ---
-            const createForm = document.querySelector('#create-courier-modal form');
+            const createForm = document.forms['createCourierForm'];
             if (createForm) {
                 createForm.addEventListener('submit', function(event) {
-                    const password = document.getElementById('password');
-                    const passwordConfirmation = document.getElementById('password_confirmation');
+                    const password = createForm.elements['password'];
+                    const passwordConfirmation = createForm.elements['password_confirmation'];
                     const errorElement = document.getElementById('create_password_error');
 
-                    // Hapus style error sebelumnya
                     password.classList.remove('border-red-500');
                     passwordConfirmation.classList.remove('border-red-500');
                     errorElement.classList.add('hidden');
 
-                    // Cek jika password tidak cocok
                     if (password.value !== passwordConfirmation.value) {
-                        event.preventDefault(); // Hentikan pengiriman form
-                        errorElement.classList.remove('hidden'); // Tampilkan pesan error
-                        password.classList.add('border-red-500'); // Tambahkan border merah
-                        passwordConfirmation.classList.add('border-red-500'); // Tambahkan border merah
+                        event.preventDefault();
+                        errorElement.classList.remove('hidden');
+                        password.classList.add('border-red-500');
+                        passwordConfirmation.classList.add('border-red-500');
                     }
                 });
             }
@@ -476,21 +232,16 @@
                         const errorElement = document.getElementById(
                             `edit_password_error-${courierId}`);
 
-                        // Hapus style error sebelumnya
                         password.classList.remove('border-red-500');
                         passwordConfirmation.classList.remove('border-red-500');
                         if (errorElement) errorElement.classList.add('hidden');
 
-                        // Hanya validasi jika password baru diisi
-                        if (password.value !== '') {
-                            if (password.value !== passwordConfirmation.value) {
-                                event.preventDefault(); // Hentikan pengiriman form
-                                if (errorElement) errorElement.classList.remove(
-                                    'hidden'); // Tampilkan pesan error
-                                password.classList.add('border-red-500'); // Tambahkan border merah
-                                passwordConfirmation.classList.add(
-                                    'border-red-500'); // Tambahkan border merah
-                            }
+                        if (password.value !== '' && password.value !== passwordConfirmation
+                            .value) {
+                            event.preventDefault();
+                            if (errorElement) errorElement.classList.remove('hidden');
+                            password.classList.add('border-red-500');
+                            passwordConfirmation.classList.add('border-red-500');
                         }
                     });
                 }
@@ -512,17 +263,15 @@
                     }
                 });
             });
-        });
 
-        document.addEventListener('DOMContentLoaded', function() {
-            // Logika untuk membuka modal EDIT jika ada error dari session
+            // --- Logika untuk membuka modal berdasarkan error validasi dari session ---
             const errorModalId = '{{ session('error_modal_id') }}';
             if (errorModalId) {
                 const modal = document.getElementById(errorModalId);
                 if (modal) {
                     const modalInstance = new Modal(modal);
                     modalInstance.show();
-                    return; // Hentikan eksekusi agar tidak membuka modal create
+                    return; // Hentikan eksekusi agar tidak membuka modal create juga
                 }
             }
 
@@ -536,5 +285,4 @@
             @endif
         });
     </script>
-
-@endsection
+@endpush

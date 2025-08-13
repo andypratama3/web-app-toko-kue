@@ -3,12 +3,6 @@
 @section('page_title', 'Customer')
 
 @section('content')
-    {{-- PERBAIKAN: Menambahkan style untuk menyembunyikan backdrop modal bawaan tema --}}
-    <style>
-        [modal-backdrop] {
-            display: none !important;
-        }
-    </style>
     {{-- Notifikasi --}}
     @if (session('success'))
         <div id="alert-success"
@@ -76,6 +70,7 @@
                         <th scope="col" class="px-4 py-3">No. HP</th>
                         <th scope="col" class="px-4 py-3">Region</th>
                         <th scope="col" class="px-4 py-3">Note</th>
+                        <th scope="col" class="px-4 py-3">Tanggal Bergabung</th>
                         <th scope="col" class="px-4 py-3"><span class="sr-only">Aksi</span></th>
                     </tr>
                 </thead>
@@ -89,8 +84,51 @@
                             <td class="px-4 py-2">{{ $customer->phone }}</td>
                             <td class="px-4 py-2">{{ $customer->region->name ?? 'N/A' }}</td>
                             <td class="px-4 py-2">{{ Str::limit($customer->note, 20) }}</td>
+                            <td class="px-4 py-2">{{ $customer->created_at->format('d M Y') }}</td>
                             <td class="px-4 py-2 text-right">
-                                <button data-dropdown-toggle="actions-dropdown-{{ $customer->id }}"
+                                <div class="relative inline-block">
+                                    <button data-dropdown-toggle="customer-actions-dropdown-{{ $customer->id }}"
+                                        class="px-2 py-1 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-2 focus:ring-gray-100 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <div id="customer-actions-dropdown-{{ $customer->id }}"
+                                        class="z-50 hidden bg-white divide-y divide-gray-100 rounded shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
+                                        <ul class="py-1 text-sm text-gray-700 dark:text-gray-200"
+                                            aria-labelledby="customer-actions-button-{{ $customer->id }}">
+                                            <li>
+                                                <button type="button"
+                                                    data-modal-target="edit-customer-modal-{{ $customer->id }}"
+                                                    data-modal-toggle="edit-customer-modal-{{ $customer->id }}"
+                                                    class="flex items-center w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600">
+                                                    <span class="inline-block w-6 mr-2 text-center"><i
+                                                            class="fas fa-edit"></i></span>
+                                                    <span>Edit</span>
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <button type="button"
+                                                    data-modal-target="note-customer-modal-{{ $customer->id }}"
+                                                    data-modal-toggle="note-customer-modal-{{ $customer->id }}"
+                                                    class="flex items-center w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600">
+                                                    <span class="inline-block w-6 mr-2 text-center"><i
+                                                            class="fas fa-sticky-note"></i></span>
+                                                    <span>Note</span>
+                                                </button>
+                                            </li>
+                                        </ul>
+                                        <div class="py-1">
+                                            <button type="button"
+                                                data-modal-target="delete-customer-modal-{{ $customer->id }}"
+                                                data-modal-toggle="delete-customer-modal-{{ $customer->id }}"
+                                                class="flex items-center w-full px-4 py-2 text-sm text-left text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-red-500 dark:hover:text-white">
+                                                <span class="inline-block w-6 mr-2 text-center"><i
+                                                        class="fas fa-trash"></i></span>
+                                                <span>Delete</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                {{-- <button data-dropdown-toggle="actions-dropdown-{{ $customer->id }}"
                                     class="px-2 py-1 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-2 focus:ring-gray-100 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
                                     <i class="fas fa-ellipsis-v"></i>
                                 </button>
@@ -102,41 +140,51 @@
                                                 data-modal-target="edit-customer-modal-{{ $customer->id }}"
                                                 data-modal-toggle="edit-customer-modal-{{ $customer->id }}"
                                                 class="flex items-center w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">
-                                                <i class="w-4 h-4 mr-2 fas fa-pen-to-square"></i> Edit
+                                                <i class="w-4 h-4 mr-2 fas fa-edit"></i> Edit
                                             </button>
                                         </li>
                                         <li>
                                             <button type="button"
-                                                data-modal-target="delete-customer-modal-{{ $customer->id }}"
-                                                data-modal-toggle="delete-customer-modal-{{ $customer->id }}"
-                                                class="flex items-center w-full px-4 py-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-600">
-                                                <i class="w-4 h-4 mr-2 fas fa-trash-can"></i> Hapus
+                                                data-modal-target="note-customer-modal-{{ $customer->id }}"
+                                                data-modal-toggle="note-customer-modal-{{ $customer->id }}"
+                                                class="flex items-center w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">
+                                                <i class="w-4 h-4 mr-2 fas fa-sticky-note"></i> Note
                                             </button>
                                         </li>
                                     </ul>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="px-4 py-4 text-center text-gray-500">Tidak ada data customer.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                                    <div class="py-1">
+                                        <button type="button"
+                                            data-modal-target="delete-customer-modal-{{ $customer->id }}"
+                                            data-modal-toggle="delete-customer-modal-{{ $customer->id }}"
+                                            class="flex items-center w-full px-4 py-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-600">
+                                            <i class="w-4 h-4 mr-2 fas fa-trash"></i> Hapus
+                                        </button>
+                                    </div> --}}
         </div>
-        <div class="p-4">
-            {{ $customers->withQueryString()->links() }}
-        </div>
+        </td>
+        </tr>
+    @empty
+        <tr>
+            <td colspan="6" class="px-4 py-4 text-center text-gray-500">Tidak ada data customer.</td>
+        </tr>
+        @endforelse
+        </tbody>
+        </table>
     </div>
+    <div class="p-4">
+        {{ $customers->withQueryString()->links() }}
+    </div>
+    </div>
+@endsection
 
+@push('modals')
     {{-- Panggil Modal Tambah Customer --}}
-    @include('dashboard.admin.customers.modals.create')
+    @include('dashboard.admin.customers.create')
 
     {{-- Panggil Modal Edit dan Hapus Customer (dalam loop) --}}
     @foreach ($customers as $customer)
-        @include('dashboard.admin.customers.modals.edit', ['customer' => $customer])
-        @include('dashboard.admin.customers.modals.delete', ['customer' => $customer])
+        @include('dashboard.admin.customers.edit', ['customer' => $customer])
+        @include('dashboard.admin.customers.note', ['customer' => $customer])
+        @include('dashboard.admin.customers.delete', ['customer' => $customer])
     @endforeach
-
-@endsection
+@endpush

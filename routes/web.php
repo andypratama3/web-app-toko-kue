@@ -56,6 +56,7 @@ Route::middleware([
 
         // Route untuk CRUD Customer
         Route::resource('customers', CustomerController::class)->except(['show', 'create', 'edit']);
+        Route::put('/admin/customers/{customer}/note', [CustomerController::class, 'updateNote'])->name('customers.updateNote');
     });
 
     // ---------- KURIR ----------
@@ -72,7 +73,7 @@ Route::middleware([
         Route::get('dashboard/{region}/create', [KurirCustomerController::class, 'create'])
             ->name('customers.create');
 
-        //routing button pesanan (dashboard) 
+        //routing button pesanan (dashboard)
         Route::prefix('pesanan')->name('pesanan.')->group(function () {
             Route::get('/create', [PesananController::class, 'create'])->name('create');
         });
