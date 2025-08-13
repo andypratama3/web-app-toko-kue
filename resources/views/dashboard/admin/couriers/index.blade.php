@@ -57,7 +57,7 @@
     @endif
 
     {{-- Kontainer utama untuk tabel dan aksi --}}
-    <div class="relative bg-white shadow-md dark:bg-gray-800 sm:rounded-lg">
+    <div class="relative min-h-[715px] bg-white shadow-md dark:bg-gray-800 sm:rounded-lg">
         <div class="flex flex-col items-center justify-between p-4 space-y-3 md:flex-row md:space-y-0 md:space-x-4">
             <div class="w-full md:w-1/2">
                 <form class="flex items-center">
@@ -90,7 +90,7 @@
                 </button>
             </div>
         </div>
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto min-h-[500px]">
             <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>

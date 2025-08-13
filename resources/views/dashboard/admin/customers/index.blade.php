@@ -29,7 +29,7 @@
     @endif
 
     {{-- Container utama --}}
-    <div class="relative overflow-hidden bg-white shadow-md dark:bg-gray-800 sm:rounded-lg">
+    <div class="relative overflow-hidden min-h-[715px] bg-white shadow-md dark:bg-gray-800 sm:rounded-lg">
         <div class="flex flex-col p-4 space-y-3 md:flex-row md:items-center md:justify-between md:space-y-0 md:space-x-4">
             <div class="w-full md:w-1/2">
                 <form class="flex items-center" method="GET" action="{{ route('admin.customers.index') }}">
@@ -61,7 +61,7 @@
                 </button>
             </div>
         </div>
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto min-h-[500px]">
             <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
@@ -78,14 +78,14 @@
                     @forelse ($customers as $customer)
                         <tr class="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
                             <th scope="row"
-                                class="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                 {{ $customer->name }}</th>
-                            <td class="px-4 py-2">{{ Str::limit($customer->address, 30) }}</td>
-                            <td class="px-4 py-2">{{ $customer->phone }}</td>
-                            <td class="px-4 py-2">{{ $customer->region->name ?? 'N/A' }}</td>
-                            <td class="px-4 py-2">{{ Str::limit($customer->note, 20) }}</td>
-                            <td class="px-4 py-2">{{ $customer->created_at->format('d M Y') }}</td>
-                            <td class="px-4 py-2 text-right">
+                            <td class="px-4 py-3">{{ Str::limit($customer->address, 30) }}</td>
+                            <td class="px-4 py-3">{{ $customer->phone }}</td>
+                            <td class="px-4 py-3">{{ $customer->region->name ?? 'N/A' }}</td>
+                            <td class="px-4 py-3">{{ Str::limit($customer->note, 20) }}</td>
+                            <td class="px-4 py-3">{{ $customer->created_at->format('d M Y') }}</td>
+                            <td class="px-4 py-3 text-right">
                                 <div class="relative inline-block">
                                     <button data-dropdown-toggle="customer-actions-dropdown-{{ $customer->id }}"
                                         class="px-2 py-1 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-2 focus:ring-gray-100 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
@@ -128,52 +128,20 @@
                                         </div>
                                     </div>
                                 </div>
-                                {{-- <button data-dropdown-toggle="actions-dropdown-{{ $customer->id }}"
-                                    class="px-2 py-1 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-2 focus:ring-gray-100 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
-                                    <i class="fas fa-ellipsis-v"></i>
-                                </button>
-                                <div id="actions-dropdown-{{ $customer->id }}"
-                                    class="z-10 hidden bg-white divide-y divide-gray-100 rounded shadow w-44 dark:bg-gray-700">
-                                    <ul class="py-1 text-sm">
-                                        <li>
-                                            <button type="button"
-                                                data-modal-target="edit-customer-modal-{{ $customer->id }}"
-                                                data-modal-toggle="edit-customer-modal-{{ $customer->id }}"
-                                                class="flex items-center w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">
-                                                <i class="w-4 h-4 mr-2 fas fa-edit"></i> Edit
-                                            </button>
-                                        </li>
-                                        <li>
-                                            <button type="button"
-                                                data-modal-target="note-customer-modal-{{ $customer->id }}"
-                                                data-modal-toggle="note-customer-modal-{{ $customer->id }}"
-                                                class="flex items-center w-full px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">
-                                                <i class="w-4 h-4 mr-2 fas fa-sticky-note"></i> Note
-                                            </button>
-                                        </li>
-                                    </ul>
-                                    <div class="py-1">
-                                        <button type="button"
-                                            data-modal-target="delete-customer-modal-{{ $customer->id }}"
-                                            data-modal-toggle="delete-customer-modal-{{ $customer->id }}"
-                                            class="flex items-center w-full px-4 py-2 text-red-500 hover:bg-gray-100 dark:hover:bg-gray-600">
-                                            <i class="w-4 h-4 mr-2 fas fa-trash"></i> Hapus
-                                        </button>
-                                    </div> --}}
-        </div>
-        </td>
-        </tr>
-    @empty
-        <tr>
-            <td colspan="6" class="px-4 py-4 text-center text-gray-500">Tidak ada data customer.</td>
-        </tr>
-        @endforelse
-        </tbody>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="6" class="px-4 py-4 text-center text-gray-500">Tidak ada data customer.</td>
+                    </tr>
+                @endforelse
+            </tbody>
         </table>
     </div>
-    <div class="p-4">
+    <nav class="flex justify-center md:justify-end w-full p-4" aria-label="Table navigation">
         {{ $customers->withQueryString()->links() }}
-    </div>
+    </nav>
     </div>
 @endsection
 
