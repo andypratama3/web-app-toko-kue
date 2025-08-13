@@ -32,7 +32,7 @@
                             d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
                             clip-rule="evenodd"></path>
                     </svg>
-                    Tambah Customer
+                    Tambah Data
                 </button>
             </div>
         </div>
@@ -40,9 +40,9 @@
             <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
-                        <th scope="col" class="px-4 py-3">Nama</th>
+                        <th scope="col" class="px-4 py-3">Nama Customer</th>
                         <th scope="col" class="px-4 py-3">Alamat</th>
-                        <th scope="col" class="px-4 py-3">No. HP</th>
+                        <th scope="col" class="px-4 py-3">Nomor Telepon</th>
                         <th scope="col" class="px-4 py-3">Region</th>
                         <th scope="col" class="px-4 py-3">Note</th>
                         <th scope="col" class="px-4 py-3">Tanggal Bergabung</th>

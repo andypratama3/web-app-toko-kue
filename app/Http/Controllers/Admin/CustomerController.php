@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class CustomerController extends Controller
@@ -50,7 +51,7 @@ class CustomerController extends Controller
         $formattedPhone = $this->formatPhoneNumber($request->phone);
         $request->merge(['phone' => $formattedPhone]);
 
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'address' => [
                 'required',
@@ -63,8 +64,15 @@ class CustomerController extends Controller
             'phone' => 'required|string|max:20',
             'note' => 'nullable|string',
         ], [
-            'address.unique' => 'Customer dengan alamat dan nomor telepon ini sudah terdaftar di region Anda.'
+            'address.unique' => 'Customer dengan alamat dan nomor telepon ini sudah terdaftar.'
         ]);
+
+        if ($validator->fails()) {
+            return redirect()->route('admin.customers.index')
+                ->withErrors($validator)
+                ->withInput()
+                ->with('error', $validator->errors()->first('address'));
+        }
 
         $customer = Customer::create([
             'name' => $request->name,
@@ -86,7 +94,7 @@ class CustomerController extends Controller
         $formattedPhone = $this->formatPhoneNumber($request->phone);
         $request->merge(['phone' => $formattedPhone]);
 
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'address' => [
                 'required',
@@ -99,8 +107,15 @@ class CustomerController extends Controller
             'phone' => 'required|string|max:20',
             'note' => 'nullable|string',
         ], [
-            'address.unique' => 'Customer dengan alamat dan nomor telepon ini sudah terdaftar untuk customer lain.'
+            'address.unique' => 'Customer dengan alamat dan nomor telepon ini sudah terdaftar.'
         ]);
+
+        if ($validator->fails()) {
+            return redirect()->route('admin.customers.index')
+                ->withErrors($validator)
+                ->withInput()
+                ->with('error', $validator->errors()->first('address'));
+        }
 
         $customer->update([
             'name' => $request->name,

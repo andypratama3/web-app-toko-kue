@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Customer;
-use App\Models\Region; // Pastikan untuk mengimpor model Region jika belum
+use App\Models\Region;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class KurirCustomerController extends Controller
 {
@@ -18,58 +20,31 @@ class KurirCustomerController extends Controller
         if (empty($phone)) {
             return null;
         }
-
-        // Hapus karakter selain angka, kecuali tanda '+' di awal
         $cleanedPhone = preg_replace('/[^\d+]/', '', $phone);
-
-        // Hapus awalan umum (0, 62, +62) untuk mendapatkan nomor dasar
         $baseNumber = preg_replace('/^(0|\+?62)/', '', $cleanedPhone);
-
         return '62' . $baseNumber;
     }
 
     /**
-     * Menampilkan halaman manajemen customer dengan data.
-     * Mengelola fungsionalitas pencarian berdasarkan nama, telepon, alamat, region, atau catatan.
+     * Menampilkan halaman manajemen customer.
      */
     public function index(Request $request)
     {
-        // Dapatkan nilai pencarian dari request
         $search = $request->input('search');
-
-        // Ambil ID region pengguna yang sedang login
         $userRegionId = Auth::user()->region_id;
+        $customersQuery = Customer::where('region_id', $userRegionId)->with('region');
 
-        // Mulai query Eloquent untuk customer di region pengguna
-        $customersQuery = Customer::where('region_id', $userRegionId)
-            ->with('region'); // Eager load relasi region untuk menghindari N+1 problem
-
-        // Jika ada nilai pencarian, terapkan filter
         if ($search) {
             $customersQuery->where(function ($query) use ($search) {
                 $query->where('name', 'like', '%' . $search . '%')
                       ->orWhere('phone', 'like', '%' . $search . '%')
                       ->orWhere('address', 'like', '%' . $search . '%')
                       ->orWhere('note', 'like', '%' . $search . '%');
-            })
-            ->orWhereHas('region', function ($query) use ($search) {
-                // Tambahkan pencarian berdasarkan nama region
-                $query->where('name', 'like', '%' . $search . '%');
             });
         }
 
-        // Dapatkan hasil yang difilter atau semua hasil jika tidak ada pencarian, dan lakukan paginasi
         $customers = $customersQuery->latest()->paginate(10);
-
         return view('dashboard.kurir.customers.index', compact('customers'));
-    }
-
-    /**
-     * Menampilkan form create customer.
-     */
-    public function create()
-    {
-        return view('dashboard.kurir.customers.create');
     }
 
     /**
@@ -77,22 +52,42 @@ class KurirCustomerController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $formattedPhone = $this->formatPhoneNumber($request->phone);
+        $request->merge(['phone' => $formattedPhone]);
+
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'address' => 'required|string',
+            'address' => [
+                'required',
+                'string',
+                Rule::unique('customers')->where(function ($query) use ($formattedPhone) {
+                    return $query->where('phone', $formattedPhone)
+                                 ->where('region_id', Auth::user()->region_id);
+                }),
+            ],
             'phone' => 'required|string|max:20',
             'note' => 'nullable|string',
+        ], [
+            'address.unique' => 'Customer dengan alamat dan nomor telepon ini sudah terdaftar.'
         ]);
 
-        Customer::create([
+        if ($validator->fails()) {
+            // Jika validasi gagal, kirim pesan error ke session untuk ditampilkan sebagai toast
+            return redirect()->route('kurir.customers.index')
+                ->withErrors($validator)
+                ->withInput()
+                ->with('error', $validator->errors()->first('address'));
+        }
+
+        $customer = Customer::create([
             'name' => $request->name,
             'address' => $request->address,
-            'phone' => $this->formatPhoneNumber($request->phone),
+            'phone' => $formattedPhone,
             'note' => $request->note,
             'region_id' => Auth::user()->region_id,
         ]);
 
-        return redirect()->route('kurir.customers.index')->with('success', 'Customer berhasil ditambahkan!');
+        return redirect()->route('kurir.customers.index')->with('success', 'Customer "' . $customer->name . '" berhasil ditambahkan.');
     }
 
     /**
@@ -100,21 +95,40 @@ class KurirCustomerController extends Controller
      */
     public function update(Request $request, Customer $customer)
     {
-        $request->validate([
+        $formattedPhone = $this->formatPhoneNumber($request->phone);
+        $request->merge(['phone' => $formattedPhone]);
+
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'address' => 'required|string',
+            'address' => [
+                'required',
+                'string',
+                Rule::unique('customers')->where(function ($query) use ($formattedPhone) {
+                    return $query->where('phone', $formattedPhone)
+                                 ->where('region_id', Auth::user()->region_id);
+                })->ignore($customer->id),
+            ],
             'phone' => 'required|string|max:20',
             'note' => 'nullable|string',
+        ], [
+            'address.unique' => 'Customer dengan alamat dan nomor telepon ini sudah terdaftar.'
         ]);
+
+        if ($validator->fails()) {
+            return redirect()->route('kurir.customers.index')
+                ->withErrors($validator)
+                ->withInput()
+                ->with('error', $validator->errors()->first('address'));
+        }
 
         $customer->update([
             'name' => $request->name,
             'address' => $request->address,
-            'phone' => $this->formatPhoneNumber($request->phone),
+            'phone' => $formattedPhone,
             'note' => $request->note
         ]);
 
-        return redirect()->route('kurir.customers.index')->with('success', 'Customer berhasil diupdate!');
+        return redirect()->route('kurir.customers.index')->with('success', 'Data customer "' . $customer->name . '" berhasil diperbarui.');
     }
 
     /**
@@ -123,14 +137,12 @@ class KurirCustomerController extends Controller
     public function updateNote(Request $request, Customer $customer)
     {
         $request->validate([
-            'note' => 'required|string',
+            'note' => 'nullable|string',
         ]);
 
-        $customer->update([
-            'note' => $request->note
-        ]);
+        $customer->update(['note' => $request->note]);
 
-        return response()->json(['message' => 'Note berhasil diupdate!']);
+        return redirect()->route('kurir.customers.index')->with('success', 'Catatan untuk "' . $customer->name . '" berhasil diperbarui.');
     }
 
     /**
@@ -138,7 +150,8 @@ class KurirCustomerController extends Controller
      */
     public function destroy(Customer $customer)
     {
+        $customerName = $customer->name;
         $customer->delete();
-        return redirect()->route('kurir.customers.index')->with('success', 'Customer berhasil dihapus!');
+        return redirect()->route('kurir.customers.index')->with('success', 'Customer "' . $customerName . '" berhasil dihapus.');
     }
 }
