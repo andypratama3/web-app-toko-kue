@@ -224,7 +224,7 @@
     </div>
 
     <!-- Elemen Toast Notifikasi -->
-    <div id="toast-notification"
+    {{-- <div id="toast-notification"
         class="hidden fixed top-8 right-4 bg-white text-gray-800 px-4 py-3 rounded-lg shadow-lg z-[60] text-sm transform transition-all duration-300 ease-out flex items-center space-x-3 min-w-[250px]">
         <div id="toast-icon-wrapper" class="flex-shrink-0">
             <!-- Ikon akan disuntikkan di sini oleh JavaScript -->
@@ -236,7 +236,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
         </button>
-    </div>
+    </div> --}}
 
     @push('flowbite-modals')
         {{-- Memanggil modal tambah produk --}}
@@ -248,65 +248,128 @@
         let produkList = []; // Daftar semua produk yang tersedia
         let cart = []; // Keranjang belanja
 
-        // --- Fungsi Toast Notifikasi ---
-        let toastTimeout; // Untuk menyimpan ID timeout agar bisa dibersihkan
+        function showToast(message, type = 'success', duration = 5000) {
+            // 1. Hapus toast yang mungkin sudah ada sebelumnya
+            const existingToast = document.getElementById('toast-notification-dynamic');
+            if (existingToast) {
+                existingToast.remove();
+            }
 
-        function showToast(message, type = 'info', duration = 3000) {
-            const toast = document.getElementById('toast-notification');
-            const toastMessage = document.getElementById('toast-message');
-            const toastIconWrapper = document.getElementById('toast-icon-wrapper');
-
-            // Reset kelas background dan ikon
-            toast.classList.remove('bg-white', 'border-green-400', 'border-red-400', 'border-orange-400',
-                'border-blue-400'); // Tambahkan border-blue-400
-            toastIconWrapper.innerHTML = ''; // Kosongkan ikon sebelumnya
-
-            let iconSvg = '';
-            let borderColorClass = '';
-
+            // 2. Tentukan ikon dan style berdasarkan tipe
+            let iconSvg, iconBgColor, iconTextColor;
             if (type === 'success') {
-                borderColorClass = 'border-green-400';
+                iconBgColor = 'bg-green-100 dark:bg-green-800';
+                iconTextColor = 'text-green-500 dark:text-green-200';
                 iconSvg =
-                    `<svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
-            } else if (type === 'error') {
-                borderColorClass = 'border-red-400';
+                    `<svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20"><path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z" /></svg>`;
+            } else { // 'error'
+                iconBgColor = 'bg-red-100 dark:bg-red-800';
+                iconTextColor = 'text-red-500 dark:text-red-200';
                 iconSvg =
-                    `<svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
-            } else if (type === 'warning') {
-                borderColorClass = 'border-orange-400';
-                iconSvg =
-                    `<svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
-            } else { // Default to info
-                borderColorClass = 'border-blue-400';
-                iconSvg =
-                    `<svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+                    `<svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20"><path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 11.793a1 1 0 1 1-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 0 1-1.414-1.414L8.586 10 6.293 7.707a1 1 0 0 1 1.414-1.414L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414L11.414 10l2.293 2.293Z" /></svg>`;
             }
 
-            toastIconWrapper.innerHTML = iconSvg;
-            toast.classList.add('bg-white', borderColorClass, 'border'); // Tambahkan border sebagai pemisah visual
-            toastMessage.textContent = message;
+            // 3. Buat elemen toast baru dari string HTML
+            const toastElement = document.createElement('div');
+            toastElement.id = 'toast-notification-dynamic';
+            // Style dan class diambil dari toast.blade.php
+            toastElement.className =
+                'fixed top-5 right-5 w-full max-w-xs p-4 text-gray-900 bg-white rounded-lg shadow-lg dark:bg-gray-800 dark:text-gray-300 z-[100] transition-transform duration-300 ease-out';
+            toastElement.setAttribute('role', 'alert');
+            toastElement.style.transform = 'translateY(-20px) translateX(20px)'; // Posisi awal untuk animasi
+            toastElement.style.opacity = '0';
 
-            // Atur posisi agar sedikit lebih ke bawah
-            toast.style.right = '1rem';
-            toast.style.top = '4rem';
+            toastElement.innerHTML = `
+        <div class="flex items-center">
+            <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 ${iconTextColor} ${iconBgColor} rounded-lg">
+                ${iconSvg}
+            </div>
+            <div class="text-sm font-normal ms-3">${message}</div>
+            <button type="button" onclick="this.parentElement.parentElement.remove()" class="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700" aria-label="Close">
+                <span class="sr-only">Close</span>
+                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" /></svg>
+            </button>
+        </div>
+    `;
 
-            toast.classList.remove('hidden'); // Tampilkan toast
+            // 4. Tambahkan ke body dan animasikan
+            document.body.appendChild(toastElement);
 
-            // Bersihkan timeout sebelumnya jika ada
-            if (toastTimeout) {
-                clearTimeout(toastTimeout);
-            }
+            // Animasikan masuk (mirip x-transition)
+            setTimeout(() => {
+                toastElement.style.transform = 'translateY(0) translateX(0)';
+                toastElement.style.opacity = '1';
+            }, 10); // Delay kecil agar transisi berjalan
 
-            // Sembunyikan toast setelah durasi tertentu
-            toastTimeout = setTimeout(() => {
-                hideToast();
+            // 5. Atur timer untuk menghapus toast
+            setTimeout(() => {
+                // Animasikan keluar
+                toastElement.style.transform = 'translateY(-20px) translateX(20px)';
+                toastElement.style.opacity = '0';
+                // Hapus elemen dari DOM setelah animasi selesai
+                setTimeout(() => toastElement.remove(), 300);
             }, duration);
         }
 
-        function hideToast() {
-            const toast = document.getElementById('toast-notification');
-            toast.classList.add('hidden'); // Sembunyikan toast
-        }
+        // --- Fungsi Toast Notifikasi ---
+        // let toastTimeout; // Untuk menyimpan ID timeout agar bisa dibersihkan
+
+        // function showToast(message, type = 'info', duration = 3000) {
+        //     const toast = document.getElementById('toast-notification');
+        //     const toastMessage = document.getElementById('toast-message');
+        //     const toastIconWrapper = document.getElementById('toast-icon-wrapper');
+
+        //     // Reset kelas background dan ikon
+        //     toast.classList.remove('bg-white', 'border-green-400', 'border-red-400', 'border-orange-400',
+        //         'border-blue-400'); // Tambahkan border-blue-400
+        //     toastIconWrapper.innerHTML = ''; // Kosongkan ikon sebelumnya
+
+        //     let iconSvg = '';
+        //     let borderColorClass = '';
+
+        //     if (type === 'success') {
+        //         borderColorClass = 'border-green-400';
+        //         iconSvg =
+        //             `<svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+        //     } else if (type === 'error') {
+        //         borderColorClass = 'border-red-400';
+        //         iconSvg =
+        //             `<svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+        //     } else if (type === 'warning') {
+        //         borderColorClass = 'border-orange-400';
+        //         iconSvg =
+        //             `<svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>`;
+        //     } else { // Default to info
+        //         borderColorClass = 'border-blue-400';
+        //         iconSvg =
+        //             `<svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+        //     }
+
+        //     toastIconWrapper.innerHTML = iconSvg;
+        //     toast.classList.add('bg-white', borderColorClass, 'border'); // Tambahkan border sebagai pemisah visual
+        //     toastMessage.textContent = message;
+
+        //     // Atur posisi agar sedikit lebih ke bawah
+        //     toast.style.right = '1rem';
+        //     toast.style.top = '4rem';
+
+        //     toast.classList.remove('hidden'); // Tampilkan toast
+
+        //     // Bersihkan timeout sebelumnya jika ada
+        //     if (toastTimeout) {
+        //         clearTimeout(toastTimeout);
+        //     }
+
+        //     // Sembunyikan toast setelah durasi tertentu
+        //     toastTimeout = setTimeout(() => {
+        //         hideToast();
+        //     }, duration);
+        // }
+
+        // function hideToast() {
+        //     const toast = document.getElementById('toast-notification');
+        //     toast.classList.add('hidden'); // Sembunyikan toast
+        // }
 
         // --- Inisialisasi DOM dan Event Listeners ---
         document.addEventListener('DOMContentLoaded', function() {

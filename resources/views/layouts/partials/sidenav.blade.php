@@ -61,9 +61,9 @@
                 @role('admin')
                     {{-- Management Section (Collapsible) --}}
                     <li class="w-full mt-4" x-data="{ open: true }">
-                        <button @click="open = !open" class="w-full flex justify-between items-center pl-6 pr-4 py-2 text-left text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80 transition-opacity">
+                        <button @click="open = !open" class="flex items-center justify-between w-full py-2 pl-6 pr-4 text-xs font-bold leading-tight text-left uppercase transition-opacity sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80">
                             <span>Management Section</span>
-                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
+                            <i class="text-xs transition-transform duration-300 fas fa-chevron-down" :class="{ 'rotate-180': open }"></i>
                         </button>
                         <ul x-show="open" x-transition class="mt-1 space-y-0.5">
                             <li>
@@ -89,9 +89,9 @@
 
                     {{-- Order Section (Collapsible) --}}
                     <li class="w-full mt-4" x-data="{ open: true }">
-                        <button @click="open = !open" class="w-full flex justify-between items-center pl-6 pr-4 py-2 text-left text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80 transition-opacity">
+                        <button @click="open = !open" class="flex items-center justify-between w-full py-2 pl-6 pr-4 text-xs font-bold leading-tight text-left uppercase transition-opacity sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80">
                             <span>Order Section</span>
-                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
+                            <i class="text-xs transition-transform duration-300 fas fa-chevron-down" :class="{ 'rotate-180': open }"></i>
                         </button>
                         <ul x-show="open" x-transition class="mt-1 space-y-0.5">
                             <li>
@@ -111,9 +111,9 @@
 
                     {{-- Performa Section (Collapsible) --}}
                     <li class="w-full mt-4" x-data="{ open: true }">
-                        <button @click="open = !open" class="w-full flex justify-between items-center pl-6 pr-4 py-2 text-left text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80 transition-opacity">
+                        <button @click="open = !open" class="flex items-center justify-between w-full py-2 pl-6 pr-4 text-xs font-bold leading-tight text-left uppercase transition-opacity sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80">
                             <span>Performa Section</span>
-                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
+                            <i class="text-xs transition-transform duration-300 fas fa-chevron-down" :class="{ 'rotate-180': open }"></i>
                         </button>
                         <ul x-show="open" x-transition class="mt-1 space-y-0.5">
                             <li>
@@ -133,9 +133,9 @@
 
                     {{-- Account Settings Section (Collapsible) --}}
                     <li class="w-full mt-4" x-data="{ open: true }">
-                        <button @click="open = !open" class="w-full flex justify-between items-center pl-6 pr-4 py-2 text-left text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80 transition-opacity">
+                        <button @click="open = !open" class="flex items-center justify-between w-full py-2 pl-6 pr-4 text-xs font-bold leading-tight text-left uppercase transition-opacity sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80">
                             <span>Account Settings</span>
-                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
+                            <i class="text-xs transition-transform duration-300 fas fa-chevron-down" :class="{ 'rotate-180': open }"></i>
                         </button>
                         <ul x-show="open" x-transition class="mt-1 space-y-0.5">
                             <li>
@@ -151,9 +151,9 @@
                 @role('kurir')
                     {{-- Kurir Menu (Collapsible) --}}
                     <li class="w-full mt-4" x-data="{ open: true }">
-                        <button @click="open = !open" class="w-full flex justify-between items-center pl-6 pr-4 py-2 text-left text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80 transition-opacity">
+                        <button @click="open = !open" class="flex items-center justify-between w-full py-2 pl-6 pr-4 text-xs font-bold leading-tight text-left uppercase transition-opacity sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80">
                             <span>Menu Kurir</span>
-                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
+                            <i class="text-xs transition-transform duration-300 fas fa-chevron-down" :class="{ 'rotate-180': open }"></i>
                         </button>
                         <ul x-show="open" x-transition class="mt-1 space-y-0.5">
                             <li>
@@ -163,13 +163,13 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg" href="{{ url('/pengiriman') }}" data-tooltip="History Pesanan">
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg" href="{{ route('kurir.pesanan.index') }}" data-tooltip="Order Tracking">
                                     <div class="mr-2 sidebar-icon-container"><i class="text-orange-500 fas fa-truck"></i></div>
                                     <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Order Tracking</span>
                                 </a>
                             </li>
                             <li>
-                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg" href="{{ route('kurir.pesanan.index') }}" data-tooltip="Pesanan">
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg" href="{{ route('kurir.pesanan.index') }}" data-tooltip="Order History">
                                     <div class="mr-2 sidebar-icon-container"><i class="text-yellow-500 fas fa-hourglass-half"></i></div>
                                     <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Order History</span>
                                 </a>
@@ -179,9 +179,9 @@
 
                     {{-- Account Pages Section (Collapsible) --}}
                     <li class="w-full mt-4" x-data="{ open: true }">
-                        <button @click="open = !open" class="w-full flex justify-between items-center pl-6 pr-4 py-2 text-left text-xs font-bold leading-tight uppercase sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80 transition-opacity">
+                        <button @click="open = !open" class="flex items-center justify-between w-full py-2 pl-6 pr-4 text-xs font-bold leading-tight text-left uppercase transition-opacity sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80">
                             <span>Account Pages</span>
-                            <i class="fas fa-chevron-down text-xs transition-transform duration-300" :class="{ 'rotate-180': open }"></i>
+                            <i class="text-xs transition-transform duration-300 fas fa-chevron-down" :class="{ 'rotate-180': open }"></i>
                         </button>
                         <ul x-show="open" x-transition class="mt-1 space-y-0.5">
                             <li>
