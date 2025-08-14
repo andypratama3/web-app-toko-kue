@@ -1,5 +1,6 @@
 @extends('layouts.argon')
-@section('title', 'Dashboard Kurir')
+@section('title', 'Tambah Pesanan')
+@section('page_title', 'Order')
 @section('content')
 
     <div class="flex-auto p-4">
@@ -18,41 +19,11 @@
                         class="p-3 bg-white border border-gray-200 shadow-md rounded-xl dark:bg-gray-800 dark:border-gray-700">
                         <p class="mb-4 text-sm leading-normal uppercase dark:text-white dark:opacity-60">Detail Produk</p>
                         <div class="flex justify-end mb-4">
-                            <button type="button" onclick="showProdukModal()" toggle="produk-modal"
+                            <button type="button" data-modal-target="produkModal" data-modal-toggle="produkModal"
                                 class="bg-[#345c7c] text-white px-6 py-2 rounded hover:bg-[#2a4964] transition">
                                 + Tambah Produk
                             </button>
                         </div>
-
-                        <!-- Modal Pilihan Produk (mengikuti komponen modal-custom) -->
-                        {{-- <div id="produkModal" tabindex="-1" aria-hidden="true"
-                            class="fixed inset-0 top-0 left-0 right-0 z-50 flex items-center justify-center hidden w-full h-full overflow-x-hidden overflow-y-auto transition-opacity duration-300 bg-black bg-opacity-50">
-                            <div
-                                class="relative w-full max-w-2xl p-4 transition-transform duration-300 ease-out transform scale-95">
-                                <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                                    <!-- Modal header -->
-                                    <div
-                                        class="flex items-center justify-between p-4 border-b border-gray-200 rounded-t md:p-5 dark:border-gray-600">
-                                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                                            Pilih Produk
-                                        </h3>
-                                        <button type="button" onclick="hideProdukModal()"
-                                            class="inline-flex items-center justify-center w-8 h-8 text-sm text-gray-400 bg-transparent rounded-lg hover:bg-gray-200 hover:text-gray-900 ms-auto dark:hover:bg-gray-600 dark:hover:text-white">
-                                            <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                                                fill="none" viewBox="0 0 14 14">
-                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                                    stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
-                                            </svg>
-                                            <span class="sr-only">Close modal</span>
-                                        </button>
-                                    </div>
-                                    <!-- Modal body, scrollable -->
-                                    <div class="p-4 md:p-5 max-h-[60vh] overflow-y-auto">
-                                        <div id="pilihan-produk" class="space-y-2"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> --}}
 
                         <!-- Judul Kolom untuk Desktop -->
                         <div class="justify-between hidden px-4 py-2 font-bold text-black border-b border-gray-300 md:flex">
@@ -155,8 +126,8 @@
                                 <button id="payment-method-button" type="button"
                                     class="inline-flex justify-between items-center w-full rounded-lg border border-gray-300 shadow-sm px-4 py-2.5 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600">
                                     <span id="selected-payment-method">-Pilih metode pembayaran -</span>
-                                    <svg class="w-5 h-5 ml-2 -mr-1" xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <svg class="w-5 h-5 ml-2 -mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                        fill="currentColor" aria-hidden="true">
                                         <path fill-rule="evenodd"
                                             d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
                                             clip-rule="evenodd" />
@@ -168,10 +139,12 @@
                                     <div class="py-2" role="none">
                                         <a href="#"
                                             class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                            data-value="cash" role="menuitem"><i class="fas fa-money-bill-wave"></i> Cash (Tunai)</a>
+                                            data-value="cash" role="menuitem"><i class="fas fa-money-bill-wave"></i> Cash
+                                            (Tunai)</a>
                                         <a href="#"
                                             class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                            data-value="tf" role="menuitem"><i class="fas fa-money-check"></i> Transfer Bank</a>
+                                            data-value="tf" role="menuitem"><i class="fas fa-money-check"></i> Transfer
+                                            Bank</a>
                                         <a href="#"
                                             class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
                                             data-value="qr" role="menuitem"><i class="fas fa-qrcode"></i> QRIS</a>
@@ -200,6 +173,15 @@
                                 class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"></textarea>
                         </div>
 
+                        <div class="hidden pt-4 mt-4 border-t border-gray-200 dark:border-gray-600 xl:block">
+                            <div class="flex items-center justify-between">
+                                <span class="text-base font-medium text-gray-900 dark:text-white">Total Pesanan:</span>
+                                {{-- Kita beri class 'cart-total-display' untuk target JavaScript --}}
+                                <span class="text-xl font-bold text-gray-900 dark:text-white cart-total-display">Rp
+                                    0</span>
+                            </div>
+                        </div>
+
                         <!-- BUTTON CHECKOUT UNTUK WEBSITE (TAMBAHAN) -->
                         <div class="hidden w-full max-w-full mt-4 shrink-0 md:w-full md:flex-0 xl:block">
                             <div class="flex justify-end">
@@ -222,7 +204,8 @@
     <!-- Tombol Checkout Fix di Bawah (UNTUK MOBILE) -->
     <div
         class="fixed bottom-0 left-0 z-50 flex items-center justify-between w-full p-4 bg-white border-t border-gray-300 xl:hidden">
-        <p id="cart-total" class="text-lg font-bold">Total: Rp 0</p>
+        {{-- Tambahkan class "cart-total-display" di sini --}}
+        <p id="cart-total" class="text-lg font-bold cart-total-display">Total: Rp 0</p>
         <button type="button" onclick="checkout()"
             class="bg-[#748c54] text-white px-6 py-2 rounded-xl hover:bg-[#5a6e40] transition shadow-md">
             Checkout
@@ -256,8 +239,8 @@
     </div>
 
     @push('flowbite-modals')
-    {{-- Memanggil modal tambah kurir --}}
-    @include('dashboard.kurir.pesanan.produk-modal')
+        {{-- Memanggil modal tambah produk --}}
+        @include('dashboard.kurir.pesanan.produk-modal')
     @endpush
     {{-- Semua JavaScript terkait fungsionalitas aplikasi berada di sini --}}
     <script>
@@ -275,7 +258,7 @@
 
             // Reset kelas background dan ikon
             toast.classList.remove('bg-white', 'border-green-400', 'border-red-400', 'border-orange-400',
-            'border-blue-400'); // Tambahkan border-blue-400
+                'border-blue-400'); // Tambahkan border-blue-400
             toastIconWrapper.innerHTML = ''; // Kosongkan ikon sebelumnya
 
             let iconSvg = '';
@@ -412,7 +395,7 @@
                     } else {
                         paymentProofUploadDiv.classList.add('hidden');
                         document.getElementById('payment-proof').value =
-                        ''; // Kosongkan input file jika disembunyikan
+                            ''; // Kosongkan input file jika disembunyikan
                     }
 
                     // Sembunyikan menu dropdown setelah pemilihan
@@ -424,7 +407,7 @@
             document.addEventListener('click', function(e) {
                 // Untuk dropdown pelanggan
                 if (!customerDropdownButton.contains(e.target) && !customerDropdownMenu.contains(e
-                    .target)) {
+                        .target)) {
                     customerDropdownMenu.classList.add('hidden');
                 }
                 // Untuk dropdown metode pembayaran
@@ -560,17 +543,6 @@
             }
         }
 
-        // Menampilkan modal pilihan produk
-        function showProdukModal() {
-            tampilkanPilihanProduk();
-            document.getElementById('produkModal').classList.remove('hidden');
-        }
-
-        // Menyembunyikan modal pilihan produk
-        function hideProdukModal() {
-            document.getElementById('produkModal').classList.add('hidden');
-        }
-
         // Menampilkan pilihan produk di dalam modal
         function tampilkanPilihanProduk() {
             const pilihDiv = document.getElementById('pilihan-produk');
@@ -651,14 +623,14 @@
             let product = produkList.find(p => p.id === productId);
             let variant = null;
             let cartItemIndex = -1;
-            
+
             if (variantId) {
                 variant = product.variants.find(v => v.id === variantId);
                 cartItemIndex = cart.findIndex(c => c.variant_id === variantId);
             } else {
                 cartItemIndex = cart.findIndex(c => c.product_id === productId && !c.variant_id);
             }
-            
+
             if (cartItemIndex !== -1) {
                 const removedItem = cart[cartItemIndex];
                 cart.splice(cartItemIndex, 1);
@@ -718,7 +690,19 @@
                 </div>
             `;
             });
-            document.getElementById('cart-total').textContent = `Total: Rp ${total.toLocaleString()}`;
+            // document.getElementById('cart-total').textContent = `Total: Rp ${total.toLocaleString()}`;
+            // --- Memperbarui semua elemen display total harga ---
+            const totalDisplayElements = document.querySelectorAll('.cart-total-display');
+            totalDisplayElements.forEach(el => {
+                // Cek ID untuk format teks yang berbeda (mobile vs desktop)
+                if (el.id === 'cart-total') {
+                    // Untuk tampilan mobile, sertakan teks "Total: "
+                    el.textContent = `Total: Rp ${total.toLocaleString('id-ID')}`;
+                } else {
+                    // Untuk tampilan desktop, hanya tampilkan nominalnya
+                    el.textContent = `Rp ${total.toLocaleString('id-ID')}`;
+                }
+            });
         }
 
         function ubahQtyCart(idx, change) {
@@ -743,10 +727,4 @@
             document.getElementById('successModal').classList.add('hidden');
         }
     </script>
-
-    {{-- Script eksternal yang mungkin dibutuhkan oleh layout atau fitur dashboard lainnya --}}
-    {{-- <script src="/assets/argon/js/plugins/chartjs.min.js"></script>
-<script src="/assets/argon/js/plugins/perfect-scrollbar.min.js" async></script>
-<script src="/assets/argon/js/assets/argon-dashboard-tailwind.js?v=1.0.1" async></script> --}}
-
 @endsection
