@@ -70,15 +70,138 @@ window.addEventListener("scroll", () => {
   }
 });
 
-// ===== Testimonial carousel =====
+// ===== Enhanced Testimonial carousel =====
 const track = document.getElementById("testimonial-track");
+const prevBtn = document.getElementById("testimonial-prev");
+const nextBtn = document.getElementById("testimonial-next");
+const dots = document.querySelectorAll(".testimonial-dot");
+
 if (track && track.children.length) {
   const total = track.children.length;
-  let idx = 0;
-  setInterval(() => {
-    idx = (idx + 1) % total;
-    track.style.transform = `translateX(-${idx * 100}%)`;
-  }, 4000);
+  let currentIdx = 0;
+  let autoSlideInterval;
+  let isTransitioning = false;
+
+  // Update carousel position and indicators
+  function updateCarousel(index, smooth = true) {
+    if (isTransitioning) return;
+    
+    isTransitioning = true;
+    currentIdx = index;
+    
+    // Update track position
+    track.style.transform = `translateX(-${currentIdx * 100}%)`;
+    
+    // Update dot indicators
+    dots.forEach((dot, i) => {
+      if (i === currentIdx) {
+        dot.classList.remove("bg-gray-300");
+        dot.classList.add("bg-[#8BA870]");
+      } else {
+        dot.classList.remove("bg-[#8BA870]");
+        dot.classList.add("bg-gray-300");
+      }
+    });
+    
+    // Reset transition flag after animation
+    setTimeout(() => {
+      isTransitioning = false;
+    }, 700);
+  }
+
+  // Auto-slide functionality
+  function startAutoSlide() {
+    autoSlideInterval = setInterval(() => {
+      const nextIndex = (currentIdx + 1) % total;
+      updateCarousel(nextIndex);
+    }, 5000);
+  }
+
+  function stopAutoSlide() {
+    if (autoSlideInterval) {
+      clearInterval(autoSlideInterval);
+    }
+  }
+
+  // Navigation button handlers
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => {
+      if (isTransitioning) return;
+      stopAutoSlide();
+      const prevIndex = currentIdx === 0 ? total - 1 : currentIdx - 1;
+      updateCarousel(prevIndex);
+      startAutoSlide();
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+      if (isTransitioning) return;
+      stopAutoSlide();
+      const nextIndex = (currentIdx + 1) % total;
+      updateCarousel(nextIndex);
+      startAutoSlide();
+    });
+  }
+
+  // Dot indicator handlers
+  dots.forEach((dot, index) => {
+    dot.addEventListener("click", () => {
+      if (isTransitioning || index === currentIdx) return;
+      stopAutoSlide();
+      updateCarousel(index);
+      startAutoSlide();
+    });
+  });
+
+  // Pause auto-slide on hover
+  const carousel = document.getElementById("testimonial-carousel");
+  if (carousel) {
+    carousel.addEventListener("mouseenter", stopAutoSlide);
+    carousel.addEventListener("mouseleave", startAutoSlide);
+  }
+
+  // Touch/swipe support for mobile
+  let startX = 0;
+  let endX = 0;
+  
+  if (carousel) {
+    carousel.addEventListener("touchstart", (e) => {
+      startX = e.touches[0].clientX;
+    }, { passive: true });
+
+    carousel.addEventListener("touchmove", (e) => {
+      endX = e.touches[0].clientX;
+    }, { passive: true });
+
+    carousel.addEventListener("touchend", () => {
+      if (!startX || !endX) return;
+      
+      const diff = startX - endX;
+      const threshold = 50;
+      
+      if (Math.abs(diff) > threshold) {
+        stopAutoSlide();
+        if (diff > 0) {
+          // Swipe left - next slide
+          const nextIndex = (currentIdx + 1) % total;
+          updateCarousel(nextIndex);
+        } else {
+          // Swipe right - previous slide
+          const prevIndex = currentIdx === 0 ? total - 1 : currentIdx - 1;
+          updateCarousel(prevIndex);
+        }
+        startAutoSlide();
+      }
+      
+      startX = 0;
+      endX = 0;
+    }, { passive: true });
+  }
+
+  // Initialize carousel
+  updateCarousel(0);
+  startAutoSlide();
 }
 
 // ===== Data outlet (tambahan: wa & social) =====

@@ -117,13 +117,15 @@
     </div>
     <!-- Search & Order Kanan -->
     <div class="flex items-center gap-3 pr-2 md:pr-6 flex-shrink-0">
-      <!-- Form wrapper untuk tombol Login -->
-      <form action="{{ route('login') }}" method="GET" class="hidden md:block">
-        <button type="submit" class="bg-[#8BA870] text-white rounded-full px-5 py-1.5 font-medium text-sm hover:bg-[#7a965e] transition">
-          Login
-        </button>
-      </form>
-    </div>
+  <!-- Form wrapper untuk tombol Login -->
+  <form action="{{ route('login') }}" method="GET" class="hidden md:block">
+    <button type="submit" class="flex items-center gap-2 bg-[#8BA870] text-white rounded-full px-5 py-1.5 font-medium text-sm hover:bg-[#7a965e] transition">
+      <!-- Ikon Login Font Awesome -->
+      <i class="fas fa-sign-in-alt"></i>
+      <span>Login</span>
+    </button>
+  </form>
+</div>
 
     <!-- Hamburger Menu (Mobile) -->
     <div class="md:hidden flex items-center ml-2 mr-4">
@@ -258,40 +260,40 @@
     </div>
   </section>
 
-<!-- Products Section -->
-<section id="produk-kami" class="w-full bg-white pt-4 pb-8">
-  <div class="w-[90%] max-w-7xl mx-auto" x-data="{ kategori: 'produk' }">
-    <!-- Section Header -->
-    <div class="text-center mb-6">
-      <span class="text-[#8BA870] font-medium tracking-wider text-sm mb-3 block">PRODUK UNGGULAN</span>
-      <h2 class="text-4xl md:text-5xl font-bold text-[#2C3E50] mb-6">Produk Kami</h2>
-      <p class="text-gray-600 max-w-3xl mx-auto text-lg leading-relaxed">
-        Nikmati berbagai varian kue pandan berkualitas tinggi yang dibuat dengan resep tradisional dan
-        bahan-bahan pilihan
-      </p>
-    </div>
-    <!-- Tombol Filter Kategori -->
-    <div class="flex justify-center gap-4 mb-4">
-      <button @click="kategori = 'produk'" :class="kategori === 'produk' ? 'bg-[#8BA870] text-white' : 'bg-gray-100 text-[#2C3E50]'" class="px-5 py-2 rounded-full font-semibold shadow transition">Produk</button>
-      <button @click="kategori = 'hampers'" :class="kategori === 'hampers' ? 'bg-[#8BA870] text-white' : 'bg-gray-100 text-[#2C3E50]'" class="px-5 py-2 rounded-full font-semibold shadow transition">Hampers</button>
-      <button @click="kategori = 'tumpeng'" :class="kategori === 'tumpeng' ? 'bg-[#8BA870] text-white' : 'bg-gray-100 text-[#2C3E50]'" class="px-5 py-2 rounded-full font-semibold shadow transition">Tumpeng</button>
-    </div>
+  <!-- Products Section -->
+  <section id="produk-kami" class="w-full bg-white pt-4 pb-8">
+    <div class="w-[90%] max-w-7xl mx-auto" x-data="{ kategori: 'produk' }">
+      <!-- Section Header -->
+      <div class="text-center mb-6">
+        <span class="text-[#8BA870] font-medium tracking-wider text-sm mb-3 block">PRODUK UNGGULAN</span>
+        <h2 class="text-4xl md:text-5xl font-bold text-[#2C3E50] mb-6">Produk Kami</h2>
+        <p class="text-gray-600 max-w-3xl mx-auto text-lg leading-relaxed">
+          Nikmati berbagai varian kue pandan berkualitas tinggi yang dibuat dengan resep tradisional dan
+          bahan-bahan pilihan
+        </p>
+      </div>
+      <!-- Tombol Filter Kategori -->
+      <div class="flex justify-center gap-4 mb-4">
+        <button @click="kategori = 'produk'" :class="kategori === 'produk' ? 'bg-[#8BA870] text-white' : 'bg-gray-100 text-[#2C3E50]'" class="px-5 py-2 rounded-full font-semibold shadow transition">Produk</button>
+        <button @click="kategori = 'hampers'" :class="kategori === 'hampers' ? 'bg-[#8BA870] text-white' : 'bg-gray-100 text-[#2C3E50]'" class="px-5 py-2 rounded-full font-semibold shadow transition">Hampers</button>
+        <button @click="kategori = 'tumpeng'" :class="kategori === 'tumpeng' ? 'bg-[#8BA870] text-white' : 'bg-gray-100 text-[#2C3E50]'" class="px-5 py-2 rounded-full font-semibold shadow transition">Tumpeng</button>
+      </div>
 
-    <!-- Kategori: Produk -->
-    <div x-show="kategori === 'produk'"
-      x-transition:enter="transition ease-out duration-500"
-      x-transition:enter-start="opacity-0 transform scale-95"
-      x-transition:enter-end="opacity-100 transform scale-100"
-      x-transition:leave="transition ease-in duration-300"
-      x-transition:leave-start="opacity-100 transform scale-100"
-      x-transition:leave-end="opacity-0 transform scale-95"
-      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-8 md:py-12">
-      
-      <!-- Product 1: Kue Ijo with Dropdown -->
-      <div 
-        class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative" 
-        data-aos="zoom-in"
-        x-data="{ 
+      <!-- Kategori: Produk -->
+      <div x-show="kategori === 'produk'"
+        x-transition:enter="transition ease-out duration-500"
+        x-transition:enter-start="opacity-0 transform scale-95"
+        x-transition:enter-end="opacity-100 transform scale-100"
+        x-transition:leave="transition ease-in duration-300"
+        x-transition:leave-start="opacity-100 transform scale-100"
+        x-transition:leave-end="opacity-0 transform scale-95"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-8 md:py-12">
+
+        <!-- Product 1: Kue Ijo with Dropdown -->
+        <div
+          class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative"
+          data-aos="zoom-in"
+          x-data="{ 
           open: false, 
           prices: [
             { label: 'Isi 3 Kemasan Mika', value: 9000 },
@@ -300,87 +302,89 @@
           ],
           selectedPrice: { label: 'Isi 3 Kemasan Mika', value: 9000 }
         }"
-        :class="open ? 'z-30' : 'z-0'">
-        <div class="relative overflow-hidden rounded-t-2xl">
-          <img src="{{ asset('assets/homepage/product/kue-ijo.jpg') }}"
-            alt="Kue Ijo"
-            loading="lazy"
-            class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
-          <div class="absolute top-3 right-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-            Ala Carte
+          :class="open ? 'z-30' : 'z-0'">
+          <div class="relative overflow-hidden rounded-t-2xl">
+            <img src="{{ asset('assets/homepage/product/kue-ijo.jpg') }}"
+              alt="Kue Ijo"
+              loading="lazy"
+              class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
+            <div class="absolute top-3 right-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+              Ala Carte
+            </div>
           </div>
-        </div>
-        <div class="p-5">
-          <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Ijo</h3>
-          <div x-data="{ open: false }">
-            <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
-              Kue Ijo terbuat dari tepung beras yang telah diayak lalu dicampur dengan campuran santan kelapa fresh dan air pandan asli. Kue ini memiliki tekstur yang kenyal dan lembut bersamaan ketika dikunyah didalam mulut. Dibalut taburan dengan kelapa parut segar menambah cita rasa gurih dan manis yang menjadikan kue Ijo cocok dinikmati pada suasana apapun.
-            </p>
-            <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
-              <span x-show="!open">Selengkapnya</span>
-              <span x-show="open">Tutup</span>
-            </button>
-          </div>
-          <div class="flex items-center justify-between mt-4">
-            <div class="relative w-full">
-              <button @click="open = !open" class="flex items-center justify-between w-full px-3 py-2 text-left border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8BA870]">
-                <div>
-                  <span class="text-xs text-gray-500" x-text="selectedPrice.label"></span>
-                  <span class="block font-bold text-lg text-[#8BA870]">Rp <span x-text="selectedPrice.value.toLocaleString('id-ID')"></span></span>
-                </div>
-                <svg class="w-4 h-4 text-gray-500 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+          <div class="p-5">
+            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Ijo</h3>
+            <div x-data="{ open: false }">
+              <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
+                Kue Ijo terbuat dari tepung beras yang telah diayak lalu dicampur dengan campuran santan kelapa fresh dan air pandan asli. Kue ini memiliki tekstur yang kenyal dan lembut bersamaan ketika dikunyah didalam mulut. Dibalut taburan dengan kelapa parut segar menambah cita rasa gurih dan manis yang menjadikan kue Ijo cocok dinikmati pada suasana apapun.
+              </p>
+              <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
+                <span x-show="!open">Selengkapnya</span>
+                <span x-show="open">Tutup</span>
               </button>
-              <div x-show="open" 
-                   @click.away="open = false" 
-                   x-transition
-                   class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
-                <ul>
-                  <template x-for="price in prices" :key="price.label">
-                    <li @click="selectedPrice = price; open = false" class="cursor-pointer hover:bg-gray-100 p-3">
-                      <span class="font-semibold text-gray-800" x-text="price.label"></span>
-                      <span class="block text-sm text-[#8BA870]">Rp <span x-text="price.value.toLocaleString('id-ID')"></span></span>
-                    </li>
-                  </template>
-                </ul>
+            </div>
+            <div class="flex items-center justify-between mt-4">
+              <div class="relative w-full">
+                <button @click="open = !open" class="flex items-center justify-between w-full px-3 py-2 text-left border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8BA870]">
+                  <div>
+                    <span class="text-xs text-gray-500" x-text="selectedPrice.label"></span>
+                    <span class="block font-bold text-lg text-[#8BA870]">Rp <span x-text="selectedPrice.value.toLocaleString('id-ID')"></span></span>
+                  </div>
+                  <svg class="w-4 h-4 text-gray-500 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </button>
+                <div x-show="open"
+                  @click.away="open = false"
+                  x-transition
+                  class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                  <ul>
+                    <template x-for="price in prices" :key="price.label">
+                      <li @click="selectedPrice = price; open = false" class="cursor-pointer hover:bg-gray-100 p-3">
+                        <span class="font-semibold text-gray-800" x-text="price.label"></span>
+                        <span class="block text-sm text-[#8BA870]">Rp <span x-text="price.value.toLocaleString('id-ID')"></span></span>
+                      </li>
+                    </template>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Product 2: Kue Lumpur Surga -->
-      <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="zoom-in">
-        <div class="relative overflow-hidden rounded-t-2xl">
-          <img src="{{ asset('assets/homepage/product/kue-lumpur-surga.jpg') }}"
-            alt="Kue Lumpur Surga"
-            loading="lazy"
-            class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
-          <div class="absolute top-3 right-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-            Ala Carte
+        <!-- Product 2: Kue Lumpur Surga -->
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="zoom-in">
+          <div class="relative overflow-hidden rounded-t-2xl">
+            <img src="{{ asset('assets/homepage/product/kue-lumpur-surga.jpg') }}"
+              alt="Kue Lumpur Surga"
+              loading="lazy"
+              class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
+            <div class="absolute top-3 right-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+              Ala Carte
+            </div>
+          </div>
+          <div class="p-5">
+            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Lumpur Surga</h3>
+            <div x-data="{ open: false }">
+              <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
+                Kue yang memiliki dua lapisan yaitu lapisan bawah bewarna hijau yang dihasilkan dari air pandan asli dan lapisan atas mirip dengan vla yang terbuat dari santan. Kue yang memiliki tekstur lembut dan lumer dimulut sangat nikmat jika disantap dalam keadaan dingin. Memiliki Cita rasa manis dari kue nya dan gurih asin dari vla nya berpadu menghasilkan rasa nikmat yang nyaman ketika masuk dimulut.
+              </p>
+              <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
+                <span x-show="!open">Selengkapnya</span>
+                <span x-show="open">Tutup</span>
+              </button>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#8BA870] font-bold text-lg">Rp 6.000</span>
+            </div>
           </div>
         </div>
-        <div class="p-5">
-          <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Lumpur Surga</h3>
-          <div x-data="{ open: false }">
-            <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
-              Kue yang memiliki dua lapisan yaitu lapisan bawah bewarna hijau yang dihasilkan dari air pandan asli dan lapisan atas mirip dengan vla yang terbuat dari santan. Kue yang memiliki tekstur lembut dan lumer dimulut sangat nikmat jika disantap dalam keadaan dingin. Memiliki Cita rasa manis dari kue nya dan gurih asin dari vla nya berpadu menghasilkan rasa nikmat yang nyaman ketika masuk dimulut.
-            </p>
-            <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
-              <span x-show="!open">Selengkapnya</span>
-              <span x-show="open">Tutup</span>
-            </button>
-          </div>
-          <div class="flex items-center justify-between">
-            <span class="text-[#8BA870] font-bold text-lg">Rp 6.000</span>
-          </div>
-        </div>
-      </div>
 
-      <!-- Product 3: Kue Ongol with Dropdown -->
-      <div 
-        class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative" 
-        data-aos="zoom-in"
-        x-data="{ 
+        <!-- Product 3: Kue Ongol with Dropdown -->
+        <div
+          class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative"
+          data-aos="zoom-in"
+          x-data="{ 
           open: false, 
           prices: [
             { label: 'Isi 10 Kemasan Mika', value: 10000 },
@@ -388,37 +392,39 @@
           ],
           selectedPrice: { label: 'Isi 10 Kemasan Mika', value: 10000 }
         }"
-        :class="open ? 'z-30' : 'z-0'">
-        <div class="relative overflow-hidden rounded-t-2xl">
-          <img src="{{ asset('assets/homepage/product/kue-ongol.jpg') }}"
-            alt="Kue Ongol"
-            loading="lazy"
-            class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
-          <div class="absolute top-3 right-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-            Ala Carte
+          :class="open ? 'z-30' : 'z-0'">
+          <div class="relative overflow-hidden rounded-t-2xl">
+            <img src="{{ asset('assets/homepage/product/kue-ongol.jpg') }}"
+              alt="Kue Ongol"
+              loading="lazy"
+              class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
+            <div class="absolute top-3 right-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+              Ala Carte
+            </div>
           </div>
-        </div>
-        <div class="p-5">
-          <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Ongol Ongol</h3>
-          <div x-data="{ open: false }">
-            <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
-              Kue Ongol kami terbuat dari tepung tapioka yang ditambahkan gula merah jawa dan sedikit tambahan air pandan asli membuat warna kue ini bewarna coklat cantik. Kue yang memiliki tekstur kenyal dan legit dan terasa manis dimulut. Kue Ongol yang memiliki wangi khas gula jawa merah sangat cocok dipadukan dengan parutan kelapa segar yang akan memadukan antara gurih dan manis pada kue ini.
-            </p>
-            <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
-              <span x-show="!open">Selengkapnya</span>
-              <span x-show="open">Tutup</span>
-            </button>
-          </div>
-          <div class="flex items-center justify-between mt-4">
-            <div class="relative w-full">
-              <button @click="open = !open" class="flex items-center justify-between w-full px-3 py-2 text-left border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8BA870]">
-                <div>
-                  <span class="text-xs text-gray-500" x-text="selectedPrice.label"></span>
-                  <span class="block font-bold text-lg text-[#8BA870]">Rp <span x-text="selectedPrice.value.toLocaleString('id-ID')"></span></span>
-                </div>
-                <svg class="w-4 h-4 text-gray-500 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+          <div class="p-5">
+            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Ongol Ongol</h3>
+            <div x-data="{ open: false }">
+              <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
+                Kue Ongol kami terbuat dari tepung tapioka yang ditambahkan gula merah jawa dan sedikit tambahan air pandan asli membuat warna kue ini bewarna coklat cantik. Kue yang memiliki tekstur kenyal dan legit dan terasa manis dimulut. Kue Ongol yang memiliki wangi khas gula jawa merah sangat cocok dipadukan dengan parutan kelapa segar yang akan memadukan antara gurih dan manis pada kue ini.
+              </p>
+              <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
+                <span x-show="!open">Selengkapnya</span>
+                <span x-show="open">Tutup</span>
               </button>
-              <div x-show="open"
+            </div>
+            <div class="flex items-center justify-between mt-4">
+              <div class="relative w-full">
+                <button @click="open = !open" class="flex items-center justify-between w-full px-3 py-2 text-left border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8BA870]">
+                  <div>
+                    <span class="text-xs text-gray-500" x-text="selectedPrice.label"></span>
+                    <span class="block font-bold text-lg text-[#8BA870]">Rp <span x-text="selectedPrice.value.toLocaleString('id-ID')"></span></span>
+                  </div>
+                  <svg class="w-4 h-4 text-gray-500 transition-transform duration-200" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                  </svg>
+                </button>
+                <div x-show="open"
                   @click.away="open = false"
                   x-transition
                   class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
@@ -550,6 +556,67 @@
             </div>
           </div>
         </div>
+
+        <!-- Product 7: Kue Mix Tradisional -->
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="zoom-in">
+          <div class="relative overflow-hidden rounded-t-2xl">
+            <img src="{{ asset('assets/homepage/product/kue-mix-mini.jpeg') }}"
+              alt="Kue Mix Tradisional"
+              loading="lazy"
+              class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
+            <div class="absolute top-3 right-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+              Ala Carte
+            </div>
+          </div>
+          <div class="p-5">
+            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Mix Mini</h3>
+            <div x-data="{ open: false }">
+              <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
+                Kue MIX mini ( Kemasan Mika)
+                Berisi :
+                Kue ijo 3 pcs,
+                Kue Ongol-ongol 4 pcs dan
+                Kue Pulut Srikaya 2 pcs
+                Kue ini cocok untuk dijadikan sebagai oleh-oleh atau sebagai cemilan ringan
+              </p>
+              <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
+                <span x-show="!open">Selengkapnya</span>
+                <span x-show="open">Tutup</span>
+              </button>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#8BA870] font-bold text-lg">Rp 20.000</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product 8: Kue Mix Premium -->
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="zoom-in">
+          <div class="relative overflow-hidden rounded-t-2xl">
+            <img src="{{ asset('assets/homepage/product/kue-mix-kueijo.jpeg') }}"
+              alt="Kue Mix Premium"
+              loading="lazy"
+              class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
+            <div class="absolute top-3 right-3 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+              Ala Carte
+            </div>
+          </div>
+          <div class="p-5">
+            <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Mix (Kue Ijo & Kue Pulut)</h3>
+            <div x-data="{ open: false }">
+              <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
+                Kue MIX (Kemasan Thinwall) Berisi : Kue ijo 4 pcs, Kue Pulut Srikaya 5 pcs
+              </p>
+              <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
+                <span x-show="!open">Selengkapnya</span>
+                <span x-show="open">Tutup</span>
+              </button>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-[#8BA870] font-bold text-lg">Rp 35.000</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Kategori: Hampers -->
@@ -659,103 +726,545 @@
           Asli Malang.
         </p>
       </div>
+
+      <!-- Testimonial Carousel Container -->
       <div class="relative" data-aos="zoom-out-down">
-        <div id="testimonial-carousel" class="overflow-hidden">
-          <div id="testimonial-track" class="flex transition-transform duration-700">
+        <!-- Navigation Arrows -->
+        <button id="testimonial-prev" class="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white text-[#8BA870] rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#8BA870] focus:ring-opacity-50">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+        </button>
+
+        <button id="testimonial-next" class="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white text-[#8BA870] rounded-full p-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#8BA870] focus:ring-opacity-50">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </button>
+
+        <!-- Carousel Container -->
+        <div id="testimonial-carousel" class="overflow-hidden rounded-2xl">
+          <div id="testimonial-track" class="flex transition-transform duration-700 ease-in-out">
+
             <!-- Testimonial 1 -->
             <div class="min-w-full px-4">
-              <div class="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center">
-                <img src="{{ asset('assets/homepage/testimonial/testimoni-3.png') }}" alt="Testimoni 1" loading="lazy"
-                  class="w-20 h-20 rounded-full object-cover mb-4 border-4 border-[#8BA870]">
-                <div class="flex mb-2">
-                  <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <polygon
-                      points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
-                  </svg>
-                  <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <polygon
-                      points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
-                  </svg>
-                  <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <polygon
-                      points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
-                  </svg>
-                  <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <polygon
-                      points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
-                  </svg>
-                  <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <polygon
-                      points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
-                  </svg>
+              <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div class="flex flex-col md:flex-row min-h-[450px]">
+                  <!-- Large Portrait Photo Container -->
+                  <div class="w-full md:w-1/3 lg:w-1/4 relative">
+                    <div class="h-80 md:h-full relative overflow-hidden">
+                      <img src="{{ asset('assets/homepage/testimonial/testimoni-3.jpeg') }}"
+                        alt="Testimoni Mbak Muanansa"
+                        loading="lazy"
+                        class="w-full h-full object-cover object-center">
+                      <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                      <div class="absolute bottom-4 left-4 right-4">
+                        <div class="bg-white/90 backdrop-blur-sm rounded-lg p-3 text-center">
+                          <h4 class="font-bold text-gray-800 text-sm">Mbak Muanansa</h4>
+                          <p class="text-[#8BA870] text-xs font-medium">Malang</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Review Content -->
+                  <div class="w-full md:w-2/3 lg:w-3/4 p-8 md:p-12 flex flex-col justify-center bg-gradient-to-r from-transparent to-[#8BA870]/5">
+                    <div class="mb-4">
+                      <div class="flex items-center gap-2 mb-4">
+                        <div class="w-2 h-8 bg-[#8BA870] rounded-full"></div>
+                        <div>
+                          <h3 class="text-xl md:text-2xl font-bold text-[#2C3E50]">Testimoni Pelanggan</h3>
+                          <p class="text-sm text-gray-500">Verified Customer</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <blockquote class="text-gray-700 text-lg md:text-xl leading-relaxed mb-6 italic relative">
+                      <div class="absolute -top-2 -left-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
+                      "Sebenarnya saya tau ini dari temen yang kasih rekomendasi, baru beberapa kali coba cocok dan kedepan akan jadi langganan terus sih sepertinya."
+                      <div class="absolute -bottom-4 -right-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
+                    </blockquote>
+
+                    <!-- Star Rating -->
+                    <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-gray-200 shadow-sm">
+                      <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium text-gray-600">Rating:</span>
+                        <div class="flex items-center gap-1">
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                        </div>
+                        <span class="ml-2 text-sm font-bold text-[#8BA870]">5.0</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <p class="text-gray-700 text-center mb-4">"Sebenarnya saya tau ini dari temen yang kasih rekomendasi, baru beberapa kali coba cocok dan kedepan akan jadi langganan terus sih sepertinya."</p>
-                <span class="font-semibold text-[#2C3E50]">Mbak Muanansa, Malang</span>
               </div>
             </div>
+
             <!-- Testimonial 2 -->
             <div class="min-w-full px-4">
-              <div class="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center">
-                <img src="{{ asset('assets/homepage/testimonial/testimoni-2.png') }}" alt="Testimoni 2" loading="lazy"
-                  class="w-20 h-20 rounded-full object-cover mb-4 border-4 border-[#8BA870]">
-                <div class="flex mb-2">
-                  <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <polygon
-                      points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
-                  </svg>
-                  <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <polygon
-                      points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
-                  </svg>
-                  <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <polygon
-                      points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
-                  </svg>
-                  <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <polygon
-                      points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
-                  </svg>
-                  <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <polygon
-                      points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
-                  </svg>
+              <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div class="flex flex-col md:flex-row min-h-[450px]">
+                  <div class="w-full md:w-1/3 lg:w-1/4 relative">
+                    <div class="h-80 md:h-full relative overflow-hidden">
+                      <img src="{{ asset('assets/homepage/testimonial/testimoni-2.jpeg') }}"
+                        alt="Testimoni Pak Handoko"
+                        loading="lazy"
+                        class="w-full h-full object-cover object-center">
+                      <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                      <div class="absolute bottom-4 left-4 right-4">
+                        <div class="bg-white/90 backdrop-blur-sm rounded-lg p-3 text-center">
+                          <h4 class="font-bold text-gray-800 text-sm">Pak Handoko</h4>
+                          <p class="text-[#8BA870] text-xs font-medium">Surabaya</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="w-full md:w-2/3 lg:w-3/4 p-8 md:p-12 flex flex-col justify-center bg-gradient-to-r from-transparent to-[#8BA870]/5">
+                    <div class="mb-4">
+                      <div class="flex items-center gap-2 mb-4">
+                        <div class="w-2 h-8 bg-[#8BA870] rounded-full"></div>
+                        <div>
+                          <h3 class="text-xl md:text-2xl font-bold text-[#2C3E50]">Testimoni Pelanggan</h3>
+                          <p class="text-sm text-gray-500">Verified Customer</p>
+                        </div>
+                      </div>
+                    </div>
+                    <blockquote class="text-gray-700 text-lg md:text-xl leading-relaxed mb-6 italic relative">
+                      <div class="absolute -top-2 -left-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
+                      "Saya sekeluarga cocok, kalau ada acara kantor langsung pesen kesini, orang orang kantor juga pada nanyain beli dimana? Saya beli di kue pandan asli surabaya"
+                      <div class="absolute -bottom-4 -right-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
+                    </blockquote>
+                    <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-gray-200 shadow-sm">
+                      <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium text-gray-600">Rating:</span>
+                        <div class="flex items-center gap-1">
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                        </div>
+                        <span class="ml-2 text-sm font-bold text-[#8BA870]">5.0</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <p class="text-gray-700 text-center mb-4">"Saya sekeluarga cocok, kalau ada acara kantor langsung pesen kesini, orang orang kantor juga pada nanyain beli dimana? Saya beli di kue pandan asli di sby tambaksari"</p>
-                <span class="font-semibold text-[#2C3E50]">Pak Handoko, Surabaya</span>
               </div>
             </div>
+
             <!-- Testimonial 3 -->
             <div class="min-w-full px-4">
-              <div class="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center">
-                <img src="{{ asset('assets/homepage/testimonial/testimoni-1.png') }}" alt="Testimoni 3" loading="lazy"
-                  class="w-20 h-20 rounded-full object-cover mb-4 border-4 border-[#8BA870]">
-                <div class="flex mb-2">
-                  <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <polygon
-                      points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
-                  </svg>
-                  <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <polygon
-                      points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
-                  </svg>
-                  <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <polygon
-                      points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
-                  </svg>
-                  <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <polygon
-                      points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
-                  </svg>
-                  <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <polygon
-                      points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
-                  </svg>
+              <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div class="flex flex-col md:flex-row min-h-[450px]">
+                  <div class="w-full md:w-1/3 lg:w-1/4 relative">
+                    <div class="h-80 md:h-full relative overflow-hidden">
+                      <img src="{{ asset('assets/homepage/testimonial/testimoni-1.jpeg') }}"
+                        alt="Testimoni Adhitya"
+                        loading="lazy"
+                        class="w-full h-full object-cover object-center">
+                      <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                      <div class="absolute bottom-4 left-4 right-4">
+                        <div class="bg-white/90 backdrop-blur-sm rounded-lg p-3 text-center">
+                          <h4 class="font-bold text-gray-800 text-sm">Adhitya</h4>
+                          <p class="text-[#8BA870] text-xs font-medium">Denpasar</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="w-full md:w-2/3 lg:w-3/4 p-8 md:p-12 flex flex-col justify-center bg-gradient-to-r from-transparent to-[#8BA870]/5">
+                    <div class="mb-4">
+                      <div class="flex items-center gap-2 mb-4">
+                        <div class="w-2 h-8 bg-[#8BA870] rounded-full"></div>
+                        <div>
+                          <h3 class="text-xl md:text-2xl font-bold text-[#2C3E50]">Testimoni Pelanggan</h3>
+                          <p class="text-sm text-gray-500">Verified Customer</p>
+                        </div>
+                      </div>
+                    </div>
+                    <blockquote class="text-gray-700 text-lg md:text-xl leading-relaxed mb-6 italic relative">
+                      <div class="absolute -top-2 -left-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
+                      "Kue langganan keluarga , dari dulu sering beli sampe kalau mau kasih hampers mau ngasih oleh oleh pasti langsung beli di kue pandan asli, semua orang dikeluarga suka dan cocok sama rasanya."
+                      <div class="absolute -bottom-4 -right-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
+                    </blockquote>
+                    <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-gray-200 shadow-sm">
+                      <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium text-gray-600">Rating:</span>
+                        <div class="flex items-center gap-1">
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                        </div>
+                        <span class="ml-2 text-sm font-bold text-[#8BA870]">5.0</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <p class="text-gray-700 text-center mb-4">"Kue langganan keluarga , dari dulu sering beli sampe kalau mau kasih hampers mau ngasih oleh oleh pasti langsung beli di kue pandan asli, semua orang dikeluarga suka dan cocok sama rasanya."</p>
-                <span class="font-semibold text-[#2C3E50]">Adhitya, Denpasar</span>
               </div>
             </div>
+
+            <!-- Testimonial 4 -->
+            <div class="min-w-full px-4">
+              <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div class="flex flex-col md:flex-row min-h-[450px]">
+                  <div class="w-full md:w-1/3 lg:w-1/4 relative">
+                    <div class="h-80 md:h-full relative overflow-hidden">
+                      <img src="{{ asset('assets/homepage/testimonial/testimoni-4.jpeg') }}"
+                        alt="Testimoni Budi Santoso"
+                        loading="lazy"
+                        class="w-full h-full object-cover object-center">
+                      <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                      <div class="absolute bottom-4 left-4 right-4">
+                        <div class="bg-white/90 backdrop-blur-sm rounded-lg p-3 text-center">
+                          <h4 class="font-bold text-gray-800 text-sm">Bu Nanik</h4>
+                          <p class="text-[#8BA870] text-xs font-medium">Surbaya</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="w-full md:w-2/3 lg:w-3/4 p-8 md:p-12 flex flex-col justify-center bg-gradient-to-r from-transparent to-[#8BA870]/5">
+                    <div class="mb-4">
+                      <div class="flex items-center gap-2 mb-4">
+                        <div class="w-2 h-8 bg-[#8BA870] rounded-full"></div>
+                        <div>
+                          <h3 class="text-xl md:text-2xl font-bold text-[#2C3E50]">Testimoni Pelanggan</h3>
+                          <p class="text-sm text-gray-500">Verified Customer</p>
+                        </div>
+                      </div>
+                    </div>
+                    <blockquote class="text-gray-700 text-lg md:text-xl leading-relaxed mb-6 italic relative">
+                      <div class="absolute -top-2 -left-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
+                      "Alhamdulillah sudah 4x pesan di kue pandan asli di malang selalu cocok sama rasanya, kaya pas aja dimakan dan semua rasanya pas, enak dan nyaman di mulut"
+                      <div class="absolute -bottom-4 -right-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
+                    </blockquote>
+                    <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-gray-200 shadow-sm">
+                      <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium text-gray-600">Rating:</span>
+                        <div class="flex items-center gap-1">
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <!-- Half Star SVG -->
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill="#D1D5DB" d="M9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                            <path d="M9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 9.9,1.1" />
+                          </svg>
+                        </div>
+                        <span class="ml-2 text-sm font-bold text-[#8BA870]">4.5</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Testimonial 5 -->
+            <div class="min-w-full px-4">
+              <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div class="flex flex-col md:flex-row min-h-[450px]">
+                  <div class="w-full md:w-1/3 lg:w-1/4 relative">
+                    <div class="h-80 md:h-full relative overflow-hidden">
+                      <img src="{{ asset('assets/homepage/testimonial/testimoni-5.jpeg') }}"
+                        alt="Testimoni Sari Dewi"
+                        loading="lazy"
+                        class="w-full h-full object-cover object-center">
+                      <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                      <div class="absolute bottom-4 left-4 right-4">
+                        <div class="bg-white/90 backdrop-blur-sm rounded-lg p-3 text-center">
+                          <h4 class="font-bold text-gray-800 text-sm">Pak Zainal</h4>
+                          <p class="text-[#8BA870] text-xs font-medium">Surabaya</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="w-full md:w-2/3 lg:w-3/4 p-8 md:p-12 flex flex-col justify-center bg-gradient-to-r from-transparent to-[#8BA870]/5">
+                    <div class="mb-4">
+                      <div class="flex items-center gap-2 mb-4">
+                        <div class="w-2 h-8 bg-[#8BA870] rounded-full"></div>
+                        <div>
+                          <h3 class="text-xl md:text-2xl font-bold text-[#2C3E50]">Testimoni Pelanggan</h3>
+                          <p class="text-sm text-gray-500">Verified Customer</p>
+                        </div>
+                      </div>
+                    </div>
+                    <blockquote class="text-gray-700 text-lg md:text-xl leading-relaxed mb-6 italic relative">
+                      <div class="absolute -top-2 -left-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
+                      "saya sebenernya tau dari rekan sejawat saya , kok enak jadi langanan saya seterusnya. Nyonya kalau ada acara arisan atau pas cucu main kerumah pasti pesen buat acara, jadinya keterusan"
+                      <div class="absolute -bottom-4 -right-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
+                    </blockquote>
+                    <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-gray-200 shadow-sm">
+                      <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium text-gray-600">Rating:</span>
+                        <div class="flex items-center gap-1">
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                        </div>
+                        <span class="ml-2 text-sm font-bold text-[#8BA870]">5.0</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Testimonial 6 -->
+            <div class="min-w-full px-4">
+              <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div class="flex flex-col md:flex-row min-h-[450px]">
+                  <div class="w-full md:w-1/3 lg:w-1/4 relative">
+                    <div class="h-80 md:h-full relative overflow-hidden">
+                      <img src="{{ asset('assets/homepage/testimonial/testimoni-6.jpeg') }}"
+                        alt="Testimoni Andi Wijaya"
+                        loading="lazy"
+                        class="w-full h-full object-cover object-center">
+                      <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                      <div class="absolute bottom-4 left-4 right-4">
+                        <div class="bg-white/90 backdrop-blur-sm rounded-lg p-3 text-center">
+                          <h4 class="font-bold text-gray-800 text-sm">Pak Riko</h4>
+                          <p class="text-[#8BA870] text-xs font-medium">Malang</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="w-full md:w-2/3 lg:w-3/4 p-8 md:p-12 flex flex-col justify-center bg-gradient-to-r from-transparent to-[#8BA870]/5">
+                    <div class="mb-4">
+                      <div class="flex items-center gap-2 mb-4">
+                        <div class="w-2 h-8 bg-[#8BA870] rounded-full"></div>
+                        <div>
+                          <h3 class="text-xl md:text-2xl font-bold text-[#2C3E50]">Testimoni Pelanggan</h3>
+                          <p class="text-sm text-gray-500">Verified Customer</p>
+                        </div>
+                      </div>
+                    </div>
+                    <blockquote class="text-gray-700 text-lg md:text-xl leading-relaxed mb-6 italic relative">
+                      <div class="absolute -top-2 -left-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
+                      "anak saya selalu belikan saya, kalau pas pengen selalu dibelikan disini katanya kue nya sehat dan aman karena pakai gula asli dan tanpa campuran pewarna maupun pengawet."
+                      <div class="absolute -bottom-4 -right-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
+                    </blockquote>
+                    <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-gray-200 shadow-sm">
+                      <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium text-gray-600">Rating:</span>
+                        <div class="flex items-center gap-1">
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                        </div>
+                        <span class="ml-2 text-sm font-bold text-[#8BA870]">5.0</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Testimonial 7 -->
+            <div class="min-w-full px-4">
+              <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div class="flex flex-col md:flex-row min-h-[450px]">
+                  <div class="w-full md:w-1/3 lg:w-1/4 relative">
+                    <div class="h-80 md:h-full relative overflow-hidden">
+                      <img src="{{ asset('assets/homepage/testimonial/testimoni-7.jpeg') }}"
+                        alt="Testimoni Maya Sari"
+                        loading="lazy"
+                        class="w-full h-full object-cover object-center">
+                      <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                      <div class="absolute bottom-4 left-4 right-4">
+                        <div class="bg-white/90 backdrop-blur-sm rounded-lg p-3 text-center">
+                          <h4 class="font-bold text-gray-800 text-sm">Bu Kristika</h4>
+                          <p class="text-[#8BA870] text-xs font-medium">Denpasar, Bali</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="w-full md:w-2/3 lg:w-3/4 p-8 md:p-12 flex flex-col justify-center bg-gradient-to-r from-transparent to-[#8BA870]/5">
+                    <div class="mb-4">
+                      <div class="flex items-center gap-2 mb-4">
+                        <div class="w-2 h-8 bg-[#8BA870] rounded-full"></div>
+                        <div>
+                          <h3 class="text-xl md:text-2xl font-bold text-[#2C3E50]">Testimoni Pelanggan</h3>
+                          <p class="text-sm text-gray-500">Verified Customer</p>
+                        </div>
+                      </div>
+                    </div>
+                    <blockquote class="text-gray-700 text-lg md:text-xl leading-relaxed mb-6 italic relative">
+                      <div class="absolute -top-2 -left-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
+                      "Kalau ada acara kaya arisan, kumpul keluarga atau kumpul kumpul bareng teman langsung pesan di kue pandan asli, simple enak praktis tinggal wa dan semua orang pada suka sama rasanya."
+                      <div class="absolute -bottom-4 -right-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
+                    </blockquote>
+                    <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-gray-200 shadow-sm">
+                      <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium text-gray-600">Rating:</span>
+                        <div class="flex items-center gap-1">
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                        </div>
+                        <span class="ml-2 text-sm font-bold text-[#8BA870]">5.0</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Testimonial 8 -->
+            <div class="min-w-full px-4">
+              <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div class="flex flex-col md:flex-row min-h-[450px]">
+                  <div class="w-full md:w-1/3 lg:w-1/4 relative">
+                    <div class="h-80 md:h-full relative overflow-hidden">
+                      <img src="{{ asset('assets/homepage/testimonial/testimoni-8.jpeg') }}"
+                        alt="Testimoni Rizki Pratama"
+                        loading="lazy"
+                        class="w-full h-full object-cover object-center">
+                      <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                      <div class="absolute bottom-4 left-4 right-4">
+                        <div class="bg-white/90 backdrop-blur-sm rounded-lg p-3 text-center">
+                          <h4 class="font-bold text-gray-800 text-sm">Pak Pras</h4>
+                          <p class="text-[#8BA870] text-xs font-medium">Surabaya</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="w-full md:w-2/3 lg:w-3/4 p-8 md:p-12 flex flex-col justify-center bg-gradient-to-r from-transparent to-[#8BA870]/5">
+                    <div class="mb-4">
+                      <div class="flex items-center gap-2 mb-4">
+                        <div class="w-2 h-8 bg-[#8BA870] rounded-full"></div>
+                        <div>
+                          <h3 class="text-xl md:text-2xl font-bold text-[#2C3E50]">Testimoni Pelanggan</h3>
+                          <p class="text-sm text-gray-500">Verified Customer</p>
+                        </div>
+                      </div>
+                    </div>
+                    <blockquote class="text-gray-700 text-lg md:text-xl leading-relaxed mb-6 italic relative">
+                      <div class="absolute -top-2 -left-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
+                      "langganan orang kantor ini sampai setiap kali ada acara saya selalu nrima tumpeng punya nya kue pandan asli , saya sampai hapal ini hampers, tumpeng dan bingkisan pasti punya kue pandan asli, saya akui rasanya memang mantap joss enak"
+                      <div class="absolute -bottom-4 -right-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
+                    </blockquote>
+                    <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-gray-200 shadow-sm">
+                      <div class="flex items-center gap-2">
+                        <span class="text-sm font-medium text-gray-600">Rating:</span>
+                        <div class="flex items-center gap-1">
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <polygon points="9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                          </svg>
+                          <!-- Half Star SVG -->
+                          <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill="#D1D5DB" d="M9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 15,17.8 13.8,11.9 18.2,7.6 12.2,6.6 " />
+                            <path d="M9.9,1.1 7.6,6.6 1.6,7.6 6,11.9 4.8,17.8 9.9,14.8 9.9,1.1" />
+                          </svg>
+                        </div>
+                        <span class="ml-2 text-sm font-bold text-[#8BA870]">4.5</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
+        </div>
+
+        <!-- Dots Indicator -->
+        <div class="flex justify-center mt-6 gap-2">
+          <button class="testimonial-dot w-3 h-3 rounded-full bg-[#8BA870] transition-all duration-300" data-slide="0"></button>
+          <button class="testimonial-dot w-3 h-3 rounded-full bg-gray-300 hover:bg-gray-400 transition-all duration-300" data-slide="1"></button>
+          <button class="testimonial-dot w-3 h-3 rounded-full bg-gray-300 hover:bg-gray-400 transition-all duration-300" data-slide="2"></button>
+          <button class="testimonial-dot w-3 h-3 rounded-full bg-gray-300 hover:bg-gray-400 transition-all duration-300" data-slide="3"></button>
+          <button class="testimonial-dot w-3 h-3 rounded-full bg-gray-300 hover:bg-gray-400 transition-all duration-300" data-slide="4"></button>
+          <button class="testimonial-dot w-3 h-3 rounded-full bg-gray-300 hover:bg-gray-400 transition-all duration-300" data-slide="5"></button>
+          <button class="testimonial-dot w-3 h-3 rounded-full bg-gray-300 hover:bg-gray-400 transition-all duration-300" data-slide="6"></button>
+          <button class="testimonial-dot w-3 h-3 rounded-full bg-gray-300 hover:bg-gray-400 transition-all duration-300" data-slide="7"></button>
         </div>
       </div>
     </div>

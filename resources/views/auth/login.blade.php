@@ -92,7 +92,7 @@
                             ← Back
                         </a>
                         <x-button class="bg-greenlight hover:bg-greendark text-white px-6 ml-4 rounded-full">
-                            {{ __('Sign In') }}
+                            {{ __('Login') }}
                         </x-button>
                     </div>
                 </form>
