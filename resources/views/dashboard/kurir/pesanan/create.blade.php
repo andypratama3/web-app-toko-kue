@@ -167,14 +167,14 @@
                                     role="menu">
                                     <div class="py-2" role="none">
                                         <a href="#"
-                                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                            data-value="cash" role="menuitem">Cash (Tunai)</a>
+                                            class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
+                                            data-value="cash" role="menuitem"><i class="fas fa-money-bill-wave"></i> Cash (Tunai)</a>
                                         <a href="#"
-                                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                            data-value="tf" role="menuitem">Transfer Bank</a>
+                                            class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
+                                            data-value="tf" role="menuitem"><i class="fas fa-money-check"></i> Transfer Bank</a>
                                         <a href="#"
-                                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                            data-value="qr" role="menuitem">QRIS</a>
+                                            class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
+                                            data-value="qr" role="menuitem"><i class="fas fa-qrcode"></i> QRIS</a>
                                     </div>
                                 </div>
                                 <input type="hidden" id="payment-method-input" name="payment_method_selected">
@@ -588,7 +588,10 @@
                                 <div class="font-semibold">${p.name} <span class="text-xs text-gray-500">${v.name ? ' - ' + v.name : ''}</span></div>
                                 <div class="font-bold text-green-700">Rp ${v.price.toLocaleString()}</div>
                             </div>
-                            <button type="button" class="px-2 py-1 text-xs text-white bg-blue-600 rounded hover:bg-blue-700" onclick="tambahKeCart(${p.id}, ${v.id})" ${sudahDipilih ? 'disabled' : ''}>${sudahDipilih ? 'Sudah di keranjang' : 'Tambah'}</button>
+                            ${sudahDipilih ? 
+                                `<button type="button" class="px-2 py-1 text-xs text-white bg-red-500 rounded hover:bg-red-600" onclick="hapusDariCart(${p.id}, ${v.id})"><i class="fas fa-trash"></i></button>` : 
+                                `<button type="button" class="px-2 py-1 text-xs text-white bg-green-500 rounded hover:bg-green-600" onclick="tambahKeCart(${p.id}, ${v.id})"><i class="fas fa-cart-plus"></i></button>`
+                            }
                         </div>
                     `;
                     });
@@ -601,7 +604,10 @@
                             <div class="font-semibold">${p.name}</div>
                             <div class="font-bold text-green-700">Rp ${p.price ? p.price.toLocaleString() : ''}</div>
                         </div>
-                        <button type="button" class="px-2 py-1 text-xs text-white bg-blue-600 rounded hover:bg-blue-700" onclick="tambahKeCart(${p.id}, null)" ${sudahDipilih ? 'disabled' : ''}>${sudahDipilih ? 'Sudah di keranjang' : 'Tambah'}</button>
+                        ${sudahDipilih ? 
+                            `<button type="button" class="px-2 py-1 text-xs text-white bg-red-500 rounded hover:bg-red-600" onclick="hapusDariCart(${p.id}, null)"><i class="fas fa-trash"></i></button>` : 
+                            `<button type="button" class="px-2 py-1 text-xs text-white bg-green-500 rounded hover:bg-green-600" onclick="tambahKeCart(${p.id}, null)"><i class="fas fa-cart-plus"></i></button>`
+                        }
                     </div>
                 `;
                 }
@@ -638,6 +644,28 @@
             renderCart();
             tampilkanPilihanProduk();
             hideProdukModal();
+        }
+
+        // Menghapus produk dari keranjang melalui modal produk
+        function hapusDariCart(productId, variantId) {
+            let product = produkList.find(p => p.id === productId);
+            let variant = null;
+            let cartItemIndex = -1;
+            
+            if (variantId) {
+                variant = product.variants.find(v => v.id === variantId);
+                cartItemIndex = cart.findIndex(c => c.variant_id === variantId);
+            } else {
+                cartItemIndex = cart.findIndex(c => c.product_id === productId && !c.variant_id);
+            }
+            
+            if (cartItemIndex !== -1) {
+                const removedItem = cart[cartItemIndex];
+                cart.splice(cartItemIndex, 1);
+                showToast(`${product.name}${variant ? ' - ' + variant.name : ''} dihapus dari keranjang.`, 'info');
+                renderCart();
+                tampilkanPilihanProduk();
+            }
         }
 
         // Mengubah kuantitas produk di keranjang
@@ -680,7 +708,9 @@
                                 <button type="button" onclick="ubahQtyCart(${idx}, -1)" class="px-2 text-black bg-gray-200 rounded">–</button>
                                 <span class="text-black">${item.qty}</span>
                                 <button type="button" onclick="ubahQtyCart(${idx}, 1)" class="px-2 text-black bg-gray-200 rounded">+</button>
-                                <button type="button" onclick="hapusProdukCart(${idx})" class="ml-4 text-xl text-red-500">🗑</button>
+                               <button type="button" onclick="hapusProdukCart(${idx})" class="ml-4 text-xl text-red-500">
+    <i class="fas fa-trash"></i>
+</button>
                             </div>
                             <div class="mt-2 font-medium text-black md:mt-0">Total Rp ${subtotal.toLocaleString()}</div>
                         </div>
