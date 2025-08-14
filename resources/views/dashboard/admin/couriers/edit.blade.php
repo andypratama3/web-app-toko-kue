@@ -1,7 +1,7 @@
 {{-- resources/views/dashboard/admin/couriers/modals/edit.blade.php --}}
 @props(['courier'])
 
-<x-modal id="edit-courier-modal-{{ $courier->id }}" title="Edit Kurir" toggle="edit-courier-modal-{{ $courier->id }}"
+<x-modal-custom id="edit-courier-modal-{{ $courier->id }}" title="Edit Kurir" toggle="edit-courier-modal-{{ $courier->id }}"
     size="2xl">
     <form class="p-4 md:p-5" method="POST" action="{{ route('admin.couriers.update', $courier->id) }}">
         @csrf
@@ -57,4 +57,4 @@
             Simpan Perubahan
         </button>
     </form>
-</x-modal>
+</x-modal-custom>

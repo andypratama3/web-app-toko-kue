@@ -1,7 +1,7 @@
 {{-- resources/views/dashboard/kurir/customers/modals/note.blade.php --}}
 @props(['customer'])
 
-<x-modal id="note-modal-{{ $customer->id }}" title="Update Catatan untuk {{ $customer->name }}" toggle="note-modal-{{ $customer->id }}" size="xl">
+<x-modal-custom id="note-modal-{{ $customer->id }}" title="Update Catatan untuk {{ $customer->name }}" toggle="note-modal-{{ $customer->id }}" size="xl">
     <form class="p-4 md:p-5" action="{{ route('kurir.customers.update-note', $customer->id) }}" method="POST">
         @csrf
         @method('PUT')
@@ -19,4 +19,4 @@
             </button>
         </div>
     </form>
-</x-modal>
+</x-modal-custom>

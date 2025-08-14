@@ -1,7 +1,7 @@
 {{-- resources/views/dashboard/admin/customers/modals/edit.blade.php --}}
 @props(['customer'])
 
-<x-modal id="edit-customer-modal-{{ $customer->id }}" title="Edit Customer"
+<x-modal-custom id="edit-customer-modal-{{ $customer->id }}" title="Edit Customer"
     toggle="edit-customer-modal-{{ $customer->id }}" size="2xl">
     <form class="p-4 md:p-5" action="{{ route('admin.customers.update', $customer->id) }}" method="POST">
         @csrf
@@ -27,7 +27,7 @@
                     class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">No. HP</label>
                 <div class="flex">
                     <span
-                        class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-md dark:bg-gray-600 dark:text-gray-400 dark:border-gray-500">
+                        class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 bx-modal-customray-300 rounded-l-md dark:bg-gray-600 dark:text-gray-400 dark:border-gray-500">
                         +62
                     </span>
                     <input type="tel" name="phone" id="phone-{{ $customer->id }}"
@@ -50,4 +50,4 @@
             Simpan Perubahan
         </button>
     </form>
-</x-modal>
+</x-modal-custom>

@@ -9,10 +9,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            // $table->foreignId('category_id')->constrained()->after('id');
-            // $table->renameColumn('image', 'image_path');
-            // $table->string('tag')->nullable()->after('image_path');
-            // $table->boolean('is_active')->default(true)->after('tag');
+            $table->foreignId('category_id')->constrained()->after('id');
+            $table->string('image_path')->after('description');
+            $table->string('tag')->nullable()->after('image_path');
+            $table->boolean('is_active')->default(true)->after('tag');
             // $table->dropColumn('price');
         });
     }
@@ -20,11 +20,11 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            // $table->dropForeign(['category_id']);
+            $table->dropForeign(['category_id']);
             $table->dropColumn('category_id');
-            // $table->renameColumn('image_path', 'image');
-            // $table->dropColumn('tag');
-            // $table->dropColumn('is_active');
+            $table->dropColumn('image_path', 'image');
+            $table->dropColumn('tag');
+            $table->dropColumn('is_active');
             // $table->decimal('price', 10, 2)->after('description');
         });
     }

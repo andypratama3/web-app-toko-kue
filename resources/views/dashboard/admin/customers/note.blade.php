@@ -1,7 +1,7 @@
 {{-- resources/views/dashboard/admin/customers/modals/note.blade.php --}}
 @props(['customer'])
 
-<x-modal id="note-customer-modal-{{ $customer->id }}" title="Catatan untuk {{ $customer->name }}" toggle="note-customer-modal-{{ $customer->id }}" size="xl">
+<x-modal-custom id="note-customer-modal-{{ $customer->id }}" title="Catatan untuk {{ $customer->name }}" toggle="note-customer-modal-{{ $customer->id }}" size="xl">
     <form action="{{ route('admin.customers.updateNote', $customer->id) }}" method="POST">
         @csrf
         @method('PUT')
@@ -27,4 +27,4 @@
             </button>
         </div>
     </form>
-</x-modal>
+</x-modal-custom>

@@ -1,6 +1,6 @@
 {{-- resources/views/dashboard/kurir/customers/modals/create.blade.php --}}
 
-<x-modal id="crud-modal" title="Tambah Data Customer" toggle="crud-modal" size="2xl">
+<x-modal-custom id="crud-modal" title="Tambah Data Customer" toggle="crud-modal" size="2xl">
     <form class="p-4 md:p-5" action="{{ route('kurir.customers.store') }}" method="POST">
         @csrf
         <div class="grid grid-cols-2 gap-4 mb-4">
@@ -44,4 +44,4 @@
             Simpan Customer
         </button>
     </form>
-</x-modal>
+</x-modal-custom>

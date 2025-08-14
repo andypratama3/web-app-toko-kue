@@ -68,6 +68,28 @@ Route::middleware([
 
         // Tambahkan route produk untuk kurir (hanya lihat)
         Route::get('products', [ProductController::class, 'index'])->name('products.index');
+        // Endpoint JSON produk untuk pemesanan
+        Route::get('produk/json', function() {
+            return \App\Models\Product::where('is_active', true)
+                ->with(['variants' => function($q) {
+                    $q->select('id', 'product_id', 'name', 'price');
+                }])
+                ->get(['id', 'name', 'image_path'])
+                ->map(function($p) {
+                    return [
+                        'id' => $p->id,
+                        'name' => $p->name,
+                        'image' => $p->image_path ? asset($p->image_path) : null,
+                        'variants' => $p->variants->map(function($v) {
+                            return [
+                                'id' => $v->id,
+                                'name' => $v->name,
+                                'price' => $v->price,
+                            ];
+                        }),
+                    ];
+                });
+        })->name('produk.json');
         
         // Profile kurir
         Route::get('profile', [KurirDashboardController::class, 'profile'])->name('profile');

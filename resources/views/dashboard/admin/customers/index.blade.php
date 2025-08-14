@@ -113,13 +113,13 @@
                 </tbody>
             </table>
         </div>
-        <nav class="flex justify-center md:justify-end w-full p-4" aria-label="Table navigation">
+        <nav class="flex justify-center w-full p-4 md:justify-end" aria-label="Table navigation">
             {{ $customers->withQueryString()->links() }}
         </nav>
     </div>
 @endsection
 
-@push('modals')
+@push('flowbite-modals')
     {{-- Panggil Modal Tambah Customer --}}
     @include('dashboard.admin.customers.create')
 

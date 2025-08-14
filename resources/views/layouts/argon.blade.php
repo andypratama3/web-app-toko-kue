@@ -7,7 +7,7 @@
     @section('title', 'Dashboard')
     @include('layouts.headicon')
     {{-- Vite build assets --}}
-    @vite(['resources/css/app.css', 'resources/css/argon-dashboard-tailwind.css', 'resources/js/app.js', 'resources/js/custom.js','resources/js/argon-dashboard-tailwind.js', 'resources/js/sidenav-burger.js', 'resources/js/navbar-scroll-fix.js', 'resources/js/dark-mode-toggle.js'])
+    @vite(['resources/css/app.css', 'resources/css/argon-dashboard-tailwind.css', 'resources/js/app.js', 'resources/js/custom.js', 'resources/js/argon-dashboard-tailwind.js', 'resources/js/sidenav-burger.js', 'resources/js/navbar-scroll-fix.js', 'resources/js/dark-mode-toggle.js'])
 
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
     <!-- Font Awesome CDN -->
@@ -17,7 +17,7 @@
     <link href="resources/css/nucleo-svg.css" rel="stylesheet" /> --}}
     <script src="https://unpkg.com/@popperjs/core@2"></script>
 
-    {{--! Script untuk Alpine.js --}}
+    {{-- ! Script untuk Alpine.js --}}
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     {{-- Script for Modal --}}
@@ -35,58 +35,66 @@
 
     <!-- IMPROVED DARKMODE SCRIPT - PREVENTS FOUC AND SYNCS WITH TOGGLE -->
     <script>
-    // Reset and initialize theme properly
-    (function() {
-        // For debugging - clear localStorage if there are conflicts
-        // Uncomment the next line if you want to reset theme to light mode
-        // localStorage.removeItem('color-theme');
+        // Reset and initialize theme properly
+        (function() {
+            // For debugging - clear localStorage if there are conflicts
+            // Uncomment the next line if you want to reset theme to light mode
+            // localStorage.removeItem('color-theme');
 
-        const savedTheme = localStorage.getItem('color-theme');
-        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const savedTheme = localStorage.getItem('color-theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-        let isDark;
-        if (savedTheme) {
-            isDark = savedTheme === 'dark';
-        } else {
-            // Default to light mode if no preference is saved
-            isDark = false; // Changed from systemPrefersDark to false for default light mode
-            localStorage.setItem('color-theme', 'light');
-        }
+            let isDark;
+            if (savedTheme) {
+                isDark = savedTheme === 'dark';
+            } else {
+                // Default to light mode if no preference is saved
+                isDark = false; // Changed from systemPrefersDark to false for default light mode
+                localStorage.setItem('color-theme', 'light');
+            }
 
-        if (isDark) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    })();
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
     </script>
 </head>
 
-<body class="m-0 overflow-x-hidden font-sans text-base antialiased font-normal dark:bg-slate-900 leading-default bg-gray-50 text-slate-500">
+<body
+    class="m-0 overflow-x-hidden font-sans text-base antialiased font-normal dark:bg-slate-900 leading-default bg-gray-50 text-slate-500">
     {{-- KOMPONEN TOAST --}}
     <x-toast />
 
     <!-- PRELOADER -->
-    <div id="preloader" class="fixed top-0 left-0 w-full h-full bg-white flex justify-center items-center z-50">
-        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500"></div>
+    <div id="preloader" class="fixed top-0 left-0 z-50 flex items-center justify-center w-full h-full bg-white">
+        <div class="w-16 h-16 border-t-4 border-b-4 border-green-500 rounded-full animate-spin"></div>
     </div>
 
     {{-- Top color bar --}}
     <div class="fixed w-full bg-greenlight dark:hidden min-h-75"></div>
 
     {{-- Sidebar Overlay --}}
-    <div id="sidebar-overlay" class="fixed inset-0 z-30 hidden transition-opacity duration-200 bg-black bg-opacity-40"></div>
+    <div id="sidebar-overlay" class="fixed inset-0 z-30 hidden transition-opacity duration-200 bg-black bg-opacity-40">
+    </div>
 
     @include('layouts.partials.sidenav')
 
     {{-- PERBAIKAN: Menambahkan id="main-content" --}}
-    <main id="main-content" class="main-content relative h-full max-h-screen transition-all duration-200 ease-in-out rounded-xl">
+    <main id="main-content"
+        class="relative h-full max-h-screen transition-all duration-200 ease-in-out main-content rounded-xl">
         @include('layouts.partials.navbar')
         @include('layouts.partials.content')
         @include('layouts.partials.footer')
     </main>
 
-    @stack('modals')
+    {{-- @stack('modals') --}}
+    {{-- Stack khusus untuk modal yang dikontrol oleh Livewire/Jetstream --}}
+    @stack('livewire-modals')
+
+    {{-- Stack untuk modal yang dikontrol oleh Flowbite atau modal kustom lainnya --}}
+    @stack('flowbite-modals')
 
     <!-- Livewire Scripts -->
     @livewireScripts

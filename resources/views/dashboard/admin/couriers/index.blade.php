@@ -122,7 +122,7 @@
                 </tbody>
             </table>
         </div>
-        <nav class="flex justify-center md:justify-end w-full p-4" aria-label="Table navigation">
+        <nav class="flex justify-center w-full p-4 md:justify-end" aria-label="Table navigation">
             {{ $couriers->links() }}
         </nav>
     </div>
@@ -130,7 +130,7 @@
 @endsection
 
 
-@push('modals')
+@push('flowbite-modals')
     {{-- Memanggil modal tambah kurir --}}
     @include('dashboard.admin.couriers.create')
 

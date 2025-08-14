@@ -1,7 +1,7 @@
 {{-- resources/views/dashboard/admin/couriers/modals/note.blade.php --}}
 @props(['courier'])
 
-<x-modal id="note-courier-modal-{{ $courier->id }}" title="Catatan untuk {{ $courier->name }}" toggle="note-courier-modal-{{ $courier->id }}" size="xl">
+<x-modal-custom id="note-courier-modal-{{ $courier->id }}" title="Catatan untuk {{ $courier->name }}" toggle="note-courier-modal-{{ $courier->id }}" size="xl">
     <form action="{{ route('admin.couriers.updateNote', $courier) }}" method="POST">
         @csrf
         @method('PUT')
@@ -27,4 +27,4 @@
             </button>
         </div>
     </form>
-</x-modal>
+</x-modal-custom>

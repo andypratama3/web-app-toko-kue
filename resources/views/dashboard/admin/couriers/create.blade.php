@@ -1,6 +1,6 @@
 {{-- resources/views/dashboard/admin/couriers/modals/create.blade.php --}}
 
-<x-modal id="create-courier-modal" title="Tambah Kurir Baru" toggle="create-courier-modal" size="2xl">
+<x-modal-custom id="create-courier-modal" title="Tambah Kurir Baru" toggle="create-courier-modal" size="2xl">
     <form name="createCourierForm" method="POST" action="{{ route('admin.couriers.store') }}">
         @csrf
         <div class="p-4 md:p-5">
@@ -54,4 +54,4 @@
             </button>
         </div>
     </form>
-</x-modal>
+</x-modal-custom>

@@ -1,6 +1,6 @@
 {{-- resources/views/dashboard/admin/customers/modals/create.blade.php --}}
 
-<x-modal id="create-customer-modal" title="Tambah Customer Baru" toggle="create-customer-modal" size="2xl">
+<x-modal-custom id="create-customer-modal" title="Tambah Customer Baru" toggle="create-customer-modal" size="2xl">
     <form class="p-4 md:p-5" action="{{ route('admin.customers.store') }}" method="POST">
         @csrf
         <div class="grid grid-cols-2 gap-4 mb-4">
@@ -44,4 +44,4 @@
             Simpan Customer
         </button>
     </form>
-</x-modal>
+</x-modal-custom>

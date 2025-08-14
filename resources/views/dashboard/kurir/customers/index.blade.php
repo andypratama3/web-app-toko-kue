@@ -139,16 +139,16 @@
                 @endif
                 <div class="flex justify-end pt-2 mt-2 space-x-3 border-t border-gray-200 dark:border-gray-700">
                     <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $customer->phone) }}" target="_blank" class="text-green-600 dark:text-green-500 hover:underline">
-                        <i class="fa-brands fa-whatsapp text-lg"></i>
+                        <i class="text-lg fa-brands fa-whatsapp"></i>
                     </a>
                     <button type="button" data-modal-toggle="edit-modal-{{ $customer->id }}" class="text-blue-600 dark:text-blue-500 hover:underline">
-                        <i class="fa-solid fa-pen-to-square text-lg"></i>
+                        <i class="text-lg fa-solid fa-pen-to-square"></i>
                     </button>
                     <button type="button" data-modal-toggle="note-modal-{{ $customer->id }}" class="text-yellow-600 dark:text-yellow-500 hover:underline">
-                        <i class="fa-solid fa-clipboard text-lg"></i>
+                        <i class="text-lg fa-solid fa-clipboard"></i>
                     </button>
                     <button type="button" data-modal-toggle="delete-modal-{{ $customer->id }}" class="text-red-600 dark:text-red-500 hover:underline">
-                        <i class="fa-solid fa-trash text-lg"></i>
+                        <i class="text-lg fa-solid fa-trash"></i>
                     </button>
                 </div>
             </div>
@@ -165,7 +165,7 @@
     </div>
 @endsection
 
-@push('modals')
+@push('flowbite-modals')
     {{-- Memanggil semua modal dari file terpisah --}}
     @include('dashboard.kurir.customers.create')
 

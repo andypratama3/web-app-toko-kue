@@ -1,7 +1,7 @@
 {{-- resources/views/dashboard/kurir/customers/modals/edit.blade.php --}}
 @props(['customer'])
 
-<x-modal id="edit-modal-{{ $customer->id }}" title="Edit Customer" toggle="edit-modal-{{ $customer->id }}" size="2xl">
+<x-modal-custom id="edit-modal-{{ $customer->id }}" title="Edit Customer" toggle="edit-modal-{{ $customer->id }}" size="2xl">
     <form class="p-4 md:p-5" action="{{ route('kurir.customers.update', $customer->id) }}" method="POST">
         @csrf
         @method('PUT')
@@ -42,4 +42,4 @@
             Simpan Perubahan
         </button>
     </form>
-</x-modal>
+</x-modal-custom>
