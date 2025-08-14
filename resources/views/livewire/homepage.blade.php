@@ -845,7 +845,7 @@
                     </div>
                     <blockquote class="text-gray-700 text-lg md:text-xl leading-relaxed mb-6 italic relative">
                       <div class="absolute -top-2 -left-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
-                      "Sebenarnya saya tau ini dari temen yang kasih rekomendasi, baru beberapa kali coba cocok dan kedepan akan jadi langganan terus sih sepertinya."
+                      "Saya sekeluarga cocok, kalau ada acara kantor langsung pesen kesini, orang orang kantor juga pada nanyain beli dimana? Saya beli di kue pandan asli surabaya"
                       <div class="absolute -bottom-4 -right-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
                     </blockquote>
                     <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-gray-200 shadow-sm">
@@ -944,15 +944,15 @@
                 <div class="flex flex-col md:flex-row min-h-[450px]">
                   <div class="w-full md:w-1/3 lg:w-1/4 relative">
                     <div class="h-80 md:h-full relative overflow-hidden">
-                      <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop&crop=face"
+                      <img src="{{ asset('assets/homepage/testimonial/testimoni-4.jpeg') }}"
                         alt="Testimoni Budi Santoso"
                         loading="lazy"
                         class="w-full h-full object-cover object-center">
                       <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
                       <div class="absolute bottom-4 left-4 right-4">
                         <div class="bg-white/90 backdrop-blur-sm rounded-lg p-3 text-center">
-                          <h4 class="font-bold text-gray-800 text-sm">Budi Santoso</h4>
-                          <p class="text-[#8BA870] text-xs font-medium">Jakarta</p>
+                          <h4 class="font-bold text-gray-800 text-sm">Bu Nanik</h4>
+                          <p class="text-[#8BA870] text-xs font-medium">Surbaya</p>
                         </div>
                       </div>
                     </div>
@@ -969,7 +969,7 @@
                     </div>
                     <blockquote class="text-gray-700 text-lg md:text-xl leading-relaxed mb-6 italic relative">
                       <div class="absolute -top-2 -left-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
-                      "Kue pandan asli ini benar-benar autentik! Rasanya mengingatkan saya pada kue buatan nenek dulu. Teksturnya lembut dan wangi pandannya sangat natural. Sudah beberapa kali pesan untuk acara keluarga dan selalu memuaskan."
+                      "Alhamdulillah sudah 4x pesan di kue pandan asli di malang selalu cocok sama rasanya, kaya pas aja dimakan dan semua rasanya pas, enak dan nyaman di mulut"
                       <div class="absolute -bottom-4 -right-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
                     </blockquote>
                     <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-gray-200 shadow-sm">
@@ -1008,15 +1008,15 @@
                 <div class="flex flex-col md:flex-row min-h-[450px]">
                   <div class="w-full md:w-1/3 lg:w-1/4 relative">
                     <div class="h-80 md:h-full relative overflow-hidden">
-                      <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=600&fit=crop&crop=face"
+                      <img src="{{ asset('assets/homepage/testimonial/testimoni-5.jpeg') }}"
                         alt="Testimoni Sari Dewi"
                         loading="lazy"
                         class="w-full h-full object-cover object-center">
                       <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
                       <div class="absolute bottom-4 left-4 right-4">
                         <div class="bg-white/90 backdrop-blur-sm rounded-lg p-3 text-center">
-                          <h4 class="font-bold text-gray-800 text-sm">Sari Dewi</h4>
-                          <p class="text-[#8BA870] text-xs font-medium">Bandung</p>
+                          <h4 class="font-bold text-gray-800 text-sm">Pak Zainal</h4>
+                          <p class="text-[#8BA870] text-xs font-medium">Surabaya</p>
                         </div>
                       </div>
                     </div>
@@ -1033,7 +1033,7 @@
                     </div>
                     <blockquote class="text-gray-700 text-lg md:text-xl leading-relaxed mb-6 italic relative">
                       <div class="absolute -top-2 -left-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
-                      "Sangat direkomendasikan! Kue lumpur surganya benar-benar lumer di mulut. Kemasannya juga rapi dan aman untuk pengiriman luar kota. Pelayanannya ramah dan responsif."
+                      "saya sebenernya tau dari rekan sejawat saya , kok enak jadi langanan saya seterusnya. Nyonya kalau ada acara arisan atau pas cucu main kerumah pasti pesen buat acara, jadinya keterusan"
                       <div class="absolute -bottom-4 -right-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
                     </blockquote>
                     <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-gray-200 shadow-sm">
@@ -1070,15 +1070,15 @@
                 <div class="flex flex-col md:flex-row min-h-[450px]">
                   <div class="w-full md:w-1/3 lg:w-1/4 relative">
                     <div class="h-80 md:h-full relative overflow-hidden">
-                      <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=600&fit=crop&crop=face"
+                      <img src="{{ asset('assets/homepage/testimonial/testimoni-6.jpeg') }}"
                         alt="Testimoni Andi Wijaya"
                         loading="lazy"
                         class="w-full h-full object-cover object-center">
                       <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
                       <div class="absolute bottom-4 left-4 right-4">
                         <div class="bg-white/90 backdrop-blur-sm rounded-lg p-3 text-center">
-                          <h4 class="font-bold text-gray-800 text-sm">Andi Wijaya</h4>
-                          <p class="text-[#8BA870] text-xs font-medium">Yogyakarta</p>
+                          <h4 class="font-bold text-gray-800 text-sm">Pak Riko</h4>
+                          <p class="text-[#8BA870] text-xs font-medium">Malang</p>
                         </div>
                       </div>
                     </div>
@@ -1095,7 +1095,7 @@
                     </div>
                     <blockquote class="text-gray-700 text-lg md:text-xl leading-relaxed mb-6 italic relative">
                       <div class="absolute -top-2 -left-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
-                      "Kualitas kue sangat bagus dan harga terjangkau. Saya sudah coba hampir semua varian dan semuanya enak. Kue ongol-ongolnya juara! Delivery juga cepat dan aman sampai tujuan."
+                      "anak saya selalu belikan saya, kalau pas pengen selalu dibelikan disini katanya kue nya sehat dan aman karena pakai gula asli dan tanpa campuran pewarna maupun pengawet."
                       <div class="absolute -bottom-4 -right-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
                     </blockquote>
                     <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-gray-200 shadow-sm">
@@ -1132,15 +1132,15 @@
                 <div class="flex flex-col md:flex-row min-h-[450px]">
                   <div class="w-full md:w-1/3 lg:w-1/4 relative">
                     <div class="h-80 md:h-full relative overflow-hidden">
-                      <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=600&fit=crop&crop=face"
+                      <img src="{{ asset('assets/homepage/testimonial/testimoni-7.jpeg') }}"
                         alt="Testimoni Maya Sari"
                         loading="lazy"
                         class="w-full h-full object-cover object-center">
                       <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
                       <div class="absolute bottom-4 left-4 right-4">
                         <div class="bg-white/90 backdrop-blur-sm rounded-lg p-3 text-center">
-                          <h4 class="font-bold text-gray-800 text-sm">Maya Sari</h4>
-                          <p class="text-[#8BA870] text-xs font-medium">Semarang</p>
+                          <h4 class="font-bold text-gray-800 text-sm">Bu Kristika</h4>
+                          <p class="text-[#8BA870] text-xs font-medium">Denpasar, Bali</p>
                         </div>
                       </div>
                     </div>
@@ -1157,7 +1157,7 @@
                     </div>
                     <blockquote class="text-gray-700 text-lg md:text-xl leading-relaxed mb-6 italic relative">
                       <div class="absolute -top-2 -left-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
-                      "Hampers dari Kue Pandan Asli selalu jadi pilihan utama untuk hadiah. Presentasinya cantik dan rasanya tidak mengecewakan. Teman-teman selalu tanya beli dimana karena kuenya enak banget!"
+                      "Kalau ada acara kaya arisan, kumpul keluarga atau kumpul kumpul bareng teman langsung pesan di kue pandan asli, simple enak praktis tinggal wa dan semua orang pada suka sama rasanya."
                       <div class="absolute -bottom-4 -right-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
                     </blockquote>
                     <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-gray-200 shadow-sm">
@@ -1194,15 +1194,15 @@
                 <div class="flex flex-col md:flex-row min-h-[450px]">
                   <div class="w-full md:w-1/3 lg:w-1/4 relative">
                     <div class="h-80 md:h-full relative overflow-hidden">
-                      <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=600&fit=crop&crop=face"
+                      <img src="{{ asset('assets/homepage/testimonial/testimoni-8.jpeg') }}"
                         alt="Testimoni Rizki Pratama"
                         loading="lazy"
                         class="w-full h-full object-cover object-center">
                       <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
                       <div class="absolute bottom-4 left-4 right-4">
                         <div class="bg-white/90 backdrop-blur-sm rounded-lg p-3 text-center">
-                          <h4 class="font-bold text-gray-800 text-sm">Rizki Pratama</h4>
-                          <p class="text-[#8BA870] text-xs font-medium">Solo</p>
+                          <h4 class="font-bold text-gray-800 text-sm">Pak Pras</h4>
+                          <p class="text-[#8BA870] text-xs font-medium">Surabaya</p>
                         </div>
                       </div>
                     </div>
@@ -1219,7 +1219,7 @@
                     </div>
                     <blockquote class="text-gray-700 text-lg md:text-xl leading-relaxed mb-6 italic relative">
                       <div class="absolute -top-2 -left-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
-                      "Sebagai pecinta kue tradisional, saya sangat puas dengan produk Kue Pandan Asli. Bahan-bahannya natural, tidak ada rasa artificial. Kue pulut srikayanya recommended banget! Pasti akan order lagi."
+                      "langganan orang kantor ini sampai setiap kali ada acara saya selalu nrima tumpeng punya nya kue pandan asli , saya sampai hapal ini hampers, tumpeng dan bingkisan pasti punya kue pandan asli, saya akui rasanya memang mantap joss enak"
                       <div class="absolute -bottom-4 -right-2 text-4xl text-[#8BA870]/30 font-serif">"</div>
                     </blockquote>
                     <div class="bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-gray-200 shadow-sm">
@@ -1254,8 +1254,6 @@
 
           </div>
         </div>
-
-
 
         <!-- Dots Indicator -->
         <div class="flex justify-center mt-6 gap-2">
