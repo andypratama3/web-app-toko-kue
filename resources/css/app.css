@@ -1,7 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@custom-variant dark (&:where(.dark, .dark *));
 
 /* Custom sidebar styles */
 @media (min-width: 1280px) {
@@ -379,16 +378,24 @@ body.dark #sidebar .sidebar-icon-container i::after {
     }
 
     /* Profile dropdown modal on mobile - ensure it appears above content */
-    #navbar-main .group .absolute {
-        z-index: 9999 !important; /* Very high z-index to appear above all content */
-        position: fixed !important; /* Use fixed positioning */
-        top: 4rem !important; /* Position below navbar */
-        right: 0.75rem !important; /* Align with new mobile profile position moved more to the right */
-        left: 1rem !important; /* Add left margin for mobile */
-        transform: none !important; /* Remove transform to prevent positioning issues */
-        margin-top: 0 !important;
-        width: auto !important; /* Auto width for mobile */
-        max-width: calc(100vw - 1.75rem) !important; /* Prevent overflow on mobile with updated margins */
+    #navbar-main .group .absolute,
+    #navbar-main.scrolled .group .absolute {
+        z-index: 99999 !important; /* Ultra high z-index to appear above all content including scrolled navbar */
+        position: fixed !important; /* Use fixed positioning to prevent clipping */
+        top: 5rem !important; /* Position below navbar */
+        right: 1rem !important; /* Right margin from edge */
+        left: 1rem !important; /* Left margin to prevent overflow */
+        width: auto !important; /* Auto width */
+        max-width: calc(100vw - 2rem) !important; /* Prevent overflow */
+        transform: none !important; /* Remove transform */
+        margin-top: 0 !important; /* Remove margin-top */
+    }
+
+    /* Ensure hover functionality works in scrolled state on mobile */
+    #navbar-main.scrolled .group:hover .absolute {
+        opacity: 1 !important;
+        transform: scale(1) !important;
+        pointer-events: auto !important;
     }
 
     /* Profile dropdown styling improvements for mobile */
@@ -518,13 +525,23 @@ body {
     }
 
     /* Profile dropdown modal - ensure it appears above content */
-    #navbar-main .group .absolute {
-        z-index: 9999 !important; /* Very high z-index to appear above all content */
-        position: fixed !important; /* Use fixed positioning */
-        top: 4rem !important; /* Position below navbar */
-        right: 2rem !important; /* Align with new profile position */
-        transform: none !important; /* Remove transform to prevent positioning issues */
-        margin-top: 0 !important;
+    #navbar-main .group .absolute,
+    #navbar-main.scrolled .group .absolute {
+        z-index: 99999 !important; /* Ultra high z-index to appear above all content including scrolled navbar */
+        position: fixed !important; /* Use fixed positioning to prevent clipping */
+        top: 5rem !important; /* Position below navbar */
+        right: 2rem !important; /* Right margin from edge */
+        width: 20rem !important; /* Fixed width for desktop */
+        max-width: 20rem !important; /* Max width */
+        transform: none !important; /* Remove transform */
+        margin-top: 0 !important; /* Remove margin-top */
+    }
+
+    /* Ensure hover functionality works in scrolled state on desktop */
+    #navbar-main.scrolled .group:hover .absolute {
+        opacity: 1 !important;
+        transform: scale(1) !important;
+        pointer-events: auto !important;
     }
 
     /* Profile dropdown styling improvements */

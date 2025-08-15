@@ -26,7 +26,7 @@
                 <img id="sidebar-logo-img" src="{{ asset('assets/homepage/logo.png') }}"
                     data-logo-full="{{ asset('assets/homepage/logo.png') }}"
                     data-logo-icon="{{ asset('assets/homepage/logo.png') }}"
-                    class="flex-shrink-0 h-10 transition-all duration-200 ease-nav-brand" alt="main_logo" 
+                    class="flex-shrink-0 h-10 transition-all duration-200 ease-nav-brand" alt="main_logo"
                     style="background: transparent !important; background-color: transparent !important; border-radius: 50%; padding: 0.25rem;" />
                 <span id="sidebar-logo-text"
                     class="hidden ml-2 text-xl font-semibold transition-all duration-200 ease-nav-brand text-greenlight sidenav-text">
@@ -163,13 +163,14 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg" href="{{ route('kurir.pesanan.index') }}" data-tooltip="Order Tracking">
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('kurir.pesanan.*')) bg-blue-500/13 @endif" href="{{ route('kurir.pesanan.index') }}" data-tooltip="Order Tracking">
                                     <div class="mr-2 sidebar-icon-container"><i class="text-orange-500 fas fa-truck"></i></div>
                                     <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Order Tracking</span>
                                 </a>
                             </li>
                             <li>
-                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg" href="{{ route('kurir.pesanan.index') }}" data-tooltip="Order History">
+                                {{-- <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg" @if (request()->routeIs('kurir.historys.*')) bg-blue-500/13 @endif href="{{ route('kurir.historys.index') }}" data-tooltip="Order History"> --}}
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg" @if (request()->routeIs('kurir.historys.*')) bg-blue-500/13 @endif href="#" data-tooltip="Order History">
                                     <div class="mr-2 sidebar-icon-container"><i class="text-yellow-500 fas fa-hourglass-half"></i></div>
                                     <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Order History</span>
                                 </a>

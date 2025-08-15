@@ -36,30 +36,34 @@
                 </button>
             </div>
         </div>
-        <div class="overflow-x-auto min-h-[500px]">
+        <div class="overflow-x-auto min-h-[580px]">
             <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
-                        <th scope="col" class="px-4 py-3">Nama Customer</th>
-                        <th scope="col" class="px-4 py-3">Alamat</th>
-                        <th scope="col" class="px-4 py-3">Nomor Telepon</th>
-                        <th scope="col" class="px-4 py-3">Region</th>
-                        <th scope="col" class="px-4 py-3">Note</th>
-                        <th scope="col" class="px-4 py-3">Tanggal Bergabung</th>
-                        <th scope="col" class="px-4 py-3"><span class="sr-only">Aksi</span></th>
+                        <th scope="col" class="px-4 py-3 text-center">No.</th>
+                        <th scope="col" class="px-4 py-3 text-center">Nama Customer</th>
+                        <th scope="col" class="px-4 py-3 text-center">Alamat</th>
+                        <th scope="col" class="px-4 py-3 text-center">Nomor Telepon</th>
+                        <th scope="col" class="px-4 py-3 text-center">Region</th>
+                        <th scope="col" class="px-4 py-3 text-center">Note</th>
+                        <th scope="col" class="px-4 py-3 text-center">Tanggal Bergabung</th>
+                        <th scope="col" class="px-4 py-3 text-center"><span class="sr-only">Aksi</span></th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($customers as $customer)
                         <tr class="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
+                            <td class="px-4 py-3 font-medium text-gray-900 dark:text-white text-center">
+                                {{ ($customers->currentPage() - 1) * $customers->perPage() + $loop->iteration }}
+                            </td>
                             <th scope="row"
                                 class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                 {{ $customer->name }}</th>
-                            <td class="px-4 py-3">{{ Str::limit($customer->address, 30) }}</td>
-                            <td class="px-4 py-3">{{ $customer->phone }}</td>
-                            <td class="px-4 py-3">{{ $customer->region->name ?? 'N/A' }}</td>
-                            <td class="px-4 py-3">{{ Str::limit($customer->note, 20) }}</td>
-                            <td class="px-4 py-3">{{ $customer->created_at->format('d M Y') }}</td>
+                            <td class="px-4 py-3 text-center">{{ Str::limit($customer->address, 30) }}</td>
+                            <td class="px-4 py-3 text-center">{{ $customer->phone }}</td>
+                            <td class="px-4 py-3 text-center">{{ $customer->region->name ?? 'N/A' }}</td>
+                            <td class="px-4 py-3 text-center">{{ Str::limit($customer->note, 20) }}</td>
+                            <td class="px-4 py-3 text-center">{{ $customer->created_at->format('d M Y') }}</td>
                             <td class="px-4 py-3 text-right">
                                 <div class="relative inline-block">
                                     <button data-dropdown-toggle="customer-actions-dropdown-{{ $customer->id }}"

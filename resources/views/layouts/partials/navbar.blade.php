@@ -60,7 +60,7 @@
               @endphp
               <img src="{{ asset($avatarSrc) }}" alt="User Avatar" class="object-cover w-full h-full" />
             </div>
-            <div class="absolute right-0 z-50 w-64 mt-40 transition duration-200 ease-out origin-top-right scale-95 bg-white rounded-md shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:scale-100 group-hover:pointer-events-auto">
+            <div class="absolute right-0 z-[99999] w-64 mt-2 transition duration-200 ease-out origin-top-right scale-95 bg-white rounded-md shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:scale-100 group-hover:pointer-events-auto">
               <div class="px-4 py-3 text-sm text-gray-700 border-b border-gray-200">
                 @php
                   use Illuminate\Support\Facades\DB;
