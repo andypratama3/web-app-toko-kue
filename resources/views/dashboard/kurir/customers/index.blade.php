@@ -35,11 +35,11 @@
             <table class="w-full text-sm text-left text-gray-500 rtl:text-right dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
-                        <th scope="col" class="px-6 py-3">Nama Customer</th>
-                        <th scope="col" class="px-6 py-3">Alamat</th>
+                        <th scope="col" class="px-6 py-3">👤 Nama Customer</th>
+                        <th scope="col" class="px-6 py-3">📍Alamat</th>
                         <th scope="col" class="px-6 py-3">Nomor Telepon</th>
                         <th scope="col" class="px-6 py-3">Region</th>
-                        <th scope="col" class="px-6 py-3">Note</th>
+                        <th scope="col" class="px-6 py-3">📝 Note</th>
                         <th scope="col" class="px-4 py-3"><span class="sr-only">Aksi</span></th>
                     </tr>
                 </thead>
@@ -50,7 +50,12 @@
                             {{ $customer->name }}
                         </th>
                         <td class="px-6 py-4">{{ Str::limit($customer->address, 30) }}</td>
-                        <td class="px-6 py-4">{{ $customer->phone }}</td>
+                        <td class="px-6 py-4">
+                            <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $customer->phone) }}" target="_blank" class="flex items-center space-x-2 text-green-600 hover:text-green-700">
+                                <i class="fab fa-whatsapp"></i>
+                                <span>{{ $customer->phone }}</span>
+                            </a>
+                        </td>
                         <td class="px-6 py-4">{{ $customer->region->name }}</td>
                         <td class="px-6 py-4">{{ Str::limit($customer->note, 20) }}</td>
                         <td class="px-4 py-3 text-right">
@@ -127,30 +132,39 @@
             @forelse ($customers as $customer)
             <div class="w-full max-w-sm p-4 bg-white border border-gray-200 rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700">
                 <div class="flex items-center justify-between mb-2">
-                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">{{ $customer->name }}</h4>
+                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">👤 {{ $customer->name }}</h4>
                 </div>
                 <p class="mb-1 text-sm text-gray-700 dark:text-gray-300">
-                    <i class="fa-solid fa-location-dot me-2"></i> {{ $customer->address }} ({{ $customer->region->name }})
+                    📍 {{ $customer->address }} ({{ $customer->region->name }})
                 </p>
                 @if($customer->note)
                 <p class="mb-1 text-xs italic text-gray-700 dark:text-gray-300">
-                    <i class="fa-solid fa-clipboard-list me-2"></i> {{ $customer->note }}
+                    📝 {{ $customer->note }}
                 </p>
                 @endif
-                <div class="flex justify-end pt-2 mt-2 space-x-3 border-t border-gray-200 dark:border-gray-700">
-                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $customer->phone) }}" target="_blank" class="text-green-600 dark:text-green-500 hover:underline">
-                        <i class="text-lg fa-brands fa-whatsapp"></i>
+                <div class="flex justify-end pt-2 mb-0 space-x-3 border-t border-gray-200 dark:border-gray-700">
+                    <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $customer->phone) }}" 
+                            target="_blank" 
+                            class="text-green-600 dark:text-green-500 text-lg transition transform hover:scale-125 active:scale-90">
+                        <i class="fab fa-whatsapp"></i>
                     </a>
-                    <button type="button" data-modal-toggle="edit-modal-{{ $customer->id }}" class="text-blue-600 dark:text-blue-500 hover:underline">
-                        <i class="text-lg fa-solid fa-pen-to-square"></i>
+                    <button type="button" data-modal-toggle="note-modal-{{ $customer->id }}" 
+                            class="text-yellow-600 dark:text-yellow-500 text-lg transition transform hover:scale-125 active:scale-90">
+                        <!-- <i class="far fa-comment-dots"></i> -->
+                         📋
                     </button>
-                    <button type="button" data-modal-toggle="note-modal-{{ $customer->id }}" class="text-yellow-600 dark:text-yellow-500 hover:underline">
-                        <i class="text-lg fa-solid fa-clipboard"></i>
+                    <button type="button" data-modal-toggle="edit-modal-{{ $customer->id }}" 
+                            class="text-blue-600 dark:text-blue-500 text-lg transition transform hover:scale-125 active:scale-90">
+                        <!-- <i class="fas fa-pencil-alt"></i> --> 
+                         <i class="fas fa-file-signature"></i>
                     </button>
-                    <button type="button" data-modal-toggle="delete-modal-{{ $customer->id }}" class="text-red-600 dark:text-red-500 hover:underline">
-                        <i class="text-lg fa-solid fa-trash"></i>
+                    
+                    <button type="button" data-modal-toggle="delete-modal-{{ $customer->id }}" 
+                            class="text-red-600 dark:text-red-500 text-lg transition transform hover:scale-125 active:scale-90">
+                            <i class="fas fa-trash"></i>
                     </button>
                 </div>
+
             </div>
             @empty
             <div class="text-center text-gray-500 dark:text-gray-400">
