@@ -34,7 +34,7 @@
         {{-- Modal content --}}
         <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
             {{-- Modal header --}}
-            <div class="flex items-center justify-between p-4 border-b border-gray-200 rounded-t md:p-5 dark:border-gray-600 bg-gray">
+            <div class="flex items-center justify-between p-4 border-b border-gray-200 rounded-t md:p-5 dark:border-gray-600">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                     {{ $title }}
                 </h3>
