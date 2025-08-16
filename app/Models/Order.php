@@ -4,29 +4,41 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
     use HasFactory;
 
-   protected $fillable = [
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
         'customer_id',
-        'phone', // Tambahkan ke fillable
-        'address', // Tambahkan ke fillable
-        'payment_method',
-        'note',
+        'phone',
+        'address',
         'total_amount',
-        'status',
-        'courier_id', // Jika ada
+        'payment_method',
+        'payment_proof',
+        'note',
     ];
 
-    public function customer()
+    /**
+     * Get the customer that owns the order.
+     */
+    public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
-    public function items()
+    /**
+     * Get the items for the order.
+     */
+    public function items(): HasMany
     {
-        return $this->hasMany(OrderDetail::class);
+        return $this->hasMany(OrderItem::class);
     }
 }

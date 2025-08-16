@@ -406,7 +406,7 @@
         const customerId = document.getElementById('customer-id-input').value;
         const paymentMethod = document.getElementById('payment-method-input').value;
         const note = document.getElementById('note').value;
-        const phone = document.getElementById('phone').value; // Hanya ada satu input phone sekarang
+        const phone = document.getElementById('phone').value;
         const address = document.getElementById('address').value;
         const paymentProofFile = document.getElementById('payment-proof').files[0];
 
@@ -432,54 +432,40 @@
             return;
         }
 
-        // Siapkan data pesanan
-        let requestBody;
-        let headers = {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        };
+        // Siapkan data pesanan menggunakan FormData secara konsisten
+        const formData = new FormData();
+        formData.append('customer_id', customerId);
+        formData.append('phone', phone);
+        formData.append('address', address);
+        formData.append('payment_method', paymentMethod);
+        formData.append('note', note);
 
+        // PENTING: Stringify array cart dan tambahkan ke FormData
+        // Ini memastikan backend menerima string JSON yang valid untuk 'products'
+        formData.append('products', JSON.stringify(cart.map(item => ({
+            product_id: item.product_id, // Gunakan product_id dari item keranjang
+            product_name: item.product_name, // Gunakan product_name dari item keranjang
+            variant_id: item.variant_id, // Gunakan variant_id dari item keranjang
+            variant_name: item.variant_name, // Gunakan variant_name dari item keranjang
+            quantity: item.qty, // Gunakan qty dari item keranjang
+            price: item.price, // Gunakan price dari item keranjang
+        }))));
+
+        // Tambahkan file bukti pembayaran jika ada
         if (paymentProofFile) {
-            // Gunakan FormData jika ada file yang diupload
-            const formData = new FormData();
-            formData.append('customer_id', customerId);
-            formData.append('phone', phone);
-            formData.append('address', address);
-            formData.append('payment_method', paymentMethod);
-            formData.append('note', note);
             formData.append('payment_proof', paymentProofFile);
-            formData.append('products', JSON.stringify(cart.map(item => ({ // Stringify products array
-                product_id: item.id,
-                product_name: item.nama,
-                quantity: item.qty,
-                price: item.harga,
-            }))));
-            requestBody = formData;
-            // Hapus Content-Type header karena FormData akan mengaturnya ke multipart/form-data
-            // delete headers['Content-Type']; // Tidak perlu dihapus secara eksplisit, browser akan mengaturnya
-        } else {
-            // Gunakan JSON jika tidak ada file yang diupload
-            requestBody = JSON.stringify({
-                customer_id: customerId,
-                phone: phone,
-                address: address,
-                payment_method: paymentMethod,
-                note: note,
-                products: cart.map(item => ({
-                    product_id: item.id,
-                    product_name: item.nama,
-                    quantity: item.qty,
-                    price: item.harga,
-                }))
-            });
-            headers['Content-Type'] = 'application/json';
         }
 
         try {
             // Mengirim data ke API
             const response = await fetch('/api/orders/checkout', {
                 method: 'POST',
-                headers: headers, // Gunakan headers yang sudah disiapkan
-                body: requestBody
+                // FormData akan secara otomatis mengatur Content-Type ke multipart/form-data
+                // Jadi, tidak perlu mengatur 'Content-Type' secara manual di headers untuk FormData
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: formData // Kirim FormData
             });
 
             const result = await response.json();
@@ -501,7 +487,17 @@
                 document.getElementById('payment-proof-upload').classList.add('hidden'); // Sembunyikan lagi
                 document.getElementById('note').value = '';
             } else {
-                showToast('Gagal menyimpan pesanan: ' + result.message, 'error');
+                // Tampilkan pesan error validasi spesifik jika ada
+                let errorMessage = result.message || 'Terjadi kesalahan yang tidak diketahui.';
+                if (result.errors) {
+                    // Jika ada error validasi detail, gabungkan pesan-pesan tersebut
+                    errorMessage += '\n<ul>';
+                    for (const key in result.errors) {
+                        errorMessage += `<li>${result.errors[key].join(', ')}</li>`;
+                    }
+                    errorMessage += '</ul>';
+                }
+                showToast('Gagal menyimpan pesanan: ' + errorMessage, 'error', 7000); // Durasi lebih lama untuk error
             }
         } catch (error) {
             console.error('Error:', error);
@@ -540,15 +536,15 @@
                                 <div class="font-semibold">${p.name} <span class="text-xs text-gray-500">${v.name ? ' - ' + v.name : ''}</span></div>
                                 <div class="font-bold text-green-700">Rp ${v.price.toLocaleString()}</div>
                             </div>
-                            ${sudahDipilih ? 
-                                `<button type="button" class="px-2 py-1 text-xs text-white bg-red-500 rounded hover:bg-red-600" onclick="hapusDariCart(${p.id}, ${v.id})"><i class="fas fa-trash"></i></button>` : 
+                            ${sudahDipilih ?
+                                `<button type="button" class="px-2 py-1 text-xs text-white bg-red-500 rounded hover:bg-red-600" onclick="hapusDariCart(${p.id}, ${v.id})"><i class="fas fa-trash"></i></button>` :
                                 `<button type="button" class="px-2 py-1 text-xs text-white bg-green-500 rounded hover:bg-green-600" onclick="tambahKeCart(${p.id}, ${v.id})"><i class="fas fa-cart-plus"></i></button>`
                             }
                         </div>
                     `;
                 });
             } else {
-                const sudahDipilih = cart.some(c => c.product_id === p.id);
+                const sudahDipilih = cart.some(c => c.product_id === p.id && !c.variant_id); // Perbaikan: Tambahkan !c.variant_id
                 pilihDiv.innerHTML += `
                     <div class="flex flex-row items-center gap-3 p-3 border rounded bg-gray-50">
                         ${imageUrl ? `<img src="${imageUrl}" alt="${p.name}" class="object-cover w-16 h-16 mr-2 border rounded" />` : ''}
@@ -556,8 +552,8 @@
                             <div class="font-semibold">${p.name}</div>
                             <div class="font-bold text-green-700">Rp ${p.price ? p.price.toLocaleString() : ''}</div>
                         </div>
-                        ${sudahDipilih ? 
-                            `<button type="button" class="px-2 py-1 text-xs text-white bg-red-500 rounded hover:bg-red-600" onclick="hapusDariCart(${p.id}, null)"><i class="fas fa-trash"></i></button>` : 
+                        ${sudahDipilih ?
+                            `<button type="button" class="px-2 py-1 text-xs text-white bg-red-500 rounded hover:bg-red-600" onclick="hapusDariCart(${p.id}, null)"><i class="fas fa-trash"></i></button>` :
                             `<button type="button" class="px-2 py-1 text-xs text-white bg-green-500 rounded hover:bg-green-600" onclick="tambahKeCart(${p.id}, null)"><i class="fas fa-cart-plus"></i></button>`
                         }
                     </div>
@@ -670,7 +666,7 @@
                                 Subtotal
                             </th>
                             <th scope="col" class="w-[10%] px-6 py-3 text-xs font-bold tracking-wider text-center text-gray-500 uppercase dark:text-gray-400">
-                                
+
                             </th>
                         </tr>
                     </thead>
