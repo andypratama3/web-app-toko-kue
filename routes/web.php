@@ -113,8 +113,12 @@ Route::middleware([
         Route::put('customers/{customer}/note', [CustomerController::class, 'updateNote'])
             ->name('customers.update-note');
 
-        Route::get('/pesanan', [PesananController::class, 'index'])
-            ->name('pesanan.index');
+        // Route::get('/pesanan', [PesananController::class, 'index'])
+        //     ->name('pesanan.index');
+
+        // Ini akan memanggil metode showFilteredOrders di PesananController
+        Route::get('/pesanan', [PesananController::class, 'showFilteredOrders'])
+            ->name('pesanan.index'); // <-- Nama route Anda sudah 'pesanan.index'
 
         //Route untuk ambil data customer dipesanan
         Route::get('kurir/dashboard/create', [PesananController::class, 'showCustomer'])
@@ -122,6 +126,8 @@ Route::middleware([
 
         Route::post('/orders/checkout', [PesananController::class, 'checkout'])
             ->name('orders.checkout');
+
+        
     });
 
     // ---------- COMMON DASHBOARD REDIRECT ----------
