@@ -18,13 +18,32 @@ class CourierController extends Controller
      */
     public function index(Request $request)
     {
-        $couriers = User::where('region_id', Auth::user()->region_id)
-            ->whereHas('roles', function ($query) {
-                $query->where('name', 'kurir');
-            })
-            ->latest()
-            ->paginate(10);
+        $search = $request->input('search');
+        $user = Auth::user();
 
+        $couriersQuery = User::where('region_id', $user->region_id)
+            ->whereHas('roles', fn($query) => $query->where('name', 'kurir'))
+            ->when($search, function ($query, $searchTerm) {
+                $query->where('name', 'like', "%{$searchTerm}%")
+                    ->orWhere('email', 'like', "%{$searchTerm}%");
+            });
+
+        $couriers = $couriersQuery->latest()->paginate(10);
+
+        // Handle request AJAX untuk live search
+        if ($request->ajax()) {
+            $baseViewPath = 'dashboard.admin.couriers.';
+
+            $desktopHtml = view($baseViewPath . '_table_rows', compact('couriers'))->render();
+            // $mobileHtml = view($baseViewPath . '_card_view', compact('couriers'))->render();
+
+            return response()->json([
+                'desktop_html' => $desktopHtml,
+                // 'mobile_html' => $mobileHtml,
+            ]);
+        }
+
+        // Handle request biasa (load halaman pertama kali)
         return view('dashboard.admin.couriers.index', compact('couriers'));
     }
 

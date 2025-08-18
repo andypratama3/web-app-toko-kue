@@ -7,7 +7,7 @@
     @section('title', 'Dashboard')
     @include('layouts.headicon')
     {{-- Vite build assets --}}
-    @vite(['resources/css/app.css', 'resources/css/argon-dashboard-tailwind.css', 'resources/js/app.js', 'resources/js/custom.js', 'resources/js/argon-dashboard-tailwind.js', 'resources/js/sidenav-burger.js', 'resources/js/navbar-scroll-fix.js', 'resources/js/dark-mode-toggle.js'])
+    @vite(['resources/css/app.css', 'resources/css/argon-dashboard-tailwind.css', 'resources/js/app.js', 'resources/js/custom.js', 'resources/js/argon-dashboard-tailwind.js', 'resources/js/sidenav-burger.js', 'resources/js/navbar-scroll-fix.js', 'resources/js/dark-mode-toggle.js', 'resources/js/live-search.js'])
 
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
     <!-- Font Awesome CDN -->
@@ -98,6 +98,8 @@
 
     <!-- Livewire Scripts -->
     @livewireScripts
+
+    @stack('page-scripts')
 </body>
 
 

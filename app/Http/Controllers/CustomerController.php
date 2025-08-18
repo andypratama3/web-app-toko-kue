@@ -27,22 +27,43 @@ class CustomerController extends Controller
     /**
      * Menampilkan daftar customer berdasarkan role.
      */
+
     public function index(Request $request)
     {
         $user = Auth::user();
         $search = $request->input('search');
 
-        $customers = Customer::where('region_id', $user->region_id)
+        $customersQuery = Customer::where('region_id', $user->region_id)
             ->when($search, function ($query, $searchTerm) {
                 $query->where('name', 'like', "%{$searchTerm}%")
-                      ->orWhere('phone', 'like', "%{$searchTerm}%")
-                      ->orWhere('address', 'like', "%{$searchTerm}%");
-            })
-            ->latest()
-            ->paginate(10);
+                    ->orWhere('phone', 'like', "%{$searchTerm}%")
+                    ->orWhere('address', 'like', "%{$searchTerm}%");
+            });
 
-        // Tentukan view berdasarkan role
-        $view = $user->hasRole('admin') ? 'dashboard.admin.customers.index' : 'dashboard.kurir.customers.index';
+        $customers = $customersQuery->latest()->paginate(10);
+
+        // Jika ini adalah request AJAX dari live search
+        if ($request->ajax()) {
+            // Tentukan path view berdasarkan role user
+            $baseViewPath = $user->hasRole('admin')
+                ? 'dashboard.admin.customers.'
+                : 'dashboard.kurir.customers.';
+
+            // Render kedua partial view menjadi string
+            $desktopHtml = view($baseViewPath . '_table_rows', compact('customers'))->render();
+            $mobileHtml = view($baseViewPath . '_card_view', compact('customers'))->render();
+
+            // Kirim sebagai response JSON
+            return response()->json([
+                'desktop_html' => $desktopHtml,
+                'mobile_html' => $mobileHtml,
+            ]);
+        }
+
+        // Jika request biasa, tampilkan halaman lengkap
+        $view = $user->hasRole('admin')
+            ? 'dashboard.admin.customers.index'
+            : 'dashboard.kurir.customers.index';
 
         return view($view, compact('customers'));
     }
@@ -59,10 +80,11 @@ class CustomerController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'address' => [
-                'required', 'string',
+                'required',
+                'string',
                 Rule::unique('customers')->where(function ($query) use ($formattedPhone, $user) {
                     return $query->where('phone', $formattedPhone)
-                                 ->where('region_id', $user->region_id);
+                        ->where('region_id', $user->region_id);
                 }),
             ],
             'phone' => 'required|string|max:20',
@@ -107,10 +129,11 @@ class CustomerController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'address' => [
-                'required', 'string',
+                'required',
+                'string',
                 Rule::unique('customers')->where(function ($query) use ($formattedPhone, $user) {
                     return $query->where('phone', $formattedPhone)
-                                 ->where('region_id', $user->region_id);
+                        ->where('region_id', $user->region_id);
                 })->ignore($customer->id),
             ],
             'phone' => 'required|string|max:20',

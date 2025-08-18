@@ -7,8 +7,10 @@
     <div class="relative overflow-hidden min-h-[715px] bg-white shadow-md dark:bg-gray-800 sm:rounded-lg">
         <div class="flex flex-col p-4 space-y-3 md:flex-row md:items-center md:justify-between md:space-y-0 md:space-x-4">
             <div class="w-full md:w-1/2">
-                <form class="flex items-center" method="GET" action="{{ route('admin.customers.index') }}">
-                    <label for="simple-search" class="sr-only">Cari</label>
+                <form class="flex items-center" onsubmit="return false;">
+                {{-- <form class="flex items-center" method="GET" action="{{ route('admin.customers.index') }}"> --}}
+                    <label for="live-search-input" class="sr-only">Cari</label>
+                    {{-- <label for="simple-search" class="sr-only">Cari</label> --}}
                     <div class="relative w-full">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                             <svg aria-hidden="true" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor"
@@ -18,7 +20,8 @@
                                     clip-rule="evenodd" />
                             </svg>
                         </div>
-                        <input type="text" id="simple-search" name="search" value="{{ request('search') }}"
+                        <input type="text" id="live-search-input" name="search" value="{{ request('search') }}"
+                        {{-- <input type="text" id="simple-search" name="search" value="{{ request('search') }}" --}}
                             class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
                             placeholder="Cari customer">
                     </div>
@@ -50,8 +53,11 @@
                         <th scope="col" class="px-4 py-3 text-center"><span class="sr-only">Aksi</span></th>
                     </tr>
                 </thead>
-                <tbody>
-                    @forelse ($customers as $customer)
+                <tbody id="customer-results-container">
+
+                    @include('dashboard.admin.customers._table_rows', ['customers' => $customers])
+
+                    {{-- @forelse ($customers as $customer)
                         <tr class="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
                             <td class="px-4 py-3 font-medium text-gray-900 dark:text-white text-center">
                                 {{ ($customers->currentPage() - 1) * $customers->perPage() + $loop->iteration }}
@@ -113,7 +119,7 @@
                         <tr>
                             <td colspan="7" class="px-4 py-4 text-center text-gray-500">Tidak ada data customer.</td>
                         </tr>
-                    @endforelse
+                    @endforelse --}}
                 </tbody>
             </table>
         </div>
@@ -133,4 +139,19 @@
         @include('dashboard.admin.customers.note', ['customer' => $customer])
         @include('dashboard.admin.customers.delete', ['customer' => $customer])
     @endforeach
+@endpush
+
+@push('page-scripts')
+    {{-- 1. Include the live search script --}}
+    {{-- <script src="{{ asset('js/live-search.js') }}"></script> --}}
+
+    {{-- 2. Initialize the script for this specific page --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeLiveSearch({
+                searchInputId: 'live-search-input',
+                resultsContainerId: 'customer-results-container',
+            });
+        });
+    </script>
 @endpush
