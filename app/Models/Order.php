@@ -4,8 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
@@ -16,7 +14,9 @@ class Order extends Model
      *
      * @var array<int, string>
      */
+    // PASTIKAN SEMUA KOLOM INI ADA DI DALAM $fillable
     protected $fillable = [
+        'invoice_number',
         'customer_id',
         'phone',
         'address',
@@ -24,21 +24,23 @@ class Order extends Model
         'payment_method',
         'payment_proof',
         'note',
+        'created_by_user_id',
+        'region_id',          
     ];
-
-    /**
-     * Get the customer that owns the order.
-     */
-    public function customer(): BelongsTo
-    {
-        return $this->belongsTo(Customer::class);
-    }
 
     /**
      * Get the items for the order.
      */
-    public function items(): HasMany
+    public function items()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Get the customer that owns the order.
+     */
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
     }
 }

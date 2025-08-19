@@ -209,7 +209,8 @@
     <div class="w-full max-w-sm p-6 text-center bg-white rounded-lg shadow-lg">
         <div class="mb-4 text-5xl text-green-500">✔</div>
         <h2 class="mb-2 text-xl font-bold">Sukses!</h2>
-        <p id="success-message" class="mb-4 text-gray-700">Pesanan berhasil disimpan.</p>
+        <p id="success-message" class="mb-2 text-gray-700">Pesanan berhasil disimpan.</p>
+        <p id="success-invoice" class="p-2 mb-4 text-sm font-semibold text-gray-800 bg-gray-100 rounded"></p>
         <button onclick="hideSuccessModal()"
             class="px-4 py-2 text-white transition bg-green-500 rounded hover:bg-green-600">Tutup</button>
     </div>
@@ -456,9 +457,9 @@
             formData.append('payment_proof', paymentProofFile);
         }
 
-        try {
-            // Mengirim data ke API
-            const response = await fetch('/api/orders/checkout', {
+       try {
+            // Mengirim data ke server
+            const response = await fetch("{{ route('kurir.orders.checkout') }}", { // <-- GANTI DENGAN INI
                 method: 'POST',
                 // FormData akan secara otomatis mengatur Content-Type ke multipart/form-data
                 // Jadi, tidak perlu mengatur 'Content-Type' secara manual di headers untuk FormData
@@ -471,7 +472,7 @@
             const result = await response.json();
 
             if (response.ok) {
-                showSuccessModal(result.message);
+                showSuccessModal(result.message, result.invoice_number);
                 // Reset form setelah berhasil checkout
                 cart = [];
                 renderCart();
@@ -775,8 +776,18 @@
     }
 
     // --- Fungsi Modal Sukses ---
-    function showSuccessModal(message) {
+    function showSuccessModal(message, invoiceNumber) { // Tambahkan parameter invoiceNumber
         document.getElementById('success-message').textContent = message;
+
+        // Tampilkan nomor invoice jika ada
+        const invoiceEl = document.getElementById('success-invoice');
+        if (invoiceNumber) {
+            invoiceEl.textContent = 'No. Invoice: ' + invoiceNumber;
+            invoiceEl.classList.remove('hidden');
+        } else {
+            invoiceEl.classList.add('hidden');
+        }
+
         document.getElementById('successModal').classList.remove('hidden');
     }
 
