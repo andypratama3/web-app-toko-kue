@@ -49,15 +49,24 @@ class CustomerController extends Controller
                 ? 'dashboard.admin.customers.'
                 : 'dashboard.kurir.customers.';
 
-            // Render kedua partial view menjadi string
-            $desktopHtml = view($baseViewPath . '_table_rows', compact('customers'))->render();
-            $mobileHtml = view($baseViewPath . '_card_view', compact('customers'))->render();
+            if ($user->hasRole('admin')) {
+                // Hanya render dan kirim HTML untuk tabel desktop
+                $desktopHtml = view($baseViewPath . '_table_rows', compact('customers'))->render();
+                return response()->json([
+                    'desktop_html' => $desktopHtml,
+                ]);
+            }
+            // JIKA PENGGUNA ADALAH KURIR (ATAU ROLE LAINNYA):
+            else {
+                // Render dan kirim HTML untuk desktop dan mobile
+                $desktopHtml = view($baseViewPath . '_table_rows', compact('customers'))->render();
+                $mobileHtml = view($baseViewPath . '_card_view', compact('customers'))->render();
 
-            // Kirim sebagai response JSON
-            return response()->json([
-                'desktop_html' => $desktopHtml,
-                'mobile_html' => $mobileHtml,
-            ]);
+                return response()->json([
+                    'desktop_html' => $desktopHtml,
+                    'mobile_html' => $mobileHtml,
+                ]);
+            }
         }
 
         // Jika request biasa, tampilkan halaman lengkap

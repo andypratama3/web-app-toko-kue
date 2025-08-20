@@ -256,7 +256,7 @@
                         <tr>
                             {{-- PENYESUAIAN LEBAR KOLOM --}}
                             <th scope="col" class="px-4 py-3 w-[5%] text-center">No.</th>
-                            <th scope="col" class="px-4 py-3 w-[40%]">Nama Kurir</th>
+                            <th scope="col" class="px-4 py-3 w-[40%] text-center">Nama Kurir</th>
                             <th scope="col" class="px-4 py-3 w-[40%] text-center">Email</th>
                             <th scope="col" class="px-4 py-3 w-[15%] text-center">Status</th>
                         </tr>
@@ -268,7 +268,7 @@
                                     {{ ($couriers->currentPage() - 1) * $couriers->perPage() + $loop->iteration }}
                                 </td>
                                 <th scope="row"
-                                    class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
                                     {{ $kurir->name }}
                                 </th>
                                 <td class="px-4 py-3 text-center">{{ $kurir->email }}</td>

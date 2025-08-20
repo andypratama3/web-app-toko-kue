@@ -64,14 +64,14 @@ window.initializeLiveSearch = function (options) {
 
             if (!response.ok) throw new Error("Network response was not ok");
 
-            // Ubah dari .text() menjadi .json()
             const data = await response.json();
 
-            // Perbarui kedua kontainer dengan HTML yang sesuai
-            if (desktopContainer) {
+            // PERBAIKAN: Periksa apakah data ada sebelum mengubah innerHTML
+            if (desktopContainer && data.desktop_html) {
                 desktopContainer.innerHTML = data.desktop_html;
             }
-            if (mobileContainer) {
+            // Hanya perbarui kontainer mobile jika ada dan datanya diterima
+            if (mobileContainer && data.mobile_html) {
                 mobileContainer.innerHTML = data.mobile_html;
             }
 

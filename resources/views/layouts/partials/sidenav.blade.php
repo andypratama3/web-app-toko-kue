@@ -49,10 +49,10 @@
                     </h6>
                 </li>
                 <li class="mt-0.5 w-full">
-                    <a class="sidebar-menu-item py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap rounded-lg px-4 font-semibold text-slate-700 transition-colors @if (request()->routeIs('admin.dashboard') || request()->routeIs('kurir.dashboard')) bg-blue-500/13 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif"
+                    <a class="sidebar-menu-item py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap rounded-lg px-4 font-semibold text-slate-700 transition-colors @if (request()->routeIs('admin.dashboard') || request()->routeIs('kurir.dashboard')) bg-blue-500/13 dark:bg-green-900 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif"
                         href="{{ $dashboardUrl }}" data-tooltip="Dashboard">
                         <div class="mr-2 sidebar-icon-container">
-                            <i class="fas fa-house-user @if (request()->routeIs('admin.dashboard') || request()->routeIs('kurir.dashboard')) text-blue-500 @else text-slate-400 @endif"></i>
+                            <i class="fas fa-house-user @if (request()->routeIs('admin.dashboard') || request()->routeIs('kurir.dashboard')) text-blue-500 @else text-blue-500 @endif"></i>
                         </div>
                         <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Dashboard</span>
                     </a>
@@ -67,19 +67,19 @@
                         </button>
                         <ul x-show="open" x-transition class="mt-1 space-y-0.5">
                             <li>
-                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('admin.customers.*')) bg-blue-500/13 @endif" href="{{ route('admin.customers.index') }}" data-tooltip="Manajemen Customer">
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('admin.customers.*')) bg-blue-500/13 dark:bg-green-900 @endif" href="{{ route('admin.customers.index') }}" data-tooltip="Manajemen Customer">
                                     <div class="mr-2 sidebar-icon-container"><i class="text-orange-500 fas fa-users"></i></div>
                                     <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Manajemen Customer</span>
                                 </a>
                             </li>
                             <li>
-                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('admin.products.*')) bg-blue-500/13 @endif" href="{{ route('admin.products.index') }}" data-tooltip="Manajemen Produk">
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('admin.products.*')) bg-blue-500/13 dark:bg-green-900 @endif" href="{{ route('admin.products.index') }}" data-tooltip="Manajemen Produk">
                                     <div class="mr-2 sidebar-icon-container"><i class="text-orange-500 fas fa-store"></i></div>
                                     <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Manajemen Produk</span>
                                 </a>
                             </li>
                             <li>
-                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('admin.couriers.*')) bg-blue-500/13 @endif" href="{{ route('admin.couriers.index') }}" data-tooltip="Manajemen Kurir">
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('admin.couriers.*')) bg-blue-500/13 dark:bg-green-900 @endif" href="{{ route('admin.couriers.index') }}" data-tooltip="Manajemen Kurir">
                                     <div class="mr-2 sidebar-icon-container"><i class="text-cyan-500 fas fa-truck"></i></div>
                                     <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Manajemen Kurir</span>
                                 </a>
@@ -139,7 +139,7 @@
                         </button>
                         <ul x-show="open" x-transition class="mt-1 space-y-0.5">
                             <li>
-                                <a class="sidebar-menu-item py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg font-semibold @if (request()->routeIs('admin.profile')) bg-blue-500/13 text-blue-700 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif" href="{{ route('admin.profile') }}" data-tooltip="Profil Saya">
+                                <a class="sidebar-menu-item py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg font-semibold @if (request()->routeIs('admin.profile')) bg-blue-500/13 dark:bg-green-900 text-blue-700 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif" href="{{ route('admin.profile') }}" data-tooltip="Profil Saya">
                                     <div class="mr-2 sidebar-icon-container"><i class="fas fa-user @if (request()->routeIs('admin.profile')) text-blue-500 @else text-slate-700 @endif"></i></div>
                                     <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Profil Saya</span>
                                 </a>
@@ -157,20 +157,20 @@
                         </button>
                         <ul x-show="open" x-transition class="mt-1 space-y-0.5">
                             <li>
-                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('kurir.customers.*')) bg-blue-500/13 @endif" href="{{ route('kurir.customers.index') }}" data-tooltip="Data Customer">
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('kurir.customers.*')) bg-blue-500/13 dark:bg-green-900 @endif" href="{{ route('kurir.customers.index') }}" data-tooltip="Data Customer">
                                     <div class="mr-2 sidebar-icon-container"><i class="text-emerald-600 fas fa-book"></i></div>
                                     <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Data Customer</span>
                                 </a>
                             </li>
                             <li>
-                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('kurir.pesanan.*')) bg-blue-500/13 @endif" href="{{ route('kurir.pesanan.index') }}" data-tooltip="Order Tracking">
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('kurir.pesanan.*')) bg-blue-500/13 dark:bg-green-900 @endif" href="{{ route('kurir.pesanan.index') }}" data-tooltip="Order Tracking">
                                     <div class="mr-2 sidebar-icon-container"><i class="text-orange-500 fas fa-truck"></i></div>
                                     <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Order Tracking</span>
                                 </a>
                             </li>
                             <li>
-                                {{-- <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg" @if (request()->routeIs('kurir.historys.*')) bg-blue-500/13 @endif href="{{ route('kurir.historys.index') }}" data-tooltip="Order History"> --}}
-                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg" @if (request()->routeIs('kurir.historys.*')) bg-blue-500/13 @endif href="#" data-tooltip="Order History">
+                                {{-- <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg" @if (request()->routeIs('kurir.historys.*')) bg-blue-500/13 dark:bg-green-900 @endif href="{{ route('kurir.historys.index') }}" data-tooltip="Order History"> --}}
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg" @if (request()->routeIs('kurir.historys.*')) bg-blue-500/13 dark:bg-green-900 @endif href="#" data-tooltip="Order History">
                                     <div class="mr-2 sidebar-icon-container"><i class="text-yellow-500 fas fa-hourglass-half"></i></div>
                                     <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Order History</span>
                                 </a>
@@ -186,7 +186,7 @@
                         </button>
                         <ul x-show="open" x-transition class="mt-1 space-y-0.5">
                             <li>
-                                <a class="sidebar-menu-item py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg font-semibold @if (request()->routeIs('kurir.profile')) bg-blue-500/13 text-blue-700 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif" href="{{ route('kurir.profile') }}" data-tooltip="Profil Saya">
+                                <a class="sidebar-menu-item py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg font-semibold @if (request()->routeIs('kurir.profile')) bg-blue-500/13 dark:bg-green-900 text-blue-700 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif" href="{{ route('kurir.profile') }}" data-tooltip="Profil Saya">
                                     <div class="mr-2 sidebar-icon-container"><i class="fas fa-user @if (request()->routeIs('kurir.profile')) text-blue-500 @else text-slate-700 @endif"></i></div>
                                     <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Profil Saya</span>
                                 </a>
@@ -209,11 +209,11 @@
             </ul>
         </div>
 
-        <div id="dropdown-cta" class="p-4 mt-6 rounded-lg bg-green-50 dark:bg-green-900" role="alert">
+        <div id="dropdown-cta" class="p-4 mt-6 rounded-lg bg-green-50 dark:bg-orange-900" role="alert">
             <div class="flex items-center mb-3">
                 <span class="bg-orange-100 text-orange-800 text-sm font-semibold me-2 px-2.5 py-0.5 rounded-sm dark:bg-orange-200 dark:text-orange-900">Development</span>
                 <button type="button"
-                    class="ms-auto -mx-1.5 -my-1.5 bg-green-50 inline-flex justify-center items-center w-6 h-6 text-green-900 rounded-lg focus:ring-2 focus:ring-green-400 p-1 hover:bg-green-200 dark:bg-green-900 dark:text-green-400 dark:hover:bg-green-800"
+                    class="ms-auto -mx-1.5 -my-1.5 bg-green-50 inline-flex justify-center items-center w-6 h-6 text-green-900 rounded-lg focus:ring-2 focus:ring-green-400 p-1 hover:bg-green-200 dark:bg-orange-900 dark:text-white dark:hover:bg-orange-900"
                     data-dismiss-target="#dropdown-cta" aria-label="Close">
                     <span class="sr-only">Close</span>
                     <svg class="w-2.5 h-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
@@ -221,7 +221,7 @@
                     </svg>
                 </button>
             </div>
-            <p class="text-sm font-medium text-green-800 dark:text-green-300">
+            <p class="text-sm font-medium text-green-800 dark:text-white">
                 This Web App Version 1.0.0
             </p>
         </div>
