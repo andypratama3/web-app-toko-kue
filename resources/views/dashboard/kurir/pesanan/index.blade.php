@@ -4,11 +4,18 @@
 
 @section('content')
     <div class="flex-auto p-4">
-        <div class="p-6 bg-white rounded-xl shadow-md dark:bg-gray-800 dark:border-gray-700">
-            <h2 class="text-xl font-bold text-black mb-6 dark:text-white">
+        <div class="p-6 bg-white shadow-md rounded-xl dark:bg-gray-800 dark:border-gray-700 min-h-[715px]">
+            <h2 class="mb-6 text-xl font-bold text-black dark:text-white">
                 Daftar Tugas Pesanan untuk Kurir: {{ Auth::user()->name ?? 'Pengguna' }}
                 (Region: {{ Auth::user()->region->name ?? 'N/A' }})
             </h2>
+
+            <div class="flex justify-end mb-4">
+                <a href="{{ route('kurir.pesanan.create') }}"
+                    class="bg-[#345c7c] text-white px-6 py-2 rounded-lg hover:bg-[#2a4964] transition shadow-md">
+                    + Buat Pesanan Baru
+                </a>
+            </div>
 
             {{-- Menampilkan pesan error jika ada --}}
             @if (isset($error))
@@ -25,20 +32,24 @@
                 </div>
             @else
                 {{-- Tampilan Desktop (Tabel) --}}
-                <div class="hidden md:block overflow-x-auto">
+                <div class="hidden overflow-x-auto md:block">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
+                                <th scope="col"
+                                    class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300">
                                     Nomor Invoice
                                 </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
+                                <th scope="col"
+                                    class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300">
                                     Nama Pelanggan
                                 </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
+                                <th scope="col"
+                                    class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-300">
                                     Status
                                 </th>
-                                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
+                                <th scope="col"
+                                    class="px-6 py-3 text-xs font-medium tracking-wider text-center text-gray-500 uppercase dark:text-gray-300">
                                     Aksi
                                 </th>
                             </tr>
@@ -46,9 +57,9 @@
                         <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                             @foreach ($orders as $order)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    <td class="px-6 py-4 text-sm font-mono text-gray-900 whitespace-nowrap dark:text-white">
+                                    <td class="px-6 py-4 font-mono text-sm text-gray-900 whitespace-nowrap dark:text-white">
                                         {{-- Pastikan controller mengirimkan 'invoice_number' --}}
-                                        {{ $order->invoice_number}}
+                                        {{ $order->invoice_number }}
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap dark:text-gray-300">
                                         {{-- Mengakses nama dari relasi customer --}}
@@ -57,7 +68,8 @@
                                     <td class="px-6 py-4 text-sm whitespace-nowrap">
                                         {{-- NOTE: Anda perlu menambahkan kolom 'status' di tabel 'orders' --}}
                                         {{-- Contoh: 'dikemas', 'diantar', 'selesai' --}}
-                                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full
+                                        <span
+                                            class="px-2.5 py-1 text-xs font-semibold rounded-full
                                             @switch($order->status ?? 'dikemas')
                                                 @case('diantar')
                                                     bg-yellow-100 text-yellow-800
@@ -75,9 +87,12 @@
                                     <td class="px-6 py-4 text-sm font-medium text-center whitespace-nowrap">
                                         <div class="flex items-center justify-center space-x-2">
                                             {{-- Ganti '#' dengan route yang sesuai, contoh: route('kurir.orders.editStatus', $order->id) --}}
-                                            <a href="#" class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">Ubah Status</a>
+                                            <a href="#"
+                                                class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">Ubah
+                                                Status</a>
                                             {{-- Ganti '#' dengan route yang sesuai, contoh: route('kurir.orders.show', $order->id) --}}
-                                            <a href="#" class="px-3 py-1.5 text-xs font-medium text-gray-900 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors">Rincian</a>
+                                            <a href="#"
+                                                class="px-3 py-1.5 text-xs font-medium text-gray-900 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors">Rincian</a>
                                         </div>
                                     </td>
                                 </tr>
@@ -89,13 +104,15 @@
                 {{-- Tampilan Mobile (Cards) --}}
                 <div class="space-y-4 md:hidden">
                     @foreach ($orders as $order)
-                        <div class="p-4 bg-white rounded-xl shadow-md dark:bg-gray-700">
-                            <div class="flex justify-between items-start mb-2">
+                        <div class="p-4 bg-white shadow-md rounded-xl dark:bg-gray-700">
+                            <div class="flex items-start justify-between mb-2">
                                 <div>
                                     <p class="text-xs font-semibold text-gray-600 dark:text-gray-300">Invoice</p>
-                                    <p class="text-sm font-mono font-bold text-black dark:text-white">{{ $order->invoice_number ?? 'N/A' }}</p>
+                                    <p class="font-mono text-sm font-bold text-black dark:text-white">
+                                        {{ $order->invoice_number ?? 'N/A' }}</p>
                                 </div>
-                                <span class="px-2.5 py-1 text-xs font-semibold rounded-full
+                                <span
+                                    class="px-2.5 py-1 text-xs font-semibold rounded-full
                                     @switch($order->status ?? 'dikemas')
                                         @case('diantar')
                                             bg-yellow-100 text-yellow-800
@@ -117,9 +134,12 @@
                                     {{ $order->customer->name ?? 'Pelanggan Dihapus' }}
                                 </p>
                             </div>
-                            <div class="flex pt-3 border-t border-gray-200 justify-end space-x-2 dark:border-gray-600">
-                                <a href="#" class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">Ubah Status</a>
-                                <a href="#" class="px-3 py-1.5 text-xs font-medium text-gray-900 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors">Rincian</a>
+                            <div class="flex justify-end pt-3 space-x-2 border-t border-gray-200 dark:border-gray-600">
+                                <a href="#"
+                                    class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">Ubah
+                                    Status</a>
+                                <a href="#"
+                                    class="px-3 py-1.5 text-xs font-medium text-gray-900 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors">Rincian</a>
                             </div>
                         </div>
                     @endforeach

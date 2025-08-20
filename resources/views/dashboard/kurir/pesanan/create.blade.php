@@ -17,7 +17,7 @@
                 <div class="order-2 w-full max-w-full px-3 mt-4 mb-12 shrink-0 xl:w-7/12 xl:flex-0 xl:order-1 xl:mb-0">
                     <div
                         class="p-3 bg-white border border-gray-200 shadow-md rounded-xl dark:bg-gray-800 dark:border-gray-700">
-                        <p class="mb-4 text-md font-bold uppercase tracking-wide text-black dark:text-white dark:opacity-60">
+                        <p class="mb-4 font-bold tracking-wide text-black uppercase text-md dark:text-white dark:opacity-60">
                             🛍️ Detail Produk
                         </p>
                         <div class="flex justify-end mb-4">
@@ -39,7 +39,7 @@
                     {{-- Box 1 Kanan: DATA CUSTOMER (Nama, No HP, Alamat) --}}
                     <div
                         class="p-3 mb-4 bg-white border border-gray-200 shadow-md rounded-xl dark:bg-gray-800 dark:border-gray-700">
-                        <p class="mb-4 text-md font-bold uppercase tracking-wide text-black dark:text-white dark:opacity-60">
+                        <p class="mb-4 font-bold tracking-wide text-black uppercase text-md dark:text-white dark:opacity-60">
                             👤 Data Customer
                         </p>
 
@@ -109,7 +109,7 @@
                     {{-- Box 2 Kanan: METODE PEMBAYARAN & CATATAN --}}
                     <div
                         class="p-3 mt-4 bg-white border border-gray-200 shadow-md rounded-xl dark:bg-gray-800 dark:border-gray-700">
-                        <p class="mb-4 text-md font-bold uppercase tracking-wide text-black dark:text-white dark:opacity-60">
+                        <p class="mb-4 font-bold tracking-wide text-black uppercase text-md dark:text-white dark:opacity-60">
                             💳 METODE PEMBAYARAN
                         </p>
 
@@ -144,7 +144,7 @@
                                             data-value="qr" role="menuitem"><i class="fas fa-qrcode"></i>QRIS</a>
                                     </div>
                                 </div>
-                                <input type="hidden" id="payment-method-input" name="payment_method_selected">
+                                <input type="hidden" id="payment-method-input" name="payment_method">
                                 {{-- Ini akan digunakan oleh JS --}}
                             </div>
                         </div>
@@ -195,7 +195,7 @@
 
 <!-- Tombol Checkout Fix di Bawah (UNTUK MOBILE) -->
 <div
-    class="fixed bottom-0 left-0 z-50 flex items-center justify-between w-full p-4 bg-white border-t border-gray-300 dark:bg-gray-800 flex xl:hidden">
+    class="fixed bottom-0 left-0 z-50 flex items-center justify-between w-full p-4 bg-white border-t border-gray-300 dark:bg-gray-800 xl:hidden">
     {{-- Tambahkan class "cart-total-display" di sini --}}
     <p id="cart-total" class="text-lg font-bold cart-total-display dark:text-white">Total: Rp 0</p>
     <button type="button" onclick="checkout()"
@@ -705,9 +705,9 @@
                         </td>
                         <td class="py-4 whitespace-nowrap">
                             <div class="flex items-center justify-center gap-2">
-                                <button type="button" onclick="ubahQtyCart(${idx}, -1)" class="px-2 text-black rounded hover:bg-gray-300 transition dark:text-white dark:hover:bg-gray-700 hover:scale-110 active:scale-90">–</button>
-                                <span class="text-black px-2 rounded bg-gray-200 dark:text-white dark:bg-gray-700">${item.qty}</span>
-                                <button type="button" onclick="ubahQtyCart(${idx}, 1)" class="px-2 text-black rounded hover:bg-gray-300 transition dark:text-white dark:hover:bg-gray-700 hover:scale-110 active:scale-90">+</button>
+                                <button type="button" onclick="ubahQtyCart(${idx}, -1)" class="px-2 text-black transition rounded hover:bg-gray-300 dark:text-white dark:hover:bg-gray-700 hover:scale-110 active:scale-90">–</button>
+                                <span class="px-2 text-black bg-gray-200 rounded dark:text-white dark:bg-gray-700">${item.qty}</span>
+                                <button type="button" onclick="ubahQtyCart(${idx}, 1)" class="px-2 text-black transition rounded hover:bg-gray-300 dark:text-white dark:hover:bg-gray-700 hover:scale-110 active:scale-90">+</button>
                             </div>
                         </td>
                         <td class="px-6 py-4 text-sm text-left text-gray-900 whitespace-nowrap dark:text-white" style="padding-left:35px";>
@@ -728,23 +728,23 @@
                             <img class="object-cover w-24 h-24 rounded-md" src="${imageUrl}" alt="${item.product_name}">
                         </div>
                         <div class="flex flex-col flex-1">
-                            <div class="flex justify-between items-center mb-1"> {{-- Added items-center for vertical alignment --}}
+                            <div class="flex items-center justify-between mb-1"> {{-- Added items-center for vertical alignment --}}
                                 <p class="font-bold text-black dark:text-white">${item.product_name}</p>
                                 {{-- Tombol hapus dipindahkan ke sini --}}
-                                <button type="button" onclick="hapusProdukCart(${idx})" class="text-red-600 hover:text-red-900 dark:hover:text-red-500 text-sm hover:scale-110 active:scale-90">🗑</button>
+                                <button type="button" onclick="hapusProdukCart(${idx})" class="text-sm text-red-600 hover:text-red-900 dark:hover:text-red-500 hover:scale-110 active:scale-90">🗑</button>
                             </div>
-                            ${item.variant_name ? `<p class="text-xs text-gray-500 dark:text-gray-400 mb-1">${item.variant_name}</p>` : ''}
+                            ${item.variant_name ? `<p class="mb-1 text-xs text-gray-500 dark:text-gray-400">${item.variant_name}</p>` : ''}
                             <p class="text-black dark:text-white">Rp ${item.price.toLocaleString('id-ID')}</p>
-                            <div class="flex justify-between items-center mt-3"> {{-- Changed to justify-between and added items-center --}}
+                            <div class="flex items-center justify-between mt-3"> {{-- Changed to justify-between and added items-center --}}
                                 {{-- Kontrol kuantitas --}}
                                 <div class="flex items-center gap-2">
-                                    <button type="button" onclick="ubahQtyCart(${idx}, -1)" class="px-2 rounded text-black dark:text-white hover:scale-110 active:scale-90">–</button>
-                                    <span class="text-black dark:text-white px-2 rounded bg-gray-200 dark:bg-gray-700">${item.qty}</span>
-                                    <button type="button" onclick="ubahQtyCart(${idx}, 1)" class="px-2 rounded text-black dark:text-white hover:scale-110 active:scale-90">+</button>
+                                    <button type="button" onclick="ubahQtyCart(${idx}, -1)" class="px-2 text-black rounded dark:text-white hover:scale-110 active:scale-90">–</button>
+                                    <span class="px-2 text-black bg-gray-200 rounded dark:text-white dark:bg-gray-700">${item.qty}</span>
+                                    <button type="button" onclick="ubahQtyCart(${idx}, 1)" class="px-2 text-black rounded dark:text-white hover:scale-110 active:scale-90">+</button>
                                 </div>
                                 {{-- Subtotal dipindahkan ke sini --}}
                                 <div class="ml-auto"> {{-- Keeping ml-auto for pushing to right, but flex takes care of the spacing --}}
-                                    <span class="text-black font-medium dark:text-white">Rp ${subtotal.toLocaleString('id-ID')}</span>
+                                    <span class="font-medium text-black dark:text-white">Rp ${subtotal.toLocaleString('id-ID')}</span>
                                 </div>
                             </div>
                         </div>

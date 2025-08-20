@@ -15,12 +15,14 @@ use App\Models\OrderItem;
 
 class PesananController extends Controller
 {
-    public function index(){
+    public function index()
+    {
         return view('dashboard.kurir.pesanan.index', compact('orders', 'error'));
     }
 
     //untuk menambah pesanan (dari button di dashboard)
-    public function create(){
+    public function create()
+    {
         $customers = Customer::select('id', 'name', 'address', 'phone', 'note')
             ->where('region_id', Auth::user()->region_id)
             ->latest()
@@ -86,8 +88,11 @@ class PesananController extends Controller
             $customerId = $validated['customer_id'];
             $orderId = $order->id;
 
-            // Format: INV/TGLBLNTHN/ID_REGION/ID_KURIR/ID_CUSTOMER/NO_ORDER
-            $invoiceNumber = "INV/{$tanggal}/{$regionId}/{$kurirId}/{$customerId}/{$orderId}";
+            // BARU: Ubah orderId menjadi 5 digit dengan tambahan 0 di depan
+            $orderIdPadded = str_pad($orderId, 5, '0', STR_PAD_LEFT);
+
+            // Format: INV/TGLBLNTHN/ID_REGION/ID_KURIR/ID_CUSTOMER/NO_ORDER (5 digit)
+            $invoiceNumber = "INV/{$tanggal}/{$regionId}/{$kurirId}/{$customerId}/{$orderIdPadded}"; // Gunakan variabel baru
 
             // Simpan nomor invoice ke order yang baru dibuat
             $order->invoice_number = $invoiceNumber;
@@ -123,7 +128,7 @@ class PesananController extends Controller
             return response()->json([
                 'message' => 'Pesanan berhasil disimpan.',
                 'order_id' => $order->id,
-                'invoice_number' => $invoiceNumber, 
+                'invoice_number' => $invoiceNumber,
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -151,17 +156,16 @@ class PesananController extends Controller
             $error = 'Region Anda tidak terdaftar. Silakan hubungi administrator.';
             return view('dashboard.kurir.pesanan.index', compact('orders', 'error'));
         }
-        
+
         $loggedInUserId = $loggedInUser->id;
         $orders = collect();
 
         try {
             // Ambil semua pesanan dimana 'created_by_user_id' cocok dengan ID kurir yang sedang login.
             $orders = Order::where('created_by_user_id', $loggedInUserId)
-                ->with('customer') 
+                ->with('customer')
                 ->latest() // Urutkan dari yang terbaru
                 ->get();
-                
         } catch (\Exception $e) {
             \Log::error('Error fetching orders for courier ' . $loggedInUserId . ': ' . $e->getMessage());
             $error = 'Gagal memuat pesanan. Terjadi kesalahan pada server.';
