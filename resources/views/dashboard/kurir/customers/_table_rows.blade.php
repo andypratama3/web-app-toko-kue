@@ -4,19 +4,28 @@
         <td class="px-4 py-3 font-medium text-center text-gray-900 dark:text-white">
             {{ ($customers->currentPage() - 1) * $customers->perPage() + $loop->iteration }}
         </td>
-        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+        {{-- <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
             {{ $customer->name }}
-        </th>
-        <td class="px-6 py-4">{{ Str::limit($customer->address, 30) }}</td>
-        <td class="px-6 py-4">
+        </th> --}}
+        <td class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+            <div class="flex items-center justify-center space-x-2">
+                <span>{{ $customer->name }}</span>
+                {{-- Jika customer ditandai, tampilkan ikon (tidak bisa diklik) --}}
+                @if ($customer->is_flagged)
+                    <i class="text-red-500 fas fa-flag" title="Customer ditandai"></i>
+                @endif
+            </div>
+        </td>
+        <td class="px-6 py-4 text-center">{{ Str::limit($customer->address, 30) }}</td>
+        <td class="px-6 py-4 text-center">
             <a href="https://wa.me/{{ preg_replace('/[^0-9]/', '', $customer->phone) }}" target="_blank"
                 class="flex items-center space-x-2 text-green-600 hover:text-green-700">
                 <i class="fab fa-whatsapp"></i>
                 <span>{{ $customer->phone }}</span>
             </a>
         </td>
-        <td class="px-6 py-4">{{ $customer->region->name }}</td>
-        <td class="px-6 py-4">{{ Str::limit($customer->note, 20) }}</td>
+        <td class="px-6 py-4 text-center">{{ $customer->region->name }}</td>
+        <td class="px-6 py-4 text-center">{{ Str::limit($customer->note, 20) }}</td>
         <td class="px-4 py-3 text-right">
             <div class="relative inline-block">
                 <button data-dropdown-toggle="customer-actions-dropdown-{{ $customer->id }}"

@@ -1,8 +1,17 @@
 @forelse ($customers as $customer)
     <div
         class="w-full max-w-sm p-4 bg-white border border-gray-200 rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700">
-        <div class="flex items-center justify-between mb-2">
+        {{-- <div class="flex items-center justify-between mb-2">
             <h4 class="text-lg font-semibold text-gray-900 dark:text-white">👤 {{ $customer->name }}</h4>
+        </div> --}}
+        <div class="flex items-center justify-between mb-2">
+            <h4 class="flex items-center text-lg font-semibold text-gray-900 dark:text-white">
+                <span>{{ $customer->name }}</span>
+                {{-- Jika customer ditandai, tampilkan ikon --}}
+                @if ($customer->is_flagged)
+                    <i class="ml-2 text-red-500 fas fa-flag" title="Customer ditandai"></i>
+                @endif
+            </h4>
         </div>
         <p class="mb-1 text-sm text-gray-700 dark:text-gray-300">
             📍 {{ $customer->address }} ({{ $customer->region->name }})

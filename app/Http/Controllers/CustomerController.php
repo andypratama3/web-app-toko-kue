@@ -203,4 +203,32 @@ class CustomerController extends Controller
         $routeName = $user->hasRole('admin') ? 'admin.customers.index' : 'kurir.customers.index';
         return redirect()->route($routeName)->with('success', 'Customer "' . $customerName . '" berhasil dihapus.');
     }
+
+    /**
+     * BARU: Method untuk toggle status 'is_flagged' customer.
+     * Hanya bisa diakses oleh admin.
+     */
+    public function toggleFlag(Request $request, Customer $customer)
+    {
+        if (!Auth::user()->hasRole('admin')) {
+            abort(403, 'AKSES DITOLAK');
+        }
+
+        $customer->is_flagged = !$customer->is_flagged;
+        $customer->save();
+
+        // Jika ini adalah request dari AJAX (JavaScript)
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'is_flagged' => $customer->is_flagged, // Kirim status baru
+                'message' => 'Status flag customer berhasil diubah.'
+            ]);
+        }
+
+        // Fallback untuk non-AJAX (jika JavaScript gagal)
+        $status = $customer->is_flagged ? 'ditandai' : 'dihilangkan tandanya';
+        return redirect()->route('admin.customers.index')
+            ->with('success', 'Customer "' . $customer->name . '" berhasil ' . $status . '.');
+    }
 }

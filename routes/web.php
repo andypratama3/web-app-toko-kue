@@ -59,6 +59,9 @@ Route::middleware([
         // Route untuk CRUD Customer menggunakan controller gabungan
         Route::resource('customers', CustomerController::class)->except(['show', 'create', 'edit']);
         Route::put('customers/{customer}/note', [CustomerController::class, 'updateNote'])->name('customers.updateNote');
+
+        // Route untuk mengubah status flag customer
+        Route::post('customers/{customer}/flag', [CustomerController::class, 'toggleFlag'])->name('customers.toggleFlag');
     });
 
     // ---------- KURIR ----------

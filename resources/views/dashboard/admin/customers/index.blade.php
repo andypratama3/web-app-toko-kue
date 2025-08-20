@@ -76,10 +76,59 @@
 @push('page-scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Inisialisasi Live Search (yang sudah ada)
             initializeLiveSearch({
                 searchInputId: 'live-search-input',
                 desktopContainerId: 'customer-results-container'
             });
+
+            // BARU: Tambahkan event listener untuk semua tombol flag
+            const resultsContainer = document.getElementById('customer-results-container');
+
+            resultsContainer.addEventListener('click', function(event) {
+                // Cari tombol flag terdekat dari elemen yang diklik
+                const flagButton = event.target.closest('.toggle-flag-btn');
+
+                if (flagButton) {
+                    event.preventDefault(); // Mencegah aksi default
+                    toggleCustomerFlag(flagButton);
+                }
+            });
         });
+
+        async function toggleCustomerFlag(button) {
+            const url = button.dataset.url;
+            const icon = button.querySelector('i');
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}', // Wajib untuk POST request
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                });
+
+                if (!response.ok) throw new Error('Network response was not ok');
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Ubah warna ikon berdasarkan status baru dari server
+                    if (data.is_flagged) {
+                        icon.classList.add('text-red-500');
+                        button.setAttribute('title', 'Hilangkan Tanda');
+                    } else {
+                        icon.classList.remove('text-red-500');
+                        button.setAttribute('title', 'Tandai Customer');
+                    }
+                }
+
+            } catch (error) {
+                console.error('Flag toggle error:', error);
+                alert('Gagal mengubah status customer.');
+            }
+        }
     </script>
 @endpush

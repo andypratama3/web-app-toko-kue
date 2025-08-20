@@ -1,10 +1,24 @@
 @forelse ($customers as $customer)
     <tr class="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
-        <td class="px-4 py-3 font-medium text-gray-900 dark:text-white text-center">
+        <td class="px-4 py-3 font-medium text-center text-gray-900 dark:text-white">
             {{ ($customers->currentPage() - 1) * $customers->perPage() + $loop->iteration }}
         </td>
-        <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-            {{ $customer->name }}</th>
+        {{-- <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+            {{ $customer->name }}</th> --}}
+        <td class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+            <div class="flex items-center justify-center space-x-2">
+                <span>{{ $customer->name }}</span>
+
+                {{-- UBAH DARI <form> MENJADI <button> --}}
+                <button type="button" class="text-gray-400 hover:text-red-600 toggle-flag-btn"
+                    data-url="{{ route('admin.customers.toggleFlag', $customer) }}"
+                    title="{{ $customer->is_flagged ? 'Hilangkan Tanda' : 'Tandai Customer' }}">
+                    {{-- Beri ID unik pada ikon untuk dimanipulasi oleh JS --}}
+                    <i id="flag-icon-{{ $customer->id }}"
+                        class="fas fa-flag {{ $customer->is_flagged ? 'text-red-500' : '' }}"></i>
+                </button>
+            </div>
+        </td>
         <td class="px-4 py-3 text-center">{{ Str::limit($customer->address, 30) }}</td>
         <td class="px-4 py-3 text-center">{{ $customer->phone }}</td>
         <td class="px-4 py-3 text-center">{{ $customer->region->name ?? 'N/A' }}</td>
