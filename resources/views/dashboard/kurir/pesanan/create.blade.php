@@ -39,7 +39,8 @@
                     {{-- Box 1 Kanan: DATA CUSTOMER (Nama, No HP, Alamat) --}}
                     <div
                         class="p-3 mb-4 bg-white border border-gray-200 shadow-md rounded-xl dark:bg-gray-800 dark:border-gray-700">
-                        <p class="mb-4 font-bold tracking-wide text-black uppercase text-md dark:text-white dark:opacity-60">
+                        <p
+                            class="mb-4 font-bold tracking-wide text-black uppercase text-md dark:text-white dark:opacity-60">
                             👤 Data Customer
                         </p>
 
@@ -71,14 +72,14 @@
 
                                     <ul id="customer-list" class="overflow-y-auto max-h-60">
                                         @foreach ($customers as $customer)
-                                        <li>
-                                            <a href="#"
-                                                class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-white active:scale-90"
-                                                data-value="{{ $customer->id }}" data-phone="{{ $customer->phone }}"
-                                                data-address="{{ $customer->address }}">
-                                                {{ $customer->name }}
-                                            </a>
-                                        </li>
+                                            <li>
+                                                <a href="#"
+                                                    class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-white active:scale-90"
+                                                    data-value="{{ $customer->id }}" data-phone="{{ $customer->phone }}"
+                                                    data-address="{{ $customer->address }}">
+                                                    {{ $customer->name }}
+                                                </a>
+                                            </li>
                                         @endforeach
                                     </ul>
                                 </div>
@@ -89,7 +90,8 @@
                         <!-- NO HP -->
                         <div class="mb-4">
                             <label for="phone"
-                                class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">No. HP</label>
+                                class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">No.
+                                HP</label>
                             <input type="text" name="phone" id="phone"
                                 class="mb-6 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 cursor-not-allowed"
                                 disabled>
@@ -109,7 +111,8 @@
                     {{-- Box 2 Kanan: METODE PEMBAYARAN & CATATAN --}}
                     <div
                         class="p-3 mt-4 bg-white border border-gray-200 shadow-md rounded-xl dark:bg-gray-800 dark:border-gray-700">
-                        <p class="mb-4 font-bold tracking-wide text-black uppercase text-md dark:text-white dark:opacity-60">
+                        <p
+                            class="mb-4 font-bold tracking-wide text-black uppercase text-md dark:text-white dark:opacity-60">
                             💳 METODE PEMBAYARAN
                         </p>
 
@@ -135,10 +138,12 @@
                                     <div class="py-2" role="none">
                                         <a href="#"
                                             class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                            data-value="cash" role="menuitem"><i class="fas fa-money-bill-wave"></i> Cash (Tunai)</a>
+                                            data-value="cash" role="menuitem"><i class="fas fa-money-bill-wave"></i> Cash
+                                            (Tunai)</a>
                                         <a href="#"
                                             class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                            data-value="tf" role="menuitem"><i class="fas fa-money-check"></i> Transfer Bank</a>
+                                            data-value="tf" role="menuitem"><i class="fas fa-money-check"></i> Transfer
+                                            Bank</a>
                                         <a href="#"
                                             class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
                                             data-value="qr" role="menuitem"><i class="fas fa-qrcode"></i>QRIS</a>
@@ -162,7 +167,8 @@
                         <!-- NOTE -->
                         <div class="mb-4">
                             <label for="note"
-                                class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">📝 Catatan</label>
+                                class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">📝
+                                Catatan</label>
                             <textarea type="text" name="note" id="note"
                                 class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"></textarea>
                         </div>
@@ -191,73 +197,77 @@
             </div> {{-- Penutup flex kolom kiri dan kanan --}}
         </form> {{-- PENUTUP FORM --}}
     </div>
-</div>
-
-<!-- Tombol Checkout Fix di Bawah (UNTUK MOBILE) -->
-<div
-    class="fixed bottom-0 left-0 z-50 flex items-center justify-between w-full p-4 bg-white border-t border-gray-300 dark:bg-gray-800 xl:hidden">
-    {{-- Tambahkan class "cart-total-display" di sini --}}
-    <p id="cart-total" class="text-lg font-bold cart-total-display dark:text-white">Total: Rp 0</p>
-    <button type="button" onclick="checkout()"
-        class="bg-[#748c54] text-white px-6 py-2 rounded-xl hover:bg-[#5a6e40] transition shadow-md">
-        Checkout
-    </button>
-</div>
-
-<!-- Modal Sukses Tersimpan -->
-<div id="successModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black bg-opacity-50">
-    <div class="w-full max-w-sm p-6 text-center bg-white rounded-lg shadow-lg">
-        <div class="mb-4 text-5xl text-green-500">✔</div>
-        <h2 class="mb-2 text-xl font-bold">Sukses!</h2>
-        <p id="success-message" class="mb-2 text-gray-700">Pesanan berhasil disimpan.</p>
-        <p id="success-invoice" class="p-2 mb-4 text-sm font-semibold text-gray-800 bg-gray-100 rounded"></p>
-        <button onclick="hideSuccessModal()"
-            class="px-4 py-2 text-white transition bg-green-500 rounded hover:bg-green-600">Tutup</button>
     </div>
-</div>
 
-@push('flowbite-modals')
-{{-- Memanggil modal tambah produk --}}
-@include('dashboard.kurir.pesanan.produk-modal')
-@endpush
-{{-- Semua JavaScript terkait fungsionalitas aplikasi berada di sini --}}
-<script>
-    // --- Data dan State Global ---
-    let produkList = []; // Daftar semua produk yang tersedia
-    let cart = []; // Keranjang belanja
+    <!-- Tombol Checkout Fix di Bawah (UNTUK MOBILE) -->
+    <div
+        class="fixed bottom-0 left-0 z-50 flex items-center justify-between w-full p-4 bg-white border-t border-gray-300 dark:bg-gray-800 xl:hidden">
+        {{-- Tambahkan class "cart-total-display" di sini --}}
+        <p id="cart-total" class="text-lg font-bold cart-total-display dark:text-white">Total: Rp 0</p>
+        <button type="button" onclick="checkout()"
+            class="bg-[#748c54] text-white px-6 py-2 rounded-xl hover:bg-[#5a6e40] transition shadow-md">
+            Checkout
+        </button>
+    </div>
 
-    function showToast(message, type = 'success', duration = 5000) {
-        // 1. Hapus toast yang mungkin sudah ada sebelumnya
-        const existingToast = document.getElementById('toast-notification-dynamic');
-        if (existingToast) {
-            existingToast.remove();
-        }
+    <!-- Modal Sukses Tersimpan -->
+    <div id="successModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black bg-opacity-50">
+        <div class="w-full max-w-sm p-6 text-center bg-white rounded-lg shadow-lg">
+            <div class="mb-4 text-5xl text-green-500">✔</div>
+            <h2 class="mb-2 text-xl font-bold">Sukses!</h2>
+            <p id="success-message" class="mb-2 text-gray-700">Pesanan berhasil disimpan.</p>
+            <p id="success-invoice" class="p-2 mb-4 text-sm font-semibold text-gray-800 bg-gray-100 rounded"></p>
+            <button onclick="hideSuccessModal()"
+                class="px-4 py-2 text-white transition bg-green-500 rounded hover:bg-green-600">Tutup</button>
+        </div>
+    </div>
 
-        // 2. Tentukan ikon dan style berdasarkan tipe
-        let iconSvg, iconBgColor, iconTextColor;
-        if (type === 'success') {
-            iconBgColor = 'bg-green-100 dark:bg-green-800';
-            iconTextColor = 'text-green-500 dark:text-green-200';
-            iconSvg =
-                `<svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20"><path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z" /></svg>`;
-        } else { // 'error'
-            iconBgColor = 'bg-red-100 dark:bg-red-800';
-            iconTextColor = 'text-red-500 dark:text-red-200';
-            iconSvg =
-                `<svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20"><path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 11.793a1 1 0 1 1-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 0 1-1.414-1.414L8.586 10 6.293 7.707a1 1 0 0 1 1.414-1.414L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414L11.414 10l2.293 2.293Z" /></svg>`;
-        }
+    @push('flowbite-modals')
+        {{-- Memanggil modal tambah produk --}}
+        @include('dashboard.kurir.pesanan.produk-modal')
 
-        // 3. Buat elemen toast baru dari string HTML
-        const toastElement = document.createElement('div');
-        toastElement.id = 'toast-notification-dynamic';
-        // Style dan class diambil dari toast.blade.php
-        toastElement.className =
-            'fixed top-5 right-5 w-full max-w-xs p-4 text-gray-900 bg-white rounded-lg shadow-lg dark:bg-gray-800 dark:text-gray-300 z-[100] transition-transform duration-300 ease-out';
-        toastElement.setAttribute('role', 'alert');
-        toastElement.style.transform = 'translateY(-20px) translateX(20px)'; // Posisi awal untuk animasi
-        toastElement.style.opacity = '0';
+        {{-- BARU: Memanggil modal konfirmasi pesanan --}}
+        @include('dashboard.kurir.pesanan.konfirmasi-modal')
+    @endpush
 
-        toastElement.innerHTML = `
+    {{-- Semua JavaScript terkait fungsionalitas aplikasi berada di sini --}}
+    <script>
+        // --- Data dan State Global ---
+        let produkList = []; // Daftar semua produk yang tersedia
+        let cart = []; // Keranjang belanja
+
+        function showToast(message, type = 'success', duration = 5000) {
+            // 1. Hapus toast yang mungkin sudah ada sebelumnya
+            const existingToast = document.getElementById('toast-notification-dynamic');
+            if (existingToast) {
+                existingToast.remove();
+            }
+
+            // 2. Tentukan ikon dan style berdasarkan tipe
+            let iconSvg, iconBgColor, iconTextColor;
+            if (type === 'success') {
+                iconBgColor = 'bg-green-100 dark:bg-green-800';
+                iconTextColor = 'text-green-500 dark:text-green-200';
+                iconSvg =
+                    `<svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20"><path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z" /></svg>`;
+            } else { // 'error'
+                iconBgColor = 'bg-red-100 dark:bg-red-800';
+                iconTextColor = 'text-red-500 dark:text-red-200';
+                iconSvg =
+                    `<svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20"><path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 11.793a1 1 0 1 1-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 0 1-1.414-1.414L8.586 10 6.293 7.707a1 1 0 0 1 1.414-1.414L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414L11.414 10l2.293 2.293Z" /></svg>`;
+            }
+
+            // 3. Buat elemen toast baru dari string HTML
+            const toastElement = document.createElement('div');
+            toastElement.id = 'toast-notification-dynamic';
+            // Style dan class diambil dari toast.blade.php
+            toastElement.className =
+                'fixed top-5 right-5 w-full max-w-xs p-4 text-gray-900 bg-white rounded-lg shadow-lg dark:bg-gray-800 dark:text-gray-300 z-[100] transition-transform duration-300 ease-out';
+            toastElement.setAttribute('role', 'alert');
+            toastElement.style.transform = 'translateY(-20px) translateX(20px)'; // Posisi awal untuk animasi
+            toastElement.style.opacity = '0';
+
+            toastElement.innerHTML = `
         <div class="flex items-center">
             <div class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 ${iconTextColor} ${iconBgColor} rounded-lg">
                 ${iconSvg}
@@ -270,267 +280,324 @@
         </div>
     `;
 
-        // 4. Tambahkan ke body dan animasikan
-        document.body.appendChild(toastElement);
+            // 4. Tambahkan ke body dan animasikan
+            document.body.appendChild(toastElement);
 
-        // Animasikan masuk (mirip x-transition)
-        setTimeout(() => {
-            toastElement.style.transform = 'translateY(0) translateX(0)';
-            toastElement.style.opacity = '1';
-        }, 10); // Delay kecil agar transisi berjalan
+            // Animasikan masuk (mirip x-transition)
+            setTimeout(() => {
+                toastElement.style.transform = 'translateY(0) translateX(0)';
+                toastElement.style.opacity = '1';
+            }, 10); // Delay kecil agar transisi berjalan
 
-        // 5. Atur timer untuk menghapus toast
-        setTimeout(() => {
-            // Animasikan keluar
-            toastElement.style.transform = 'translateY(-20px) translateX(20px)';
-            toastElement.style.opacity = '0';
-            // Hapus elemen dari DOM setelah animasi selesai
-            setTimeout(() => toastElement.remove(), 300);
-        }, duration);
-    }
-
-    // --- Inisialisasi DOM dan Event Listeners ---
-    document.addEventListener('DOMContentLoaded', function() {
-        // --- Logic Dropdown Customer (Searchable) ---
-        const customerDropdownButton = document.getElementById('dropdown-button');
-        const customerDropdownMenu = document.getElementById('dropdown-menu');
-        const searchInput = document.getElementById('search-input');
-        const selectedCustomerSpan = document.getElementById('selected-customer');
-        const hiddenCustomerIdInput = document.getElementById('customer-id-input');
-        const phoneInput = document.getElementById('phone');
-        const addressInput = document.getElementById('address');
-        const customerList = document.getElementById('customer-list');
-
-        // Toggle visibilitas dropdown pelanggan
-        customerDropdownButton.addEventListener('click', function(e) {
-            e.stopPropagation();
-            customerDropdownMenu.classList.toggle('hidden');
-            searchInput.focus();
-        });
-
-        // Filter daftar pelanggan berdasarkan input pencarian
-        searchInput.addEventListener('input', function() {
-            const searchTerm = this.value.toLowerCase();
-            Array.from(customerList.children).forEach(li => {
-                const customerName = li.textContent.toLowerCase();
-                if (customerName.includes(searchTerm)) {
-                    li.style.display = 'block';
-                } else {
-                    li.style.display = 'none';
-                }
-            });
-        });
-
-        // Tangani pemilihan pelanggan dari daftar
-        customerList.addEventListener('click', function(e) {
-            if (e.target.tagName === 'A') {
-                e.preventDefault();
-                const selectedLink = e.target;
-
-                // Ambil data pelanggan dari atribut 'data-' pada link
-                const customerId = selectedLink.getAttribute('data-value');
-                const customerName = selectedLink.textContent.trim();
-                const phone = selectedLink.getAttribute('data-phone');
-                const address = selectedLink.getAttribute('data-address');
-
-                // Perbarui teks yang terlihat pada tombol dropdown dan nilai input tersembunyi
-                selectedCustomerSpan.textContent = customerName;
-                hiddenCustomerIdInput.value = customerId;
-
-                // Isi kolom nomor telepon dan alamat
-                phoneInput.value = phone;
-                addressInput.value = address;
-
-                // Sembunyikan menu dropdown setelah pemilihan
-                customerDropdownMenu.classList.add('hidden');
-            }
-        });
-
-        // --- Logic Dropdown Metode Pembayaran (Custom) ---
-        const paymentButton = document.getElementById('payment-method-button');
-        const paymentMenu = document.getElementById('payment-method-menu');
-        const selectedPaymentText = document.getElementById('selected-payment-method');
-        const hiddenPaymentInput = document.getElementById('payment-method-input');
-        const paymentProofUploadDiv = document.getElementById('payment-proof-upload');
-
-        // Toggle visibilitas dropdown metode pembayaran
-        paymentButton.addEventListener('click', function(e) {
-            e.stopPropagation();
-            paymentMenu.classList.toggle('hidden');
-        });
-
-        // Tangani pemilihan metode pembayaran dari daftar
-        paymentMenu.addEventListener('click', function(e) {
-            if (e.target.tagName === 'A') {
-                e.preventDefault();
-                const value = e.target.getAttribute('data-value');
-                const text = e.target.textContent;
-
-                // Perbarui teks yang terlihat pada tombol dropdown dan nilai input tersembunyi
-                selectedPaymentText.textContent = text;
-                hiddenPaymentInput.value = value;
-
-                // Tampilkan/sembunyikan form upload bukti pembayaran
-                if (value === 'tf' || value === 'qr') {
-                    paymentProofUploadDiv.classList.remove('hidden');
-                } else {
-                    paymentProofUploadDiv.classList.add('hidden');
-                    document.getElementById('payment-proof').value =
-                        ''; // Kosongkan input file jika disembunyikan
-                }
-
-                // Sembunyikan menu dropdown setelah pemilihan
-                paymentMenu.classList.add('hidden');
-            }
-        });
-
-        // --- Menutup semua dropdown saat mengklik di luar area dropdown ---
-        document.addEventListener('click', function(e) {
-            // Untuk dropdown pelanggan
-            if (!customerDropdownButton.contains(e.target) && !customerDropdownMenu.contains(e
-                    .target)) {
-                customerDropdownMenu.classList.add('hidden');
-            }
-            // Untuk dropdown metode pembayaran
-            if (!paymentButton.contains(e.target) && !paymentMenu.contains(e.target)) {
-                paymentMenu.classList.add('hidden');
-            }
-        });
-
-        // --- Inisialisasi Produk dan Keranjang ---
-        getProduk();
-    });
-
-    // --- Fungsi Checkout ---
-    async function checkout() {
-        // Mendapatkan data dari form
-        const customerId = document.getElementById('customer-id-input').value;
-        const paymentMethod = document.getElementById('payment-method-input').value;
-        const note = document.getElementById('note').value;
-        const phone = document.getElementById('phone').value;
-        const address = document.getElementById('address').value;
-        const paymentProofFile = document.getElementById('payment-proof').files[0];
-
-        // Validasi data sebelum checkout
-        if (!customerId) {
-            showToast('Silakan pilih customer terlebih dahulu.', 'error');
-            return;
+            // 5. Atur timer untuk menghapus toast
+            setTimeout(() => {
+                // Animasikan keluar
+                toastElement.style.transform = 'translateY(-20px) translateX(20px)';
+                toastElement.style.opacity = '0';
+                // Hapus elemen dari DOM setelah animasi selesai
+                setTimeout(() => toastElement.remove(), 300);
+            }, duration);
         }
 
-        if (cart.length === 0) {
-            showToast('Keranjang belanja kosong. Tambahkan produk terlebih dahulu.', 'error');
-            return;
-        }
+        // --- Inisialisasi DOM dan Event Listeners ---
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Logic Dropdown Customer (Searchable) ---
+            const customerDropdownButton = document.getElementById('dropdown-button');
+            const customerDropdownMenu = document.getElementById('dropdown-menu');
+            const searchInput = document.getElementById('search-input');
+            const selectedCustomerSpan = document.getElementById('selected-customer');
+            const hiddenCustomerIdInput = document.getElementById('customer-id-input');
+            const phoneInput = document.getElementById('phone');
+            const addressInput = document.getElementById('address');
+            const customerList = document.getElementById('customer-list');
 
-        if (!paymentMethod || paymentMethod === "-Pilih metode pembayaran -") {
-            showToast('Silakan pilih metode pembayaran.', 'error');
-            return;
-        }
-
-        // Validasi bukti pembayaran jika metode transfer/QRIS
-        if ((paymentMethod === 'tf' || paymentMethod === 'qr') && !paymentProofFile) {
-            showToast('Silakan unggah bukti pembayaran.', 'error');
-            return;
-        }
-
-        // Siapkan data pesanan menggunakan FormData secara konsisten
-        const formData = new FormData();
-        formData.append('customer_id', customerId);
-        formData.append('phone', phone);
-        formData.append('address', address);
-        formData.append('payment_method', paymentMethod);
-        formData.append('note', note);
-
-        // PENTING: Stringify array cart dan tambahkan ke FormData
-        // Ini memastikan backend menerima string JSON yang valid untuk 'products'
-        formData.append('products', JSON.stringify(cart.map(item => ({
-            product_id: item.product_id, // Gunakan product_id dari item keranjang
-            product_name: item.product_name, // Gunakan product_name dari item keranjang
-            variant_id: item.variant_id, // Gunakan variant_id dari item keranjang
-            variant_name: item.variant_name, // Gunakan variant_name dari item keranjang
-            quantity: item.qty, // Gunakan qty dari item keranjang
-            price: item.price, // Gunakan price dari item keranjang
-        }))));
-
-        // Tambahkan file bukti pembayaran jika ada
-        if (paymentProofFile) {
-            formData.append('payment_proof', paymentProofFile);
-        }
-
-       try {
-            // Mengirim data ke server
-            const response = await fetch("{{ route('kurir.orders.checkout') }}", { // <-- GANTI DENGAN INI
-                method: 'POST',
-                // FormData akan secara otomatis mengatur Content-Type ke multipart/form-data
-                // Jadi, tidak perlu mengatur 'Content-Type' secara manual di headers untuk FormData
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: formData // Kirim FormData
+            // Toggle visibilitas dropdown pelanggan
+            customerDropdownButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                customerDropdownMenu.classList.toggle('hidden');
+                searchInput.focus();
             });
 
-            const result = await response.json();
-
-            if (response.ok) {
-                showSuccessModal(result.message, result.invoice_number);
-                // Reset form setelah berhasil checkout
-                cart = [];
-                renderCart();
-                // Reset tampilan dropdown pelanggan
-                document.getElementById('selected-customer').textContent = '- Pilih Customer -';
-                document.getElementById('customer-id-input').value = '';
-                document.getElementById('phone').value = '';
-                document.getElementById('address').value = '';
-                // Reset tampilan dropdown metode pembayaran
-                document.getElementById('selected-payment-method').textContent = '-Pilih metode pembayaran -';
-                document.getElementById('payment-method-input').value = '';
-                document.getElementById('payment-proof').value = ''; // Kosongkan input file
-                document.getElementById('payment-proof-upload').classList.add('hidden'); // Sembunyikan lagi
-                document.getElementById('note').value = '';
-            } else {
-                // Tampilkan pesan error validasi spesifik jika ada
-                let errorMessage = result.message || 'Terjadi kesalahan yang tidak diketahui.';
-                if (result.errors) {
-                    // Jika ada error validasi detail, gabungkan pesan-pesan tersebut
-                    errorMessage += '\n<ul>';
-                    for (const key in result.errors) {
-                        errorMessage += `<li>${result.errors[key].join(', ')}</li>`;
+            // Filter daftar pelanggan berdasarkan input pencarian
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                Array.from(customerList.children).forEach(li => {
+                    const customerName = li.textContent.toLowerCase();
+                    if (customerName.includes(searchTerm)) {
+                        li.style.display = 'block';
+                    } else {
+                        li.style.display = 'none';
                     }
-                    errorMessage += '</ul>';
+                });
+            });
+
+            // Tangani pemilihan pelanggan dari daftar
+            customerList.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    e.preventDefault();
+                    const selectedLink = e.target;
+
+                    // Ambil data pelanggan dari atribut 'data-' pada link
+                    const customerId = selectedLink.getAttribute('data-value');
+                    const customerName = selectedLink.textContent.trim();
+                    const phone = selectedLink.getAttribute('data-phone');
+                    const address = selectedLink.getAttribute('data-address');
+
+                    // Perbarui teks yang terlihat pada tombol dropdown dan nilai input tersembunyi
+                    selectedCustomerSpan.textContent = customerName;
+                    hiddenCustomerIdInput.value = customerId;
+
+                    // Isi kolom nomor telepon dan alamat
+                    phoneInput.value = phone;
+                    addressInput.value = address;
+
+                    // Sembunyikan menu dropdown setelah pemilihan
+                    customerDropdownMenu.classList.add('hidden');
                 }
-                showToast('Gagal menyimpan pesanan: ' + errorMessage, 'error', 7000); // Durasi lebih lama untuk error
+            });
+
+            // --- Logic Dropdown Metode Pembayaran (Custom) ---
+            const paymentButton = document.getElementById('payment-method-button');
+            const paymentMenu = document.getElementById('payment-method-menu');
+            const selectedPaymentText = document.getElementById('selected-payment-method');
+            const hiddenPaymentInput = document.getElementById('payment-method-input');
+            const paymentProofUploadDiv = document.getElementById('payment-proof-upload');
+
+            // Toggle visibilitas dropdown metode pembayaran
+            paymentButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                paymentMenu.classList.toggle('hidden');
+            });
+
+            // Tangani pemilihan metode pembayaran dari daftar
+            paymentMenu.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    e.preventDefault();
+                    const value = e.target.getAttribute('data-value');
+                    const text = e.target.textContent;
+
+                    // Perbarui teks yang terlihat pada tombol dropdown dan nilai input tersembunyi
+                    selectedPaymentText.textContent = text;
+                    hiddenPaymentInput.value = value;
+
+                    // Tampilkan/sembunyikan form upload bukti pembayaran
+                    if (value === 'tf' || value === 'qr') {
+                        paymentProofUploadDiv.classList.remove('hidden');
+                    } else {
+                        paymentProofUploadDiv.classList.add('hidden');
+                        document.getElementById('payment-proof').value =
+                            ''; // Kosongkan input file jika disembunyikan
+                    }
+
+                    // Sembunyikan menu dropdown setelah pemilihan
+                    paymentMenu.classList.add('hidden');
+                }
+            });
+
+            // --- Menutup semua dropdown saat mengklik di luar area dropdown ---
+            document.addEventListener('click', function(e) {
+                // Untuk dropdown pelanggan
+                if (!customerDropdownButton.contains(e.target) && !customerDropdownMenu.contains(e
+                        .target)) {
+                    customerDropdownMenu.classList.add('hidden');
+                }
+                // Untuk dropdown metode pembayaran
+                if (!paymentButton.contains(e.target) && !paymentMenu.contains(e.target)) {
+                    paymentMenu.classList.add('hidden');
+                }
+            });
+
+            // --- Inisialisasi Produk dan Keranjang ---
+            getProduk();
+        });
+
+        // FUNGSI BARU: Untuk membuka dan mengisi modal konfirmasi
+        function showConfirmationModal() {
+            // 1. Ambil semua data dari form
+            const customerName = document.getElementById('selected-customer').textContent.trim();
+            const customerPhone = document.getElementById('phone').value;
+            const customerAddress = document.getElementById('address').value;
+            const paymentMethodText = document.getElementById('selected-payment-method').textContent.trim();
+
+            // 2. Isi data customer dan pembayaran ke dalam modal
+            document.getElementById('modal-customer-name').textContent = customerName;
+            document.getElementById('modal-customer-phone').textContent = customerPhone || '-';
+            document.getElementById('modal-customer-address').textContent = customerAddress || '-';
+            document.getElementById('modal-payment-method').textContent = paymentMethodText;
+
+            // 3. Bangun dan isi daftar produk di dalam modal
+            const productListDiv = document.getElementById('modal-product-list');
+            productListDiv.innerHTML = ''; // Kosongkan dulu
+            let total = 0;
+
+            cart.forEach(item => {
+                const subtotal = item.qty * item.price;
+                total += subtotal;
+
+                const productHtml = `
+                <div class="flex items-start justify-between text-sm">
+                    <div class="flex-grow">
+                        <p class="font-semibold text-gray-800 dark:text-gray-200">${item.product_name}</p>
+                        ${item.variant_name ? `<p class="text-xs text-gray-500">${item.variant_name}</p>` : ''}
+                        <p class="text-xs text-gray-600 dark:text-gray-400">${item.qty} x Rp ${item.price.toLocaleString('id-ID')}</p>
+                    </div>
+                    <p class="font-semibold text-gray-800 dark:text-gray-200">Rp ${subtotal.toLocaleString('id-ID')}</p>
+                </div>
+            `;
+                productListDiv.innerHTML += productHtml;
+            });
+
+            // 4. Isi total amount di modal
+            document.getElementById('modal-total-amount').textContent = `Rp ${total.toLocaleString('id-ID')}`;
+
+            // 5. Tampilkan modal menggunakan Flowbite instance
+            const modalElement = document.getElementById('konfirmasiModal');
+            // Pastikan Anda memiliki instance Modal dari Flowbite
+            const modal = new Modal(modalElement);
+            modal.show();
+        }
+
+        // FUNGSI DIUBAH: checkout() sekarang hanya untuk validasi dan memanggil modal
+        function checkout() {
+            // Validasi data sebelum menampilkan modal
+            const customerId = document.getElementById('customer-id-input').value;
+            const paymentMethod = document.getElementById('payment-method-input').value;
+            const paymentProofFile = document.getElementById('payment-proof').files[0];
+
+            if (!customerId) {
+                showToast('Silakan pilih customer terlebih dahulu.', 'error');
+                return;
             }
-        } catch (error) {
-            console.error('Error:', error);
-            showToast('Terjadi kesalahan saat checkout. Mohon coba lagi.', 'error');
+            if (cart.length === 0) {
+                showToast('Keranjang belanja kosong. Tambahkan produk terlebih dahulu.', 'error');
+                return;
+            }
+            if (!paymentMethod || paymentMethod === "-Pilih metode pembayaran -") {
+                showToast('Silakan pilih metode pembayaran.', 'error');
+                return;
+            }
+            if ((paymentMethod === 'tf' || paymentMethod === 'qr') && !paymentProofFile) {
+                showToast('Silakan unggah bukti pembayaran.', 'error');
+                return;
+            }
+
+            // Jika semua validasi lolos, panggil fungsi untuk menampilkan modal
+            showConfirmationModal();
         }
-    }
 
-    // --- Logic Produk dan Keranjang ---
+        // FUNGSI BARU: untuk mengirim data ke server (dipanggil dari modal)
+        async function submitOrder() {
+            // Mendapatkan data dari form lagi untuk dikirim
+            const customerId = document.getElementById('customer-id-input').value;
+            const paymentMethod = document.getElementById('payment-method-input').value;
+            const note = document.getElementById('note').value;
+            const phone = document.getElementById('phone').value;
+            const address = document.getElementById('address').value;
+            const paymentProofFile = document.getElementById('payment-proof').files[0];
 
-    // Mengambil daftar produk dari API backend
-    async function getProduk() {
-        try {
-            const res = await fetch("{{ url('kurir/produk/json') }}");
-            produkList = await res.json();
-            tampilkanPilihanProduk();
-        } catch (err) {
-            console.error("Gagal ambil produk:", err);
-            showToast('Gagal memuat daftar produk.', 'error');
+            // Siapkan FormData
+            const formData = new FormData();
+            formData.append('customer_id', customerId);
+            formData.append('phone', phone);
+            formData.append('address', address);
+            formData.append('payment_method', paymentMethod);
+            formData.append('note', note);
+            formData.append('products', JSON.stringify(cart.map(item => ({
+                product_id: item.product_id,
+                product_name: item.product_name,
+                variant_id: item.variant_id,
+                variant_name: item.variant_name,
+                quantity: item.qty,
+                price: item.price,
+            }))));
+
+            if (paymentProofFile) {
+                formData.append('payment_proof', paymentProofFile);
+            }
+
+            // Tampilkan loading state di tombol submit
+            const submitButton = document.getElementById('submit-order-button');
+            submitButton.disabled = true;
+            submitButton.innerHTML = 'Menyimpan...';
+
+            try {
+                const response = await fetch("{{ route('kurir.orders.checkout') }}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content')
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                // Sembunyikan modal konfirmasi
+                const modalElement = document.getElementById('konfirmasiModal');
+                const modal = new Modal(modalElement);
+                modal.hide();
+
+                if (response.ok) {
+                    showSuccessModal(result.message, result.invoice_number);
+                    // Reset form setelah berhasil
+                    cart = [];
+                    renderCart();
+                    document.getElementById('selected-customer').textContent = '- Pilih Customer -';
+                    document.getElementById('customer-id-input').value = '';
+                    document.getElementById('phone').value = '';
+                    document.getElementById('address').value = '';
+                    document.getElementById('selected-payment-method').textContent = '-Pilih metode pembayaran -';
+                    document.getElementById('payment-method-input').value = '';
+                    document.getElementById('payment-proof').value = '';
+                    document.getElementById('payment-proof-upload').classList.add('hidden');
+                    document.getElementById('note').value = '';
+
+                } else {
+                    let errorMessage = result.message || 'Terjadi kesalahan.';
+                    if (result.errors) {
+                        errorMessage += '\n<ul>';
+                        for (const key in result.errors) {
+                            errorMessage += `<li>${result.errors[key].join(', ')}</li>`;
+                        }
+                        errorMessage += '</ul>';
+                    }
+                    showToast('Gagal: ' + errorMessage, 'error', 7000);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Terjadi kesalahan saat mengirim pesanan. Mohon coba lagi.', 'error');
+            } finally {
+                // Kembalikan tombol ke state normal
+                submitButton.disabled = false;
+                submitButton.innerHTML = 'Konfirmasi & Simpan Pesanan';
+            }
         }
-    }
 
-    // Menampilkan pilihan produk di dalam modal
-    function tampilkanPilihanProduk() {
-        const pilihDiv = document.getElementById('pilihan-produk');
-        pilihDiv.innerHTML = '';
-        produkList.forEach(p => {
-            // Ambil URL gambar produk jika ada (misal: p.image atau p.foto)
-            let imageUrl = p.image || p.foto || null;
-            if (p.variants && p.variants.length > 0) {
-                p.variants.forEach(v => {
-                    const sudahDipilih = cart.some(c => c.variant_id === v.id);
-                    pilihDiv.innerHTML += `
+        // --- Logic Produk dan Keranjang ---
+
+        // Mengambil daftar produk dari API backend
+        async function getProduk() {
+            try {
+                const res = await fetch("{{ url('kurir/produk/json') }}");
+                produkList = await res.json();
+                tampilkanPilihanProduk();
+            } catch (err) {
+                console.error("Gagal ambil produk:", err);
+                showToast('Gagal memuat daftar produk.', 'error');
+            }
+        }
+
+        // Menampilkan pilihan produk di dalam modal
+        function tampilkanPilihanProduk() {
+            const pilihDiv = document.getElementById('pilihan-produk');
+            pilihDiv.innerHTML = '';
+            produkList.forEach(p => {
+                // Ambil URL gambar produk jika ada (misal: p.image atau p.foto)
+                let imageUrl = p.image || p.foto || null;
+                if (p.variants && p.variants.length > 0) {
+                    p.variants.forEach(v => {
+                        const sudahDipilih = cart.some(c => c.variant_id === v.id);
+                        pilihDiv.innerHTML += `
                         <div class="flex flex-row items-center gap-3 p-3 border rounded bg-gray-50">
                             ${imageUrl ? `<img src="${imageUrl}" alt="${p.name}" class="object-cover w-16 h-16 mr-2 border rounded" />` : ''}
                             <div class="flex-1">
@@ -543,10 +610,11 @@
                             }
                         </div>
                     `;
-                });
-            } else {
-                const sudahDipilih = cart.some(c => c.product_id === p.id && !c.variant_id); // Perbaikan: Tambahkan !c.variant_id
-                pilihDiv.innerHTML += `
+                    });
+                } else {
+                    const sudahDipilih = cart.some(c => c.product_id === p.id && !c
+                    .variant_id); // Perbaikan: Tambahkan !c.variant_id
+                    pilihDiv.innerHTML += `
                     <div class="flex flex-row items-center gap-3 p-3 border rounded bg-gray-50">
                         ${imageUrl ? `<img src="${imageUrl}" alt="${p.name}" class="object-cover w-16 h-16 mr-2 border rounded" />` : ''}
                         <div class="flex-1">
@@ -559,98 +627,101 @@
                         }
                     </div>
                 `;
-            }
-        });
-    }
-
-    // Menambahkan produk ke keranjang atau menambah kuantitasnya
-    function tambahKeCart(productId, variantId) {
-        let product = produkList.find(p => p.id === productId);
-        let cartItem = null;
-        let variant = null;
-
-        if (variantId) {
-            variant = product.variants.find(v => v.id === variantId);
-            cartItem = cart.find(c => c.variant_id === variantId);
-        } else {
-            cartItem = cart.find(c => c.product_id === productId && !c.variant_id);
-        }
-
-        if (cartItem) {
-            cartItem.qty++;
-            showToast(
-                `Kuantitas ${product.name}${variant ? ' - ' + variant.name : ''} ditambahkan menjadi ${cartItem.qty}.`,
-                'info');
-        } else {
-            cart.push({
-                product_id: productId,
-                product_name: product.name,
-                variant_id: variantId || null,
-                variant_name: variant ? variant.name : null,
-                price: variant ? variant.price : (product.price || product.harga),
-                qty: 1
+                }
             });
-            showToast(`${product.name}${variant ? ' - ' + variant.name : ''} ditambahkan ke keranjang.`, 'success');
-        }
-        renderCart();
-        tampilkanPilihanProduk();
-        hideProdukModal();
-    }
-
-    // Menghapus produk dari keranjang melalui modal produk
-    function hapusDariCart(productId, variantId) {
-        let product = produkList.find(p => p.id === productId);
-        let variant = null;
-        let cartItemIndex = -1;
-
-        if (variantId) {
-            variant = product.variants.find(v => v.id === variantId);
-            cartItemIndex = cart.findIndex(c => c.variant_id === variantId);
-        } else {
-            cartItemIndex = cart.findIndex(c => c.product_id === productId && !c.variant_id);
         }
 
-        if (cartItemIndex !== -1) {
-            const removedItem = cart[cartItemIndex];
-            cart.splice(cartItemIndex, 1);
-            showToast(`${product.name}${variant ? ' - ' + variant.name : ''} dihapus dari keranjang.`, 'info');
+        // Menambahkan produk ke keranjang atau menambah kuantitasnya
+        function tambahKeCart(productId, variantId) {
+            let product = produkList.find(p => p.id === productId);
+            let cartItem = null;
+            let variant = null;
+
+            if (variantId) {
+                variant = product.variants.find(v => v.id === variantId);
+                cartItem = cart.find(c => c.variant_id === variantId);
+            } else {
+                cartItem = cart.find(c => c.product_id === productId && !c.variant_id);
+            }
+
+            if (cartItem) {
+                cartItem.qty++;
+                showToast(
+                    `Kuantitas ${product.name}${variant ? ' - ' + variant.name : ''} ditambahkan menjadi ${cartItem.qty}.`,
+                    'info');
+            } else {
+                cart.push({
+                    product_id: productId,
+                    product_name: product.name,
+                    variant_id: variantId || null,
+                    variant_name: variant ? variant.name : null,
+                    price: variant ? variant.price : (product.price || product.harga),
+                    qty: 1
+                });
+                showToast(`${product.name}${variant ? ' - ' + variant.name : ''} ditambahkan ke keranjang.`, 'success');
+            }
             renderCart();
             tampilkanPilihanProduk();
+            hideProdukModal();
         }
-    }
 
-    // Mengubah kuantitas produk di keranjang (via index)
-    function ubahQtyCart(idx, change) {
-        cart[idx].qty += change;
-        if (cart[idx].qty < 1) cart[idx].qty = 1;
-        renderCart();
-    }
+        // Menghapus produk dari keranjang melalui modal produk
+        function hapusDariCart(productId, variantId) {
+            let product = produkList.find(p => p.id === productId);
+            let variant = null;
+            let cartItemIndex = -1;
 
-    // Menghapus produk dari keranjang (via index)
-    function hapusProdukCart(idx) {
-        const itemToRemove = cart[idx];
-        cart.splice(idx, 1);
-        renderCart();
-        tampilkanPilihanProduk();
-        showToast(`${itemToRemove.product_name}${itemToRemove.variant_name ? ' - ' + itemToRemove.variant_name : ''} dihapus dari keranjang.`, 'info');
-    }
+            if (variantId) {
+                variant = product.variants.find(v => v.id === variantId);
+                cartItemIndex = cart.findIndex(c => c.variant_id === variantId);
+            } else {
+                cartItemIndex = cart.findIndex(c => c.product_id === productId && !c.variant_id);
+            }
 
-    // Merender (menampilkan) isi keranjang
-    function renderCart() {
-        const cartDiv = document.getElementById('cart-list');
-        // Kosongkan isi sebelumnya
-        cartDiv.innerHTML = '';
-        let total = 0;
+            if (cartItemIndex !== -1) {
+                const removedItem = cart[cartItemIndex];
+                cart.splice(cartItemIndex, 1);
+                showToast(`${product.name}${variant ? ' - ' + variant.name : ''} dihapus dari keranjang.`, 'info');
+                renderCart();
+                tampilkanPilihanProduk();
+            }
+        }
 
-        // Jika keranjang kosong, tampilkan pesan
-        if (cart.length === 0) {
-            cartDiv.innerHTML = `<div class="p-8 text-center text-gray-500 dark:text-gray-400">Keranjang masih kosong. Tambahkan produk!</div>`;
-        } else {
-            // Buat container untuk tabel (desktop) dan div untuk card (mobile)
-            const desktopTableContainer = document.createElement('div');
-            desktopTableContainer.className = 'overflow-x-auto hidden md:block'; // Sembunyikan di mobile
+        // Mengubah kuantitas produk di keranjang (via index)
+        function ubahQtyCart(idx, change) {
+            cart[idx].qty += change;
+            if (cart[idx].qty < 1) cart[idx].qty = 1;
+            renderCart();
+        }
 
-            let tableHTML = `
+        // Menghapus produk dari keranjang (via index)
+        function hapusProdukCart(idx) {
+            const itemToRemove = cart[idx];
+            cart.splice(idx, 1);
+            renderCart();
+            tampilkanPilihanProduk();
+            showToast(
+                `${itemToRemove.product_name}${itemToRemove.variant_name ? ' - ' + itemToRemove.variant_name : ''} dihapus dari keranjang.`,
+                'info');
+        }
+
+        // Merender (menampilkan) isi keranjang
+        function renderCart() {
+            const cartDiv = document.getElementById('cart-list');
+            // Kosongkan isi sebelumnya
+            cartDiv.innerHTML = '';
+            let total = 0;
+
+            // Jika keranjang kosong, tampilkan pesan
+            if (cart.length === 0) {
+                cartDiv.innerHTML =
+                    `<div class="p-8 text-center text-gray-500 dark:text-gray-400">Keranjang masih kosong. Tambahkan produk!</div>`;
+            } else {
+                // Buat container untuk tabel (desktop) dan div untuk card (mobile)
+                const desktopTableContainer = document.createElement('div');
+                desktopTableContainer.className = 'overflow-x-auto hidden md:block'; // Sembunyikan di mobile
+
+                let tableHTML = `
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
@@ -674,19 +745,21 @@
                     <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
             `;
 
-            let mobileCardsHTML = `<div class="md:hidden">`; // Container untuk tampilan mobile
+                let mobileCardsHTML = `<div class="md:hidden">`; // Container untuk tampilan mobile
 
-            cart.forEach((item, idx) => {
-                const subtotal = item.qty * item.price;
-                total += subtotal;
+                cart.forEach((item, idx) => {
+                    const subtotal = item.qty * item.price;
+                    total += subtotal;
 
-                // Ambil URL gambar dari data produk yang ada di `produkList`
-                const productData = produkList.find(p => p.id === item.product_id);
-                // Fallback placeholder image if no image/foto is found
-                const imageUrl = productData ? (productData.image || productData.foto || 'https://placehold.co/64x64/E2E8F0/64748B?text=No+Img') : 'https://placehold.co/64x64/E2E8F0/64748B?text=No+Img';
+                    // Ambil URL gambar dari data produk yang ada di `produkList`
+                    const productData = produkList.find(p => p.id === item.product_id);
+                    // Fallback placeholder image if no image/foto is found
+                    const imageUrl = productData ? (productData.image || productData.foto ||
+                            'https://placehold.co/64x64/E2E8F0/64748B?text=No+Img') :
+                        'https://placehold.co/64x64/E2E8F0/64748B?text=No+Img';
 
-                // Tampilan Desktop (baris tabel)
-                tableHTML += `
+                    // Tampilan Desktop (baris tabel)
+                    tableHTML += `
                     <tr>
                         <td class="px-4 py-4 whitespace-nowrap">
                             <div class="text-sm text-gray-900 dark:text-white">${idx + 1}</div>
@@ -721,8 +794,8 @@
                     </tr>
                 `;
 
-                // Tampilan Mobile (card) - Posisi sudah ditukar
-                mobileCardsHTML += `
+                    // Tampilan Mobile (card) - Posisi sudah ditukar
+                    mobileCardsHTML += `
                     <div class="flex items-start gap-4 p-4 border-b border-gray-200 dark:border-gray-700">
                         <div class="flex-shrink-0 w-24 h-24">
                             <img class="object-cover w-24 h-24 rounded-md" src="${imageUrl}" alt="${item.product_name}">
@@ -750,49 +823,49 @@
                         </div>
                     </div>
                 `;
-            });
+                });
 
-            tableHTML += `
+                tableHTML += `
                     </tbody>
                 </table>
             `;
-            mobileCardsHTML += `</div>`; // Tutup container mobile
+                mobileCardsHTML += `</div>`; // Tutup container mobile
 
-            // Masukkan tabel desktop dan card mobile ke dalam div cartDiv
-            desktopTableContainer.innerHTML = tableHTML;
-            cartDiv.appendChild(desktopTableContainer);
-            cartDiv.innerHTML += mobileCardsHTML; // Tambahkan setelah tabel desktop
-        }
-
-        // Memperbarui semua elemen display total harga
-        const totalDisplayElements = document.querySelectorAll('.cart-total-display');
-        totalDisplayElements.forEach(el => {
-            if (el.id === 'cart-total') {
-                el.textContent = `Total: Rp ${total.toLocaleString('id-ID')}`;
-            } else {
-                el.textContent = `Rp ${total.toLocaleString('id-ID')}`;
+                // Masukkan tabel desktop dan card mobile ke dalam div cartDiv
+                desktopTableContainer.innerHTML = tableHTML;
+                cartDiv.appendChild(desktopTableContainer);
+                cartDiv.innerHTML += mobileCardsHTML; // Tambahkan setelah tabel desktop
             }
-        });
-    }
 
-    // --- Fungsi Modal Sukses ---
-    function showSuccessModal(message, invoiceNumber) { // Tambahkan parameter invoiceNumber
-        document.getElementById('success-message').textContent = message;
-
-        // Tampilkan nomor invoice jika ada
-        const invoiceEl = document.getElementById('success-invoice');
-        if (invoiceNumber) {
-            invoiceEl.textContent = 'No. Invoice: ' + invoiceNumber;
-            invoiceEl.classList.remove('hidden');
-        } else {
-            invoiceEl.classList.add('hidden');
+            // Memperbarui semua elemen display total harga
+            const totalDisplayElements = document.querySelectorAll('.cart-total-display');
+            totalDisplayElements.forEach(el => {
+                if (el.id === 'cart-total') {
+                    el.textContent = `Total: Rp ${total.toLocaleString('id-ID')}`;
+                } else {
+                    el.textContent = `Rp ${total.toLocaleString('id-ID')}`;
+                }
+            });
         }
 
-        document.getElementById('successModal').classList.remove('hidden');
-    }
+        // --- Fungsi Modal Sukses ---
+        function showSuccessModal(message, invoiceNumber) { // Tambahkan parameter invoiceNumber
+            document.getElementById('success-message').textContent = message;
 
-    function hideSuccessModal() {
-        document.getElementById('successModal').classList.add('hidden');
-    }
-</script>
+            // Tampilkan nomor invoice jika ada
+            const invoiceEl = document.getElementById('success-invoice');
+            if (invoiceNumber) {
+                invoiceEl.textContent = 'No. Invoice: ' + invoiceNumber;
+                invoiceEl.classList.remove('hidden');
+            } else {
+                invoiceEl.classList.add('hidden');
+            }
+
+            document.getElementById('successModal').classList.remove('hidden');
+        }
+
+        function hideSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+        }
+    </script>
 @endsection
