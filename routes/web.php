@@ -9,6 +9,8 @@ use App\Http\Controllers\KurirDashboardController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Admin\CourierController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\Admin\PeformaKurirController;
+use App\Http\Controllers\Admin\PeformaCustomerController;
 // use App\Http\Controllers\Admin\CustomerController;
 // use App\Http\Controllers\Kurir\KurirCustomerController;
 use App\Http\Controllers\Kurir\PesananController;
@@ -62,6 +64,14 @@ Route::middleware([
 
         // Route untuk mengubah status flag customer
         Route::post('customers/{customer}/flag', [CustomerController::class, 'toggleFlag'])->name('customers.toggleFlag');
+
+        // Routes untuk Peforma Kurir
+        Route::get('peforma-kurir', [PeformaKurirController::class, 'index'])->name('peforma-kurir.index');
+        Route::get('peforma-kurir/{kurir}', [PeformaKurirController::class, 'show'])->name('peforma-kurir.show');
+
+        // Routes untuk Peforma Customer
+        Route::get('peforma-customer', [PeformaCustomerController::class, 'index'])->name('peforma-customer.index');
+        Route::get('peforma-customer/{customer}', [PeformaCustomerController::class, 'show'])->name('peforma-customer.show');
     });
 
     // ---------- KURIR ----------
