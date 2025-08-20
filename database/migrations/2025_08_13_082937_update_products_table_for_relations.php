@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('image_path')->after('description');
             $table->string('tag')->nullable()->after('image_path');
             $table->boolean('is_active')->default(true)->after('tag');
-            // $table->dropColumn('price');
+            $table->dropColumn('price');
         });
     }
 
@@ -25,7 +25,7 @@ return new class extends Migration
             $table->dropColumn('image_path', 'image');
             $table->dropColumn('tag');
             $table->dropColumn('is_active');
-            // $table->decimal('price', 10, 2)->after('description');
+            $table->decimal('price', 10, 2)->after('description');
         });
     }
 };

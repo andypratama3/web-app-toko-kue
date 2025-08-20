@@ -61,6 +61,54 @@ class ProductSeeder extends Seeder
             ['name' => 'Isi 30 Kemasan Thinwall', 'price' => 35000],
         ]);
 
+        $pulutSrikaya = $catProduk->products()->create([
+            'name' => 'Kue Pulut Srikaya',
+            'description' => 'Kue Pulut yang dibuat dari beras ketan utuh yang akan menciptakan tekstur punel dan sedikit legit. Perpaduan warna Putih dari beras ketan dan Ungu alami dari bunga lawing (butterfly pea tea) menambah keindahan visual pada kue ini. Kue Pulut ini dilengkapi dengan saus srikaya yang membuat perpaduan antara manis dan sedikit gurih dari saus dan gurih dari kue pulut itu sendiri menjadikan perpaduan rasa yang lengkap dan lezat.',
+            'image_path' => 'assets/homepage/product/kue-pulut.jpg',
+            'tag' => 'Ala Carte',
+            'is_active' => true,
+        ]);
+        $pulutSrikaya->variants()->createMany([
+            ['name' => 'Isi 5 Kemasan Mika', 'price' => 17500],
+            ['name' => 'Isi 10 Kemasan Thinwall', 'price' => 35500],
+        ]);
+
+        $ubiNanas = $catProduk->products()->create([
+            'name' => 'Kue Ubi Nanas',
+            'description' => 'Kue yang terbuat dari perpaduan ubi singkong yang memiliki rasa netral dan tekstur padat dan buah nanas yang memiliki rasa manis, segar dan masam dipadukan. Kue ini memiliki tekrstur sedikit chewy dan padat hampir seperti kue talam pada umumnya. Kue ini memiliki rasa manis dan sedikit rasa segar dari buah nanas dan rasa gurih dari bahan bahan kue. Terbuat dari bahan alami sehingga aman dikonsumsi dan sehat. Kue ubi nanas berisi 4 potong kue.',
+            'image_path' => 'assets/homepage/product/kue-ubi-nanas.jpeg',
+            'tag' => 'Ala Carte',
+            'is_active' => true,
+        ]);
+        $ubiNanas->variants()->create(['name' => 'Per Cup', 'price' => 10000]);
+
+        $selaiSrikaya = $catProduk->products()->create([
+            'name' => 'Kue Selai Srikaya',
+            'description' => 'Selai yang terbuat dari perpaduan santan kelapa, telur, air pandan dan gula merah jawa menghasilkan rasa yang gurih dan manis pada selai ini. Selai yang memiliki tekstur kental dan memiliki warna oren pekat dihasilkan dari telur dan gula merah. Selai ini cocok dipadukan dengan kue yang memiliki cita rasa netral maupun gurih untuk menambahkan cita rasa manis pada rasa kue tersebut. Kemasan Botol 160ml yang praktis dan mudah dibawa kemana saja.',
+            'image_path' => 'assets/homepage/product/selai-srikaya.jpg',
+            'tag' => 'Ala Carte',
+            'is_active' => true,
+        ]);
+        $selaiSrikaya->variants()->create(['name' => 'Per Cup', 'price' => 60000]);
+
+        $mixMini = $catProduk->products()->create([
+            'name' => 'Kue Mix Mini',
+            'description' => 'Kue MIX mini ( Kemasan Mika) Berisi : Kue ijo 3 pcs, Kue Ongol-ongol 4 pcs dan Kue Pulut Srikaya 2 pcs Kue ini cocok untuk dijadikan sebagai oleh-oleh atau sebagai cemilan ringan.',
+            'image_path' => 'assets/homepage/product/kue-mix-mini.jpeg',
+            'tag' => 'Ala Carte',
+            'is_active' => true,
+        ]);
+        $mixMini->variants()->create(['name' => 'Per Cup', 'price' => 10000]);
+
+        $mix = $catProduk->products()->create([
+            'name' => 'Kue Mix (Kue Ijo & Kue Pulut)',
+            'description' => 'Kue MIX (Kemasan Thinwall) Berisi : Kue ijo 4 pcs, Kue Pulut Srikaya 5 pcs.',
+            'image_path' => 'assets/homepage/product/kue-mix-kueijo.jpeg',
+            'tag' => 'Ala Carte',
+            'is_active' => true,
+        ]);
+        $mix->variants()->create(['name' => 'Per Cup', 'price' => 35000]);
+
         // 3. Buat Produk untuk Kategori 'Hampers'
         $hampersA = $catHampers->products()->create([
             'name' => 'Hampers A (Anggun)',
@@ -71,6 +119,24 @@ class ProductSeeder extends Seeder
         ]);
         $hampersA->variants()->create(['name' => 'Paket A', 'price' => 160000]);
 
+        $hampersB = $catHampers->products()->create([
+            'name' => 'Hampers B (Bagus)',
+            'description' => 'Berisi: Kue Ijo (12 pcs), Kue Ongol-ongol (30 pcs), Kue Pulut Srikaya (10 pcs).',
+            'image_path' => 'assets/homepage/product/hampers-b.jpg',
+            'tag' => 'Hampers',
+            'is_active' => true,
+        ]);
+        $hampersB->variants()->create(['name' => 'Paket B', 'price' => 115000]);
+
+        $hampersC = $catHampers->products()->create([
+            'name' => 'Hampers C (Cantik)',
+            'description' => 'Belum ada data.',
+            'image_path' => 'assets/homepage/product/hampers-c.png',
+            'tag' => 'Hampers',
+            'is_active' => true,
+        ]);
+        $hampersC->variants()->create(['name' => 'Paket A', 'price' => 0]);
+
         // 4. Buat Produk untuk Kategori 'Tumpeng'
         $tumpengMini = $catTumpeng->products()->create([
             'name' => 'Tumpeng Mini Mix',
@@ -80,5 +146,14 @@ class ProductSeeder extends Seeder
             'is_active' => true,
         ]);
         $tumpengMini->variants()->create(['name' => 'Paket Mini', 'price' => 250000]);
+
+        $tumpengBesar = $catTumpeng->products()->create([
+            'name' => 'Tumpeng Besar Mix',
+            'description' => 'Berisi: Kue Ijo (50 pcs), Kue Pulut (40 pcs), Kue Ongol-ongol (100 pcs), Lumpur Surga (12 cup). Tumpeng besar mix untuk acara keluarga, kantor, arisan, atau perayaan penting lainnya.',
+            'image_path' => 'assets/homepage/product/tumpeng-besar.jpg',
+            'tag' => 'Tumpeng',
+            'is_active' => true,
+        ]);
+        $tumpengBesar->variants()->create(['name' => 'Paket Besar', 'price' => 500000]);
     }
 }

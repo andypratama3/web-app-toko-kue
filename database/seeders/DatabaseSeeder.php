@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         $this->call([
-            // RoleAndUserSeeder::class,
+            RoleAndUserSeeder::class,
             ProductSeeder::class,
             // Seeder lain bisa ditambahkan di sini
         ]);

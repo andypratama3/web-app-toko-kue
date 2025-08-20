@@ -69,18 +69,18 @@ Route::middleware([
         // Tambahkan route produk untuk kurir (hanya lihat)
         Route::get('products', [ProductController::class, 'index'])->name('products.index');
         // Endpoint JSON produk untuk pemesanan
-        Route::get('produk/json', function() {
+        Route::get('produk/json', function () {
             return \App\Models\Product::where('is_active', true)
-                ->with(['variants' => function($q) {
+                ->with(['variants' => function ($q) {
                     $q->select('id', 'product_id', 'name', 'price');
                 }])
                 ->get(['id', 'name', 'image_path'])
-                ->map(function($p) {
+                ->map(function ($p) {
                     return [
                         'id' => $p->id,
                         'name' => $p->name,
                         'image' => $p->image_path ? asset($p->image_path) : null,
-                        'variants' => $p->variants->map(function($v) {
+                        'variants' => $p->variants->map(function ($v) {
                             return [
                                 'id' => $v->id,
                                 'name' => $v->name,
@@ -90,7 +90,7 @@ Route::middleware([
                     ];
                 });
         })->name('produk.json');
-        
+
         // Profile kurir
         Route::get('profile', [KurirDashboardController::class, 'profile'])->name('profile');
         Route::put('profile', [KurirDashboardController::class, 'updateProfile'])->name('profile.update');
@@ -113,15 +113,22 @@ Route::middleware([
         Route::put('customers/{customer}/note', [CustomerController::class, 'updateNote'])
             ->name('customers.update-note');
 
-        Route::get('/pesanan', [PesananController::class, 'index'])
-            ->name('pesanan.index');
+        // Route::get('/pesanan', [PesananController::class, 'index'])
+        //     ->name('pesanan.index');
+
+        // Ini akan memanggil metode showFilteredOrders di PesananController
+        Route::get('/pesanan', [PesananController::class, 'showFilteredOrders'])
+            ->name('pesanan.index'); // <-- Nama route Anda sudah 'pesanan.index'
 
         //Route untuk ambil data customer dipesanan
         Route::get('kurir/dashboard/create', [PesananController::class, 'showCustomer'])
             ->name('customer.showCustomer');
 
-        Route::post('/orders/checkout', [PesananController::class, 'checkout'])
-            ->name('orders.checkout');
+    });
+
+    // Route untuk checkout pesanan
+    Route::middleware(['auth', 'role:kurir'])->prefix('kurir')->name('kurir.')->group(function () {
+        Route::post('/orders/checkout', [PesananController::class, 'checkout'])->name('orders.checkout');
     });
 
     // ---------- COMMON DASHBOARD REDIRECT ----------

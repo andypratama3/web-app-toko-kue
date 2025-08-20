@@ -37,12 +37,12 @@
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-center">No.</th>
-                        <th scope="col" class="px-6 py-3 text-center">Nama Customer</th>
-                        <th scope="col" class="px-6 py-3 text-center">Alamat</th>
-                        <th scope="col" class="px-6 py-3 text-center">Nomor Telepon</th>
-                        <th scope="col" class="px-6 py-3 text-center">Region</th>
-                        <th scope="col" class="px-6 py-3 text-center">Note</th>
-                        <th scope="col" class="px-4 py-3 text-center"><span class="sr-only">Aksi</span></th>
+                        <th scope="col" class="px-6 py-3">👤 Nama Customer</th>
+                        <th scope="col" class="px-6 py-3">📍Alamat</th>
+                        <th scope="col" class="px-6 py-3">Nomor Telepon</th>
+                        <th scope="col" class="px-6 py-3">Region</th>
+                        <th scope="col" class="px-6 py-3">📝 Note</th>
+                        <th scope="col" class="px-4 py-3"><span class="sr-only">Aksi</span></th>
                     </tr>
                 </thead>
                 <tbody id="customer-results-container">

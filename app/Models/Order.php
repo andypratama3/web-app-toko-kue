@@ -9,24 +9,38 @@ class Order extends Model
 {
     use HasFactory;
 
-   protected $fillable = [
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    // PASTIKAN SEMUA KOLOM INI ADA DI DALAM $fillable
+    protected $fillable = [
+        'invoice_number',
         'customer_id',
-        'phone', // Tambahkan ke fillable
-        'address', // Tambahkan ke fillable
-        'payment_method',
-        'note',
+        'phone',
+        'address',
         'total_amount',
-        'status',
-        'courier_id', // Jika ada
+        'payment_method',
+        'payment_proof',
+        'note',
+        'created_by_user_id',
+        'region_id',          
     ];
 
+    /**
+     * Get the items for the order.
+     */
+    public function items()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Get the customer that owns the order.
+     */
     public function customer()
     {
         return $this->belongsTo(Customer::class);
-    }
-
-    public function items()
-    {
-        return $this->hasMany(OrderDetail::class);
     }
 }
