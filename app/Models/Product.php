@@ -11,6 +11,7 @@ class Product extends Model
 
     protected $fillable = [
         'category_id',
+        'region_id', // Tambahkan region_id
         'name',
         'description',
         'image_path',
@@ -21,6 +22,12 @@ class Product extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    // Tambahkan relasi ke Region
+    public function region()
+    {
+        return $this->belongsTo(Region::class);
     }
 
     public function variants()

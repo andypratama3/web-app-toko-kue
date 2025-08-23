@@ -8,10 +8,32 @@ use Illuminate\Database\Eloquent\Model;
 class ProductVariant extends Model
 {
     use HasFactory;
-    protected $fillable = ['product_id', 'name', 'price'];
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'product_id',
+        'name',
+        'price',
+        'is_active' // Tambahkan ini
+    ];
+
+    /**
+     * Get the product that owns the variant.
+     */
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * Get the order items for the product variant.
+     */
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class, 'variant_id');
     }
 }

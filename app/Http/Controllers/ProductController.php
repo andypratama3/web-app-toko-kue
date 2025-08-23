@@ -4,52 +4,166 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\QueryException;
 
 class ProductController extends Controller
 {
-    /**
-     * Menampilkan daftar produk (read-only).
-     */
-    public function index()
+    public function __construct()
     {
-        $categories = Category::with(['products' => function ($query) {
-            $query->with('variants')->where('is_active', true);
-        }])->get();
-
-        // Untuk kurir, kita bisa membuat view terpisah jika diperlukan
-        // atau menggunakan @can di view admin untuk menyembunyikan tombol.
-        // Untuk saat ini, kita asumsikan admin dan kurir melihat halaman yang sama.
-        return view('dashboard.admin.products.index', compact('categories'));
+        $this->middleware(['auth', 'role:admin']);
     }
 
-    /**
-     * Fitur Create, Store, Edit, Update, dan Destroy dinonaktifkan.
-     * Method-method di bawah ini bisa dihapus atau dibiarkan kosong.
-     */
+    // Method index tetap sama, tidak perlu diubah
+    public function index()
+    {
+        $user = Auth::user(); // Ambil data user yang sedang login
+        $userRegionId = $user->region_id;
 
-    // public function create()
-    // {
-    //     // Dinonaktifkan
-    // }
+        $categories = Category::whereHas('products', function ($query) use ($userRegionId) {
+            $query->where('region_id', $userRegionId);
+        })->with(['products' => function ($query) use ($userRegionId) {
+            $query->where('region_id', $userRegionId)
+                ->with(['variants' => function ($q) {
+                    $q->where('is_active', true);
+                }])
+                ->where('is_active', true);
+        }])->get();
 
-    // public function store(Request $request)
-    // {
-    //     // Dinonaktifkan
-    // }
+        $all_categories = Category::all();
 
-    // public function edit(Product $product)
-    // {
-    //     // Dinonaktifkan
-    // }
+        // Ambil nama region dari relasi
+        $regionName = $user->region->name;
 
-    // public function update(Request $request, Product $product)
-    // {
-    //     // Dinonaktifkan
-    // }
+        // Kirim variabel $regionName ke view
+        return view('dashboard.admin.products.index', compact('categories', 'all_categories', 'regionName'));
+    }
 
-    // public function destroy(Product $product)
-    // {
-    //     // Dinonaktifkan
-    // }
+    // Method 'create' dan 'edit' tidak lagi diperlukan karena modal di-include langsung
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'category_id' => 'required|exists:categories,id',
+            'description' => 'required|string',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'variants' => 'required|array|min:1',
+            'variants.*.name' => 'required|string|max:255',
+            'variants.*.price' => 'required|integer|min:0',
+        ]);
+
+        DB::transaction(function () use ($request) {
+            $imagePath = $request->file('image')->store('public/products');
+
+            $product = Product::create([
+                'name' => $request->name,
+                'category_id' => $request->category_id,
+                'region_id' => Auth::user()->region_id,
+                'description' => $request->description,
+                'image_path' => Storage::url($imagePath),
+                'tag' => $request->tag,
+                'is_active' => true, // <-- UBAH DI SINI: Langsung diatur ke 'true' (atau 1)
+            ]);
+
+            foreach ($request->variants as $variantData) {
+                $product->variants()->create($variantData);
+            }
+        });
+
+        return redirect()->route('admin.products.index')->with('success', 'Produk berhasil ditambahkan.');
+    }
+
+    public function update(Request $request, Product $product)
+    {
+        if ($product->region_id !== Auth::user()->region_id) {
+            abort(403);
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'category_id' => 'required|exists:categories,id',
+            'description' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'variants' => 'required|array|min:1',
+            'variants.*.name' => 'required|string|max:255',
+            'variants.*.price' => 'required|integer|min:0',
+        ]);
+
+        DB::transaction(function () use ($product, $request) {
+            $productData = $request->only(['name', 'category_id', 'description', 'tag']);
+            $productData['is_active'] = $request->has('is_active');
+
+            if ($request->hasFile('image')) {
+                if ($product->image_path) {
+                    Storage::delete(str_replace('/storage', 'public', $product->image_path));
+                }
+                $imagePath = $request->file('image')->store('public/products');
+                $productData['image_path'] = Storage::url($imagePath);
+            }
+            $product->update($productData);
+
+            $existingVariantIds = $product->variants()->pluck('id')->toArray();
+            $submittedVariantIds = [];
+
+            foreach ($request->variants as $variantData) {
+                // KONDISI LAMA: if (isset($variantData['id']) && !empty($variantData['id']))
+                // KONDISI BARU: Cukup periksa apakah 'id' ada dan tidak kosong.
+                if (!empty($variantData['id'])) {
+                    // Ini adalah varian LAMA -> UPDATE
+                    $variant = ProductVariant::find($variantData['id']);
+                    if ($variant) {
+                        $variant->update([
+                            'name' => $variantData['name'],
+                            'price' => $variantData['price'],
+                            'is_active' => true,
+                        ]);
+                        $submittedVariantIds[] = (int)$variant->id;
+                    }
+                } else {
+                    // Ini adalah varian BARU -> CREATE
+                    $newVariant = $product->variants()->create([
+                        'name' => $variantData['name'],
+                        'price' => $variantData['price'],
+                    ]);
+                    $submittedVariantIds[] = $newVariant->id;
+                }
+            }
+
+            $variantsToDeleteIds = array_diff($existingVariantIds, $submittedVariantIds);
+
+            foreach (ProductVariant::findMany($variantsToDeleteIds) as $variantToDelete) {
+                try {
+                    $variantToDelete->delete();
+                } catch (QueryException $e) {
+                    if ($e->getCode() === '23000') $variantToDelete->update(['is_active' => false]);
+                    else throw $e;
+                }
+            }
+        });
+
+        return redirect()->route('admin.products.index')->with('success', 'Produk berhasil diperbarui.');
+    }
+
+    public function destroy(Product $product)
+    {
+        if ($product->region_id !== Auth::user()->region_id) {
+            abort(403);
+        }
+
+        try {
+            DB::transaction(function () use ($product) {
+                if ($product->image_path) Storage::delete(str_replace('/storage', 'public', $product->image_path));
+                $product->delete();
+            });
+        } catch (QueryException $e) {
+            return back()->withErrors('Gagal menghapus produk karena terkait dengan pesanan yang ada.');
+        }
+
+        return redirect()->route('admin.products.index')->with('success', 'Produk berhasil dihapus.');
+    }
 }

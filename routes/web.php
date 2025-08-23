@@ -47,7 +47,8 @@ Route::middleware([
 
         // Produk (resource)
         // Route::resource('products', ProductController::class);
-        Route::resource('products', ProductController::class)->only(['index']);
+        // Route::resource('products', ProductController::class)->only(['index']);
+        Route::resource('products', ProductController::class);
 
         // Manajemen kurir
         Route::resource('couriers', CourierController::class)
