@@ -31,7 +31,7 @@
 
         {{-- Rincian Produk --}}
         <div>
-            <h4 class="pb-2 mb-3 text-lg font-semibold text-gray-800 border-b dark:text-white">🛍️ Rincian Produk</h4>
+            <h4 class="pb-2 mb-3 text-lg font-semibold text-gray-800 border-b dark:text-white">📦 Rincian Produk</h4>
             <div id="modal-product-list" class="pr-2 space-y-3 overflow-y-auto max-h-60">
                 {{-- Daftar produk akan diisi oleh JavaScript --}}
             </div>

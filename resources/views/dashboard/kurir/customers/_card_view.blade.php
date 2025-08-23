@@ -18,7 +18,7 @@
         </p>
         @if ($customer->note)
             <p class="mb-1 text-xs italic text-gray-700 dark:text-gray-300">
-                📝 {{ $customer->note }}
+                📌 {{ $customer->note }}
             </p>
         @endif
         <div class="flex justify-end pt-2 mb-0 space-x-3 border-t border-gray-200 dark:border-gray-700">
@@ -28,13 +28,11 @@
             </a>
             <button type="button" data-modal-toggle="note-modal-{{ $customer->id }}"
                 class="text-lg text-yellow-600 transition transform dark:text-yellow-500 hover:scale-125 active:scale-90">
-                <!-- <i class="far fa-comment-dots"></i> -->
                 📋
             </button>
             <button type="button" data-modal-toggle="edit-modal-{{ $customer->id }}"
                 class="text-lg text-blue-600 transition transform dark:text-blue-500 hover:scale-125 active:scale-90">
-                <!-- <i class="fas fa-pencil-alt"></i> -->
-                <i class="fas fa-file-signature"></i>
+                ✍🏻
             </button>
 
             <button type="button" data-modal-toggle="delete-modal-{{ $customer->id }}"
