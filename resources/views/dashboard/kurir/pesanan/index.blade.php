@@ -50,7 +50,7 @@
                         <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap dark:text-gray-300">
                             {{ $loop->iteration }}
                             @if($order->show_warning)
-                                <span title="Pembayaran melewati 5 hari">⚠️</span>
+                            <span title="Pembayaran melewati 5 hari">⚠️</span>
                             @endif
                         </td>
                         <td class="px-6 py-4 font-mono text-sm text-gray-900 whitespace-nowrap dark:text-white">
@@ -236,11 +236,11 @@
         // Skenario 1: Bukti sudah diunggah (status 'selesai')
         if (order.payment_proof) {
             paymentProofUploaded.classList.remove('hidden');
-        } 
+        }
         // Skenario 2: Pesanan sudah diterima pembeli, siap untuk unggah bukti
         else if (order.status === 'diterima_pembeli') {
             paymentUploadForm.classList.remove('hidden');
-            
+
             // Atur form
             fileInput.value = '';
             submitButton.disabled = true;
@@ -251,7 +251,7 @@
                 e.preventDefault();
                 handlePaymentUpload(order.id);
             };
-        } 
+        }
         // Skenario 3: Pesanan belum diterima pembeli, belum bisa unggah bukti
         else {
             paymentUploadBlocker.classList.remove('hidden');
@@ -360,15 +360,38 @@
 
     function populateStatusStepperModal(order) {
         const statusMap = {
-            'dikemas': { label: 'Dikemas', nextStatus: 'diambil', buttonText: 'Ubah Status ke Diambil' },
-            'diambil': { label: 'Diambil', nextStatus: 'diantar', buttonText: 'Ubah Status ke Diantar' },
-            'diantar': { label: 'Diantar', nextStatus: 'diterima_pembeli', buttonText: 'Ubah Status ke Diterima Pembeli' },
-            'diterima_pembeli': { label: 'Diterima Pembeli', nextStatus: null, buttonText: 'Menunggu Pembayaran' },
-            'selesai': { label: 'Selesai (Lunas)', nextStatus: null, buttonText: 'Pesanan Selesai' },
+            'dikemas': {
+                label: 'Dikemas',
+                nextStatus: 'diambil',
+                buttonText: 'Ubah Status ke Diambil'
+            },
+            'diambil': {
+                label: 'Diambil',
+                nextStatus: 'diantar',
+                buttonText: 'Ubah Status ke Diantar'
+            },
+            'diantar': {
+                label: 'Diantar',
+                nextStatus: 'diterima_pembeli',
+                buttonText: 'Ubah Status ke Diterima Pembeli'
+            },
+            'diterima_pembeli': {
+                label: 'Diterima Pembeli',
+                nextStatus: null,
+                buttonText: 'Menunggu Pembayaran'
+            },
+            'selesai': {
+                label: 'Selesai (Lunas)',
+                nextStatus: null,
+                buttonText: 'Pesanan Selesai'
+            },
         };
 
+        document.getElementById('modalStatusInvoiceNumber').textContent = order.invoice_number || 'N/A';
+        document.getElementById('modalStatusCustomerName').textContent = order.customer.name || 'N/A';
+
         const currentStatus = order.status;
-        const effectiveStatus = currentStatus && statusMap[currentStatus] ? currentStatus : 'dikemas'; 
+        const effectiveStatus = currentStatus && statusMap[currentStatus] ? currentStatus : 'dikemas';
 
         const updateButton = document.getElementById('updateStatusButton');
         const updateButtonText = document.getElementById('updateStatusButtonText');
@@ -380,16 +403,16 @@
             const iconEl = document.getElementById(`step-${step}-icon`);
             // Reset Ikon
             iconEl.classList.remove('bg-blue-600', 'text-white', 'border-blue-600', 'bg-green-600', 'border-green-600');
-            iconEl.classList.add('border-gray-300', 'text-gray-500', 'dark:border-gray-600', 'dark:text-gray-400');
-            
+            iconEl.classList.add('border-gray-300', 'text-gray-500', 'dark:border-gray-600', 'dark:text-gray-400', 'bg-white', 'dark:bg-gray-700');
+
             // Reset Garis (Desktop & Mobile)
             const lineDesktop = document.getElementById(`line-${step === 'diambil' ? 'diantar' : step}`);
             const lineMobile = document.getElementById(`line-${step}-mobile`);
-            if(lineDesktop) {
+            if (lineDesktop) {
                 lineDesktop.classList.remove('bg-blue-600', 'bg-green-600');
                 lineDesktop.classList.add('bg-gray-200', 'dark:bg-gray-600');
             }
-            if(lineMobile) {
+            if (lineMobile) {
                 lineMobile.classList.remove('bg-blue-600', 'bg-green-600');
                 lineMobile.classList.add('bg-gray-200', 'dark:bg-gray-600');
             }
@@ -407,19 +430,26 @@
         if (order.picked_up_at) {
             const icon = document.getElementById('step-diambil-icon');
             const lineMobile = document.getElementById('line-diambil-mobile');
-            icon.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
-            lineMobile.classList.add('bg-blue-600');
+
+            icon.classList.remove('border-gray-300', 'text-gray-500', 'dark:border-gray-600', 'dark:text-gray-400', 'bg-white', 'dark:bg-gray-700');
+            icon.classList.add('bg-green-600', 'text-white', 'border-green-600');
+            lineMobile.classList.remove('bg-gray-200', 'dark:bg-gray-600');
+            lineMobile.classList.add('bg-green-600');
             icon.innerHTML = '<i class="fas fa-check-circle"></i>';
             document.getElementById('pickedUpAt').textContent = order.picked_up_at;
         }
-        
+
         if (order.delivered_at) {
             const icon = document.getElementById('step-diantar-icon');
             const lineDesktop = document.getElementById('line-diantar');
             const lineMobile = document.getElementById('line-diantar-mobile');
-            icon.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
-            lineDesktop.classList.add('bg-blue-600');
-            lineMobile.classList.add('bg-blue-600');
+
+            icon.classList.remove('border-gray-300', 'text-gray-500', 'dark:border-gray-600', 'dark:text-gray-400', 'bg-white', 'dark:bg-gray-700');
+            icon.classList.add('bg-green-600', 'text-white', 'border-green-600');
+            lineDesktop.classList.remove('bg-gray-200', 'dark:bg-gray-600');
+            lineDesktop.classList.add('bg-green-600');
+            lineMobile.classList.remove('bg-gray-200', 'dark:bg-gray-600');
+            lineMobile.classList.add('bg-green-600');
             icon.innerHTML = '<i class="fas fa-check-circle"></i>';
             document.getElementById('deliveredAt').textContent = order.delivered_at;
         }
@@ -427,17 +457,14 @@
         if (order.received_by_buyer_at) {
             const icon = document.getElementById('step-diterima_pembeli-icon');
             const lineDesktop = document.getElementById('line-diterima_pembeli');
-            
-            if (effectiveStatus === 'selesai') {
-                icon.classList.remove('bg-blue-600', 'border-blue-600');
-                icon.classList.add('bg-green-600', 'text-white', 'border-green-600');
-                lineDesktop.classList.remove('bg-blue-600');
+
+            icon.classList.remove('border-gray-300', 'text-gray-500', 'dark:border-gray-600', 'dark:text-gray-400', 'bg-white', 'dark:bg-gray-700');
+            icon.classList.add('bg-green-600', 'text-white', 'border-green-600');
+            if (lineDesktop) { // Check if lineDesktop exists before adding classes
+                lineDesktop.classList.remove('bg-gray-200', 'dark:bg-gray-600');
                 lineDesktop.classList.add('bg-green-600');
-            } else { 
-                icon.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
-                lineDesktop.classList.add('bg-blue-600');
             }
-            
+
             icon.innerHTML = '<i class="fas fa-check-circle"></i>';
             document.getElementById('receivedByBuyerAt').textContent = order.received_by_buyer_at;
         }
@@ -459,6 +486,157 @@
 
         document.getElementById('statusStepperModalLoader').classList.add('hidden');
         document.getElementById('statusStepperModalContent').classList.remove('hidden');
+    }
+
+    // Fungsi handleStatusUpdate, updateTableRowStatus, getCsrfToken, fetchOrderDetails, populateOrderDetailsModal, handlePaymentUpload, showCustomAlert, dan event listener lainnya tetap sama.
+    // ... (fungsi-fungsi lain tetap sama) ...
+    function getCsrfToken() {
+        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    }
+
+    async function fetchOrderDetails(orderId) {
+        const modalLoader = document.getElementById('modalLoader');
+        const modalContent = document.getElementById('modalContent');
+
+        modalContent.classList.add('hidden');
+        modalLoader.classList.remove('hidden');
+        modalLoader.innerHTML = `
+                <svg class="w-8 h-8 text-blue-600 animate-spin mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="mt-4 text-lg font-medium text-gray-700 dark:text-gray-300">Memuat Detail Pesanan...</p>`;
+
+        try {
+            const response = await fetch(`/kurir/pesanan/${orderId}/details`, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': getCsrfToken()
+                }
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message);
+
+            populateOrderDetailsModal(data);
+        } catch (error) {
+            console.error('Error fetching order details:', error);
+            modalLoader.innerHTML = `<div class="text-center"><p class="font-bold text-red-600">Gagal Memuat Data</p><p class="mt-2 text-sm text-gray-500">${error.message}</p></div>`;
+        }
+    }
+
+    function populateOrderDetailsModal(order) {
+        // Mengisi data umum (invoice, customer, dll)
+        document.getElementById('modalInvoiceNumber').textContent = order.invoice_number || 'N/A';
+        document.getElementById('customerName').textContent = order.customer.name || 'N/A';
+        document.getElementById('customerPhone').textContent = order.customer.phone || 'N/A';
+        document.getElementById('customerAddress').textContent = order.customer.address || 'N/A';
+        document.getElementById('paymentMethod').textContent = order.payment_method || 'N/A';
+        document.getElementById('orderCreatedAt').textContent = order.created_at || 'Tidak tersedia';
+
+        const orderPaidAtEl = document.getElementById('orderPaidAt');
+        if (order.paid_at) {
+            orderPaidAtEl.textContent = order.paid_at + (order.paid_at_label || ' ✅');
+        } else {
+            orderPaidAtEl.textContent = 'Belum Dibayar ❌';
+        }
+
+        const productDetailsDiv = document.getElementById('productDetails');
+        productDetailsDiv.innerHTML = '';
+        if (order.products && order.products.length > 0) {
+            order.products.forEach(product => {
+                const productItem = document.createElement('div');
+                productItem.className = 'p-3 border rounded-lg dark:border-gray-700';
+                productItem.innerHTML = `<p class="font-semibold text-gray-900 dark:text-white">${product.name} ${product.variant_name ? `(${product.variant_name})` : ''}</p><p class="text-sm text-gray-700 dark:text-gray-300">Jumlah: ${product.quantity}</p><p class="text-sm text-gray-700 dark:text-gray-300">Harga: Rp ${new Intl.NumberFormat('id-ID').format(product.price)}</p>`;
+                productDetailsDiv.appendChild(productItem);
+            });
+        } else {
+            productDetailsDiv.innerHTML = '<p class="text-gray-700 dark:text-gray-300">Tidak ada produk.</p>';
+        }
+
+        document.getElementById('modalTotalAmount').textContent = `Rp ${new Intl.NumberFormat('id-ID').format(order.total_amount || 0)}`;
+
+        const paymentUploadForm = document.getElementById('paymentUploadForm');
+        const paymentProofUploaded = document.getElementById('paymentProofUploaded');
+        const paymentUploadBlocker = document.getElementById('paymentUploadBlocker'); // Ambil div blocker
+        const fileInput = document.getElementById('payment_proof_file');
+        const submitButton = paymentUploadForm.querySelector('button[type="submit"]');
+
+        // Sembunyikan semua elemen terkait pembayaran terlebih dahulu
+        paymentUploadForm.classList.add('hidden');
+        paymentProofUploaded.classList.add('hidden');
+        paymentUploadBlocker.classList.add('hidden');
+
+        // Skenario 1: Bukti sudah diunggah (status 'selesai')
+        if (order.payment_proof) {
+            paymentProofUploaded.classList.remove('hidden');
+        }
+        // Skenario 2: Pesanan sudah diterima pembeli, siap untuk unggah bukti
+        else if (order.status === 'diterima_pembeli') {
+            paymentUploadForm.classList.remove('hidden');
+
+            // Atur form
+            fileInput.value = '';
+            submitButton.disabled = true;
+            fileInput.onchange = () => {
+                submitButton.disabled = fileInput.files.length === 0;
+            };
+            paymentUploadForm.onsubmit = (e) => {
+                e.preventDefault();
+                handlePaymentUpload(order.id);
+            };
+        }
+        // Skenario 3: Pesanan belum diterima pembeli, belum bisa unggah bukti
+        else {
+            paymentUploadBlocker.classList.remove('hidden');
+        }
+
+        document.getElementById('modalLoader').classList.add('hidden');
+        document.getElementById('modalContent').classList.remove('hidden');
+    }
+
+    async function handlePaymentUpload(orderId) {
+        const form = document.getElementById('paymentUploadForm');
+        const submitButton = form.querySelector('button[type="submit"]');
+        const buttonText = document.getElementById('uploadButtonText');
+        const buttonSpinner = document.getElementById('uploadButtonSpinner');
+        const buttonStatus = document.getElementById('uploadButtonStatus');
+        const formData = new FormData(form);
+
+        submitButton.disabled = true;
+        buttonText.classList.add('hidden');
+        buttonSpinner.classList.remove('hidden');
+        buttonStatus.classList.remove('hidden');
+
+        try {
+            const response = await fetch(`/kurir/pesanan/${orderId}/upload-proof`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': getCsrfToken()
+                },
+                body: formData
+            });
+            const result = await response.json();
+            if (!response.ok) {
+                let errorMessage = result.message;
+                if (result.errors?.payment_proof) {
+                    errorMessage += `\n- ${result.errors.payment_proof.join('\n- ')}`;
+                }
+                throw new Error(errorMessage);
+            }
+            // Setelah unggahan berhasil, ambil kembali detail dan perbarui status tabel
+            fetchOrderDetails(orderId);
+            // Asumsikan 'selesai' adalah status setelah unggahan bukti pembayaran
+            updateTableRowStatus(orderId, 'selesai');
+            showCustomAlert(result.message, 'success');
+        } catch (error) {
+            // Menggunakan kotak pesan kustom sebagai ganti alert
+            showCustomAlert(`Upload Gagal: ${error.message}`);
+            submitButton.disabled = false;
+            buttonText.classList.remove('hidden');
+            buttonSpinner.classList.add('hidden');
+            buttonStatus.classList.add('hidden');
+        }
     }
 
     async function handleStatusUpdate() {
@@ -487,7 +665,9 @@
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': getCsrfToken()
                 },
-                body: JSON.stringify({ new_status: newStatus })
+                body: JSON.stringify({
+                    new_status: newStatus
+                })
             });
             const result = await response.json();
             if (!response.ok) throw new Error(result.message);
@@ -566,7 +746,7 @@
                 </svg>
             </button>
         `;
-        alertContainer.appendChild(alertContainer);
+        alertContainer.appendChild(alertDiv); // Perbaikan di sini, sebelumnya alertContainer.appendChild(alertContainer);
 
         setTimeout(() => {
             alertDiv.classList.remove('translate-x-full', 'opacity-0');

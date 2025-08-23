@@ -7,6 +7,12 @@
         </div>
 
         <div id="statusStepperModalContent" class="hidden">
+            <!-- Menampilkan Nomor Invoice dan Nama Pelanggan di atas stepper -->
+            <div class="mb-4 text-center">
+                <p class="text-sm text-gray-500 dark:text-gray-400">Nomor Invoice: <span id="modalStatusInvoiceNumber" class="font-semibold text-gray-800 dark:text-gray-200"></span></p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Pelanggan: <span id="modalStatusCustomerName" class="font-semibold text-gray-800 dark:text-gray-200"></span></p>
+            </div>
+
             <div class="md:flex md:items-center md:justify-between md:text-center md:mb-6">
 
                 <!-- Step Diambil -->
