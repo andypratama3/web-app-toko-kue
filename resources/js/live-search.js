@@ -3,28 +3,21 @@
  *
  * @param {object} options - The configuration options.
  * @param {string} options.searchInputId - The ID of the search input element.
- * @param {string} options.resultsContainerId - The ID of the container where results will be rendered.
- * @param {string} options.loadingStateHtml - HTML to display while loading results.
+ * @param {string} options.desktopContainerId - The ID of the container where desktop results will be rendered.
+ * @param {string} [options.mobileContainerId] - The ID of the container where mobile results will be rendered.
  * @param {number} [options.debounceTime=300] - Time in ms to wait after user stops typing.
  */
 window.initializeLiveSearch = function (options) {
     const searchInput = document.getElementById(options.searchInputId);
-    const desktopContainer = document.getElementById(
-        options.desktopContainerId
-    );
+    const desktopContainer = document.getElementById(options.desktopContainerId);
     const mobileContainer = document.getElementById(options.mobileContainerId);
 
     if (!searchInput || (!desktopContainer && !mobileContainer)) {
-        console.error(
-            "LiveSearch Error: Search input or at least one result container not found."
-        );
+        console.error("LiveSearch Error: Search input or at least one result container not found.");
         return;
     }
 
-    // Default loading state
-    const loadingHtml =
-        options.loadingStateHtml ||
-        `
+    const loadingHtml = `
         <tr>
             <td colspan="100%" class="text-center p-4">
                 <div class="flex justify-center items-center">
@@ -38,47 +31,48 @@ window.initializeLiveSearch = function (options) {
         </tr>`;
 
     let debounceTimer;
+    const debounceTime = options.debounceTime || 300;
 
     searchInput.addEventListener("input", (e) => {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
             performSearch(e.target.value);
-        }, 300);
+        }, debounceTime);
     });
 
     async function performSearch(query) {
-        // Tampilkan loading state jika ada (opsional)
-        if (desktopContainer)
-            desktopContainer.innerHTML = `<tr><td colspan="100%" class="text-center p-4">Mencari...</td></tr>`;
-        if (mobileContainer)
-            mobileContainer.innerHTML = `<div class="text-center p-4">Mencari...</div>`;
+        if (desktopContainer) desktopContainer.innerHTML = loadingHtml;
+        if (mobileContainer) mobileContainer.innerHTML = `<div class="text-center p-4">${loadingHtml}</div>`;
 
         const url = new URL(window.location.href);
         url.searchParams.set("search", query);
+        url.searchParams.set("page", 1); // Selalu reset ke halaman 1 saat pencarian baru
 
         try {
             const response = await fetch(url.toString(), {
                 method: "GET",
-                headers: { "X-Requested-With": "XMLHttpRequest" },
+                headers: { "X-Requested-With": "XMLHttpRequest", "Accept": "application/json" },
             });
 
             if (!response.ok) throw new Error("Network response was not ok");
 
             const data = await response.json();
 
-            // PERBAIKAN: Periksa apakah data ada sebelum mengubah innerHTML
             if (desktopContainer && data.desktop_html) {
                 desktopContainer.innerHTML = data.desktop_html;
             }
-            // Hanya perbarui kontainer mobile jika ada dan datanya diterima
             if (mobileContainer && data.mobile_html) {
                 mobileContainer.innerHTML = data.mobile_html;
             }
 
+            // Perbarui URL di browser tanpa me-reload halaman
             history.pushState({}, "", url.toString());
+
         } catch (error) {
             console.error("LiveSearch Fetch Error:", error);
-            // Handle error state
+            const errorHtml = `<tr><td colspan="100%" class="text-center text-red-500 p-4">Gagal memuat data.</td></tr>`;
+            if (desktopContainer) desktopContainer.innerHTML = errorHtml;
+            if (mobileContainer) mobileContainer.innerHTML = `<div class="text-center p-4 text-red-500">Gagal memuat data.</div>`;
         }
     }
 };

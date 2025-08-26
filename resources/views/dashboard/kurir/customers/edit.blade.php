@@ -1,39 +1,91 @@
-{{-- resources/views/dashboard/kurir/customers/modals/edit.blade.php --}}
-@props(['customer'])
-
-<x-modal-custom id="edit-modal-{{ $customer->id }}" title="Edit Customer" toggle="edit-modal-{{ $customer->id }}" size="2xl">
+@props(['customer', 'customerCategories'])
+<x-modal-custom id="edit-customer-modal-{{ $customer->id }}" title="Edit Customer" size="3xl">
     <form class="p-4 md:p-5" action="{{ route('kurir.customers.update', $customer->id) }}" method="POST">
         @csrf
         @method('PUT')
-        <div class="grid grid-cols-2 gap-4 mb-4">
-            <div class="col-span-2">
-                <label for="edit-name-{{ $customer->id }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama</label>
-                <input type="text" name="name" id="edit-name-{{ $customer->id }}" value="{{ $customer->name }}"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+        <div class="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2">
+            {{-- Nama Customer --}}
+            <div class="sm:col-span-2">
+                <label for="kurir-edit-name-{{ $customer->id }}"
+                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Customer <span
+                        class="text-red-500">*</span></label>
+                <input type="text" name="name" id="kurir-edit-name-{{ $customer->id }}"
+                    value="{{ old('name', $customer->name) }}"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500"
                     required>
             </div>
-            <div class="col-span-2">
-                <label for="edit-address-{{ $customer->id }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Alamat</label>
-                <textarea name="address" id="edit-address-{{ $customer->id }}"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                    required>{{ $customer->address }}</textarea>
+            {{-- Nama Perusahaan --}}
+            <div>
+                <label for="kurir-edit-company_name-{{ $customer->id }}"
+                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Perusahaan
+                    (Opsional)</label>
+                <input type="text" name="company_name" id="kurir-edit-company_name-{{ $customer->id }}"
+                    value="{{ old('company_name', $customer->company_name) }}"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500">
             </div>
-            <div class="col-span-2">
-                <label for="edit-phone-{{ $customer->id }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">No. HP</label>
+            {{-- Kategori Customer --}}
+            <div>
+                <label for="kurir-edit-customer_category_id-{{ $customer->id }}"
+                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Kategori (Opsional)</label>
+                <select name="customer_category_id" id="kurir-edit-customer_category_id-{{ $customer->id }}"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500">
+                    <option value="">Pilih Kategori</option>
+                    @foreach ($customerCategories as $category)
+                        <option value="{{ $category->id }}"
+                            {{ old('customer_category_id', $customer->customer_category_id) == $category->id ? 'selected' : '' }}>
+                            {{ $category->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            {{-- Alamat --}}
+            <div class="sm:col-span-2">
+                <label for="kurir-edit-address-{{ $customer->id }}"
+                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Alamat <span
+                        class="text-red-500">*</span></label>
+                <textarea name="address" id="kurir-edit-address-{{ $customer->id }}" rows="2"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500"
+                    required>{{ old('address', $customer->address) }}</textarea>
+            </div>
+            {{-- Patokan Tempat --}}
+            <div class="sm:col-span-2">
+                <label for="kurir-edit-landmark-{{ $customer->id }}"
+                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Patokan Tempat
+                    (Opsional)</label>
+                <input type="text" name="landmark" id="kurir-edit-landmark-{{ $customer->id }}"
+                    value="{{ old('landmark', $customer->landmark) }}"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500">
+            </div>
+            {{-- Nomor HP --}}
+            <div>
+                <label for="kurir-edit-phone-{{ $customer->id }}"
+                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">No. HP <span
+                        class="text-red-500">*</span></label>
                 <div class="flex">
-                    <span class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-md dark:bg-gray-600 dark:text-gray-400 dark:border-gray-500">
-                        +62
-                    </span>
-                    <input type="tel" name="phone" id="edit-phone-{{ $customer->id }}" value="{{ substr($customer->phone, 2) }}"
-                        class="rounded-none rounded-r-lg bg-gray-50 border text-gray-900 focus:ring-primary-600 focus:border-primary-600 block flex-1 min-w-0 w-full text-sm border-gray-300 p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                        required>
+                    <span
+                        class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-md dark:bg-gray-600 dark:text-gray-400 dark:border-gray-500">+62</span>
+                    <input type="tel" name="phone" id="kurir-edit-phone-{{ $customer->id }}"
+                        value="{{ old('phone', substr($customer->phone, 2)) }}"
+                        class="rounded-none rounded-r-lg bg-gray-50 border text-gray-900 block flex-1 min-w-0 w-full text-sm border-gray-300 p-2.5"
+                        required inputmode="numeric" pattern="[0-9]*"
+                        oninput="this.value = this.value.replace(/\D/g, '')">
                 </div>
             </div>
-            <div class="col-span-2">
-                <label for="edit-note-{{ $customer->id }}" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Catatan</label>
-                <textarea id="edit-note-{{ $customer->id }}" name="note" rows="4"
-                    class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-600 focus:border-primary-600 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                    >{{ $customer->note }}</textarea>
+            {{-- Jenis Pembayaran --}}
+            <div>
+                <label for="kurir-edit-payment_type-{{ $customer->id }}"
+                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Jenis Pembayaran
+                    (Opsional)</label>
+                <input type="text" name="payment_type" id="kurir-edit-payment_type-{{ $customer->id }}"
+                    value="{{ old('payment_type', $customer->payment_type) }}"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500">
+            </div>
+            {{-- Jam Buka --}}
+            <div class="sm:col-span-2">
+                <label for="kurir-edit-opening_hours-{{ $customer->id }}"
+                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Jam Buka (Opsional)</label>
+                <input type="text" name="opening_hours" id="kurir-edit-opening_hours-{{ $customer->id }}"
+                    value="{{ old('opening_hours', $customer->opening_hours) }}"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500">
             </div>
         </div>
         <button type="submit"

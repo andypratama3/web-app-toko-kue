@@ -1,14 +1,10 @@
-{{-- resources/views/dashboard/kurir/customers/modals/delete.blade.php --}}
 @props(['customer'])
-
-<x-modal-custom id="delete-modal-{{ $customer->id }}" title="Konfirmasi Hapus" toggle="delete-modal-{{ $customer->id }}" size="md">
+<x-modal-custom id="delete-customer-modal-{{ $customer->id }}" title="Konfirmasi Hapus" size="md">
     <div class="p-4 text-center md:p-5">
-        <svg class="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-200" aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+        <svg class="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
         </svg>
-        <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Apakah Anda yakin ingin menghapus customer <span class="font-bold">{{ $customer->name }}</span>?</h3>
+        <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Anda yakin ingin menghapus customer <br><span class="font-bold">{{ $customer->name }}</span>?</h3>
         <form action="{{ route('kurir.customers.destroy', $customer->id) }}" method="POST" class="inline">
             @csrf
             @method('DELETE')
@@ -17,8 +13,9 @@
                 Ya, saya yakin
             </button>
         </form>
-        <button data-modal-hide="delete-modal-{{ $customer->id }}" type="button"
-            class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Tidak,
-            batal</button>
+        <button type="button"
+            class="js-close-modal-btn py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+            Tidak, batal
+        </button>
     </div>
 </x-modal-custom>

@@ -17,10 +17,16 @@ class Customer extends Model
      */
     protected $fillable = [
         'name',
+        'company_name',
         'address',
+        'landmark',
         'phone',
+        'opening_hours',
+        'payment_type',
         'note',
         'region_id',
+        'customer_category_id',
+        'added_by_user_id',
     ];
 
     /**
@@ -32,27 +38,48 @@ class Customer extends Model
     }
 
     /**
-     * Secara otomatis mengubah atribut 'name' menjadi format Title Case
-     * sebelum menyimpannya ke database.
+     * Mendefinisikan relasi ke model CustomerCategory.
+     */
+    public function category()
+    {
+        return $this->belongsTo(CustomerCategory::class, 'customer_category_id');
+    }
+
+    /**
+     * Mendefinisikan relasi ke model User (untuk mengetahui siapa yang menambahkan).
+     */
+    public function addedBy()
+    {
+        return $this->belongsTo(User::class, 'added_by_user_id');
+    }
+
+    /**
+     * Mutator untuk format otomatis 'name'.
      */
     protected function name(): Attribute
     {
         return Attribute::make(
-            // `set` dieksekusi saat menyimpan data
-            set: fn($value) => ucwords(strtolower($value)),
+            set: fn ($value) => ucwords(strtolower($value)),
         );
     }
 
     /**
-     * Secara otomatis mengubah atribut 'address' menjadi format Title Case
-     * sebelum menyimpannya ke database.
+     * Mutator untuk format otomatis 'address'.
      */
     protected function address(): Attribute
     {
         return Attribute::make(
-            // `ucwords` akan membuat setiap awal kata menjadi kapital
-            // `strtolower` untuk menormalkan input (misal: "JALAN" -> "jalan" -> "Jalan")
-            set: fn($value) => ucwords(strtolower($value)),
+            set: fn ($value) => ucwords(strtolower($value)),
+        );
+    }
+
+    /**
+     * Mutator untuk format otomatis 'company_name'.
+     */
+    protected function companyName(): Attribute
+    {
+        return Attribute::make(
+            set: fn ($value) => $value ? ucwords(strtolower($value)) : null
         );
     }
 }

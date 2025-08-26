@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Http\Controllers; // Pindahkan ke namespace utama
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Models\CustomerCategory;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -11,75 +13,60 @@ use Illuminate\Validation\Rule;
 
 class CustomerController extends Controller
 {
-    /**
-     * Format nomor telepon ke standar 62.
-     */
     private function formatPhoneNumber($phone)
     {
-        if (empty($phone)) {
-            return null;
-        }
-        $cleanedPhone = preg_replace('/[^\d]/', '', $phone);
-        $baseNumber = preg_replace('/^(0|\+?62)/', '', $cleanedPhone);
-        return '62' . $baseNumber;
+        if (empty($phone)) return null;
+        return '62' . preg_replace('/^(0|\+?62)/', '', preg_replace('/[^\d]/', '', $phone));
     }
-
-    /**
-     * Menampilkan daftar customer berdasarkan role.
-     */
 
     public function index(Request $request)
     {
         $user = Auth::user();
         $search = $request->input('search');
 
-        $customersQuery = Customer::where('region_id', $user->region_id)
-            ->when($search, function ($query, $searchTerm) {
-                $query->where('name', 'like', "%{$searchTerm}%")
-                    ->orWhere('phone', 'like', "%{$searchTerm}%")
-                    ->orWhere('address', 'like', "%{$searchTerm}%");
+        // Mulai query dengan filter region dasar
+        $customersQuery = Customer::where('region_id', $user->region_id);
+
+        // JIKA USER ADALAH KURIR, tambahkan filter tambahan agar hanya melihat data yang diinputnya sendiri
+        if ($user->hasRole('kurir')) {
+            $customersQuery->where('added_by_user_id', $user->id);
+        }
+        // Admin akan tetap melihat semua customer di regionnya.
+
+        // Terapkan filter pencarian
+        $customersQuery->when($search, function ($query, $searchTerm) {
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('name', 'like', "%{$searchTerm}%")
+                  ->orWhere('company_name', 'like', "%{$searchTerm}%")
+                  ->orWhere('phone', 'like', "%{$searchTerm}%")
+                  ->orWhere('address', 'like', "%{$searchTerm}%");
             });
+        });
 
         $customers = $customersQuery->latest()->paginate(10);
-
-        // Jika ini adalah request AJAX dari live search
-        if ($request->ajax()) {
-            // Tentukan path view berdasarkan role user
-            $baseViewPath = $user->hasRole('admin')
-                ? 'dashboard.admin.customers.'
-                : 'dashboard.kurir.customers.';
-
-            if ($user->hasRole('admin')) {
-                // Hanya render dan kirim HTML untuk tabel desktop
-                $desktopHtml = view($baseViewPath . '_table_rows', compact('customers'))->render();
-                return response()->json([
-                    'desktop_html' => $desktopHtml,
-                ]);
-            }
-            // JIKA PENGGUNA ADALAH KURIR (ATAU ROLE LAINNYA):
-            else {
-                // Render dan kirim HTML untuk desktop dan mobile
-                $desktopHtml = view($baseViewPath . '_table_rows', compact('customers'))->render();
-                $mobileHtml = view($baseViewPath . '_card_view', compact('customers'))->render();
-
-                return response()->json([
-                    'desktop_html' => $desktopHtml,
-                    'mobile_html' => $mobileHtml,
-                ]);
-            }
+        $customerCategories = CustomerCategory::all();
+        $couriers = [];
+        if ($user->hasRole('admin')) {
+            $couriers = User::role('kurir')->where('region_id', $user->region_id)->get();
         }
 
-        // Jika request biasa, tampilkan halaman lengkap
-        $view = $user->hasRole('admin')
-            ? 'dashboard.admin.customers.index'
-            : 'dashboard.kurir.customers.index';
+        if ($request->ajax()) {
+            $viewPath = $user->hasRole('admin') ? 'dashboard.admin.customers.' : 'dashboard.kurir.customers.';
+            $viewData = compact('customers', 'customerCategories');
 
-        return view($view, compact('customers'));
+            $desktopHtml = view($viewPath . '_table_rows', $viewData)->render();
+            $response = ['desktop_html' => $desktopHtml];
+
+            if (!$user->hasRole('admin')) {
+                $response['mobile_html'] = view($viewPath . '_card_view', $viewData)->render();
+            }
+            return response()->json($response);
+        }
+
+        $view = $user->hasRole('admin') ? 'dashboard.admin.customers.index' : 'dashboard.kurir.customers.index';
+        return view($view, compact('customers', 'customerCategories', 'couriers'));
     }
 
-    /**
-     * Menyimpan customer baru.
-     */
     public function store(Request $request)
     {
         $user = Auth::user();
@@ -88,47 +75,39 @@ class CustomerController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'address' => [
-                'required',
-                'string',
-                Rule::unique('customers')->where(function ($query) use ($formattedPhone, $user) {
-                    return $query->where('phone', $formattedPhone)
-                        ->where('region_id', $user->region_id);
-                }),
-            ],
-            'phone' => 'required|string|max:20',
+            'company_name' => 'nullable|string|max:255',
+            'address' => 'required|string',
+            'landmark' => 'nullable|string|max:255',
+            'phone' => ['required', 'string', 'max:20', Rule::unique('customers')->where('region_id', $user->region_id)],
+            'customer_category_id' => 'nullable|exists:customer_categories,id',
+            'opening_hours' => 'nullable|string|max:255',
+            'payment_type' => 'nullable|string|max:255',
             'note' => 'nullable|string',
-        ], [
-            'address.unique' => 'Customer dengan alamat dan nomor telepon ini sudah terdaftar.'
-        ]);
+        ], ['phone.unique' => 'Nomor telepon ini sudah terdaftar di region Anda.']);
 
         $routeName = $user->hasRole('admin') ? 'admin.customers.index' : 'kurir.customers.index';
-
         if ($validator->fails()) {
-            return redirect()->route($routeName)
-                ->withErrors($validator)
-                ->withInput()
-                ->with('error', $validator->errors()->first('address'));
+            return redirect()->route($routeName)->withErrors($validator)->withInput()->with('error', $validator->errors()->first());
         }
 
-        $customer = Customer::create([
-            'name' => $request->name,
-            'address' => $request->address,
-            'phone' => $formattedPhone,
-            'note' => $request->note,
+        Customer::create(array_merge($request->all(), [
             'region_id' => $user->region_id,
-        ]);
+            'added_by_user_id' => $user->id, // ID kurir yang menginput otomatis tersimpan
+        ]));
 
-        return redirect()->route($routeName)->with('success', 'Customer "' . $customer->name . '" berhasil ditambahkan.');
+        return redirect()->route($routeName)->with('success', 'Customer "' . $request->name . '" berhasil ditambahkan.');
     }
 
-    /**
-     * Memperbarui data customer.
-     */
     public function update(Request $request, Customer $customer)
     {
         $user = Auth::user();
-        if ($customer->region_id !== $user->region_id) {
+
+        // PERIKSA KEPEMILIKAN DATA UNTUK KURIR
+        if ($user->hasRole('kurir') && $customer->added_by_user_id !== $user->id) {
+            abort(403, 'AKSES DITOLAK: Anda tidak memiliki izin untuk mengubah data customer ini.');
+        }
+        // Admin hanya diperiksa regionnya
+        if ($user->hasRole('admin') && $customer->region_id !== $user->region_id) {
             abort(403, 'AKSES DITOLAK');
         }
 
@@ -137,46 +116,33 @@ class CustomerController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'address' => [
-                'required',
-                'string',
-                Rule::unique('customers')->where(function ($query) use ($formattedPhone, $user) {
-                    return $query->where('phone', $formattedPhone)
-                        ->where('region_id', $user->region_id);
-                })->ignore($customer->id),
-            ],
-            'phone' => 'required|string|max:20',
+            'company_name' => 'required|string|max:255',
+            'address' => 'required|string',
+            'landmark' => 'nullable|string|max:255',
+            'phone' => ['required', 'string', 'max:20', Rule::unique('customers')->where('region_id', $user->region_id)->ignore($customer->id)],
+            'customer_category_id' => 'required|exists:customer_categories,id',
+            'opening_hours' => 'required|string|max:255',
+            'payment_type' => 'required|string|max:255',
             'note' => 'nullable|string',
-        ], [
-            'address.unique' => 'Customer dengan alamat dan nomor telepon ini sudah terdaftar.'
-        ]);
+        ], ['phone.unique' => 'Nomor telepon ini sudah terdaftar untuk customer lain.']);
 
         $routeName = $user->hasRole('admin') ? 'admin.customers.index' : 'kurir.customers.index';
-
         if ($validator->fails()) {
-            return redirect()->route($routeName)
-                ->withErrors($validator)
-                ->withInput()
-                ->with('error', $validator->errors()->first('address'));
+            return redirect()->route($routeName)->withErrors($validator)->withInput()->with('error', 'Gagal memperbarui data. ' . $validator->errors()->first());
         }
 
-        $customer->update([
-            'name' => $request->name,
-            'address' => $request->address,
-            'phone' => $formattedPhone,
-            'note' => $request->note
-        ]);
-
+        $customer->update($request->all());
         return redirect()->route($routeName)->with('success', 'Data customer "' . $customer->name . '" berhasil diperbarui.');
     }
 
-    /**
-     * Memperbarui catatan customer.
-     */
     public function updateNote(Request $request, Customer $customer)
     {
         $user = Auth::user();
-        if ($customer->region_id !== $user->region_id) {
+        // PERIKSA KEPEMILIKAN DATA UNTUK KURIR
+        if ($user->hasRole('kurir') && $customer->added_by_user_id !== $user->id) {
+            abort(403, 'AKSES DITOLAK');
+        }
+        if ($user->hasRole('admin') && $customer->region_id !== $user->region_id) {
             abort(403, 'AKSES DITOLAK');
         }
 
@@ -187,13 +153,14 @@ class CustomerController extends Controller
         return redirect()->route($routeName)->with('success', 'Catatan untuk "' . $customer->name . '" berhasil diperbarui.');
     }
 
-    /**
-     * Menghapus customer.
-     */
     public function destroy(Customer $customer)
     {
         $user = Auth::user();
-        if ($customer->region_id !== $user->region_id) {
+        // PERIKSA KEPEMILIKAN DATA UNTUK KURIR
+        if ($user->hasRole('kurir') && $customer->added_by_user_id !== $user->id) {
+            abort(403, 'AKSES DITOLAK');
+        }
+        if ($user->hasRole('admin') && $customer->region_id !== $user->region_id) {
             abort(403, 'AKSES DITOLAK');
         }
 
@@ -204,31 +171,23 @@ class CustomerController extends Controller
         return redirect()->route($routeName)->with('success', 'Customer "' . $customerName . '" berhasil dihapus.');
     }
 
-    /**
-     * BARU: Method untuk toggle status 'is_flagged' customer.
-     * Hanya bisa diakses oleh admin.
-     */
     public function toggleFlag(Request $request, Customer $customer)
     {
-        if (!Auth::user()->hasRole('admin')) {
-            abort(403, 'AKSES DITOLAK');
-        }
+        // Fitur ini hanya untuk Admin
+        if (!Auth::user()->hasRole('admin')) abort(403, 'AKSES DITOLAK');
 
         $customer->is_flagged = !$customer->is_flagged;
         $customer->save();
 
-        // Jika ini adalah request dari AJAX (JavaScript)
         if ($request->ajax()) {
             return response()->json([
                 'success' => true,
-                'is_flagged' => $customer->is_flagged, // Kirim status baru
+                'is_flagged' => $customer->is_flagged,
                 'message' => 'Status flag customer berhasil diubah.'
             ]);
         }
 
-        // Fallback untuk non-AJAX (jika JavaScript gagal)
         $status = $customer->is_flagged ? 'ditandai' : 'dihilangkan tandanya';
-        return redirect()->route('admin.customers.index')
-            ->with('success', 'Customer "' . $customer->name . '" berhasil ' . $status . '.');
+        return redirect()->route('admin.customers.index')->with('success', 'Customer "' . $customer->name . '" berhasil ' . $status . '.');
     }
 }

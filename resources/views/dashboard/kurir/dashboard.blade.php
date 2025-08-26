@@ -10,26 +10,26 @@
                 <!-- Enhanced Achievement Card -->
                 <div class="mb-6">
                     <div
-                        class="relative overflow-hidden flex flex-col flex-none max-w-full gap-4 p-6 px-6 py-6 shadow-2xl rounded-3xl xl:gap-0 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 border border-amber-100 dark:border-slate-600">
+                        class="relative flex flex-col flex-none max-w-full gap-4 p-6 px-6 py-6 overflow-hidden border shadow-2xl rounded-3xl xl:gap-0 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 border-amber-100 dark:border-slate-600">
                         <!-- Background Pattern -->
                         <div class="absolute top-0 right-0 w-32 h-32 opacity-10">
                             <div
-                                class="w-full h-full bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full transform rotate-45 translate-x-8 -translate-y-8">
+                                class="w-full h-full transform rotate-45 translate-x-8 -translate-y-8 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500">
                             </div>
                         </div>
 
                         <div class="relative z-10 flex items-center justify-between mb-6">
                             <div class="flex items-center gap-3">
-                                <div class="p-3 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl shadow-lg">
+                                <div class="p-3 shadow-lg bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl">
                                     <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
                                         <path
                                             d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                     </svg>
                                 </div>
                                 <div>
-                                    <div class="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent dark:from-white dark:to-gray-300"
+                                    <div class="text-2xl font-bold text-transparent bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text dark:from-white dark:to-gray-300"
                                         id="ucapan">Selamat</div>
-                                    <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">Your Achievement Today
+                                    <div class="text-sm font-medium text-gray-600 dark:text-gray-400">Your Achievement Today
                                     </div>
                                 </div>
                             </div>
@@ -38,39 +38,39 @@
                         <!-- Stats Grid -->
                         <div class="relative z-10 grid grid-cols-4 gap-4">
                             <div
-                                class="text-center p-4 bg-white/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl border border-white/20 dark:border-slate-600/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                                class="p-4 text-center transition-all duration-300 border shadow-lg bg-white/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl border-white/20 dark:border-slate-600/20 hover:shadow-xl hover:scale-105">
                                 <div
-                                    class="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                    class="mb-2 text-xs font-semibold tracking-wider text-gray-600 uppercase dark:text-gray-400">
                                     TOTAL</div>
                                 <div
-                                    class="text-3xl font-bold bg-gradient-to-br from-blue-600 to-blue-800 bg-clip-text text-transparent">
+                                    class="text-3xl font-bold text-transparent bg-gradient-to-br from-blue-600 to-blue-800 bg-clip-text">
                                     62</div>
                             </div>
                             <div
-                                class="text-center p-4 bg-white/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl border border-white/20 dark:border-slate-600/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                                class="p-4 text-center transition-all duration-300 border shadow-lg bg-white/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl border-white/20 dark:border-slate-600/20 hover:shadow-xl hover:scale-105">
                                 <div
-                                    class="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                    class="mb-2 text-xs font-semibold tracking-wider text-gray-600 uppercase dark:text-gray-400">
                                     WAKTU</div>
                                 <div
-                                    class="text-3xl font-bold bg-gradient-to-br from-orange-500 to-red-600 bg-clip-text text-transparent">
+                                    class="text-3xl font-bold text-transparent bg-gradient-to-br from-orange-500 to-red-600 bg-clip-text">
                                     23</div>
                             </div>
                             <div
-                                class="text-center p-4 bg-white/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl border border-white/20 dark:border-slate-600/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                                class="p-4 text-center transition-all duration-300 border shadow-lg bg-white/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl border-white/20 dark:border-slate-600/20 hover:shadow-xl hover:scale-105">
                                 <div
-                                    class="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                    class="mb-2 text-xs font-semibold tracking-wider text-gray-600 uppercase dark:text-gray-400">
                                     SELESAI</div>
                                 <div
-                                    class="text-3xl font-bold bg-gradient-to-br from-green-500 to-emerald-600 bg-clip-text text-transparent">
+                                    class="text-3xl font-bold text-transparent bg-gradient-to-br from-green-500 to-emerald-600 bg-clip-text">
                                     45</div>
                             </div>
                             <div
-                                class="text-center p-4 bg-white/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl border border-white/20 dark:border-slate-600/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                                class="p-4 text-center transition-all duration-300 border shadow-lg bg-white/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl border-white/20 dark:border-slate-600/20 hover:shadow-xl hover:scale-105">
                                 <div
-                                    class="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                    class="mb-2 text-xs font-semibold tracking-wider text-gray-600 uppercase dark:text-gray-400">
                                     GAGAL</div>
                                 <div
-                                    class="text-3xl font-bold bg-gradient-to-br from-red-500 to-pink-600 bg-clip-text text-transparent">
+                                    class="text-3xl font-bold text-transparent bg-gradient-to-br from-red-500 to-pink-600 bg-clip-text">
                                     17</div>
                             </div>
                         </div>
@@ -83,15 +83,15 @@
                         <!-- Enhanced Pesanan Card -->
                         <a href="{{ route('kurir.pesanan.create') }}" class="w-1/2 px-3">
                             <div
-                                class="group relative overflow-hidden flex items-center p-4 transition-all duration-300 ease-out transform bg-gradient-to-br from-green-50 to-emerald-50 dark:from-slate-800 dark:to-slate-700 shadow-xl rounded-2xl hover:shadow-2xl hover:scale-105 border border-green-100 dark:border-slate-600">
+                                class="relative flex items-center p-4 overflow-hidden transition-all duration-300 ease-out transform border border-green-100 shadow-xl group bg-gradient-to-br from-green-50 to-emerald-50 dark:from-slate-800 dark:to-slate-700 rounded-2xl hover:shadow-2xl hover:scale-105 dark:border-slate-600">
                                 <!-- Background Animation -->
                                 <div
-                                    class="absolute inset-0 bg-gradient-to-br from-green-400/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    class="absolute inset-0 transition-opacity duration-300 opacity-0 bg-gradient-to-br from-green-400/10 to-emerald-500/10 group-hover:opacity-100">
                                 </div>
 
                                 <div class="relative z-10 flex items-center w-full">
                                     <div
-                                        class="flex items-center justify-center w-12 h-12 mr-3 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl shadow-lg group-hover:shadow-xl transition-shadow duration-300">
+                                        class="flex items-center justify-center w-12 h-12 mr-3 transition-shadow duration-300 shadow-lg bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl group-hover:shadow-xl">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white"
                                             viewBox="0 0 24 24" fill="none" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -100,13 +100,13 @@
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <div
-                                            class="text-lg font-bold text-gray-800 dark:text-white mb-1 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300 truncate">
+                                            class="mb-1 text-lg font-bold text-gray-800 truncate transition-colors duration-300 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400">
                                             Pesanan</div>
-                                        <div class="text-xs text-gray-600 dark:text-gray-400 font-medium truncate">Buat
+                                        <div class="text-xs font-medium text-gray-600 truncate dark:text-gray-400">Buat
                                             pesanan baru</div>
                                     </div>
                                     <div
-                                        class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex-shrink-0">
+                                        class="flex-shrink-0 transition-opacity duration-300 opacity-0 group-hover:opacity-100">
                                         <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -118,42 +118,20 @@
                         </a>
 
                         <!-- Enhanced Customer Card -->
-                        <button type="button" id="add-customer" class="w-1/2 px-3 mb-6" data-modal-target="crud-modal"
-                            data-modal-toggle="crud-modal">
-                            <div
-                                class="group relative overflow-hidden flex items-center p-4 transition-all duration-300 ease-out transform bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-700 shadow-xl rounded-2xl hover:shadow-2xl hover:scale-105 border border-blue-100 dark:border-slate-600">
-                                <!-- Background Animation -->
+                        <div class="w-1/2 px-3 mb-6">
+                            <button type="button" data-target-modal="create-customer-modal"
+                                class="w-full js-open-modal-btn">
                                 <div
-                                    class="absolute inset-0 bg-gradient-to-br from-blue-400/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                </div>
-
-                                <div class="relative z-10 flex items-center w-full">
-                                    <div
-                                        class="flex items-center justify-center w-12 h-12 mr-3 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M18 9v6m3-3h-6M9 16a4 4 0 100-8 4 4 0 000 8zm0 0c-2.21 0-4 1.79-4 4v1h8v-1c0-2.21-1.79-4-4-4z" />
-                                        </svg>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <div
-                                            class="text-lg font-bold text-gray-800 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 truncate">
-                                            Customer</div>
-                                        <div class="text-xs text-gray-600 dark:text-gray-400 font-medium truncate">Tambah
-                                            customer baru</div>
-                                    </div>
-                                    <div
-                                        class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex-shrink-0">
-                                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                        </svg>
+                                    class="relative flex items-center p-4 overflow-hidden transition-all duration-300 ease-out transform border border-blue-100 shadow-xl group bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-700 rounded-2xl hover:shadow-2xl hover:scale-105 dark:border-slate-600">
+                                    <div class="absolute inset-0 transition-opacity duration-300 opacity-0 bg-gradient-to-br from-blue-400/10 to-indigo-500/10 group-hover:opacity-100"></div>
+                                    <div class="relative z-10 flex items-center w-full">
+                                        <div class="flex items-center justify-center w-12 h-12 mr-3 transition-shadow duration-300 shadow-lg bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl group-hover:shadow-xl"><svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v6m3-3h-6M9 16a4 4 0 100-8 4 4 0 000 8zm0 0c-2.21 0-4 1.79-4 4v1h8v-1c0-2.21-1.79-4-4-4z" /></svg></div>
+                                        <div class="flex-1 min-w-0"><div class="mb-1 text-lg font-bold text-gray-800 truncate transition-colors duration-300 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">Customer</div><div class="text-xs font-medium text-gray-600 truncate dark:text-gray-400">Tambah customer baru</div></div>
+                                        <div class="flex-shrink-0 transition-opacity duration-300 opacity-0 group-hover:opacity-100"><svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg></div>
                                     </div>
                                 </div>
-                            </div>
-                        </button>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -161,33 +139,33 @@
             <!-- Enhanced Notes Card -->
             <div class="w-full max-w-full px-3 mt-0 mb-6 lg:mb-0 lg:flex-none">
                 <div
-                    class="relative overflow-hidden flex flex-col min-w-0 break-words bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 shadow-2xl rounded-3xl bg-clip-border border border-gray-100 dark:border-slate-700">
+                    class="relative flex flex-col min-w-0 overflow-hidden break-words border border-gray-100 shadow-2xl bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 rounded-3xl bg-clip-border dark:border-slate-700">
                     <div class="p-6 pb-4 mb-0 rounded-t-4">
                         <div class="flex-1">
                             @if (Auth::user()->note)
                                 <div class="flex items-center mb-4">
-                                    <div class="p-2 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg mr-3">
+                                    <div class="p-2 mr-3 rounded-lg bg-gradient-to-br from-yellow-400 to-orange-500">
                                         <i class="text-sm text-white fas fa-sticky-note"></i>
                                     </div>
                                     <h6 class="mb-0 text-lg font-bold text-gray-800 dark:text-white">Catatan dari Admin</h6>
                                 </div>
                                 <div
-                                    class="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-slate-700 dark:to-slate-600 rounded-2xl border-l-4 border-yellow-400">
-                                    <p class="text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
+                                    class="p-4 border-l-4 border-yellow-400 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-slate-700 dark:to-slate-600 rounded-2xl">
+                                    <p class="font-medium leading-relaxed text-gray-700 dark:text-gray-300">
                                         "{{ Auth::user()->note }}"
                                     </p>
                                 </div>
                             @else
                                 <div class="flex items-center mb-4">
-                                    <div class="p-2 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg mr-3">
+                                    <div class="p-2 mr-3 rounded-lg bg-gradient-to-br from-green-400 to-emerald-500">
                                         <i class="text-sm text-white fas fa-check-circle"></i>
                                     </div>
                                     <h6 class="mb-0 text-lg font-bold text-gray-800 dark:text-white">Tidak Ada Catatan Baru
                                     </h6>
                                 </div>
                                 <div
-                                    class="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-slate-700 dark:to-slate-600 rounded-2xl border-l-4 border-green-400">
-                                    <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+                                    class="p-4 border-l-4 border-green-400 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-slate-700 dark:to-slate-600 rounded-2xl">
+                                    <p class="leading-relaxed text-gray-700 dark:text-gray-300">
                                         Saat ini tidak ada catatan baru dari admin.
                                     </p>
                                 </div>
@@ -200,17 +178,17 @@
             <!-- Enhanced Income Chart -->
             <div class="w-full max-w-full px-3 mt-0 lg:flex-none">
                 <div
-                    class="relative overflow-hidden shadow-2xl rounded-3xl bg-gradient-to-br from-white to-blue-50 dark:from-slate-800 dark:to-slate-900 border border-blue-100 dark:border-slate-700">
+                    class="relative overflow-hidden border border-blue-100 shadow-2xl rounded-3xl bg-gradient-to-br from-white to-blue-50 dark:from-slate-800 dark:to-slate-900 dark:border-slate-700">
                     <div class="p-6 pt-4 pb-0 rounded-t-3xl">
                         <div class="flex items-center justify-between">
                             <div>
-                                <h6 class="text-lg font-bold text-gray-800 dark:text-white mb-2">Income</h6>
+                                <h6 class="mb-2 text-lg font-bold text-gray-800 dark:text-white">Income</h6>
                                 <div class="flex items-center">
-                                    <div class="p-2 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg mr-3">
-                                        <i class="fa fa-arrow-up text-white text-sm"></i>
+                                    <div class="p-2 mr-3 rounded-lg bg-gradient-to-br from-green-400 to-emerald-500">
+                                        <i class="text-sm text-white fa fa-arrow-up"></i>
                                     </div>
                                     <span
-                                        class="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">Rp
+                                        class="text-2xl font-bold text-transparent bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text">Rp
                                         550.000</span>
                                 </div>
                             </div>
@@ -224,7 +202,7 @@
                         </div>
                     </div>
                     <div class="flex-auto p-4">
-                        <div class="bg-white/50 dark:bg-slate-700/50 rounded-2xl p-4">
+                        <div class="p-4 bg-white/50 dark:bg-slate-700/50 rounded-2xl">
                             <canvas id="savingsChart" class="h-[200px] lg:h-[300px]"></canvas>
                         </div>
                     </div>
@@ -236,11 +214,11 @@
         <div class="flex flex-wrap mt-6 -mx-3">
             <div class="w-full max-w-full px-3 mt-0 lg:flex-none">
                 <div
-                    class="relative overflow-hidden flex flex-col min-w-0 mb-4 break-words bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 shadow-2xl rounded-3xl bg-clip-border border border-gray-100 dark:border-slate-700">
+                    class="relative flex flex-col min-w-0 mb-4 overflow-hidden break-words border border-gray-100 shadow-2xl bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 rounded-3xl bg-clip-border dark:border-slate-700">
                     <div class="p-6 pb-0 mb-0 rounded-t-3xl">
                         <div class="flex items-center justify-between">
                             <h5 class="text-xl font-bold text-gray-800 dark:text-white">Latest Orders</h5>
-                            <div class="p-2 bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg">
+                            <div class="p-2 rounded-lg bg-gradient-to-br from-purple-400 to-pink-500">
                                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -255,21 +233,21 @@
                                 <thead class="align-bottom">
                                     <tr>
                                         <th
-                                            class="px-6 py-4 font-bold text-left text-gray-700 dark:text-gray-300 uppercase align-middle bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600 text-xs tracking-wider">
+                                            class="px-6 py-4 text-xs font-bold tracking-wider text-left text-gray-700 uppercase align-middle border-b border-gray-200 dark:text-gray-300 bg-gray-50 dark:bg-slate-700 dark:border-slate-600">
                                             Nama</th>
                                         <th
-                                            class="px-6 py-4 font-bold text-left text-gray-700 dark:text-gray-300 uppercase align-middle bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600 text-xs tracking-wider">
+                                            class="px-6 py-4 text-xs font-bold tracking-wider text-left text-gray-700 uppercase align-middle border-b border-gray-200 dark:text-gray-300 bg-gray-50 dark:bg-slate-700 dark:border-slate-600">
                                             Alamat</th>
                                         <th
-                                            class="px-6 py-4 font-bold text-center text-gray-700 dark:text-gray-300 uppercase align-middle bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600 text-xs tracking-wider">
+                                            class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-700 uppercase align-middle border-b border-gray-200 dark:text-gray-300 bg-gray-50 dark:bg-slate-700 dark:border-slate-600">
                                             Pesanan</th>
                                         <th
-                                            class="px-6 py-4 font-bold text-center text-gray-700 dark:text-gray-300 uppercase align-middle bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600 text-xs tracking-wider">
+                                            class="px-6 py-4 text-xs font-bold tracking-wider text-center text-gray-700 uppercase align-middle border-b border-gray-200 dark:text-gray-300 bg-gray-50 dark:bg-slate-700 dark:border-slate-600">
                                             Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors duration-200">
+                                    <tr class="transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-slate-700">
                                         <td
                                             class="p-4 align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
                                             <div class="flex px-2 py-1">
@@ -294,10 +272,10 @@
                                         <td
                                             class="p-4 text-sm leading-normal text-center align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
                                             <span
-                                                class="bg-gradient-to-r from-green-500 to-emerald-500 px-3 py-2 text-xs rounded-full font-bold uppercase text-white shadow-lg">TERKIRIM</span>
+                                                class="px-3 py-2 text-xs font-bold text-white uppercase rounded-full shadow-lg bg-gradient-to-r from-green-500 to-emerald-500">TERKIRIM</span>
                                         </td>
                                     </tr>
-                                    <tr class="hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors duration-200">
+                                    <tr class="transition-colors duration-200 hover:bg-gray-50 dark:hover:bg-slate-700">
                                         <td
                                             class="p-4 align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
                                             <div class="flex px-2 py-1">
@@ -322,7 +300,7 @@
                                         <td
                                             class="p-4 text-sm leading-normal text-center align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
                                             <span
-                                                class="bg-gradient-to-r from-red-500 to-pink-500 px-3 py-2 text-xs rounded-full font-bold uppercase text-white shadow-lg">GAGAL</span>
+                                                class="px-3 py-2 text-xs font-bold text-white uppercase rounded-full shadow-lg bg-gradient-to-r from-red-500 to-pink-500">GAGAL</span>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -336,7 +314,14 @@
     </div>
     <!-- end cards -->
 
-    @include('dashboard.kurir.customers.create')
+    @push('flowbite-modals')
+        @if (isset($customerCategories))
+            @include('dashboard.kurir.customers.create', ['customerCategories' => $customerCategories])
+        @else
+            {{-- Fallback jika $customerCategories tidak ada, untuk mencegah error --}}
+            @include('dashboard.kurir.customers.create', ['customerCategories' => []])
+        @endif
+    @endpush
 
     <!-- Enhanced Scripts -->
     <script>
@@ -453,7 +438,4 @@
     </script>
 
     <script src="/assets/argon/js/plugins/chartjs.min.js"></script>
-    <script src="/assets/argon/js/plugins/perfect-scrollbar.min.js" async></script>
-    <script src="/assets/argon/js/assets/argon-dashboard-tailwind.js?v=1.0.1" async></script>
-
 @endsection
