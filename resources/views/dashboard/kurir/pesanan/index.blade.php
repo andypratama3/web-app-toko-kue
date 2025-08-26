@@ -3,9 +3,8 @@
 @section('page_title', 'Pesanan Kurir')
 
 @section('content')
-{{-- ... (Konten utama tidak berubah) ... --}}
-<div class="flex-auto p-4 -mx-3">
-    <div class="p-6 bg-white shadow-md rounded-xl dark:bg-gray-800 dark:border-gray-700 min-h-[715px]">
+<div class="flex-auto p-3 pt-0 -mx-3">
+    <div class="p-2.5 bg-white shadow-md rounded-xl dark:bg-gray-800 dark:border-gray-700 min-h-[715px]">
         <h2 class="mb-6 text-md text-black dark:text-white">
             🙍🏻‍♂️ {{ Auth::user()->name ?? 'Pengguna' }}
             🚩 {{ Auth::user()->region->name ?? 'N/A' }}
@@ -96,39 +95,39 @@
         </div>
 
         {{-- Tampilan Mobile (Cards) --}}
-        <div class="space-y-4 md:hidden -mx-3">
+        <div class="space-y-3 md:hidden">
             @foreach ($orders as $order)
-            <div class="p-4 bg-white shadow-md rounded-xl dark:bg-gray-700" data-order-id="{{ $order->id }}">
-                <div class="flex items-start justify-between mb-2">
-                    <div>
-                        <p class="text-xs font-semibold text-gray-600 dark:text-gray-300">Invoice</p>
-                        <p class="font-mono text-sm font-bold text-black dark:text-white">
-                            @if($order->show_warning)
-                            <span title="Pembayaran melewati 5 hari">⚠️</span>
-                            @endif
-                            {{ $order->invoice_number ?? 'N/A' }}
-                        </p>
-                    </div>
-                    {{-- Status akan diperbarui oleh JS --}}
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full 
-                        @switch($order->status ?? 'dikemas')
-                            @case('diambil') bg-blue-100 text-blue-800 @break
-                            @case('diantar') bg-yellow-100 text-yellow-800 @break
-                            @case('diterima_pembeli') bg-purple-100 text-purple-800 @break
-                            @case('selesai') bg-green-100 text-green-800 @break
-                            @default bg-gray-100 text-gray-800
-                        @endswitch">
+            <div class="p-2 bg-white shadow-md rounded-xl dark:bg-gray-700" data-order-id="{{ $order->id }}">
+                <div class="flex justify-end mb-1.5">
+                    <span class="px-1 py-0.5 text-xs font-semibold rounded-lg 
+                    @switch($order->status ?? 'dikemas')
+                        @case('diambil') bg-blue-100 text-blue-800 @break
+                        @case('diantar') bg-yellow-100 text-yellow-800 @break
+                        @case('diterima_pembeli') bg-purple-100 text-purple-800 @break
+                        @case('selesai') bg-green-100 text-green-800 @break
+                        @default bg-gray-100 text-gray-800
+                    @endswitch">
                         {{ ucfirst(str_replace('_', ' ', $order->status ?? 'Dikemas')) }}
                     </span>
                 </div>
-                <div class="mb-4">
-                    <p class="text-xs font-semibold text-gray-600 dark:text-gray-300">Pelanggan</p>
-                    <p class="text-sm text-gray-800 dark:text-gray-200">{{ $order->customer->name ?? 'Pelanggan Dihapus' }}</p>
+                <div class="flex items-center justify-between mb-1">
+                    <div class="flex items-center space-x-2">
+                        <p class="font-mono text-sm font-bold text-black dark:text-white">
+                            🧾 {{ $order->invoice_number ?? 'N/A' }}
+                        </p>
+                        @if($order->show_warning)
+                        <span title="Pembayaran melewati 5 hari" class="text-xs">⚠️</span>
+                        @endif
+                    </div>
                 </div>
-                <div class="flex justify-end pt-3 space-x-2 border-t border-gray-200 dark:border-gray-600">
+                <div class="mb-3">
+                    <p class="text-sm text-gray-800 dark:text-gray-200">👤  {{ $order->customer->name ?? 'Pelanggan Dihapus' }}</p>
+                </div>
+                
+                <div class="flex justify-end pt-1.5 space-x-2 border-t border-gray-200 dark:border-gray-600">
                     {{-- Tombol Ubah Status --}}
                     <button type="button"
-                        class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                        class="px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
                         data-modal-target="statusStepperModal"
                         data-modal-toggle="statusStepperModal"
                         onclick="openStatusStepperModal({{ $order->id }})">
@@ -136,7 +135,7 @@
                     </button>
                     {{-- Tombol Rincian (tetap sama) --}}
                     <button type="button"
-                        class="px-3 py-1.5 text-xs font-medium text-gray-900 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+                        class="px-2 py-1 text-xs font-medium text-gray-900 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
                         data-modal-toggle="orderDetailsModal"
                         onclick="fetchOrderDetails({{ $order->id }})">
                         Rincian
@@ -152,7 +151,6 @@
 @push('flowbite-modals')
 @include('dashboard.kurir.pesanan.rincian-modal')
 @include('dashboard.kurir.pesanan.status-modal')
-
 @endpush
 
 <script>
@@ -424,7 +422,7 @@
         document.getElementById('deliveredAt').textContent = '';
         document.getElementById('receivedByBuyerAt').textContent = '';
 
-        currentOrderStatusText.textContent = `Status saat ini: ${statusMap[effectiveStatus]?.label || 'Tidak Diketahui'}`;
+        // currentOrderStatusText.textContent = `Status saat ini: ${statusMap[effectiveStatus]?.label || 'Tidak Diketahui'}`;
 
         // Perbarui stepper berdasarkan data timestamp
         if (order.picked_up_at) {

@@ -1,7 +1,7 @@
 <!-- Status Stepper Modal -->
 <x-modal-custom id="statusStepperModal" title="Ubah Status Pesanan" toggle="statusStepperModal" size="2xl">
     <!-- Modal body -->
-    <div class="p-6 space-y-4">
+    <div class="p-6 pt-0 space-y-4">
         <div id="statusStepperModalLoader" class="text-center">
             {{-- Loader --}}
         </div>

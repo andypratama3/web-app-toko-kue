@@ -3,16 +3,15 @@
         <!-- Loader SVG and text will be injected here by JS -->
     </div>
     
-    <!-- PERUBAHAN DI SINI: Ditambahkan max-h-[70vh] overflow-y-auto pr-4 -->
     <div id="modalContent" class="hidden space-y-4 max-h-[70vh] overflow-y-auto pr-4">
         <!-- Invoice and Customer Details -->
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-                <h4 class="mb-1 font-semibold text-gray-800 dark:text-white">Nomor Invoice</h4>
+                <h4 class="mb-1 font-semibold text-gray-800 dark:text-white">🧾 Nomor Invoice</h4>
                 <p id="modalInvoiceNumber" class="font-mono text-gray-700 dark:text-gray-300"></p>
             </div>
             <div>
-                <h4 class="mb-1 font-semibold text-gray-800 dark:text-white">Pelanggan</h4>
+                <h4 class="mb-1 font-semibold text-gray-800 dark:text-white">👤 Pelanggan</h4>
                 <p id="customerName" class="text-gray-700 dark:text-gray-300"></p>
                 <p id="customerPhone" class="text-sm text-gray-500 dark:text-gray-400"></p>
                 <p id="customerAddress" class="text-sm text-gray-500 dark:text-gray-400"></p>
@@ -21,19 +20,19 @@
         <!-- Order and Payment Details -->
         <div class="grid grid-cols-1 gap-4 pt-4 border-t sm:grid-cols-2 dark:border-gray-600">
             <div>
-                <h4 class="mb-1 font-semibold text-gray-800 dark:text-white">Detail Pembayaran</h4>
+                <h4 class="mb-1 font-semibold text-gray-800 dark:text-white">💵 Detail Pembayaran</h4>
                 <p class="text-sm text-gray-700 dark:text-gray-300">Metode: <span id="paymentMethod"></span></p>
                 <p class="text-sm text-gray-700 dark:text-gray-300">Tanggal Pesan: <span id="orderCreatedAt"></span></p>
                 <p class="text-sm text-gray-700 dark:text-gray-300">Tanggal Lunas: <span id="orderPaidAt"></span></p>
             </div>
             <div>
-                <h4 class="mb-1 font-semibold text-gray-800 dark:text-white">Total Tagihan</h4>
+                <h4 class="mb-1 font-semibold text-gray-800 dark:text-white">📜 Total Tagihan</h4>
                 <p id="modalTotalAmount" class="text-2xl font-bold text-blue-600 dark:text-blue-500"></p>
             </div>
         </div>
         <!-- Product Details -->
         <div class="pt-4 border-t dark:border-gray-600">
-            <h4 class="mb-2 font-semibold text-gray-800 dark:text-white">Produk Dipesan</h4>
+            <h4 class="mb-2 font-semibold text-gray-800 dark:text-white">🛒 Produk Dipesan</h4>
             <div id="productDetails" class="space-y-2">
                 <!-- Product items will be injected here by JS -->
             </div>
