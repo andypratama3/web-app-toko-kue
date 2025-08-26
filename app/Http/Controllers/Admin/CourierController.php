@@ -24,32 +24,24 @@ class CourierController extends Controller
         $couriersQuery = User::where('region_id', $user->region_id)
             ->whereHas('roles', fn($query) => $query->where('name', 'kurir'))
             ->when($search, function ($query, $searchTerm) {
-                $query->where('name', 'like', "%{$searchTerm}%")
-                    ->orWhere('email', 'like', "%{$searchTerm}%");
+                // ========================= PERBAIKAN DI SINI =========================
+                // Kelompokkan kondisi pencarian dalam satu 'where' agar tidak
+                // mengesampingkan filter region_id yang sudah ada.
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('name', 'like', "%{$searchTerm}%")
+                      ->orWhere('email', 'like', "%{$searchTerm}%");
+                });
+                // =====================================================================
             });
 
         $couriers = $couriersQuery->latest()->paginate(10);
 
-        // Handle request AJAX untuk live search
         if ($request->ajax()) {
-            $baseViewPath = 'dashboard.admin.couriers.';
-
-            $desktopHtml = view($baseViewPath . '_table_rows', compact('couriers'))->render();
-            // $mobileHtml = view($baseViewPath . '_card_view', compact('couriers'))->render();
-
-            return response()->json([
-                'desktop_html' => $desktopHtml,
-                // 'mobile_html' => $mobileHtml,
-            ]);
+            $desktopHtml = view('dashboard.admin.couriers._table_rows', compact('couriers'))->render();
+            return response()->json(['desktop_html' => $desktopHtml]);
         }
-
-        // Handle request biasa (load halaman pertama kali)
+        
         return view('dashboard.admin.couriers.index', compact('couriers'));
-    }
-
-    public function create()
-    {
-        return redirect()->route('admin.couriers.index');
     }
 
     /**
@@ -64,15 +56,10 @@ class CourierController extends Controller
         ]);
 
         if ($validator->fails()) {
-            $redirect = redirect()->route('admin.couriers.index')
+            return redirect()->route('admin.couriers.index')
                 ->withErrors($validator, 'create')
-                ->withInput();
-
-            if ($validator->errors()->has('email')) {
-                $redirect->with('error', 'Email yang Anda masukkan sudah terdaftar.');
-            }
-
-            return $redirect;
+                ->withInput()
+                ->with('error', 'Gagal menambahkan kurir. ' . $validator->errors()->first());
         }
 
         $user = User::create([
@@ -85,11 +72,6 @@ class CourierController extends Controller
         $user->assignRole('kurir');
 
         return redirect()->route('admin.couriers.index')->with('success', 'Kurir "' . $user->name . '" berhasil ditambahkan.');
-    }
-
-    public function edit(User $courier)
-    {
-        return redirect()->route('admin.couriers.index');
     }
 
     /**
@@ -127,6 +109,26 @@ class CourierController extends Controller
     }
 
     /**
+     * Memperbarui catatan untuk kurir.
+     */
+    public function updateNote(Request $request, User $courier)
+    {
+        if ($courier->region_id !== Auth::user()->region_id) {
+            abort(403, 'AKSES DITOLAK');
+        }
+
+        $validated = $request->validate([
+            'note' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $courier->note = $validated['note'];
+        $courier->save();
+
+        return redirect()->route('admin.couriers.index')
+            ->with('success', 'Catatan untuk kurir "' . $courier->name . '" berhasil diperbarui.');
+    }
+
+    /**
      * Menghapus kurir.
      */
     public function destroy(User $courier)
@@ -139,30 +141,5 @@ class CourierController extends Controller
         $courier->delete();
 
         return redirect()->route('admin.couriers.index')->with('success', 'Kurir "' . $courierName . '" berhasil dihapus.');
-    }
-
-    public function updateNote(Request $request, User $courier)
-    {
-        try {
-            if ($courier->region_id !== Auth::user()->region_id) {
-                abort(403, 'AKSES DITOLAK');
-            }
-
-            $validated = $request->validate([
-                'note' => ['nullable', 'string', 'max:1000'],
-            ]);
-
-            $courier->note = $validated['note'];
-            $courier->save();
-
-            return redirect()->route('admin.couriers.index')
-                ->with('success', 'Catatan untuk kurir "' . $courier->name . '" berhasil diperbarui.');
-        } catch (\Exception $e) {
-            Log::error('Error updating courier note: ' . $e->getMessage());
-
-            return redirect()->route('admin.couriers.index')
-                ->with('error', 'Terjadi kesalahan saat menyimpan catatan.')
-                ->withInput();
-        }
     }
 }
