@@ -82,4 +82,13 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Region::class);
     }
+
+    /**
+     * Mendefinisikan relasi ke model Customer.
+     * Satu User (Kurir) bisa memiliki banyak Customer.
+     */
+    public function customers()
+    {
+        return $this->hasMany(Customer::class, 'added_by_user_id');
+    }
 }

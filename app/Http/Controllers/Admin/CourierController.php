@@ -20,18 +20,15 @@ class CourierController extends Controller
     {
         $search = $request->input('search');
         $user = Auth::user();
-
-        $couriersQuery = User::where('region_id', $user->region_id)
+        
+        $couriersQuery = User::with('customers')
+            ->where('region_id', $user->region_id)
             ->whereHas('roles', fn($query) => $query->where('name', 'kurir'))
             ->when($search, function ($query, $searchTerm) {
-                // ========================= PERBAIKAN DI SINI =========================
-                // Kelompokkan kondisi pencarian dalam satu 'where' agar tidak
-                // mengesampingkan filter region_id yang sudah ada.
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('name', 'like', "%{$searchTerm}%")
-                      ->orWhere('email', 'like', "%{$searchTerm}%");
+                        ->orWhere('email', 'like', "%{$searchTerm}%");
                 });
-                // =====================================================================
             });
 
         $couriers = $couriersQuery->latest()->paginate(10);
@@ -40,7 +37,7 @@ class CourierController extends Controller
             $desktopHtml = view('dashboard.admin.couriers._table_rows', compact('couriers'))->render();
             return response()->json(['desktop_html' => $desktopHtml]);
         }
-        
+
         return view('dashboard.admin.couriers.index', compact('couriers'));
     }
 

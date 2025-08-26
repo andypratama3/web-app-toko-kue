@@ -19,6 +19,13 @@
                     class="absolute right-0 z-50 hidden mt-2 bg-white divide-y divide-gray-100 rounded shadow js-dropdown-menu w-44 dark:bg-gray-700 dark:divide-gray-600">
                     <ul class="py-1 text-sm text-gray-700 dark:text-gray-200">
                         <li>
+                            <button type="button" data-target-modal="show-courier-modal-{{ $courier->id }}"
+                                class="flex items-center w-full px-4 py-2 text-left js-open-modal-btn hover:bg-gray-100 dark:hover:bg-gray-600">
+                                <span class="inline-block w-6 mr-2 text-center"><i class="fas fa-eye"></i></span>
+                                <span>Detail</span>
+                            </button>
+                        </li>
+                        <li>
                             <button type="button" data-target-modal="edit-courier-modal-{{ $courier->id }}"
                                 class="flex items-center w-full px-4 py-2 text-left js-open-modal-btn hover:bg-gray-100 dark:hover:bg-gray-600">
                                 <span class="inline-block w-6 mr-2 text-center"><i class="fas fa-edit"></i></span>
