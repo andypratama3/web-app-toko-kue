@@ -12,6 +12,7 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class PesananController extends Controller
 {
@@ -62,6 +63,31 @@ class PesananController extends Controller
             ]);
         } catch (ValidationException $e) {
             return response()->json(['message' => 'Validasi gagal', 'errors' => $e->errors()], 422);
+        }
+
+        // 1.5. Validasi jumlah pesanan aktif customer sesuai kategori
+        $customer = Customer::with('category')->find($validated['customer_id']);
+        if (!$customer) {
+            return response()->json(['message' => 'Customer tidak ditemukan.'], 404);
+        }
+        $categoryName = strtolower($customer->category->name ?? '');
+        $maxOrder = 0;
+        if ($categoryName === 'reseller') {
+            $maxOrder = 7;
+        } elseif ($categoryName === 'supermarket') {
+            $maxOrder = 30;
+        }
+        if ($maxOrder > 0) {
+            // Hitung order aktif (belum selesai) untuk customer ini oleh kurir ini
+            $activeOrderCount = Order::where('customer_id', $customer->id)
+                ->where('created_by_user_id', Auth::id())
+                ->whereNotIn('status', ['selesai'])
+                ->count();
+            if ($activeOrderCount >= $maxOrder) {
+                return response()->json([
+                    'message' => "Batas maksimal pesanan aktif untuk customer kategori $categoryName adalah $maxOrder. Selesaikan pesanan sebelumnya sebelum membuat pesanan baru."
+                ], 422);
+            }
         }
 
         // 2. Memulai Transaksi Database

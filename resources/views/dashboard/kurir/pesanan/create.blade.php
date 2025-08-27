@@ -652,10 +652,17 @@
                 invoiceEl.classList.add('hidden');
             }
             document.getElementById('successModal').classList.remove('hidden');
-        }
 
-        function hideSuccessModal() {
-            document.getElementById('successModal').classList.add('hidden');
+            // Tambahkan event listener ke tombol tutup modal agar reload halaman setelah modal ditutup
+            setTimeout(() => {
+                const closeBtns = document.querySelectorAll('#successModal .js-close-modal-btn');
+                closeBtns.forEach(btn => {
+                    btn.onclick = function() {
+                        document.getElementById('successModal').classList.add('hidden');
+                        window.location.reload();
+                    };
+                });
+            }, 100);
         }
     </script>
 @endsection
