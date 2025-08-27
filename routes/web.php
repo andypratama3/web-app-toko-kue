@@ -4,27 +4,24 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+// Panggil semua controller yang digunakan
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\KurirDashboardController;
+use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Admin\CourierController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\Kurir\PesananController;
-use App\Http\Controllers\ProductController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Models\Product;
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
-|
-| Di sini Anda bisa mendaftarkan semua rute untuk aplikasi Anda.
-|
 */
 
-// Rute Halaman Depan
-Route::get('/', function () {
-    return view('livewire.homepage');
-});
+// Rute Halaman Depan (Homepage)
+Route::get('/', fn() => view('livewire.homepage'));
 
 // Rute Logout manual
 Route::post('/logout', function (Request $request) {
@@ -44,24 +41,18 @@ Route::middleware([
 
     //---------- PENGALIHAN DASHBOARD UTAMA ----------//
     Route::get('dashboard', function () {
-        if (!auth()->check()) {
-            return redirect()->route('login');
-        }
-
         $user = auth()->user();
-        $regionSlug = optional($user->region)->name ? strtolower($user->region->name) : null;
+        if (!$user) return redirect()->route('login');
 
-        if (!$regionSlug) {
-            abort(403, 'User tidak memiliki region yang valid. Silakan hubungi administrator.');
-        }
+        $regionSlug = optional($user->region)->name ? strtolower($user->region->name) : null;
+        if (!$regionSlug) abort(403, 'User tidak memiliki region yang valid.');
 
         if ($user->hasRole('admin')) {
             return redirect()->route('admin.dashboard', ['region' => $regionSlug]);
         } elseif ($user->hasRole('kurir')) {
             return redirect()->route('kurir.dashboard', ['region' => $regionSlug]);
         }
-
-        abort(403, 'User tidak memiliki role yang valid. Silakan hubungi administrator.');
+        abort(403, 'User tidak memiliki role yang valid.');
     })->name('dashboard');
 
 
@@ -85,6 +76,9 @@ Route::middleware([
         Route::put('customers/{customer}/note', [CustomerController::class, 'updateNote'])->name('customers.updateNote');
         Route::post('customers/{customer}/flag', [CustomerController::class, 'toggleFlag'])->name('customers.toggleFlag');
         Route::resource('customers', CustomerController::class);
+        
+        // **ROUTE BARU**: Manajemen Pesanan untuk Admin
+        // Route::resource('orders', AdminOrderController::class)->except(['create', 'store']);
     });
 
 
@@ -108,28 +102,26 @@ Route::middleware([
         Route::get('/pesanan', [PesananController::class, 'showFilteredOrders'])->name('pesanan.index');
         Route::get('/pesanan/create', [PesananController::class, 'create'])->name('pesanan.create');
         Route::post('/orders/checkout', [PesananController::class, 'checkout'])->name('orders.checkout');
+        // **ROUTE BARU**: Rute untuk detail pesanan dan update status/bukti
+        Route::get('/pesanan/{id}/details', [PesananController::class, 'getOrderDetails'])->name('pesanan.details');
+        Route::post('/pesanan/{id}/upload-proof', [PesananController::class, 'uploadPaymentProof'])->name('pesanan.uploadProof');
+        Route::post('/pesanan/{id}/update-status', [PesananController::class, 'updateOrderStatus'])->name('pesanan.updateStatus');
 
         // Endpoint JSON untuk data di halaman pesanan
         Route::get('produk/json', function () {
             $regionId = Auth::user()->region_id;
-            return Product::where('is_active', true)
-                ->where('region_id', $regionId) // Hanya produk dari region kurir
-                ->with(['variants' => function ($q) {
-                    $q->where('is_active', true)->select('id', 'product_id', 'name', 'price');
-                }])
+            return Product::where('is_active', true)->where('region_id', $regionId)
+                ->with(['variants' => fn($q) => $q->where('is_active', true)->select('id', 'product_id', 'name', 'price')])
                 ->get(['id', 'name', 'image_path'])
-                ->map(function ($p) {
-                    return [
-                        'id' => $p->id,
-                        'name' => $p->name,
-                        'image' => $p->image_path ? asset($p->image_path) : null,
-                        'variants' => $p->variants->map(function ($v) {
-                            return ['id' => $v->id, 'name' => $v->name, 'price' => $v->price];
-                        }),
-                    ];
-                });
+                ->map(fn($p) => [
+                    'id' => $p->id,
+                    'name' => $p->name,
+                    'image' => $p->image_path ? asset($p->image_path) : null,
+                    'variants' => $p->variants->map(fn($v) => ['id' => $v->id, 'name' => $v->name, 'price' => $v->price]),
+                ]);
         })->name('produk.json');
 
+        // **ROUTE BARU**: Endpoint JSON untuk data customer
         Route::get('customer/json', [PesananController::class, 'showCustomer'])->name('customer.json');
     });
 });

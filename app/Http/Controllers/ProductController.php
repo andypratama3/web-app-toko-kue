@@ -18,10 +18,9 @@ class ProductController extends Controller
         $this->middleware(['auth', 'role:admin']);
     }
 
-    // Method index tetap sama, tidak perlu diubah
     public function index()
     {
-        $user = Auth::user(); // Ambil data user yang sedang login
+        $user = Auth::user();
         $userRegionId = $user->region_id;
 
         $categories = Category::whereHas('products', function ($query) use ($userRegionId) {
@@ -30,8 +29,8 @@ class ProductController extends Controller
             $query->where('region_id', $userRegionId)
                 ->with(['variants' => function ($q) {
                     $q->where('is_active', true);
-                }])
-                ->where('is_active', true);
+                }]);
+            // ->where('is_active', true);
         }])->get();
 
         $all_categories = Category::all();
@@ -42,8 +41,6 @@ class ProductController extends Controller
         // Kirim variabel $regionName ke view
         return view('dashboard.admin.products.index', compact('categories', 'all_categories', 'regionName'));
     }
-
-    // Method 'create' dan 'edit' tidak lagi diperlukan karena modal di-include langsung
 
     public function store(Request $request)
     {
@@ -111,8 +108,6 @@ class ProductController extends Controller
             $submittedVariantIds = [];
 
             foreach ($request->variants as $variantData) {
-                // KONDISI LAMA: if (isset($variantData['id']) && !empty($variantData['id']))
-                // KONDISI BARU: Cukup periksa apakah 'id' ada dan tidak kosong.
                 if (!empty($variantData['id'])) {
                     // Ini adalah varian LAMA -> UPDATE
                     $variant = ProductVariant::find($variantData['id']);

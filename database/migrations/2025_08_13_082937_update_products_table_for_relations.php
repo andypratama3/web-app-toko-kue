@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('products', function (Blueprint $table) {
             $table->foreignId('category_id')->constrained()->after('id');
-            $table->string('image_path')->after('description');
+            // $table->string('image_path')->after('description');
             $table->string('tag')->nullable()->after('image_path');
             $table->boolean('is_active')->default(true)->after('tag');
             $table->dropColumn('price');
@@ -22,7 +22,7 @@ return new class extends Migration
         Schema::table('products', function (Blueprint $table) {
             $table->dropForeign(['category_id']);
             $table->dropColumn('category_id');
-            $table->dropColumn('image_path', 'image');
+            // $table->dropColumn('image_path', 'image');
             $table->dropColumn('tag');
             $table->dropColumn('is_active');
             $table->decimal('price', 10, 2)->after('description');

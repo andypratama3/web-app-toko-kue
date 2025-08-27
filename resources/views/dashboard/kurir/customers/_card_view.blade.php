@@ -32,7 +32,7 @@
                 {{-- Alamat & Patokan --}}
                 <div>
                     <p class="text-sm text-gray-700 dark:text-gray-300">
-                        <span class="font-semibold">Alamat:</span> {{ $customer->address }}
+                        📍 <span class="font-semibold">Alamat:</span> {{ $customer->address }}
                     </p>
                     @if ($customer->landmark)
                         <p class="pl-4 text-xs italic text-gray-500 dark:text-gray-400">
@@ -45,7 +45,7 @@
                 @if ($customer->note)
                     <div>
                         <p class="text-sm text-gray-700 dark:text-gray-300">
-                           <span class="font-semibold">Catatan:</span> <span class="italic">"{{ $customer->note }}"</span>
+                           📌 <span class="font-semibold">Catatan:</span> <span class="italic">"{{ $customer->note }}"</span>
                         </p>
                     </div>
                 @endif
@@ -60,11 +60,11 @@
             </a>
             <button type="button" data-target-modal="note-customer-modal-{{ $customer->id }}"
                 class="text-lg text-yellow-600 transition transform js-open-modal-btn dark:text-yellow-500 hover:scale-125 active:scale-90" title="Edit Catatan">
-                <i class="fas fa-sticky-note"></i>
+                📋{{-- <i class="fas fa-sticky-note"></i> --}}
             </button>
             <button type="button" data-target-modal="edit-customer-modal-{{ $customer->id }}"
                 class="text-lg text-blue-600 transition transform js-open-modal-btn dark:text-blue-500 hover:scale-125 active:scale-90" title="Edit Customer">
-                <i class="fas fa-edit"></i>
+                ✍🏻{{-- <i class="fas fa-edit"></i> --}}
             </button>
             <button type="button" data-target-modal="delete-customer-modal-{{ $customer->id }}"
                 class="text-lg text-red-600 transition transform js-open-modal-btn dark:text-red-500 hover:scale-125 active:scale-90" title="Hapus Customer">

@@ -18,7 +18,7 @@
                     <div
                         class="p-3 bg-white border border-gray-200 shadow-md rounded-xl dark:bg-gray-800 dark:border-gray-700">
                         <p class="mb-4 font-bold tracking-wide text-black uppercase text-md dark:text-white dark:opacity-60">
-                            🛍️ Detail Produk
+                            📦 Detail Produk
                         </p>
                         <div class="flex justify-end mb-4">
                             <button type="button" data-modal-target="produkModal" data-modal-toggle="produkModal"
