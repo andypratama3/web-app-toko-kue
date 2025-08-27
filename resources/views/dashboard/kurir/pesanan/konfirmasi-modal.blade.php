@@ -46,7 +46,8 @@
 
     {{-- Tombol Aksi di Footer Modal --}}
     <div class="flex items-center justify-end pt-4 mt-4 space-x-3 border-t border-gray-200 dark:border-gray-600">
-        <button type="button" data-modal-hide="konfirmasiModal" class="px-6 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:bg-gray-600">
+        {{-- DIUBAH: Menghapus data-modal-hide dan menambahkan class js-close-modal-btn --}}
+        <button type="button" class="px-6 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg js-close-modal-btn hover:bg-gray-100 focus:outline-none dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:bg-gray-600">
             Batal
         </button>
         <button type="button" id="submit-order-button" onclick="submitOrder()" class="px-6 py-2 text-sm font-medium text-white bg-[#748c54] rounded-lg hover:bg-[#5a6e40] focus:outline-none focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800">

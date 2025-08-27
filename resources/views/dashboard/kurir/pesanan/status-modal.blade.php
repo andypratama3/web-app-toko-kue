@@ -20,12 +20,12 @@
                     <!-- Garis Vertikal (Hanya Mobile) -->
                     <div class="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200 dark:bg-gray-600 md:hidden" id="line-diambil-mobile"></div>
                     <!-- Ikon -->
-                    <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-full border-2 border-gray-300 text-gray-500 dark:border-gray-600 dark:text-gray-400 transition-all duration-300 bg-white dark:bg-gray-700" id="step-diambil-icon">
+                    <div class="relative z-10 flex items-center justify-center w-10 h-10 text-gray-500 transition-all duration-300 bg-white border-2 border-gray-300 rounded-full dark:border-gray-600 dark:text-gray-400 dark:bg-gray-700" id="step-diambil-icon">
                         <i class="fas fa-box"></i>
                     </div>
                     <!-- Detail Teks -->
                     <div class="ml-4 md:ml-0">
-                        <p class="mt-0 md:mt-2 text-sm font-medium text-gray-700 dark:text-gray-300">Diambil</p>
+                        <p class="mt-0 text-sm font-medium text-gray-700 md:mt-2 dark:text-gray-300">Diambil</p>
                         <p id="pickedUpAt" class="text-xs text-gray-500 dark:text-gray-400"></p>
                     </div>
                 </div>
@@ -38,12 +38,12 @@
                     <!-- Garis Vertikal (Hanya Mobile) -->
                     <div class="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200 dark:bg-gray-600 md:hidden" id="line-diantar-mobile"></div>
                     <!-- Ikon -->
-                    <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-full border-2 border-gray-300 text-gray-500 dark:border-gray-600 dark:text-gray-400 transition-all duration-300 bg-white dark:bg-gray-700" id="step-diantar-icon">
+                    <div class="relative z-10 flex items-center justify-center w-10 h-10 text-gray-500 transition-all duration-300 bg-white border-2 border-gray-300 rounded-full dark:border-gray-600 dark:text-gray-400 dark:bg-gray-700" id="step-diantar-icon">
                         <i class="fas fa-truck-moving"></i>
                     </div>
                     <!-- Detail Teks -->
                     <div class="ml-4 md:ml-0">
-                        <p class="mt-0 md:mt-2 text-sm font-medium text-gray-700 dark:text-gray-300">Diantar</p>
+                        <p class="mt-0 text-sm font-medium text-gray-700 md:mt-2 dark:text-gray-300">Diantar</p>
                         <p id="deliveredAt" class="text-xs text-gray-500 dark:text-gray-400"></p>
                     </div>
                 </div>
@@ -54,12 +54,12 @@
                 <!-- Step Diterima Pembeli -->
                 <div class="relative flex items-start md:flex-1 md:flex-col md:items-center">
                     <!-- Ikon -->
-                    <div class="relative z-10 w-10 h-10 flex items-center justify-center rounded-full border-2 border-gray-300 text-gray-500 dark:border-gray-600 dark:text-gray-400 transition-all duration-300 bg-white dark:bg-gray-700" id="step-diterima_pembeli-icon">
+                    <div class="relative z-10 flex items-center justify-center w-10 h-10 text-gray-500 transition-all duration-300 bg-white border-2 border-gray-300 rounded-full dark:border-gray-600 dark:text-gray-400 dark:bg-gray-700" id="step-diterima_pembeli-icon">
                         <i class="fas fa-home"></i>
                     </div>
                     <!-- Detail Teks -->
                     <div class="ml-4 md:ml-0">
-                        <p class="mt-0 md:mt-2 text-sm font-medium text-gray-700 dark:text-gray-300">Diterima Pembeli</p>
+                        <p class="mt-0 text-sm font-medium text-gray-700 md:mt-2 dark:text-gray-300">Diterima Pembeli</p>
                         <p id="receivedByBuyerAt" class="text-xs text-gray-500 dark:text-gray-400"></p>
                     </div>
                 </div>

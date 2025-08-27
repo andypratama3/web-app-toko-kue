@@ -42,7 +42,7 @@ class Order extends Model
         'picked_up_at' => 'datetime',
         'delivered_at' => 'datetime',
         'received_by_buyer_at' => 'datetime',
-        'created_at' => 'datetime', 
+        'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
 

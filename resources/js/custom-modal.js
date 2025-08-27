@@ -17,6 +17,10 @@ function initializeCustomUI() {
         }
     };
 
+    // Expose ke global scope agar bisa dipanggil dari blade/inline script
+    window.openModal = openModal;
+    window.closeModal = closeModal;
+
     const toggleDropdown = (dropdownId) => {
         const dropdown = document.getElementById(dropdownId);
         if (dropdown) {

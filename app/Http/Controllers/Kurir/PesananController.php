@@ -30,8 +30,11 @@ class PesananController extends Controller
     //untuk menambah pesanan (dari button di dashboard)
     public function create()
     {
+
+        $user = Auth::user();
         $customers = Customer::select('id', 'name', 'address', 'phone', 'note')
-            ->where('region_id', Auth::user()->region_id)
+            ->where('region_id', $user->region_id)
+            ->where('added_by_user_id', $user->id)
             ->latest()
             ->get();
 
@@ -186,7 +189,6 @@ class PesananController extends Controller
                     }
                 }
             }
-
         } catch (\Exception $e) {
             \Log::error('Error fetching orders for courier ' . $loggedInUserId . ': ' . $e->getMessage());
             $error = 'Gagal memuat pesanan. Terjadi kesalahan pada server.';
@@ -318,6 +320,8 @@ class PesananController extends Controller
     /**
      * Metode baru untuk mengubah status pesanan.
      */
+    // Ganti seluruh fungsi updateOrderStatus yang lama dengan yang ini
+
     public function updateOrderStatus(Request $request, $id)
     {
         if (!Auth::check()) {

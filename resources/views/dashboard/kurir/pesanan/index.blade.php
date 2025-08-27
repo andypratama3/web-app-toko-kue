@@ -5,7 +5,7 @@
 @section('content')
 <div class="flex-auto p-3 pt-0 -mx-3">
     <div class="p-2.5 bg-white shadow-md rounded-xl dark:bg-gray-800 dark:border-gray-700 min-h-[715px]">
-        <h2 class="mb-6 text-md text-black dark:text-white">
+        <h2 class="mb-6 text-black text-md dark:text-white">
             🙍🏻‍♂️ {{ Auth::user()->name ?? 'Pengguna' }}
             🚩 {{ Auth::user()->region->name ?? 'N/A' }}
         </h2>
@@ -58,7 +58,7 @@
                         <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap dark:text-gray-300">{{ $order->customer->name ?? 'Pelanggan Dihapus' }}</td>
                         <td class="px-6 py-4 text-sm whitespace-nowrap">
                             {{-- Status akan diperbarui oleh JS --}}
-                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full 
+                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full
                                 @switch($order->status ?? 'dikemas')
                                     @case('diambil') bg-blue-100 text-blue-800 @break
                                     @case('diantar') bg-yellow-100 text-yellow-800 @break
@@ -73,16 +73,15 @@
                             <div class="flex items-center justify-center space-x-2">
                                 {{-- Tombol Ubah Status --}}
                                 <button type="button"
-                                    class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-                                    data-modal-target="statusStepperModal"
-                                    data-modal-toggle="statusStepperModal"
+                                    class="js-open-modal-btn px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                                    data-target-modal="statusStepperModal"
                                     onclick="openStatusStepperModal({{ $order->id }})">
                                     Ubah Status
                                 </button>
-                                {{-- Tombol Rincian (tetap sama) --}}
+                                {{-- Tombol Rincian --}}
                                 <button type="button"
-                                    class="px-3 py-1.5 text-xs font-medium text-gray-900 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
-                                    data-modal-toggle="orderDetailsModal"
+                                    class="js-open-modal-btn px-3 py-1.5 text-xs font-medium text-gray-900 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+                                    data-target-modal="orderDetailsModal"
                                     onclick="fetchOrderDetails({{ $order->id }})">
                                     Rincian
                                 </button>
@@ -99,7 +98,7 @@
             @foreach ($orders as $order)
             <div class="p-2 bg-white shadow-md rounded-xl dark:bg-gray-700" data-order-id="{{ $order->id }}">
                 <div class="flex justify-end mb-1.5">
-                    <span class="px-1 py-0.5 text-xs font-semibold rounded-lg 
+                    <span class="px-1 py-0.5 text-xs font-semibold rounded-lg
                     @switch($order->status ?? 'dikemas')
                         @case('diambil') bg-blue-100 text-blue-800 @break
                         @case('diantar') bg-yellow-100 text-yellow-800 @break
@@ -123,20 +122,19 @@
                 <div class="mb-3">
                     <p class="text-sm text-gray-800 dark:text-gray-200">👤  {{ $order->customer->name ?? 'Pelanggan Dihapus' }}</p>
                 </div>
-                
+
                 <div class="flex justify-end pt-1.5 space-x-2 border-t border-gray-200 dark:border-gray-600">
                     {{-- Tombol Ubah Status --}}
                     <button type="button"
-                        class="px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-                        data-modal-target="statusStepperModal"
-                        data-modal-toggle="statusStepperModal"
+                        class="px-2 py-1 text-xs font-medium text-white transition-colors bg-blue-600 rounded-lg js-open-modal-btn hover:bg-blue-700"
+                        data-target-modal="statusStepperModal"
                         onclick="openStatusStepperModal({{ $order->id }})">
                         Ubah Status
                     </button>
-                    {{-- Tombol Rincian (tetap sama) --}}
+                    {{-- Tombol Rincian --}}
                     <button type="button"
-                        class="px-2 py-1 text-xs font-medium text-gray-900 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
-                        data-modal-toggle="orderDetailsModal"
+                        class="px-2 py-1 text-xs font-medium text-gray-900 transition-colors bg-gray-200 rounded-lg js-open-modal-btn hover:bg-gray-300"
+                        data-target-modal="orderDetailsModal"
                         onclick="fetchOrderDetails({{ $order->id }})">
                         Rincian
                     </button>
@@ -166,7 +164,7 @@
         modalContent.classList.add('hidden');
         modalLoader.classList.remove('hidden');
         modalLoader.innerHTML = `
-                <svg class="w-8 h-8 text-blue-600 animate-spin mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg class="w-8 h-8 mx-auto text-blue-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
@@ -327,7 +325,7 @@
         modalContent.classList.add('hidden');
         modalLoader.classList.remove('hidden');
         modalLoader.innerHTML = `
-                <svg class="w-8 h-8 text-blue-600 animate-spin mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg class="w-8 h-8 mx-auto text-blue-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
@@ -499,7 +497,7 @@
         modalContent.classList.add('hidden');
         modalLoader.classList.remove('hidden');
         modalLoader.innerHTML = `
-                <svg class="w-8 h-8 text-blue-600 animate-spin mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg class="w-8 h-8 mx-auto text-blue-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
