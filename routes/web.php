@@ -58,27 +58,30 @@ Route::middleware([
 
     //---------- RUTE ADMIN ----------//
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
-        Route::get('dashboard/{region}', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('dashboard/{region}', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-        // Profil Admin
-        Route::get('profile', [AdminDashboardController::class, 'profile'])->name('profile');
-        Route::put('profile', [AdminDashboardController::class, 'updateProfile'])->name('profile.update');
-        Route::put('profile/password', [AdminDashboardController::class, 'updatePassword'])->name('profile.password');
+    // Profil Admin
+    Route::get('profile', [AdminDashboardController::class, 'profile'])->name('profile');
+    Route::put('profile', [AdminDashboardController::class, 'updateProfile'])->name('profile.update');
+    Route::put('profile/password', [AdminDashboardController::class, 'updatePassword'])->name('profile.password');
 
-        // Manajemen Produk
-        Route::resource('products', ProductController::class);
+    // Manajemen Produk
+    Route::resource('products', ProductController::class);
 
-        // Manajemen Kurir
-        Route::resource('couriers', CourierController::class)->parameters(['couriers' => 'courier']);
-        Route::put('couriers/{courier}/note', [CourierController::class, 'updateNote'])->name('couriers.updateNote');
+    // Manajemen Kurir
+    Route::resource('couriers', CourierController::class)->parameters(['couriers' => 'courier']);
+    Route::put('couriers/{courier}/note', [CourierController::class, 'updateNote'])->name('couriers.updateNote');
 
-        // Manajemen Customer
-        Route::put('customers/{customer}/note', [CustomerController::class, 'updateNote'])->name('customers.updateNote');
-        Route::post('customers/{customer}/flag', [CustomerController::class, 'toggleFlag'])->name('customers.toggleFlag');
-        Route::resource('customers', CustomerController::class);
-        
-        // **ROUTE BARU**: Manajemen Pesanan untuk Admin
-        // Route::resource('orders', AdminOrderController::class)->except(['create', 'store']);
+    // Manajemen Customer
+    Route::put('customers/{customer}/note', [CustomerController::class, 'updateNote'])->name('customers.updateNote');
+    Route::post('customers/{customer}/flag', [CustomerController::class, 'toggleFlag'])->name('customers.toggleFlag');
+    Route::resource('customers', CustomerController::class);
+
+    // Manajemen Pesanan untuk Admin
+    Route::get('orders', [\App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');
+    Route::get('orders/{id}/details', [\App\Http\Controllers\Admin\OrderController::class, 'details']);
+    Route::post('orders/{id}/verify', [\App\Http\Controllers\Admin\OrderController::class, 'verify']);
+    Route::post('orders/{id}/reject', [\App\Http\Controllers\Admin\OrderController::class, 'reject']);
     });
 
 
