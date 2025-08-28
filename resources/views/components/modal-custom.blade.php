@@ -46,6 +46,10 @@
             <div class="p-4 md:p-5">
                 {{ $slot }}
             </div>
+            {{-- Footer Modal --}}
+            @if (isset($footer))
+                {{ $footer }} {{-- <-- TAMBAHKAN BAGIAN INI --}}
+            @endif
         </div>
     </div>
 </div>
