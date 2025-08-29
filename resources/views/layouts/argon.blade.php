@@ -69,7 +69,7 @@
     <x-toast />
 
     <!-- PRELOADER -->
-    <div id="preloader" class="fixed top-0 left-0 z-50 flex items-center justify-center w-full h-full bg-white">
+    <div id="preloader" class="fixed top-0 left-0 z-50 flex items-center justify-center w-full h-full bg-white dark:bg-slate-900">
         <div class="w-16 h-16 border-t-4 border-b-4 border-green-500 rounded-full animate-spin"></div>
     </div>
 
