@@ -169,6 +169,7 @@ class PesananController extends Controller
 
         try {
             $orders = Order::where('created_by_user_id', $loggedInUserId)
+                ->where('status', '!=', 'diverifikasi_admin')
                 ->with('customer')
                 ->latest()
                 ->get();

@@ -25,6 +25,7 @@ class OrderController extends Controller
         // Ini lebih efisien daripada memuatnya satu per satu di dalam loop.
         $orders = Order::with(['customer.category', 'createdBy'])
             ->where('region_id', $admin->region_id)
+            ->where('status', '!=', 'diverifikasi_admin')
             ->latest()
             ->get();
 

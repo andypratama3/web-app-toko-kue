@@ -101,16 +101,12 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg" href="#" data-tooltip="History Pesanan">
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('admin.historys.*')) bg-blue-500/13 dark:bg-green-900 @endif" href="{{ route('admin.historys.index') }}" data-tooltip="History Pesanan">
                                     <div class="mr-2 sidebar-icon-container"><i class="text-red-500 fas fa-list"></i></div>
                                     <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">History Pesanan</span>
                                 </a>
                             </li>
                         </ul>
-                    </li>
-
-                    {{-- Performa Section (Collapsible) --}}
-                    <li class="w-full mt-4" x-data="{ open: true }">
                         <button @click="open = !open" class="flex items-center justify-between w-full py-2 pl-6 pr-4 text-xs font-bold leading-tight text-left uppercase transition-opacity sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80">
                             <span>Performa Section</span>
                             <i class="text-xs transition-transform duration-300 fas fa-chevron-down" :class="{ 'rotate-180': open }"></i>
@@ -169,8 +165,7 @@
                                 </a>
                             </li>
                             <li>
-                                {{-- <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg" @if (request()->routeIs('kurir.historys.*')) bg-blue-500/13 dark:bg-green-900 @endif href="{{ route('kurir.historys.index') }}" data-tooltip="Order History"> --}}
-                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg" @if (request()->routeIs('kurir.historys.*')) bg-blue-500/13 dark:bg-green-900 @endif href="#" data-tooltip="Order History">
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg" @if (request()->routeIs('kurir.historys.*')) bg-blue-500/13 dark:bg-green-900 @endif href="{{ route('kurir.historys.index') }}" data-tooltip="Order History">
                                     <div class="mr-2 sidebar-icon-container"><i class="text-yellow-500 fas fa-hourglass-half"></i></div>
                                     <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Order History</span>
                                 </a>

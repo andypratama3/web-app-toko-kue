@@ -9,9 +9,10 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\KurirDashboardController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Admin\CourierController;
+use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\HistoryOrderController;
 use App\Http\Controllers\Kurir\PesananController;
-use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Models\Product;
 
 /*
@@ -58,30 +59,33 @@ Route::middleware([
 
     //---------- RUTE ADMIN ----------//
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
-    Route::get('dashboard/{region}', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('dashboard/{region}', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-    // Profil Admin
-    Route::get('profile', [AdminDashboardController::class, 'profile'])->name('profile');
-    Route::put('profile', [AdminDashboardController::class, 'updateProfile'])->name('profile.update');
-    Route::put('profile/password', [AdminDashboardController::class, 'updatePassword'])->name('profile.password');
+        // Profil Admin
+        Route::get('profile', [AdminDashboardController::class, 'profile'])->name('profile');
+        Route::put('profile', [AdminDashboardController::class, 'updateProfile'])->name('profile.update');
+        Route::put('profile/password', [AdminDashboardController::class, 'updatePassword'])->name('profile.password');
 
-    // Manajemen Produk
-    Route::resource('products', ProductController::class);
+        // Manajemen Produk
+        Route::resource('products', ProductController::class);
 
-    // Manajemen Kurir
-    Route::resource('couriers', CourierController::class)->parameters(['couriers' => 'courier']);
-    Route::put('couriers/{courier}/note', [CourierController::class, 'updateNote'])->name('couriers.updateNote');
+        // Manajemen Kurir
+        Route::resource('couriers', CourierController::class)->parameters(['couriers' => 'courier']);
+        Route::put('couriers/{courier}/note', [CourierController::class, 'updateNote'])->name('couriers.updateNote');
 
-    // Manajemen Customer
-    Route::put('customers/{customer}/note', [CustomerController::class, 'updateNote'])->name('customers.updateNote');
-    Route::post('customers/{customer}/flag', [CustomerController::class, 'toggleFlag'])->name('customers.toggleFlag');
-    Route::resource('customers', CustomerController::class);
+        // Manajemen Customer
+        Route::put('customers/{customer}/note', [CustomerController::class, 'updateNote'])->name('customers.updateNote');
+        Route::post('customers/{customer}/flag', [CustomerController::class, 'toggleFlag'])->name('customers.toggleFlag');
+        Route::resource('customers', CustomerController::class);
 
-    // Manajemen Pesanan untuk Admin
-    Route::get('orders', [\App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');
-    Route::get('orders/{id}/details', [\App\Http\Controllers\Admin\OrderController::class, 'details']);
-    Route::post('orders/{id}/verify', [\App\Http\Controllers\Admin\OrderController::class, 'verify']);
-    Route::post('orders/{id}/reject', [\App\Http\Controllers\Admin\OrderController::class, 'reject']);
+        // Manajemen Pesanan untuk Admin
+        Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('orders/{id}/details', [OrderController::class, 'details']);
+        Route::post('orders/{id}/verify', [OrderController::class, 'verify']);
+        Route::post('orders/{id}/reject', [OrderController::class, 'reject']);
+
+        // Manajemen History Pesanan
+        Route::get('historys', [HistoryOrderController::class, 'index'])->name('historys.index');
     });
 
 
@@ -109,6 +113,8 @@ Route::middleware([
         Route::get('/pesanan/{id}/details', [PesananController::class, 'getOrderDetails'])->name('pesanan.details');
         Route::post('/pesanan/{id}/upload-proof', [PesananController::class, 'uploadPaymentProof'])->name('pesanan.uploadProof');
         Route::post('/pesanan/{id}/update-status', [PesananController::class, 'updateOrderStatus'])->name('pesanan.updateStatus');
+        // History Pesanan Gabungan (admin & kurir)
+        Route::get('historys', [HistoryOrderController::class, 'index'])->name('historys.index');
 
         // Endpoint JSON untuk data di halaman pesanan
         Route::get('produk/json', function () {
