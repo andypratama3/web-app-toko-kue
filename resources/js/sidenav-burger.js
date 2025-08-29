@@ -37,8 +37,10 @@ document.addEventListener("DOMContentLoaded", function () {
             } 
             // Desktop behavior - expand sidebar to full width
             else {
-                sidebar.classList.remove("w-16");
+                sidebar.classList.remove("w-16", "sidebar-collapsed");
                 sidebar.classList.add("w-64");
+                // Hide dot merah
+                document.querySelectorAll('.dot-merah').forEach(dot => dot.classList.add('hidden'));
                 
                 // Show text elements
                 document.querySelectorAll(".sidenav-text").forEach((text) => {
@@ -82,7 +84,9 @@ document.addEventListener("DOMContentLoaded", function () {
             // Desktop behavior - collapse sidebar to icon-only
             else {
                 sidebar.classList.remove("w-64");
-                sidebar.classList.add("w-16");
+                sidebar.classList.add("w-16", "sidebar-collapsed");
+                // Show dot merah
+                document.querySelectorAll('.dot-merah').forEach(dot => dot.classList.remove('hidden'));
                 
                 // Hide text elements
                 document.querySelectorAll(".sidenav-text").forEach((text) => {
@@ -201,5 +205,16 @@ document.addEventListener("DOMContentLoaded", function () {
             sidebarVisible = true; // Set to true first so hideSidebar() works correctly
             hideSidebar();
         }
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    var ctaCloseBtn = document.querySelector('[data-dismiss-target="#dropdown-cta"]');
+    if (ctaCloseBtn) {
+        ctaCloseBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            var ctaBox = document.getElementById('dropdown-cta');
+            if (ctaBox) ctaBox.style.display = 'none';
+        });
     }
 });

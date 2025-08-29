@@ -20,32 +20,24 @@ class OrderController extends Controller
     public function index()
     {
         $admin = Auth::user();
-
-        // 1. Eager load relasi customer beserta kategorinya ('customer.category')
-        // Ini lebih efisien daripada memuatnya satu per satu di dalam loop.
         $orders = Order::with(['customer.category', 'createdBy'])
             ->where('region_id', $admin->region_id)
             ->latest()
             ->get();
 
-        // 2. Logika warning dinamis berdasarkan kategori customer
+        $newOrdersCount = Order::where('region_id', $admin->region_id)
+            ->where('status', 'pending')->count();
+
         foreach ($orders as $order) {
             $order->show_warning = false;
-
-            // Lanjutkan hanya jika bukti pembayaran kosong dan data customer lengkap
             if (is_null($order->payment_proof) && $order->customer && $order->customer->category) {
-
                 $categoryName = strtolower($order->customer->category->name);
-                $warningDays = 0; // Default tidak ada warning
-
-                // Tetapkan ambang batas hari berdasarkan kategori
+                $warningDays = 0;
                 if ($categoryName === 'reseller') {
                     $warningDays = 5;
                 } elseif ($categoryName === 'supermarket') {
                     $warningDays = 28;
                 }
-
-                // Jika kategori sesuai dan ambang batas hari terlewati, tampilkan warning
                 if ($warningDays > 0) {
                     $daysSinceCreation = Carbon::parse($order->created_at)->diffInDays(now());
                     if ($daysSinceCreation >= $warningDays) {
@@ -54,8 +46,7 @@ class OrderController extends Controller
                 }
             }
         }
-
-        return view('dashboard.admin.order-list.index', compact('orders'));
+        return view('dashboard.admin.order-list.index', compact('orders', 'newOrdersCount'));
     }
 
     /**
