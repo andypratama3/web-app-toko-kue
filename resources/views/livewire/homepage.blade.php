@@ -64,9 +64,9 @@
     <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PRXFHTTN"
       height="0" width="0" style="display:none;visibility:hidden"></iframe>
   </noscript>
-  <!-- End Google Tag Manager (noscript) -->
 
-  <!-- Floating WhatsApp Button -->
+  <!-- End Google Tag Manager (noscript) -->
+  <!-- Floating WhatsApp Button 
   <a class="fixed bottom-6 right-6 z-50"
     href="https://wa.me/6282144834303?text=Hai%20admin%20*Pandan%20Asli%20Malang*%2C%20perkenalan%20nama%20saya%20(isi%20nama%20anda)%20.%20Saya%20ingin%20.."
     target="_blank" aria-label="Chat via WhatsApp" style="
@@ -80,14 +80,14 @@
     align-items: center;
     justify-content: center;
     transition: 0.3s;
-  ">
-    <!-- WhatsApp Icon -->
+  "> -->
+  <!-- WhatsApp 
     <svg width="26" height="26" viewBox="0 0 26 26" fill="white" xmlns="http://www.w3.org/2000/svg">
       <path fill-rule="evenodd" clip-rule="evenodd"
         d="M18.8663 15.5805C18.5434 15.4191 16.9607 14.6413 16.666 14.533C16.3713 14.4257 16.1568 14.3726 15.9413 14.6955C15.7268 15.0161 15.1103 15.742 14.9229 15.9565C14.7344 16.172 14.547 16.198 14.2253 16.0377C13.9035 15.8752 12.8657 15.5361 11.6361 14.4398C10.6795 13.5861 10.0328 12.532 9.84533 12.2092C9.65792 11.8875 9.82475 11.713 9.98617 11.5527C10.1313 11.4086 10.3079 11.1768 10.4693 10.9894C10.6307 10.8009 10.6838 10.6665 10.7911 10.451C10.8994 10.2365 10.8453 10.049 10.764 9.88763C10.6838 9.72621 10.0403 8.14129 9.77167 7.49671C9.51058 6.86946 9.24517 6.95504 9.048 6.94421C8.8595 6.93554 8.645 6.93338 8.4305 6.93338C8.216 6.93338 7.86717 7.01354 7.5725 7.33638C7.27675 7.65813 6.44583 8.43705 6.44583 10.022C6.44583 11.6058 7.5985 13.1365 7.75992 13.3521C7.92133 13.5666 10.0295 16.8188 13.2589 18.213C14.0281 18.5445 14.6272 18.7428 15.0941 18.8901C15.8654 19.136 16.5674 19.1014 17.1221 19.018C17.7396 18.9259 19.0266 18.239 19.2953 17.4872C19.5628 16.7354 19.5628 16.0908 19.4827 15.9565C19.4025 15.8221 19.188 15.742 18.8652 15.5805H18.8663ZM12.9924 23.6005H12.9881C11.07 23.6008 9.18707 23.0852 7.53675 22.1076L7.14675 21.8758L3.09292 22.9396L4.17517 18.9876L3.92058 18.5825C2.84823 16.8755 2.28074 14.9 2.28367 12.8841C2.28583 6.97996 7.08933 2.17646 12.9968 2.17646C15.8568 2.17646 18.5456 3.29229 20.5671 5.31596C21.5642 6.30892 22.3544 7.48974 22.8922 8.7901C23.43 10.0905 23.7046 11.4845 23.7001 12.8917C23.6979 18.7959 18.8944 23.6005 12.9924 23.6005ZM22.1054 3.77871C20.9118 2.57721 19.4916 1.62454 17.9271 0.975912C16.3626 0.32728 14.6849 -0.00441593 12.9913 4.43923e-05C5.89117 4.43923e-05 0.1105 5.77963 0.108333 12.883C0.105043 15.1437 0.698072 17.3652 1.82758 19.3235L0 26L6.82933 24.2082C8.71853 25.2375 10.8356 25.7768 12.987 25.7769H12.9924C20.0926 25.7769 25.8733 19.9973 25.8754 12.8928C25.8807 11.1998 25.5502 9.52265 24.903 7.95825C24.2559 6.39384 23.3051 4.97327 22.1054 3.77871Z"
         fill="white" />
     </svg>
-  </a>
+  </a> Icon -->
 
   <!-- Navbar -->
   <nav id="navbar"
@@ -117,15 +117,15 @@
     </div>
     <!-- Search & Order Kanan -->
     <div class="flex items-center gap-3 pr-2 md:pr-6 flex-shrink-0">
-  <!-- Form wrapper untuk tombol Login -->
-  <form action="{{ route('login') }}" method="GET" class="hidden md:block">
-    <button type="submit" class="flex items-center gap-2 bg-[#8BA870] text-white rounded-full px-5 py-1.5 font-medium text-sm hover:bg-[#7a965e] transition">
-      <!-- Ikon Login Font Awesome -->
-      <i class="fas fa-sign-in-alt"></i>
-      <span>Login</span>
-    </button>
-  </form>
-</div>
+      <!-- Form wrapper untuk tombol Login -->
+      <form action="{{ route('login') }}" method="GET" class="hidden md:block">
+        <button type="submit" class="flex items-center gap-2 bg-[#8BA870] text-white rounded-full px-5 py-1.5 font-medium text-sm hover:bg-[#7a965e] transition">
+          <!-- Ikon Login Font Awesome -->
+          <i class="fas fa-sign-in-alt"></i>
+          <span>Login</span>
+        </button>
+      </form>
+    </div>
 
     <!-- Hamburger Menu (Mobile) -->
     <div class="md:hidden flex items-center ml-2 mr-4">
@@ -168,9 +168,47 @@
     <div class="absolute inset-0 flex flex-col items-center justify-center z-10" data-aos="fade-down">
       <h1 class="text-white text-4xl md:text-6xl font-extrabold mb-4 drop-shadow-lg">Kue Pandan Asli</h1>
       <p class="text-white text-lg md:text-2xl font-medium drop-shadow mb-8 max-w-2xl text-center">Kue Ijo Adalah Kue tradisional Indonesia, cocok untuk semua acara spesial Anda.</p>
-      <a href="https://api.whatsapp.com/send/?phone=6282144834303&text=Hai+admin+%2APandan+Asli+Malang%2A%2C+perkenalan+nama+saya+%28isi+nama+anda%29+.+Saya+ingin+..&type=phone_number&app_absent=0" target="_blank"
-        class="bg-white text-[#7a965e] font-semibold px-8 py-3 rounded-full shadow hover:bg-[#8BA870] hover:text-white transition-all duration-300 text-lg border border-[#8BA870] transform hover:scale-105 active:scale-95 hover:shadow-xl active:shadow-md">Pesan
-        Sekarang</a>
+      <!-- Kotak dengan 3 tombol WhatsApp Admin -->
+      <div class="bg-white/30 backdrop-blur-sm rounded-xl shadow-lg p-3 border border-white/20 max-w-md sm:max-w-2xl mx-auto">
+        <h3 class="text-white font-semibold text-sm mb-2 text-center drop-shadow-md">Pesan Sekarang</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5 sm:gap-2">
+          <!-- Admin Surabaya -->
+          <a href="https://wa.me/6282144834303?text=Hai%20admin%20*Kue%20Pandan%20Asli%20Surabaya*%2C%20perkenalan%20nama%20saya%20(isi%20nama%20anda)%20.%20Saya%20ingin%20.."
+            target="_blank"
+            class="flex items-center justify-center gap-2 bg-greenlight hover:bg-[#20b858] text-white px-4 py-2 rounded-full shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95 w-full">
+            <div class="w-5 h-5 bg-white rounded-full flex items-center justify-center flex-shrink-0">
+              <svg class="w-3 h-3 text-[#25D366]" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488" />
+              </svg>
+            </div>
+            <span class="font-medium text-xs">Admin Surabaya</span>
+          </a>
+
+          <!-- Admin Malang -->
+          <a href="https://wa.me/6282131338971?text=Hai%20admin%20*Kue%20Pandan%20Asli%20Malang*%2C%20perkenalan%20nama%20saya%20(isi%20nama%20anda)%20.%20Saya%20ingin%20.."
+            target="_blank"
+            class="flex items-center justify-center gap-2 bg-greenlight hover:bg-[#20b858] text-white px-4 py-2 rounded-full shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95 w-full">
+            <div class="w-5 h-5 bg-white rounded-full flex items-center justify-center flex-shrink-0">
+              <svg class="w-3 h-3 text-[#25D366]" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488" />
+              </svg>
+            </div>
+            <span class="font-medium text-xs">Admin Malang</span>
+          </a>
+
+          <!-- Admin Bali -->
+          <a href="https://wa.me/6282338901223?text=Hai%20admin%20*Kue%20Pandan%20Asli%20Bali*%2C%20perkenalan%20nama%20saya%20(isi%20nama%20anda)%20.%20Saya%20ingin%20.."
+            target="_blank"
+            class="flex items-center justify-center gap-2 bg-greenlight hover:bg-[#20b858] text-white px-4 py-2 rounded-full shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95 w-full">
+            <div class="w-5 h-5 bg-white rounded-full flex items-center justify-center flex-shrink-0">
+              <svg class="w-3 h-3 text-[#25D366]" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488" />
+              </svg>
+            </div>
+            <span class="font-medium text-xs">Admin Bali</span>
+          </a>
+        </div>
+      </div>
     </div>
     <div class="absolute inset-0 bg-gradient-to-t from-[#8BA870]/40 to-transparent"></div>
   </section>
@@ -262,7 +300,11 @@
 
   <!-- Products Section -->
   <section id="produk-kami" class="w-full bg-white pt-4 pb-8">
-    <div class="w-[90%] max-w-7xl mx-auto" x-data="{ kategori: 'produk' }">
+    <!-- [DIUBAH DI SINI] Menambahkan x-init untuk AOS dan x-effect untuk me-refresh animasi -->
+    <div class="w-[90%] max-w-7xl mx-auto" 
+         x-data="{ kategori: 'semua' }" 
+         x-init="AOS.init({ once: true, duration: 800 })" 
+         x-effect="$nextTick(() => { AOS.refreshHard() })">
       <!-- Section Header -->
       <div class="text-center mb-6">
         <span class="text-[#8BA870] font-medium tracking-wider text-sm mb-3 block">PRODUK UNGGULAN</span>
@@ -273,23 +315,34 @@
         </p>
       </div>
       <!-- Tombol Filter Kategori -->
-      <div class="flex justify-center gap-4 mb-4">
-        <button @click="kategori = 'produk'" :class="kategori === 'produk' ? 'bg-[#8BA870] text-white' : 'bg-gray-100 text-[#2C3E50]'" class="px-5 py-2 rounded-full font-semibold shadow transition">Produk</button>
+      <div class="flex justify-center gap-2 md:gap-4 mb-4 flex-wrap">
+        <!-- Tombol baru untuk menampilkan semua produk -->
+        <button @click="kategori = 'semua'" :class="kategori === 'semua' ? 'bg-[#8BA870] text-white' : 'bg-gray-100 text-[#2C3E50]'" class="px-5 py-2 rounded-full font-semibold shadow transition">Semua</button>
+        <button @click="kategori = 'produk'" :class="kategori === 'produk' ? 'bg-[#8BA870] text-white' : 'bg-gray-100 text-[#2C3E50]'" class="px-5 py-2 rounded-full font-semibold shadow transition">Ala Carte</button>
         <button @click="kategori = 'hampers'" :class="kategori === 'hampers' ? 'bg-[#8BA870] text-white' : 'bg-gray-100 text-[#2C3E50]'" class="px-5 py-2 rounded-full font-semibold shadow transition">Hampers</button>
         <button @click="kategori = 'tumpeng'" :class="kategori === 'tumpeng' ? 'bg-[#8BA870] text-white' : 'bg-gray-100 text-[#2C3E50]'" class="px-5 py-2 rounded-full font-semibold shadow transition">Tumpeng</button>
       </div>
 
+      <!-- Judul untuk Ala Carte -->
+      <div x-show="kategori === 'semua' || kategori === 'produk'" class="mt-10 mb-4">
+        <div x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="text-center">
+          <h3 class="inline-block text-2xl font-bold text-[#2C3E50] pb-2 border-b-4 border-[#8BA870]">
+            Produk Ala Carte
+          </h3>
+        </div>
+      </div>
+
       <!-- Kategori: Produk -->
-      <div x-show="kategori === 'produk'"
+      <div x-show="kategori === 'semua' || kategori === 'produk'"
         x-transition:enter="transition ease-out duration-500"
         x-transition:enter-start="opacity-0 transform scale-95"
         x-transition:enter-end="opacity-100 transform scale-100"
         x-transition:leave="transition ease-in duration-300"
         x-transition:leave-start="opacity-100 transform scale-100"
         x-transition:leave-end="opacity-0 transform scale-95"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-8 md:py-12">
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 pb-8 md:pb-12">
 
-        <!-- Product 1: Kue Ijo with Dropdown -->
+        <!-- [DIUBAH DI SINI] Menambahkan kembali data-aos -->
         <div
           class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative"
           data-aos="zoom-in"
@@ -352,7 +405,6 @@
           </div>
         </div>
 
-        <!-- Product 2: Kue Lumpur Surga -->
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="zoom-in">
           <div class="relative overflow-hidden rounded-t-2xl">
             <img src="{{ asset('assets/homepage/product/kue-lumpur-surga.jpg') }}"
@@ -380,7 +432,6 @@
           </div>
         </div>
 
-        <!-- Product 3: Kue Ongol with Dropdown -->
         <div
           class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative"
           data-aos="zoom-in"
@@ -442,7 +493,6 @@
           </div>
         </div>
 
-        <!-- Product 4: Kue Pulut with Dropdown -->
         <div
           class="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 relative"
           data-aos="zoom-in"
@@ -503,7 +553,6 @@
           </div>
         </div>
 
-        <!-- Product 5: Kue Ubi Nanas -->
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="zoom-in">
           <div class="relative overflow-hidden rounded-t-2xl">
             <img src="{{ asset('assets/homepage/product/kue-ubi-nanas.jpeg') }}"
@@ -530,7 +579,6 @@
           </div>
         </div>
 
-        <!-- Product 6: Selai Srikaya -->
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="zoom-in">
           <div class="relative overflow-hidden rounded-t-2xl">
             <img src="{{ asset('assets/homepage/product/selai-srikaya.jpg') }}"
@@ -557,7 +605,6 @@
           </div>
         </div>
 
-        <!-- Product 7: Kue Mix Tradisional -->
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="zoom-in">
           <div class="relative overflow-hidden rounded-t-2xl">
             <img src="{{ asset('assets/homepage/product/kue-mix-mini.jpeg') }}"
@@ -590,7 +637,6 @@
           </div>
         </div>
 
-        <!-- Product 8: Kue Mix Premium -->
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="zoom-in">
           <div class="relative overflow-hidden rounded-t-2xl">
             <img src="{{ asset('assets/homepage/product/kue-mix-kueijo.jpeg') }}"
@@ -619,17 +665,26 @@
         </div>
       </div>
 
-      <!-- Kategori: Hampers -->
-      <div x-show="kategori === 'hampers'"
-        x-transition:enter="transition ease-out duration-500"
-        x-transition:enter-start="opacity-0 transform translate-y-4"
-        x-transition:enter-end="opacity-100 transform translate-y-0"
-        x-transition:leave="transition ease-in duration-300"
-        x-transition:leave-start="opacity-100 transform translate-y-0"
-        x-transition:leave-end="opacity-0 transform translate-y-4"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-8 md:py-12">
+      <!-- Judul untuk Hampers -->
+      <div x-show="kategori === 'semua' || kategori === 'hampers'" class="mt-10 mb-4">
+         <div x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="text-center">
+          <h3 class="inline-block text-2xl font-bold text-[#2C3E50] pb-2 border-b-4 border-[#8BA870]">
+            Pilihan Hampers Spesial
+          </h3>
+        </div>
+      </div>
 
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="fade-left">
+      <!-- Kategori: Hampers -->
+      <div x-show="kategori === 'semua' || kategori === 'hampers'"
+        x-transition:enter="transition ease-out duration-500"
+        x-transition:enter-start="opacity-0 transform scale-95"
+        x-transition:enter-end="opacity-100 transform scale-100"
+        x-transition:leave="transition ease-in duration-300"
+        x-transition:leave-start="opacity-100 transform scale-100"
+        x-transition:leave-end="opacity-0 transform scale-95"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 pb-8 md:pb-12">
+
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="zoom-in">
           <div class="relative overflow-hidden rounded-t-2xl">
             <img src="{{ asset('assets/homepage/product/hampers-a.jpg') }}" alt="Hampers A (Anggun)" loading="lazy" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
             <div class="absolute top-3 right-3 bg-[#7079a8] text-white px-2 py-1 rounded-full text-xs font-medium">Hampers</div>
@@ -643,7 +698,7 @@
           </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="fade-left">
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="zoom-in">
           <div class="relative overflow-hidden rounded-t-2xl">
             <img src="{{ asset('assets/homepage/product/hampers-b.jpg') }}" alt="Hampers B (Bagus)" loading="lazy" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
             <div class="absolute top-3 right-3 bg-[#7079a8] text-white px-2 py-1 rounded-full text-xs font-medium">Hampers</div>
@@ -657,7 +712,7 @@
           </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="fade-left">
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="zoom-in">
           <div class="relative overflow-hidden rounded-t-2xl">
             <img src="{{ asset('assets/homepage/product/hampers-c.png') }}" alt="Hampers C (Cantik)" loading="lazy" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
             <div class="absolute top-3 right-3 bg-[#7079a8] text-white px-2 py-1 rounded-full text-xs font-medium">Hampers</div>
@@ -672,17 +727,26 @@
         </div>
       </div>
 
-      <!-- Kategori: Tumpeng -->
-      <div x-show="kategori === 'tumpeng'"
-        x-transition:enter="transition ease-out duration-500"
-        x-transition:enter-start="opacity-0 transform -translate-x-4"
-        x-transition:enter-end="opacity-100 transform translate-x-0"
-        x-transition:leave="transition ease-in duration-300"
-        x-transition:leave-start="opacity-100 transform translate-x-0"
-        x-transition:leave-end="opacity-0 transform -translate-x-4"
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 py-8 md:py-12">
+      <!-- Judul untuk Tumpeng -->
+      <div x-show="kategori === 'semua' || kategori === 'tumpeng'" class="mt-10 mb-4">
+        <div x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" class="text-center">
+          <h3 class="inline-block text-2xl font-bold text-[#2C3E50] pb-2 border-b-4 border-[#8BA870]">
+            Tumpeng Kue Tradisional
+          </h3>
+        </div>
+      </div>
 
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="fade-right">
+      <!-- Kategori: Tumpeng -->
+      <div x-show="kategori === 'semua' || kategori === 'tumpeng'"
+        x-transition:enter="transition ease-out duration-500"
+        x-transition:enter-start="opacity-0 transform scale-95"
+        x-transition:enter-end="opacity-100 transform scale-100"
+        x-transition:leave="transition ease-in duration-300"
+        x-transition:leave-start="opacity-100 transform scale-100"
+        x-transition:leave-end="opacity-0 transform scale-95"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8 pb-8 md:pb-12">
+
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="zoom-in">
           <div class="relative overflow-hidden rounded-t-2xl">
             <img src="{{ asset('assets/homepage/product/tumpeng-mini.jpg') }}" alt="Tumpeng Mini" loading="lazy" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
             <div class="absolute top-3 right-3 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-medium">Tumpeng</div>
@@ -696,7 +760,7 @@
           </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="fade-right">
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1" data-aos="zoom-in">
           <div class="relative overflow-hidden rounded-t-2xl">
             <img src="{{ asset('assets/homepage/product/tumpeng-besar.jpg') }}" alt="Tumpeng Besar" loading="lazy" class="w-full h-48 object-cover hover:scale-105 transition-transform duration-300 cursor-zoom-in zoomable">
             <div class="absolute top-3 right-3 bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-medium">Tumpeng</div>
@@ -712,6 +776,7 @@
       </div>
     </div>
   </section>
+
 
 
 
@@ -1306,10 +1371,10 @@
             alt="Outlet Surabaya" class="w-full h-36 object-cover rounded-xl mb-2 shadow">
           <h3 id="outlet-title" class="text-2xl font-bold text-[#2C3E50] mb-1">Pusat Surabaya</h3>
           <p id="outlet-address" class="text-gray-700 mb-1">Jalan Lebak Jaya II no. 26A Gading, Tambaksari, Surabaya, Jawa Timur 60134 (Rumah pagar hitam)</p>
+
           <!-- Jam Buka -->
-          <p id="outlet-hours" class="flex items-center gap-2 text-gray-500 text-sm mb-1">
-            <i class="far fa-clock text-lg"></i>
-            Senin - Minggu, 08.00 - 20.00
+          <p id="outlet-hours-info" class="flex items-center gap-2 text-gray-500 text-sm mb-1">
+            <i class="fas fa-calendar-days text-lg"></i> <span id="outlet-hours-text">Buka Setiap Hari, 06.00 - 23.00</span>
           </p>
 
           <!-- WhatsApp -->
@@ -1349,9 +1414,8 @@
               id="outlet-directions"
               href="https://maps.app.goo.gl/FBLH5zD3sq1wBYit8"
               target="_blank"
-              class="w-full flex justify-center items-center bg-[#8BA870] text-white px-5 py-2 rounded-lg font-medium shadow hover:bg-[#7a965e] transition">
-              Get Directions
-            </a>
+              class="w-full flex justify-center items-center gap-2 bg-[#8BA870] text-white px-5 py-2 rounded-lg font-medium shadow hover:bg-[#7a965e] transition">
+              <i class="fa-solid fa-location-arrow"></i> Google Maps </a>
           </div>
         </div>
 

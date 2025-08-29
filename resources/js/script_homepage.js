@@ -210,8 +210,8 @@ const outlets = {
     map: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3957.9681779681105!2d112.775769691843!3d-7.244461222219543!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7f9b0b298d195%3A0x1b301a8958c157c6!2sKue%20Ijo%20Pandan%20Asli!5e0!3m2!1sid!2sid!4v1753154879994!5m2!1sid!2sid",
     img: window.assetUrls?.outletImages?.surabaya || "/assets/homepage/b1.jpg",
     title: "Pusat Surabaya",
-    address: "Jl. Lebak Jaya II No.26, RT.005/RW.04, Gading, Kec. Tambaksari, Surabaya, Jawa Timur 60134",
-    hours: "Senin - Minggu, 08.00 - 20.00",
+    address: "Jl. Lebak Jaya II No. 26A, RT.005/RW.04, Gading, Kec. Tambaksari, Surabaya, Jawa Timur 60134",
+    hours: "Buka Setiap Hari, 06.00 - 23.00",
     contact: "Telp: 082144834303",
     wa: "082144834303",
     email: "pandanaslisbyadm@gmail.com",
@@ -226,8 +226,8 @@ const outlets = {
     map: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3951.4563986431112!2d112.6579965!3d-7.951697299999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd629afaf867ba3%3A0x9aa041e45fac81a8!2sJl.%20Graha%20Pelita%20Asri%20No.b29%2C%20Pandanwangi%2C%20Kec.%20Blimbing%2C%20Kota%20Malang%2C%20Jawa%20Timur%2065124!5e0!3m2!1sid!2sid!4v1753156426758!5m2!1sid!2sid",
     img: window.assetUrls?.outletImages?.malang || "/assets/homepage/b2.jpg",
     title: "Outlet Malang",
-    address: "Jl. Graha Pelita Asri No.b29, Pandanwangi, Kec. Blimbing, Kota Malang, Jawa Timur 65124",
-    hours: "Senin - Minggu, 08.00 - 21.00",
+    address: "Jl. Graha Pelita Asri No. B29, Pandanwangi, Kec. Blimbing, Kota Malang, Jawa Timur 65124",
+    hours: "Buka Setiap Hari, 06.00 - 23.00",
     contact: "Telp: 082131338971",
     wa: "082131338971", // pilih Malang -> direct ke WA Malang
     email: "pandanaslimalangadm@gmail.com",
@@ -242,8 +242,8 @@ const outlets = {
     map: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3943.832310607487!2d115.22523580000001!3d-8.7074693!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd2410d9d4cfba5%3A0xf2eb89848c9d9c5a!2sGg.%20Ikan%20Arwana%20No.6%2C%20Sesetan%2C%20Denpasar%20Selatan%2C%20Kota%20Denpasar%2C%20Bali%2080224!5e0!3m2!1sid!2sid!4v1753156639022!5m2!1sid!2sid",
     img: window.assetUrls?.outletImages?.denpasar || "/assets/homepage/b3.jpg",
     title: "Outlet Denpasar",
-    address: "Gg. Ikan Arwana No.6, Sesetan, Denpasar Selatan, Kota Denpasar, Bali 80224",
-    hours: "Senin - Minggu, 09.00 - 21.00",
+    address: "Gg. Ikan Arwana No. 6, Sesetan, Denpasar Selatan, Kota Denpasar, Bali 80224",
+    hours: "Buka Setiap Hari, 06.00 - 23.00",
     contact: "Telp: 082338901223",
     wa: "082338901223", // tidak ada WA? nanti auto nonaktif
     email: "pandanaslibaliadm@gmail.com",
@@ -349,4 +349,4 @@ function setActive(btn) {
 }
 
 // Set default outlet saat halaman siap
-document.addEventListener("DOMContentLoaded", () => setOutlet("malang"));
+document.addEventListener("DOMContentLoaded", () => setOutlet("surabaya"));

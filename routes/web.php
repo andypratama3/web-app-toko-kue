@@ -12,6 +12,8 @@ use App\Http\Controllers\Admin\CourierController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\HistoryOrderController;
+use App\Http\Controllers\Admin\PeformaKurirController;
+use App\Http\Controllers\Admin\PeformaCustomerController;
 use App\Http\Controllers\Kurir\PesananController;
 use App\Models\Product;
 
@@ -86,8 +88,15 @@ Route::middleware([
 
         // Manajemen History Pesanan
         Route::get('historys', [HistoryOrderController::class, 'index'])->name('historys.index');
-    });
 
+        // Routes untuk Peforma Kurir
+        Route::get('peforma-kurir', [PeformaKurirController::class, 'index'])->name('peforma-kurir.index');
+        Route::get('peforma-kurir/{kurir}', [PeformaKurirController::class, 'show'])->name('peforma-kurir.show');
+
+        // Routes untuk Peforma Customer
+        Route::get('peforma-customer', [PeformaCustomerController::class, 'index'])->name('peforma-customer.index');
+        Route::get('peforma-customer/{customer}', [PeformaCustomerController::class, 'show'])->name('peforma-customer.show');
+    });
 
     //---------- RUTE KURIR ----------//
     Route::prefix('kurir')->name('kurir.')->middleware('role:kurir')->group(function () {
@@ -113,6 +122,7 @@ Route::middleware([
         Route::get('/pesanan/{id}/details', [PesananController::class, 'getOrderDetails'])->name('pesanan.details');
         Route::post('/pesanan/{id}/upload-proof', [PesananController::class, 'uploadPaymentProof'])->name('pesanan.uploadProof');
         Route::post('/pesanan/{id}/update-status', [PesananController::class, 'updateOrderStatus'])->name('pesanan.updateStatus');
+
         // History Pesanan Gabungan (admin & kurir)
         Route::get('historys', [HistoryOrderController::class, 'index'])->name('historys.index');
 
