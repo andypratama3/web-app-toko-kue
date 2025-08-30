@@ -391,4 +391,38 @@ class PesananController extends Controller
             return response()->json(['message' => 'Terjadi kesalahan internal.'], 500);
         }
     }
+
+    /**
+     * FUNGSI BARU UNTUK MENGAMBIL ITEM DARI PESANAN TERAKHIR CUSTOMER
+     */
+    public function getLastOrder($id)
+    {
+        // 1. Cari pesanan terakhir dari customer berdasarkan ID, diurutkan dari yang terbaru
+        $lastOrder = Order::where('customer_id', $id)
+                          ->latest() // Mengurutkan berdasarkan 'created_at' secara descending
+                          ->first();
+
+        // 2. Jika tidak ada pesanan sebelumnya, kembalikan response kosong
+        if (!$lastOrder) {
+            return response()->json(['items' => []]);
+        }
+
+        // 3. Ambil relasi 'items' dari pesanan yang ditemukan
+        $lastOrder->load('items');
+
+        // 4. Ubah format data items agar sesuai dengan struktur 'cart' di JavaScript
+        $cartItems = $lastOrder->items->map(function ($item) {
+            return [
+                'product_id'   => $item->product_id,
+                'product_name' => $item->product_name,
+                'variant_id'   => $item->variant_id,
+                'variant_name' => $item->variant_name,
+                'price'        => $item->price,
+                'qty'          => $item->quantity, // 'quantity' dari DB diubah menjadi 'qty' untuk cart JS
+            ];
+        });
+
+        // 5. Kembalikan data items dalam format JSON
+        return response()->json(['items' => $cartItems]);
+    }
 }
