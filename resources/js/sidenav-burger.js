@@ -39,8 +39,6 @@ document.addEventListener("DOMContentLoaded", function () {
             else {
                 sidebar.classList.remove("w-16", "sidebar-collapsed");
                 sidebar.classList.add("w-64");
-                // Hide dot merah
-                document.querySelectorAll('.dot-merah').forEach(dot => dot.classList.add('hidden'));
                 
                 // Show text elements
                 document.querySelectorAll(".sidenav-text").forEach((text) => {
@@ -85,8 +83,6 @@ document.addEventListener("DOMContentLoaded", function () {
             else {
                 sidebar.classList.remove("w-64");
                 sidebar.classList.add("w-16", "sidebar-collapsed");
-                // Show dot merah
-                document.querySelectorAll('.dot-merah').forEach(dot => dot.classList.remove('hidden'));
                 
                 // Hide text elements
                 document.querySelectorAll(".sidenav-text").forEach((text) => {
@@ -188,11 +184,13 @@ document.addEventListener("DOMContentLoaded", function () {
             // Desktop: show sidebar expanded by default, but ensure it's visible
             sidebar.classList.remove("-translate-x-full");
             sidebar.classList.add("translate-x-0", "w-64");
+            
             // Show text elements
             document.querySelectorAll(".sidenav-text").forEach((text) => {
                 text.classList.remove("hidden", "opacity-0");
                 text.classList.add("opacity-100");
             });
+            
             // Set proper main content margin for expanded sidebar
             if (mainContent) {
                 mainContent.classList.remove("sidebar-collapsed");

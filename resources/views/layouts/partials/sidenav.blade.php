@@ -98,19 +98,17 @@
                         <ul x-show="open" x-transition class="mt-1 space-y-0.5 list-none">
                             <li>
                                 <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg relative @if (request()->routeIs('admin.orders.*')) bg-blue-500/13 dark:bg-green-900 @endif" href="{{ route('admin.orders.index') }}" data-tooltip="Pesanan">
-                                    <div class="mr-2 sidebar-icon-container relative">
-                                        <i class="text-emerald-500 fas fa-cart-arrow-down"></i>
+                                    <div class="mr-2 sidebar-icon-container flex items-center">
                                         @if(isset($newOrdersCount) && $newOrdersCount > 0)
-                                            <!-- 2. PERBAIKAN LOGIKA DOT NOTIFIKASI -->
-                                            <!-- Tampil saat group (.aside) punya class 'sidebar-collapsed' -->
-                                            <span class="hidden group-[.sidebar-collapsed]:block absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-red-600 rounded-full border-2 border-white z-50"></span>
+                                            <img src="{{ asset('assets/icon/icon-notif-krenjang.svg') }}" alt="Notifikasi Pesanan" class="w-6 h-6" />
+                                        @else
+                                            <i class="text-emerald-500 fas fa-cart-arrow-down"></i>
                                         @endif
                                     </div>
                                     <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Pesanan</span>
                                     @if(isset($newOrdersCount) && $newOrdersCount > 0)
-                                    <!-- 3. PERBAIKAN LOGIKA BADGE ANGKA -->
-                                    <!-- Sembunyi saat group (.aside) punya class 'sidebar-collapsed' -->
-                                    <span id="order-badge" class="absolute right-3 top-1/2 -translate-y-1/2 inline-flex group-[.sidebar-collapsed]:hidden items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-md shadow-sm cursor-pointer min-w-[28px] text-center">
+                                    <!-- Badge angka untuk expanded sidebar - sembunyi saat sidebar collapsed -->
+                                    <span id="order-badge" class="badge-angka group-[.sidebar-collapsed]:hidden absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-md shadow-sm cursor-pointer min-w-[28px] text-center">
                                         {{ $newOrdersCount }}
                                     </span>
                                     @endif
