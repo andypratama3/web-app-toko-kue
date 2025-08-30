@@ -202,7 +202,6 @@
         let produkList = [];
         let cart = [];
 
-        // ... (fungsi showToast tetap sama) ...
         function showToast(message, type = 'success', duration = 5000) {
             const existingToast = document.getElementById('toast-notification-dynamic');
             if (existingToast) {
@@ -283,11 +282,15 @@
                     const customerName = selectedLink.textContent.trim();
                     const phone = selectedLink.getAttribute('data-phone');
                     const address = selectedLink.getAttribute('data-address');
-                    selectedCustomerSpan.textContent = customerName;
-                    hiddenCustomerIdInput.value = customerId;
-                    phoneInput.value = phone;
-                    addressInput.value = address;
-                    customerDropdownMenu.classList.add('hidden');
+
+                    document.getElementById('selected-customer').textContent = customerName;
+                    document.getElementById('customer-id-input').value = customerId;
+                    document.getElementById('phone').value = phone;
+                    document.getElementById('address').value = address;
+                    document.getElementById('dropdown-menu').classList.add('hidden');
+
+                    // Panggil fungsi untuk memuat pesanan terakhir setelah customer dipilih
+                    loadLastOrder(customerId);
                 }
             });
             const paymentButton = document.getElementById('payment-method-button');
@@ -317,7 +320,7 @@
             });
             document.addEventListener('click', function(e) {
                 if (!customerDropdownButton.contains(e.target) && !customerDropdownMenu.contains(e
-                    .target)) {
+                        .target)) {
                     customerDropdownMenu.classList.add('hidden');
                 }
                 if (!paymentButton.contains(e.target) && !paymentMenu.contains(e.target)) {
@@ -329,7 +332,48 @@
             getProduk();
         });
 
-        // FUNGSI BARU: Untuk menutup modal produk. Dipanggil dari tambahKeCart
+        /**
+         * FUNGSI BARU: Mengambil data pesanan terakhir dan mengisi cart
+         */
+        async function loadLastOrder(customerId) {
+            // Beri feedback visual bahwa data sedang dimuat
+            showToast('Memuat pesanan terakhir...', 'info', 2000);
+
+            try {
+                // Panggil endpoint API yang sudah kita buat
+                const response = await fetch(`{{ url('/kurir/customer') }}/${customerId}/last-order`);
+
+                if (!response.ok) {
+                    throw new Error('Gagal mengambil data pesanan terakhir.');
+                }
+
+                const data = await response.json();
+
+                if (data.items && data.items.length > 0) {
+                    // Jika ada item, ganti isi cart dengan data baru
+                    cart = data.items;
+                    showToast('Pesanan terakhir berhasil dimuat.', 'success');
+                } else {
+                    // Jika tidak ada pesanan, kosongkan cart dan beri info
+                    cart = [];
+                    showToast('Customer ini tidak memiliki pesanan sebelumnya.', 'info');
+                }
+
+                // Render ulang tampilan cart dan tombol produk
+                renderCart();
+                tampilkanPilihanProduk();
+
+            } catch (error) {
+                console.error('Error saat memuat pesanan terakhir:', error);
+                showToast(error.message, 'error');
+                // Kosongkan cart jika terjadi error untuk menghindari kebingungan
+                cart = [];
+                renderCart();
+                tampilkanPilihanProduk();
+            }
+        }
+
+        // FUNGSI: Untuk menutup modal produk. Dipanggil dari tambahKeCart
         function hideProdukModal() {
             const modalElement = document.getElementById('produkModal');
             if (modalElement) {

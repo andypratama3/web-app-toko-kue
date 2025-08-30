@@ -122,6 +122,7 @@ Route::middleware([
         Route::get('/pesanan/{id}/details', [PesananController::class, 'getOrderDetails'])->name('pesanan.details');
         Route::post('/pesanan/{id}/upload-proof', [PesananController::class, 'uploadPaymentProof'])->name('pesanan.uploadProof');
         Route::post('/pesanan/{id}/update-status', [PesananController::class, 'updateOrderStatus'])->name('pesanan.updateStatus');
+        Route::get('/customer/{id}/last-order', [PesananController::class, 'getLastOrder'])->name('customer.lastOrder');
 
         // History Pesanan Gabungan (admin & kurir)
         Route::get('historys', [HistoryOrderController::class, 'index'])->name('historys.index');
