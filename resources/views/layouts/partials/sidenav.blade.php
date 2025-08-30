@@ -212,15 +212,26 @@
                 @endrole
 
                 <li class="mt-0.5 w-full">
-                    <form method="POST" action="{{ route('logout') }}" class="inline">
-                        @csrf
-                        <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg"
-                            href="{{ route('logout') }}" onclick="event.preventDefault(); this.closest('form').submit();"
-                            data-tooltip="Logout">
-                            <div class="mr-2 sidebar-icon-container"><i class="text-red-600 fas fa-sign-out-alt"></i></div>
-                            <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Logout</span>
-                        </a>
-                    </form>
+                                        <form method="POST" action="{{ route('logout') }}" class="inline">
+                                                @csrf
+                                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg"
+                                                        href="{{ route('logout') }}" onclick="event.preventDefault(); this.closest('form').submit();"
+                                                        data-tooltip="Logout">
+                                                        <div class="mr-2 sidebar-icon-container"><i class="text-red-600 fas fa-sign-out-alt"></i></div>
+                                                        <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Logout</span>
+                                                </a>
+                                        </form>
+                                                            <!-- Toggle Lightmode/Darkmode: hanya tampil di mobile/tab, center di bawah logout -->
+                                                            <div class="flex xl:hidden justify-center w-full py-4">
+                                                                <label id="theme-toggle-label-sidebar" for="theme-toggle-checkbox-sidebar" class="relative inline-flex items-center cursor-pointer z-40">
+                                                                    <input type="checkbox" value="" id="theme-toggle-checkbox-sidebar" class="sr-only peer" dark-toggle>
+                                                                    <div class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:bg-blue-600"></div>
+                                                                    <div class="absolute top-0.5 left-[2px] bg-white border-gray-300 border rounded-full h-5 w-5 transition-all peer-checked:translate-x-full flex items-center justify-center">
+                                                                        <span class="text-sm">☀️</span>
+                                                                        <span class="text-sm hidden">🌙</span>
+                                                                    </div>
+                                                                </label>
+                                                            </div>
                 </li>
             </ul>
         </div>
@@ -252,4 +263,5 @@
         </div>
     @endauth
 </aside>
+
 

@@ -1,3 +1,28 @@
+<script>
+  // Sinkronisasi toggle light/dark mode di navbar dan sidebar
+  document.addEventListener('DOMContentLoaded', function() {
+    var navToggle = document.getElementById('theme-toggle-checkbox-navbar');
+    var sideToggle = document.getElementById('theme-toggle-checkbox-sidebar');
+    if (!navToggle || !sideToggle) return;
+    function setBoth(val) {
+      navToggle.checked = val;
+      sideToggle.checked = val;
+      document.documentElement.classList.toggle('dark', val);
+    }
+    navToggle.addEventListener('change', function() { setBoth(navToggle.checked); });
+    sideToggle.addEventListener('change', function() { setBoth(sideToggle.checked); });
+    // Inisialisasi dari localStorage jika ada
+    var saved = localStorage.getItem('theme');
+    if(saved === 'dark') setBoth(true);
+    else setBoth(false);
+    // Simpan ke localStorage
+    [navToggle, sideToggle].forEach(function(toggle) {
+      toggle.addEventListener('change', function() {
+        localStorage.setItem('theme', toggle.checked ? 'dark' : 'light');
+      });
+    });
+  });
+</script>
 {{-- FIXED: Fixed navbar with proper alignment between breadcrumb and profile --}}
 <nav id="navbar-main" class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-0 py-0 transition-all ease-in duration-300 lg:flex-nowrap lg:justify-start bg-greenlight dark:bg-slate-900  dark:shadow-none" navbar-main navbar-scroll="true">
     <div class="flex items-center justify-between w-full h-20 px-6">
@@ -5,12 +30,41 @@
       {{-- Left side: Mobile toggle + Breadcrumb --}}
       <div class="flex items-center flex-grow h-full">
         {{-- Mobile Hamburger Toggle Button --}}
-        <a href="javascript:;" class="flex items-center justify-center p-2 text-white transition-all ease-nav-brand xl:hidden" id="mobile-toggle" sidenav-trigger>
+  <a href="javascript:;" class="flex items-center justify-center p-2 text-white transition-all ease-nav-brand lg:hidden" id="mobile-toggle" sidenav-trigger>
             <i class="fas fa-bars text-xl"></i>
         </a>
+@push('scripts')
+<script>
+  // Hamburger menu auto hide saat sidebar terbuka (mobile & tablet)
+  document.addEventListener('DOMContentLoaded', function() {
+    var hamburger = document.getElementById('mobile-toggle');
+    var sidebar = document.getElementById('sidebar');
+    function updateHamburger() {
+      if (!hamburger || !sidebar) return;
+      // Hanya jalankan di layar < 1280px (xl)
+      if (window.innerWidth < 1280) {
+        var isSidebarOpen = !sidebar.classList.contains('-translate-x-full');
+        if (isSidebarOpen) {
+          hamburger.classList.add('hidden');
+        } else {
+          hamburger.classList.remove('hidden');
+        }
+      } else {
+        // Di desktop, pastikan hamburger selalu hidden
+        hamburger.classList.add('hidden');
+      }
+    }
+    // Pantau perubahan class sidebar dan resize
+    const observer = new MutationObserver(updateHamburger);
+    observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+    window.addEventListener('resize', updateHamburger);
+    updateHamburger();
+  });
+</script>
+@endpush
 
         {{-- Breadcrumb Navigation --}}
-        <div class="flex flex-col justify-center flex-grow h-full ml-4 xl:ml-0">
+  <div class="hidden xl:flex flex-col justify-center flex-grow h-full ml-4 xl:ml-0">
           <ol class="flex flex-wrap bg-transparent rounded-lg">
             <li class="text-sm leading-normal">
              @php
@@ -36,15 +90,15 @@
       </div>
 
       {{-- Toogle Lightmode - Darkmode --}}
-      <label for="theme-toggle-checkbox" class="relative inline-flex items-center cursor-pointer">
-          <input type="checkbox" value="" id="theme-toggle-checkbox" class="sr-only peer" dark-toggle>
-          <div class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:bg-blue-600"></div>
-          <div
-              class="absolute top-0.5 left-[2px] bg-white border-gray-300 border rounded-full h-5 w-5 transition-all peer-checked:translate-x-full flex items-center justify-center">
-              <span id="theme-toggle-light-icon" class="text-sm">☀️</span>
-              <span id="theme-toggle-dark-icon" class="text-sm hidden">🌙</span>
-          </div>
-      </label>
+  <!-- Toggle Lightmode/Darkmode: hanya tampil di desktop/tab -->
+  <label id="theme-toggle-label-navbar" for="theme-toggle-checkbox-navbar" class="relative inline-flex items-center cursor-pointer z-40 hidden xl:inline-flex">
+    <input type="checkbox" value="" id="theme-toggle-checkbox-navbar" class="sr-only peer" dark-toggle>
+    <div class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:bg-blue-600"></div>
+    <div class="absolute top-0.5 left-[2px] bg-white border-gray-300 border rounded-full h-5 w-5 transition-all peer-checked:translate-x-full flex items-center justify-center">
+      <span class="text-sm">☀️</span>
+      <span class="text-sm hidden">🌙</span>
+    </div>
+  </label>
 
       {{-- Right side: Profile section - visible on all devices with proper margin --}}
       <div class="flex items-center justify-end h-full pr-4">

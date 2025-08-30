@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Function to show sidebar (expand)
     function showSidebar() {
         console.log("Showing sidebar");
-    if (sidebar) {
+        if (sidebar) {
             // Mobile behavior - show sidebar with overlay
             if (window.innerWidth < 1280) {
                 sidebar.classList.remove("-translate-x-full");
@@ -34,28 +34,28 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (overlay) {
                     overlay.classList.remove("hidden");
                 }
+                // Hide hamburger button
+                if (mobileToggle) {
+                    mobileToggle.classList.add("hidden");
+                }
             } 
             // Desktop behavior - expand sidebar to full width
             else {
                 sidebar.classList.remove("w-16", "sidebar-collapsed");
                 sidebar.classList.add("w-64");
-                
                 // Show text elements
                 document.querySelectorAll(".sidenav-text").forEach((text) => {
                     text.classList.remove("hidden", "opacity-0");
                     text.classList.add("opacity-100");
                 });
-                
                 // Adjust main content margin
                 if (mainContent) {
                     mainContent.classList.remove("sidebar-collapsed");
                 }
             }
-            
             sidebar.setAttribute("aria-expanded", "true");
             sidebarVisible = true;
             localStorage.setItem('sidebar-open', 'true');
-            
             // Update desktop toggle icon
             if (desktopToggle) {
                 const icon = desktopToggle.querySelector("i");
@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Function to hide/collapse sidebar
     function hideSidebar() {
         console.log("Hiding sidebar");
-    if (sidebar) {
+        if (sidebar) {
             // Mobile behavior - hide sidebar completely
             if (window.innerWidth < 1280) {
                 sidebar.classList.add("-translate-x-full");
@@ -78,28 +78,28 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (overlay) {
                     overlay.classList.add("hidden");
                 }
+                // Show hamburger button
+                if (mobileToggle) {
+                    mobileToggle.classList.remove("hidden");
+                }
             } 
             // Desktop behavior - collapse sidebar to icon-only
             else {
                 sidebar.classList.remove("w-64");
                 sidebar.classList.add("w-16", "sidebar-collapsed");
-                
                 // Hide text elements
                 document.querySelectorAll(".sidenav-text").forEach((text) => {
                     text.classList.add("hidden", "opacity-0");
                     text.classList.remove("opacity-100");
                 });
-                
                 // Adjust main content margin for collapsed sidebar
                 if (mainContent) {
                     mainContent.classList.add("sidebar-collapsed");
                 }
             }
-            
             sidebar.setAttribute("aria-expanded", "false");
             sidebarVisible = false;
             localStorage.setItem('sidebar-open', 'false');
-            
             // Update desktop toggle icon
             if (desktopToggle) {
                 const icon = desktopToggle.querySelector("i");
