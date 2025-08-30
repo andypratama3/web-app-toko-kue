@@ -58,10 +58,13 @@ class PesananController extends Controller
             return response()->json(['message' => 'Validasi gagal', 'errors' => $e->errors()], 422);
         }
 
+        // --- AWAL BLOK PERUBAHAN ---
         $customer = Customer::with('category')->find($validated['customer_id']);
         if (!$customer) {
             return response()->json(['message' => 'Customer tidak ditemukan.'], 404);
         }
+
+        // Tentukan batas maksimal pesanan berdasarkan kategori customer
         $categoryName = strtolower($customer->category->name ?? '');
         $maxOrder = 0;
         if ($categoryName === 'reseller') {
@@ -69,15 +72,20 @@ class PesananController extends Controller
         } elseif ($categoryName === 'supermarket') {
             $maxOrder = 30;
         }
+
+        // Jika customer termasuk kategori yang memiliki batasan
         if ($maxOrder > 0) {
+            // Hitung pesanan aktif (status BUKAN 'diverifikasi_admin')
             $activeOrderCount = Order::where('customer_id', $customer->id)
                 ->where('created_by_user_id', Auth::id())
-                ->whereNotIn('status', ['selesai'])
+                ->where('status', '!=', 'diverifikasi_admin') // Diubah dari whereNotIn('status', ['selesai'])
                 ->count();
+
+            // Jika jumlah pesanan aktif sudah mencapai atau melebihi batas
             if ($activeOrderCount >= $maxOrder) {
                 return response()->json([
-                    'message' => "Batas maksimal pesanan aktif untuk customer kategori $categoryName adalah $maxOrder. Selesaikan pesanan sebelumnya sebelum membuat pesanan baru."
-                ], 422);
+                    'message' => "Batas maksimal pesanan aktif untuk customer kategori $categoryName adalah $maxOrder. Pesanan sebelumnya harus diverifikasi admin terlebih dahulu."
+                ], 422); // Kirim status 422 Unprocessable Entity
             }
         }
 
