@@ -6,6 +6,11 @@ use App\Models\Order;
 
 class HistoryOrderController extends Controller
 {
+    public function invoice($orderId)
+    {
+        $order = \App\Models\Order::with(['customer', 'createdBy', 'items'])->findOrFail($orderId);
+        return view('dashboard.admin.historys.invoice', compact('order'));
+    }
     public function index()
     {
         $user = Auth::user();

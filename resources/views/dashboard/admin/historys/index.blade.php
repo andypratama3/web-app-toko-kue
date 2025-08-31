@@ -50,32 +50,57 @@
                                             <ul class="py-1 text-sm text-gray-700 dark:text-gray-200">
                                                 {{-- Tombol Direct WA --}}
                                                 <li>
-                                                    <button type="button"
-                                                        data-target-modal="show-customer-modal-{{ $order->id }}"
-                                                        class="flex items-center w-full px-4 py-2 text-left js-open-modal-btn hover:bg-gray-100 dark:hover:bg-gray-600">
-                                                        <span class="inline-block w-6 mr-2 text-center"><i
-                                                                class="fab fa-whatsapp text-green-500"></i></span>
-                                                        <span class="text-green-500">Kirim</span>
-                                                    </button>
+                                                    @php
+                                                        $wa_number = $order->customer->phone ?? $order->phone ?? null;
+                                                        if ($wa_number) {
+                                                            $wa_number = preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $wa_number));
+                                                        }
+                                                        $customer_name = $order->customer->name ?? '-';
+                                                        $wa_message = "Yth. Bapak/Ibu *{$customer_name}*,\n\n" .
+                                                            "Kami mengonfirmasi bahwa pesanan Anda telah selesai.\n\n" .
+                                                            "Sebagai referensi, transaksi ini tercatat dengan nomor invoice berikut: *{$order->invoice_number}*.\n\n" .
+                                                            "Terimakasih sudah berbelanja di Toko Kami.\n\n" .
+                                                            "Hormat kami.\n*Admin Kue Pandan Asli*";
+                                                        $wa_message = urlencode($wa_message);
+                                                    @endphp
+                                                    @if($wa_number)
+                                                        <a href="https://wa.me/{{ $wa_number }}?text={{ $wa_message }}" target="_blank" rel="noopener"
+                                                            class="flex items-center w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600">
+                                                            <span class="inline-block w-6 mr-2 text-center"><i class="fab fa-whatsapp text-green-500"></i></span>
+                                                            <span class="text-green-500">Kirim</span>
+                                                        </a>
+                                                    @else
+                                                        <span class="flex items-center w-full px-4 py-2 text-left text-gray-400 cursor-not-allowed">
+                                                            <span class="inline-block w-6 mr-2 text-center"><i class="fab fa-whatsapp"></i></span>
+                                                            <span>No WA</span>
+                                                        </span>
+                                                    @endif
                                                 </li>
                                                 {{-- Tombol Download --}}
                                                 <li>
                                                     <button type="button"
                                                         data-target-modal="edit-customer-modal-{{ $order->id }}"
                                                         class="flex items-center w-full px-4 py-2 text-left js-open-modal-btn hover:bg-gray-100 dark:hover:bg-gray-600">
-                                                        <span class="inline-block w-6 mr-2 text-center"><i
-                                                                class="fas fa-download"></i></span>
+                                                        <span class="inline-block w-6 mr-2 text-center"><i class="fas fa-download"></i></span>
                                                         <span>Download</span>
                                                     </button>
+                                                </li>
+                                                <li>
+                                                    <a href="{{ route('admin.historys.invoice', $order->id) }}" target="_blank" rel="noopener"
+                                                        class="flex items-center w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600">
+                                                        <span class="inline-block w-6 mr-2 text-center"><i class="fas fa-file-invoice"></i></span>
+                                                        <span>Lihat Invoice</span>
+                                                    </a>
                                                 </li>
                                             </ul>
                                         </div>
                                     </div>
                                 </td>
                             </tr>
+
                         @empty
                             <tr>
-                                <td colspan="6" class="py-6 text-center text-gray-500">Tidak ada pesanan history.</td>
+                                <td colspan="7" class="py-6 text-center text-gray-500">Tidak ada pesanan history.</td>
                             </tr>
                         @endforelse
                     </tbody>
