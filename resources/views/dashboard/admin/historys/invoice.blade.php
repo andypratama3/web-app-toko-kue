@@ -2,6 +2,24 @@
     // Deteksi mode PDF (Dompdf)
     $isPdf = request()->routeIs('admin.historys.download');
 @endphp
+@if(!$isPdf)
+    <script>
+        // Hapus header/footer print browser
+        window.addEventListener('DOMContentLoaded', function() {
+            // Hapus header/footer print dengan CSS
+            const style = document.createElement('style');
+            style.innerHTML = `
+                @media print {
+                    @page { margin: 0; }
+                    body { margin: 0; }
+                    /* Hapus header/footer print browser */
+                    body::before, body::after { display: none !important; content: none !important; }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+@endif
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,8 +31,11 @@
         <style>
             @media print {
                 .no-print { display: none; }
-                @page { margin: 8mm; }
-                body { margin: 0 !important; }
+                html, body { margin: 0 !important; padding: 0 !important; }
+                body > div.print-container {
+                    margin-top: 1cm !important;
+                    padding-top: 1cm !important;
+                }
             }
         </style>
     @else
@@ -150,30 +171,81 @@
     @endif
 </head>
 <body @if(!$isPdf) class="bg-white p-8 print:p-0" @endif>
-    <div @if($isPdf) class="container" @else class="max-w-4xl mx-auto border-2 border-black p-8" @endif>
+    <div @if($isPdf) class="container" @else class="print-container max-w-2xl mx-auto bg-white border border-gray-300 rounded-xl shadow p-8 mt-8" @endif>
         <!-- Header -->
-        <div @if($isPdf) class="header" @else class="flex justify-between items-start mb-8" @endif>
-            <div @if($isPdf) class="header-left" @else class="flex-1" @endif>
-                <h1 @if($isPdf) class="invoice-title" @else class="text-3xl font-bold mb-2" @endif>#INVOICE</h1>
-                <div @if($isPdf) class="invoice-number" @else class="text-sm mb-1" @endif>{{ $order->invoice_number }}</div>
-                <div @if($isPdf) class="invoice-date" @else class="text-sm" @endif>Tanggal: {{ $order->created_at->setTimezone('Asia/Jakarta')->format('d/m/Y H:i') }} WIB</div>
+        @if($isPdf)
+        <div class="header">
+            <div class="header-left">
+                <h1 class="invoice-title">INVOICE</h1>
+                <div class="invoice-number">{{ $order->invoice_number }}</div>
+                <div class="invoice-date">Tanggal: {{ $order->created_at->setTimezone('Asia/Jakarta')->format('d/m/Y H:i') }} WIB</div>
             </div>
-            <div @if($isPdf) class="header-right" @else class="text-right" @endif>
-                <div @if($isPdf) class="brand-kue" @else class="text-lg" style="color: #97B67D;" @endif>Kue Ijo</div>
-                <div @if($isPdf) class="brand-pandan" @else class="text-2xl font-bold" style="color: #97B67D; letter-spacing: 2px;" @endif>PANDAN ASLI</div>
-                <div @if($isPdf) class="kurir-info" @else class="text-sm mt-2" @endif>Kurir: Kurir Surabaya</div>
+            <div class="header-right">
+                <div class="brand-kue">Kue Ijo</div>
+                <div class="brand-pandan">PANDAN ASLI</div>
+                <div class="kurir-info">Kurir: {{ $order->createdBy->name ?? '-' }}</div>
             </div>
         </div>
-
-        <!-- Customer Info -->
-        <div @if($isPdf) class="customer-section" @else class="mb-6" @endif>
-            <div @if($isPdf) class="customer-label" @else class="font-bold text-base mb-1" @endif>Kepada Yth:</div>
-            <div @if($isPdf) class="customer-name" @else class="font-bold text-base mb-1" @endif>{{ $order->customer->name ?? 'Kiki' }}</div>
-            <div @if($isPdf) class="customer-details" @else class="text-sm mb-1" @endif>{{ $order->customer->phone ?? '628133651455' }}</div>
-            <div @if($isPdf) class="customer-details" @else class="text-sm" @endif>{{ $order->address ?? 'Jl Patimura' }}</div>
+        @else
+        <div class="flex flex-row justify-between items-start mb-8">
+            <div class="flex flex-col items-start">
+                <h1 class="text-3xl font-bold leading-tight mb-1">INVOICE</h1>
+                <div class="text-base text-gray-500 font-mono mb-0.5">{{ $order->invoice_number }}</div>
+                <div class="text-base text-gray-500 font-mono">Tanggal: {{ $order->created_at->setTimezone('Asia/Jakarta')->format('d/m/Y H:i') }} WIB</div>
+            </div>
+            <div class="flex flex-col items-end text-right">
+                <span class="text-lg font-normal leading-tight" style="color:#97b67d; font-family:serif;">Kue Ijo</span>
+                <span class="text-3xl font-extrabold tracking-wider mt-0 -mb-2" style="color:#97b67d; font-family:serif; letter-spacing:2px;">PANDAN ASLI</span>
+                <span class="text-base text-gray-700 mt-2">Kurir: {{ $order->createdBy->name ?? '-' }}</span>
+            </div>
         </div>
+        @endif
 
-        <!-- Products Table -->
+        <!-- Customer Info & Products Table (Browser) -->
+        @if(!$isPdf)
+        <div class="mb-6">
+            <div class="font-bold text-base mb-1">Kepada Yth:</div>
+            <div class="font-bold text-base mb-1">{{ $order->customer->name ?? 'Kiki' }}</div>
+            <div class="text-sm mb-1">{{ $order->customer->phone ?? '628133651455' }}</div>
+            <div class="text-sm">{{ $order->address ?? 'Jl Patimura' }}</div>
+        </div>
+        <div class="overflow-x-auto mb-6">
+            <table class="min-w-full border text-sm">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="border px-3 py-2">Produk</th>
+                        <th class="border px-3 py-2">Varian</th>
+                        <th class="border px-3 py-2 text-center">Qty</th>
+                        <th class="border px-3 py-2 text-right">Harga</th>
+                        <th class="border px-3 py-2 text-right">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($order->items as $item)
+                    <tr>
+                        <td class="border px-3 py-2">{{ $item->product_name }}</td>
+                        <td class="border px-3 py-2">{{ $item->variant_name ?? '-' }}</td>
+                        <td class="border px-3 py-2 text-center">{{ $item->quantity }}</td>
+                        <td class="border px-3 py-2 text-right">Rp {{ number_format($item->price, 0, ',', '.') }}</td>
+                        <td class="border px-3 py-2 text-right">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+                <tfoot>
+                    <tr class="bg-gray-100 font-bold">
+                        <td colspan="4" class="border px-3 py-2 text-right">Total</td>
+                        <td class="border px-3 py-2 text-right">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        @else
+        <div class="customer-section">
+            <div class="customer-label">Kepada Yth:</div>
+            <div class="customer-name">{{ $order->customer->name ?? 'Kiki' }}</div>
+            <div class="customer-details">{{ $order->customer->phone ?? '628133651455' }}</div>
+            <div class="customer-details">{{ $order->address ?? 'Jl Patimura' }}</div>
+        </div>
         <table>
             <thead>
                 <tr>
@@ -202,6 +274,7 @@
                 </tr>
             </tfoot>
         </table>
+        @endif
 
         <!-- Footer -->
         <div @if($isPdf) class="footer-signature" @else class="mt-6" @endif>
