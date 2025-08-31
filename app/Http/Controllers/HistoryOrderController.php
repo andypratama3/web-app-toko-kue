@@ -6,10 +6,30 @@ use App\Models\Order;
 
 class HistoryOrderController extends Controller
 {
-    public function invoice($orderId)
+    public function downloadInvoice($orderId)
     {
         $order = \App\Models\Order::with(['customer', 'createdBy', 'items'])->findOrFail($orderId);
-        return view('dashboard.admin.historys.invoice', compact('order'));
+        $isPdf = true;
+        $pdf = \PDF::loadView('dashboard.admin.historys.invoice', compact('order', 'isPdf'))
+            ->setPaper('A4', 'portrait')
+            ->setOptions([
+                'isHtml5ParserEnabled' => true,
+                'isRemoteEnabled' => true,
+                'margin_top'    => 20,
+                'margin_right'  => 20,
+                'margin_bottom' => 20,
+                'margin_left'   => 20,
+            ]);
+        $customerName = preg_replace('/[^A-Za-z0-9]/', '', $order->customer->name ?? 'Customer');
+        $invoiceNumber = str_replace(['/', '\\'], '-', $order->invoice_number);
+        $filename = $customerName . '-' . $invoiceNumber . '.pdf';
+        return $pdf->download($filename);
+    }
+    public function invoice($orderId)
+    {
+    $order = \App\Models\Order::with(['customer', 'createdBy', 'items'])->findOrFail($orderId);
+    $isPdf = false;
+    return view('dashboard.admin.historys.invoice', compact('order', 'isPdf'));
     }
     public function index()
     {
