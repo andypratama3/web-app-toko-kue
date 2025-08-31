@@ -8,10 +8,12 @@
     <style>
         @media print {
             .no-print { display: none; }
+            @page { margin: 0; }
+            body { margin: 0 !important; }
         }
     </style>
 </head>
-<body class="bg-white p-8">
+<body class="bg-white p-8 print:p-0">
     <div class="max-w-2xl mx-auto border p-8 rounded shadow">
         <div class="flex justify-between items-center mb-8">
             <div>
@@ -65,7 +67,10 @@
             <p class="text-xs text-gray-500">Hormat Kami,<br>Dian</span></p>
         </div>
         <div class="mt-8 flex justify-between items-center">
-            <button onclick="window.print()" class="no-print px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Print Invoice</button>
+            <div class="no-print flex gap-2">
+                <button onclick="window.print()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Print Invoice</button>
+                <button onclick="window.close()" class="px-4 py-2 bg-red-400 text-white rounded hover:bg-gray-600">Tutup</button>
+            </div>
         </div>
     </div>
 </body>
