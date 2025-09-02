@@ -57,9 +57,11 @@ class PeformaKurirController extends Controller
         $kurirIds = $ranking->pluck('kurir_id')->all();
         $kurirs = \App\Models\User::whereIn('id', $kurirIds)->get()->keyBy('id');
 
-        // Gabungkan nama kurir ke ranking
+        // Gabungkan nama kurir dan total customer yang dihandle ke ranking
         $ranking = $ranking->map(function ($item, $i) use ($kurirs) {
-            $item['nama_kurir'] = $kurirs[$item['kurir_id']]->name ?? '-';
+            $user = $kurirs[$item['kurir_id']] ?? null;
+            $item['nama_kurir'] = $user ? $user->name : '-';
+            $item['total_customer'] = $user ? $user->customers()->count() : 0;
             $item['rank'] = $i + 1;
             return $item;
         });

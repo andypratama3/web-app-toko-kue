@@ -38,6 +38,7 @@
                 <tr>
                     <th class="w-24 px-4 py-2 text-left text-xs font-bold text-gray-700 dark:text-gray-200 uppercase">Rank</th>
                     <th class="px-4 py-2 text-center text-xs font-bold text-gray-700 dark:text-gray-200 uppercase">Nama Kurir</th>
+                    <th class="px-4 py-2 text-center text-xs font-bold text-gray-700 dark:text-gray-200 uppercase">Total Customer Handle</th>
                     <th class="px-4 py-2 text-center text-xs font-bold text-gray-700 dark:text-gray-200 uppercase">Jumlah Pesanan Selesai</th>
                 </tr>
             </thead>
@@ -56,11 +57,12 @@
                             @endif
                         </td>
                         <td class="px-4 py-2 text-center">{{ $row['nama_kurir'] }}</td>
+                        <td class="px-4 py-2 text-center">{{ $row['total_customer'] }}</td>
                         <td class="px-4 py-2 text-center">{{ $row['jumlah_order'] }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="3" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">Belum ada data peforma kurir bulan ini.</td>
+                        <td colspan="4" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">Belum ada data peforma kurir bulan ini.</td>
                     </tr>
                 @endforelse
             </tbody>
