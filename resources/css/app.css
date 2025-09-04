@@ -586,3 +586,13 @@ body {
     display: none !important;
     /* z-index: 60; */
 }
+
+/* Untuk Chrome, Safari, dan Edge */
+.custom-modal-wrapper [class*="overflow-y-auto"]::-webkit-scrollbar {
+    display: none;
+}
+
+/* Untuk Firefox */
+.custom-modal-wrapper [class*="overflow-y-auto"] {
+    scrollbar-width: none;
+}

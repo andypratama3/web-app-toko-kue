@@ -1,32 +1,29 @@
-@props([
-    'id',
-    'title',
-    'size' => '2xl',
-])
+@props(['id', 'title', 'size' => '2xl'])
 
 @php
-    $maxWidthClass = [
-        'sm' => 'max-w-sm',
-        'md' => 'max-w-md',
-        'lg' => 'max-w-lg',
-        'xl' => 'max-w-xl',
-        '2xl' => 'max-w-2xl',
-        '3xl' => 'max-w-3xl',
-        '4xl' => 'max-w-4xl',
-        '5xl' => 'max-w-5xl',
-        '6xl' => 'max-w-6xl',
-        '7xl' => 'max-w-7xl',
-    ][$size] ?? 'max-w-2xl';
+    $maxWidthClass =
+        [
+            'sm' => 'max-w-sm',
+            'md' => 'max-w-md',
+            'lg' => 'max-w-lg',
+            'xl' => 'max-w-xl',
+            '2xl' => 'max-w-2xl',
+            '3xl' => 'max-w-3xl',
+            '4xl' => 'max-w-4xl',
+            '5xl' => 'max-w-5xl',
+            '6xl' => 'max-w-6xl',
+            '7xl' => 'max-w-7xl',
+        ][$size] ?? 'max-w-2xl';
 @endphp
 
 {{-- Div utama modal, memiliki ID dan role="dialog" untuk JS kustom --}}
+{{-- PERUBAHAN: Tambahkan kelas 'custom-modal-wrapper' di sini --}}
 <div id="{{ $id }}" tabindex="-1" aria-hidden="true" role="dialog"
-    class="fixed inset-0 top-0 left-0 right-0 z-50 flex items-center justify-center hidden w-full h-full overflow-x-hidden overflow-y-auto bg-gray-900 bg-opacity-50">
+    class="custom-modal-wrapper fixed inset-0 top-0 left-0 right-0 z-50 flex items-center justify-center hidden w-full h-full overflow-x-hidden bg-gray-900 bg-opacity-50">
 
     <div class="relative w-full p-4 {{ $maxWidthClass }}">
         {{-- Konten Modal --}}
-        {{-- DIUBAH: Tambahkan 'flex', 'flex-col', dan 'max-h-[90vh]' --}}
-        <div class="relative flex flex-col bg-white rounded-lg shadow max-h-[90vh] dark:bg-gray-700">
+        <div class="relative flex flex-col bg-white rounded-lg shadow max-h-[90vh] dark:bg-gray-700 overflow-hidden">
             {{-- Header Modal (tidak diubah, akan tetap di atas) --}}
             <div
                 class="flex items-center justify-between p-4 border-b border-gray-200 rounded-t md:p-5 shrink-0 dark:border-gray-600">
@@ -44,8 +41,8 @@
                 </button>
             </div>
 
-            {{-- Body Modal --}}
-            {{-- DIUBAH: Tambahkan 'overflow-y-auto' agar bisa di-scroll --}}
+            {{-- Body Modal (Konten Utama) --}}
+            {{-- Elemen ini akan di-scroll jika isinya panjang --}}
             <div class="p-4 overflow-y-auto md:p-5">
                 {{ $slot }}
             </div>
