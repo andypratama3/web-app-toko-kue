@@ -21,14 +21,14 @@ class OrderReturn extends Model
         'return_proof',
     ];
 
-    public function order(): BelongsTo
-    {
-        return $this->belongsTo(Order::class);
-    }
-
-    public function returnedProducts(): HasMany
+    public function returnedProducts()
     {
         return $this->hasMany(OrderReturnProduct::class);
+    }
+    
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
     }
 
     // Relasi baru ke kurir dan region

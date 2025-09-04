@@ -4,7 +4,6 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-// Panggil semua controller yang digunakan
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\KurirDashboardController;
 use App\Http\Controllers\ProductController;

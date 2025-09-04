@@ -79,7 +79,7 @@ class Order extends Model
     /**
      * Get all of the returns for the Order.
      */
-    public function returns(): HasMany
+    public function returns()
     {
         return $this->hasMany(OrderReturn::class);
     }

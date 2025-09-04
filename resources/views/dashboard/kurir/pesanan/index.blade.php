@@ -70,20 +70,43 @@
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap dark:text-gray-300">
                                         {{ optional($order->customer)->name ?? 'Pelanggan Dihapus' }}</td>
+
                                     <td class="px-6 py-4 text-sm whitespace-nowrap">
-                                        <span
+                                        <span {{-- KELAS DASAR UNTUK BENTUK & UKURAN SERAGAM --}}
                                             class="status-badge px-2.5 py-1 text-xs font-semibold rounded-full
-                                            {{-- GABUNGAN STATUS DARI KEDUA FILE --}}
-                                            @switch($order->status ?? 'dikemas')
-                                                @case('diambil') bg-blue-100 text-blue-800 @break
-                                                @case('diantar') bg-yellow-100 text-yellow-800 @break
-                                                @case('diterima_pembeli') bg-purple-100 text-purple-800 @break
-                                                @case('menunggu_retur') bg-red-100 text-red-800 @break
-                                                @case('menunggu_verifikasi_admin') bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300 @break
-                                                @case('selesai') bg-green-100 text-green-800 @break
-                                                @default bg-gray-100 text-gray-800
-                                            @endswitch">
-                                            {{ ucfirst(str_replace('_', ' ', $order->status ?? 'Dikemas')) }}
+
+                                                {{-- KELAS WARNA DINAMIS --}}
+                                                @switch($order->status ?? 'dikemas')
+                                                    @case('diambil') bg-blue-100 text-blue-800 @break
+                                                    @case('diantar') bg-yellow-100 text-yellow-800 @break
+                                                    @case('diterima_pembeli') bg-purple-100 text-purple-800 @break
+                                                    @case('menunggu_retur') bg-red-100 text-red-800 @break
+                                                    @case('menunggu_verifikasi_admin') bg-orange-100 text-orange-800 @break
+                                                    @case('selesai') bg-green-100 text-green-800 @break
+                                                    @default bg-gray-100 text-gray-800
+                                                @endswitch
+                                            ">
+                                            {{-- TULISAN STATUS (SATU KATA) --}}
+                                            @switch($order->status)
+                                                @case('diterima_pembeli')
+                                                    Diterima
+                                                @break
+
+                                                @case('menunggu_retur')
+                                                    Retur
+                                                @break
+
+                                                @case('menunggu_verifikasi_admin')
+                                                    Verifikasi
+                                                @break
+
+                                                @case('selesai')
+                                                    Selesai
+                                                @break
+
+                                                @default
+                                                    {{ ucfirst($order->status) }}
+                                            @endswitch
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-sm font-medium text-center whitespace-nowrap">
@@ -137,18 +160,43 @@
                                         <p class="text-sm text-gray-800 truncate dark:text-gray-200">
                                             {{ optional($order->customer)->name ?? 'Pelanggan Dihapus' }}</p>
                                     </div>
-                                    <span
+                                    {{-- File: index.blade.php --}}
+
+                                    <span {{-- KELAS DASAR UNTUK BENTUK & UKURAN SERAGAM --}}
                                         class="status-badge flex-shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full whitespace-nowrap ml-2
-                                    @switch($order->status ?? 'dikemas')
-                                        @case('diambil') bg-blue-100 text-blue-800 @break
-                                        @case('diantar') bg-yellow-100 text-yellow-800 @break
-                                        @case('diterima_pembeli') bg-purple-100 text-purple-800 @break
-                                        @case('menunggu_retur') bg-red-100 text-red-800 @break
-                                        @case('menunggu_verifikasi_admin') bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300 @break
-                                        @case('selesai') bg-green-100 text-green-800 @break
-                                        @default bg-gray-100 text-gray-800
-                                    @endswitch">
-                                        {{ ucfirst(str_replace('_', ' ', $order->status ?? 'Dikemas')) }}
+
+                                        {{-- KELAS WARNA DINAMIS --}}
+                                        @switch($order->status ?? 'dikemas')
+                                            @case('diambil') bg-blue-100 text-blue-800 @break
+                                            @case('diantar') bg-yellow-100 text-yellow-800 @break
+                                            @case('diterima_pembeli') bg-purple-100 text-purple-800 @break
+                                            @case('menunggu_retur') bg-red-100 text-red-800 @break
+                                            @case('menunggu_verifikasi_admin') bg-orange-100 text-orange-800 @break
+                                            @case('selesai') bg-green-100 text-green-800 @break
+                                            @default bg-gray-100 text-gray-800
+                                        @endswitch
+">
+                                        {{-- TULISAN STATUS (SATU KATA) --}}
+                                        @switch($order->status)
+                                            @case('diterima_pembeli')
+                                                Diterima
+                                            @break
+
+                                            @case('menunggu_retur')
+                                                Retur
+                                            @break
+
+                                            @case('menunggu_verifikasi_admin')
+                                                Verifikasi
+                                            @break
+
+                                            @case('selesai')
+                                                Selesai
+                                            @break
+
+                                            @default
+                                                {{ ucfirst($order->status) }}
+                                        @endswitch
                                     </span>
                                 </div>
 
@@ -176,14 +224,15 @@
             @endif
         </div>
     </div>
+@endsection
 
-    @push('flowbite-modals')
-        @include('dashboard.kurir.pesanan.rincian-modal')
-        @include('dashboard.kurir.pesanan.status-modal')
-        {{-- TAMBAHKAN MODAL RETUR DARI FILE 2 --}}
-        @include('dashboard.kurir.pesanan.return-modal')
-    @endpush
+@push('flowbite-modals')
+    @include('dashboard.kurir.pesanan.rincian-modal')
+    @include('dashboard.kurir.pesanan.status-modal')
+    @include('dashboard.kurir.pesanan.return-modal')
+@endpush
 
+@push('page-scripts')
     <script>
         // Ganti dengan URL aplikasi Anda yang sebenarnya di production
         const APP_URL = "{{ url('/') }}";
@@ -840,4 +889,4 @@
             }
         });
     </script>
-@endsection
+@endpush
