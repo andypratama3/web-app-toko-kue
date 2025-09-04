@@ -112,4 +112,5 @@
             document.getElementById('modalLoader').classList.remove('hidden');
             document.getElementById('modalContent').classList.add('hidden');
         }
+    }
 </script>

@@ -169,10 +169,6 @@
             return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
         }
 
-        /**
-         * Fungsi BARU untuk memicu toast Alpine.js.
-         * Menggantikan showCustomAlert()
-         */
         function dispatchToast(message, type = 'success') {
             window.dispatchEvent(new CustomEvent('show-toast', {
                 detail: {
