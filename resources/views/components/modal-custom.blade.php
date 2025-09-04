@@ -1,7 +1,7 @@
 @props([
     'id',
     'title',
-    'size' => '2xl'
+    'size' => '2xl',
 ])
 
 @php
@@ -25,13 +25,14 @@
 
     <div class="relative w-full p-4 {{ $maxWidthClass }}">
         {{-- Konten Modal --}}
-        <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-            {{-- Header Modal --}}
-            <div class="flex items-center justify-between p-4 border-b border-gray-200 rounded-t md:p-5 dark:border-gray-600">
+        {{-- DIUBAH: Tambahkan 'flex', 'flex-col', dan 'max-h-[90vh]' --}}
+        <div class="relative flex flex-col bg-white rounded-lg shadow max-h-[90vh] dark:bg-gray-700">
+            {{-- Header Modal (tidak diubah, akan tetap di atas) --}}
+            <div
+                class="flex items-center justify-between p-4 border-b border-gray-200 rounded-t md:p-5 shrink-0 dark:border-gray-600">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                     {{ $title }}
                 </h3>
-                {{-- Tombol Tutup Modal --}}
                 <button type="button"
                     class="inline-flex items-center justify-center w-8 h-8 text-sm text-gray-400 bg-transparent rounded-lg js-close-modal-btn hover:bg-gray-200 hover:text-gray-900 ms-auto dark:hover:bg-gray-600 dark:hover:text-white">
                     <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -42,13 +43,18 @@
                     <span class="sr-only">Close modal</span>
                 </button>
             </div>
+
             {{-- Body Modal --}}
-            <div class="p-4 md:p-5">
+            {{-- DIUBAH: Tambahkan 'overflow-y-auto' agar bisa di-scroll --}}
+            <div class="p-4 overflow-y-auto md:p-5">
                 {{ $slot }}
             </div>
-            {{-- Footer Modal --}}
+
+            {{-- Footer Modal (tidak diubah, akan tetap di bawah) --}}
             @if (isset($footer))
-                {{ $footer }} {{-- <-- TAMBAHKAN BAGIAN INI --}}
+                <div class="shrink-0"> {{-- Wrapper untuk memastikan footer tidak ikut scroll --}}
+                    {{ $footer }}
+                </div>
             @endif
         </div>
     </div>

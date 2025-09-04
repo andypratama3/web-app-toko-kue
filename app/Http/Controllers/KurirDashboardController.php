@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CustomerCategory; // 1. TAMBAHKAN IMPORT MODEL
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -14,12 +15,15 @@ class KurirDashboardController extends Controller
     {
         $kurir = Auth::user();
 
-        // BENAR: Membandingkan slug dari URL dengan slug dari relasi region
         if (!$kurir->hasRole('kurir')) {
             abort(403, 'AKSES DITOLAK');
         }
 
-        return view('dashboard.kurir.dashboard', compact('kurir'));
+        // 2. AMBIL DATA KATEGORI CUSTOMER
+        $customerCategories = CustomerCategory::all();
+
+        // 3. KIRIM DATA KE VIEW
+        return view('dashboard.kurir.dashboard', compact('kurir', 'customerCategories'));
     }
 
     // controller profile
@@ -27,7 +31,6 @@ class KurirDashboardController extends Controller
     {
         $kurir = Auth::user();
 
-        // Cek hanya role kurir
         if (!$kurir->hasRole('kurir')) {
             abort(403, 'AKSES DITOLAK');
         }
@@ -39,7 +42,6 @@ class KurirDashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Cek hanya role kurir
         if (!$user->hasRole('kurir')) {
             abort(403, 'AKSES DITOLAK');
         }
@@ -66,7 +68,6 @@ class KurirDashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Cek hanya role kurir
         if (!$user->hasRole('kurir')) {
             abort(403, 'AKSES DITOLAK');
         }
