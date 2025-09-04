@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
@@ -48,8 +49,9 @@ class Order extends Model
 
     /**
      * Get the items for the order.
+     * INI ADALAH RELASI YANG BENAR UNTUK MENGAMBIL PRODUK
      */
-    public function items()
+    public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
     }
@@ -72,5 +74,18 @@ class Order extends Model
     public function region()
     {
         return $this->belongsTo(Region::class);
+    }
+
+    /**
+     * Get all of the returns for the Order.
+     */
+    public function returns(): HasMany
+    {
+        return $this->hasMany(OrderReturn::class);
+    }
+
+    public function orderReturn()
+    {
+        return $this->hasOne(OrderReturn::class);
     }
 }

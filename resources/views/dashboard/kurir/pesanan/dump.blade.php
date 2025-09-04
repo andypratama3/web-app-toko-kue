@@ -386,13 +386,8 @@
         }
 
         function populateStatusStepperModal(order) {
-            // 1. Peta status yang sudah dilengkapi semua kemungkinan
+            // Peta status untuk mengontrol logika dan teks pada tombol
             const statusMap = {
-                'pending': {
-                    label: 'Pending',
-                    nextStatus: 'diambil',
-                    buttonText: 'Ubah Status ke Diambil'
-                },
                 'dikemas': {
                     label: 'Dikemas',
                     nextStatus: 'diambil',
@@ -435,49 +430,42 @@
                 }
             };
 
-            // 2. Mengisi info dasar modal
+            // Mengisi info dasar modal
             document.getElementById('modalStatusInvoiceNumber').textContent = order.invoice_number || 'N/A';
             document.getElementById('modalStatusCustomerName').textContent = order.customer.name || 'N/A';
 
-            // 3. Memperbarui UI Stepper dengan memanggil fungsi terpisah
+            // Memperbarui UI Stepper
             updateStepperUI(order);
 
-            // 4. Mengatur tombol aksi utama
+            // Mengatur tombol aksi utama
             const updateButton = document.getElementById('updateStatusButton');
             const updateButtonText = document.getElementById('updateStatusButtonText');
-            const currentStatus = order.status || 'pending';
+            const currentStatus = order.status || 'dikemas';
             const currentStatusInfo = statusMap[currentStatus];
 
-            // 5. Pengecekan pengaman untuk menghindari error
-            if (currentStatusInfo) {
-                updateButtonText.textContent = currentStatusInfo.buttonText;
+            updateButtonText.textContent = currentStatusInfo.buttonText;
 
-                // Menonaktifkan tombol jika status sudah final
-                if (!currentStatusInfo.nextStatus || ['selesai', 'diverifikasi_admin', 'menunggu_verifikasi_admin',
-                        'menunggu_retur'
-                    ].includes(currentStatus)) {
-                    updateButton.disabled = true;
-                    updateButton.classList.add('opacity-50', 'cursor-not-allowed');
-                    if (currentStatus === 'diverifikasi_admin') {
-                        updateButton.classList.remove('bg-blue-700', 'hover:bg-blue-800');
-                        updateButton.classList.add('bg-teal-600', 'hover:bg-teal-700');
-                    }
-                } else {
-                    updateButton.disabled = false;
-                    updateButton.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-teal-600', 'hover:bg-teal-700');
-                    updateButton.classList.add('bg-blue-700', 'hover:bg-blue-800');
-                    updateButton.setAttribute('data-next-status', currentStatusInfo.nextStatus);
-                }
-            } else {
-                // Fallback jika status tidak dikenal
-                updateButtonText.textContent = `Status Tidak Dikenal: ${currentStatus}`;
+            // Menonaktifkan tombol jika tidak ada status berikutnya atau status sudah final
+            if (!currentStatusInfo.nextStatus || ['selesai', 'diverifikasi_admin', 'menunggu_verifikasi_admin',
+                    'menunggu_retur'
+                ].includes(currentStatus)) {
                 updateButton.disabled = true;
                 updateButton.classList.add('opacity-50', 'cursor-not-allowed');
+                // Memberi warna khusus jika sudah diverifikasi
+                if (currentStatus === 'diverifikasi_admin') {
+                    updateButton.classList.remove('bg-blue-700', 'hover:bg-blue-800');
+                    updateButton.classList.add('bg-teal-600', 'hover:bg-teal-700');
+                }
+            } else {
+                updateButton.disabled = false;
+                updateButton.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-teal-600', 'hover:bg-teal-700');
+                updateButton.classList.add('bg-blue-700', 'hover:bg-blue-800');
+                updateButton.setAttribute('data-next-status', currentStatusInfo.nextStatus);
             }
 
             updateButton.setAttribute('data-order-id', order.id);
 
-            // 6. Menampilkan konten modal
+            // Menampilkan konten modal setelah semua data dimuat
             document.getElementById('statusStepperModalLoader').classList.add('hidden');
             document.getElementById('statusStepperModalContent').classList.remove('hidden');
         }
@@ -501,28 +489,21 @@
                 diterima_pembeli: 'receivedByBuyerAt'
             };
 
-            // Loop tunggal untuk mengatur setiap langkah
+            // 1. Reset semua langkah ke state default (abu-abu)
             steps.forEach(step => {
                 const iconEl = document.getElementById(`step-${step}-icon`);
-                const timeSpanEl = document.getElementById(timeSpans[step]);
-                const mobileLineEl = document.getElementById(`line-${step}-mobile`);
-                const desktopLineEl = document.getElementById(step === 'diambil' ? 'line-diantar' : `line-${step}`);
+                iconEl.classList.remove('bg-green-600', 'text-white', 'border-green-600');
+                iconEl.innerHTML = `<i class="fas ${icons[step]}"></i>`;
+                document.getElementById(timeSpans[step]).textContent = '';
+            });
 
-                // Reset warna
-                iconEl.classList.remove('bg-green-600', 'text-green-600', 'border-green-600');
-                if (mobileLineEl) mobileLineEl.classList.remove('bg-green-600');
-                if (desktopLineEl) desktopLineEl.classList.remove('bg-green-600');
-
-                // Cek apakah langkah sudah selesai
+            // 2. Tandai langkah yang sudah selesai (hijau) berdasarkan timestamp
+            steps.forEach(step => {
                 if (timestamps[step]) {
-                    iconEl.innerHTML = '<i class="fas fa-check-circle text-green-600"></i>';
-                    iconEl.classList.add('bg-green-600', 'text-green-600', 'border-green-600');
-                    timeSpanEl.textContent = timestamps[step];
-                    if (mobileLineEl) mobileLineEl.classList.add('bg-green-600');
-                    if (desktopLineEl) desktopLineEl.classList.add('bg-green-600');
-                } else {
-                    iconEl.innerHTML = `<i class="fas ${icons[step]} text-green-600"></i>`;
-                    timeSpanEl.textContent = '';
+                    const icon = document.getElementById(`step-${step}-icon`);
+                    icon.classList.add('bg-green-600', 'text-white', 'border-green-600');
+                    icon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                    document.getElementById(timeSpans[step]).textContent = timestamps[step];
                 }
             });
         }
@@ -532,6 +513,7 @@
             const orderId = updateButton.getAttribute('data-order-id');
             const newStatus = updateButton.getAttribute('data-next-status');
 
+            // 1. Validasi awal untuk memastikan data yang dibutuhkan ada
             if (!orderId || !newStatus) {
                 dispatchToast('Error: Status atau Order ID tidak ditemukan.', 'error');
                 return;
@@ -540,12 +522,14 @@
             const buttonText = document.getElementById('updateStatusButtonText');
             const buttonSpinner = document.getElementById('updateStatusButtonSpinner');
 
+            // 2. Memberi umpan balik ke pengguna (UI loading state)
             buttonText.classList.add('hidden');
             buttonSpinner.classList.remove('hidden');
             updateButton.disabled = true;
             updateButton.classList.add('opacity-50', 'cursor-not-allowed');
 
             try {
+                // 3. Mengirim permintaan ke server menggunakan Fetch API
                 const response = await fetch(`/kurir/pesanan/${orderId}/update-status`, {
                     method: 'POST',
                     headers: {
@@ -559,44 +543,28 @@
                 });
 
                 const result = await response.json();
-                if (!response.ok) throw new Error(result.message || 'Gagal memperbarui status.');
 
-                dispatchToast(result.message, 'success');
-
-                // --- PERBAIKAN UTAMA: Perbarui UI secara langsung dengan waktu lokal ---
-                // 1. Dapatkan waktu saat ini dari perangkat pengguna (Date.now())
-                const now = new Date();
-                const localTimestamp = now.toLocaleDateString('id-ID', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                }) + ', ' + now.toLocaleTimeString('id-ID', {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-
-                // 2. Perbarui teks timestamp di UI stepper secara langsung
-                const timeSpanId = {
-                    'diambil': 'pickedUpAt',
-                    'diantar': 'deliveredAt',
-                    'diterima_pembeli': 'receivedByBuyerAt'
-                } [newStatus];
-
-                if (timeSpanId) {
-                    document.getElementById(timeSpanId).textContent = localTimestamp;
+                // Memeriksa jika server mengembalikan error (status code 4xx atau 5xx)
+                if (!response.ok) {
+                    throw new Error(result.message || 'Gagal memperbarui status.');
                 }
 
-                // 3. Muat ulang konten modal untuk mendapatkan data server terbaru di latar belakang
-                // Ini memastikan tombol dan status berikutnya sudah benar tanpa harus menampilkan timestamp server.
-                openStatusStepperModal(orderId);
+                // 4. Jika berhasil, tampilkan notifikasi dan perbarui UI
+                dispatchToast(result.message, 'success');
 
-                // 4. Perbarui status pada baris tabel di halaman utama
+                // Memuat ulang konten modal stepper dengan status terbaru
+                await openStatusStepperModal(orderId);
+
+                // Memperbarui status pada baris tabel di halaman utama
                 updateTableRowStatus(orderId, result.order.status);
 
             } catch (error) {
+                // 5. Jika gagal, tampilkan notifikasi error
                 console.error('Error updating order status:', error);
                 dispatchToast(`Gagal: ${error.message}`, 'error');
             } finally {
+                // 6. Selalu dijalankan, baik berhasil maupun gagal, untuk membersihkan UI
+                // (Meskipun populateStatusStepperModal akan mengatur ulang tombol, ini adalah fallback jika terjadi error sebelum populate dipanggil)
                 buttonText.classList.remove('hidden');
                 buttonSpinner.classList.add('hidden');
             }
@@ -733,11 +701,6 @@
             returnModalLoader.classList.add('hidden');
             returnModalContent.classList.remove('hidden');
 
-            // document.getElementById('returnProductForm').onsubmit = (e) => {
-            //     e.preventDefault();
-            //     handleReturnRequestSubmit(order.id);
-            // };
-
             document.getElementById('returnProductForm').onsubmit = (e) => {
                 e.preventDefault();
                 handleReturnRequestSubmit(order.id);
@@ -747,15 +710,8 @@
         async function handleReturnRequestSubmit(orderId) {
             const form = document.getElementById('returnProductForm');
             const submitButton = document.getElementById('submitReturnRequestButton');
-            const buttonText = document.getElementById('submitReturnRequestButtonText');
-            const buttonSpinner = document.getElementById('submitReturnRequestButtonSpinner');
-
-            // Beri umpan balik ke pengguna (UI loading)
             submitButton.disabled = true;
-            buttonText.classList.add('hidden');
-            buttonSpinner.classList.remove('hidden');
 
-            // Ambil semua input jumlah yang nilainya lebih dari 0
             const returnQuantities = {};
             let hasValidReturn = false;
             form.querySelectorAll('.quantity-input').forEach(input => {
@@ -767,17 +723,13 @@
                 }
             });
 
-            // Validasi frontend: pastikan ada produk yang diretur
             if (!hasValidReturn) {
                 dispatchToast('Anda harus memasukkan jumlah minimal 1 untuk satu produk.', 'error');
                 submitButton.disabled = false;
-                buttonText.classList.remove('hidden');
-                buttonSpinner.classList.add('hidden');
                 return;
             }
 
             try {
-                // Kirim data ke server
                 const response = await fetch(`/kurir/pesanan/${orderId}/request-return`, {
                     method: 'POST',
                     headers: {
@@ -789,30 +741,16 @@
                         return_quantities: returnQuantities
                     })
                 });
-
                 const result = await response.json();
-                if (!response.ok) {
-                    const errorMsg = result.errors ? Object.values(result.errors).flat().join(' ') : result.message;
-                    throw new Error(errorMsg || 'Gagal mengajukan pengembalian.');
-                }
-
-                // Jika berhasil:
+                if (!response.ok) throw new Error(result.message);
                 dispatchToast(result.message, 'success');
-
-                // Tutup modal retur
                 closeModal(document.getElementById('returnProductModal'));
-
-                // Perbarui UI di latar belakang
                 updateTableRowStatus(orderId, result.order.status);
-                fetchOrderDetails(orderId); // Refresh rincian untuk menampilkan info retur
-
+                fetchOrderDetails(orderId);
             } catch (error) {
                 dispatchToast(`Gagal: ${error.message}`, 'error');
             } finally {
-                // Selalu kembalikan tombol ke keadaan normal
                 submitButton.disabled = false;
-                buttonText.classList.remove('hidden');
-                buttonSpinner.classList.add('hidden');
             }
         }
 
@@ -840,4 +778,3 @@
             }
         });
     </script>
-@endsection

@@ -9,12 +9,13 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\KurirDashboardController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\Admin\CourierController;
-use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\HistoryOrderController;
 use App\Http\Controllers\Admin\PeformaKurirController;
 use App\Http\Controllers\Admin\PeformaCustomerController;
 use App\Http\Controllers\Kurir\PesananController;
+use App\Http\Controllers\ReturnController;
 use App\Models\Product;
 
 /*
@@ -81,15 +82,15 @@ Route::middleware([
         Route::resource('customers', CustomerController::class);
 
         // Manajemen Pesanan untuk Admin
-        Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
-        Route::get('orders/{id}/details', [OrderController::class, 'details']);
-        Route::post('orders/{id}/verify', [OrderController::class, 'verify']);
-        Route::post('orders/{id}/reject', [OrderController::class, 'reject']);
+        Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
+        Route::get('orders/{id}/details', [AdminOrderController::class, 'details']);
+        Route::post('orders/{id}/verify', [AdminOrderController::class, 'verify']);
+        Route::post('orders/{id}/reject', [AdminOrderController::class, 'reject']);
 
         // Manajemen History Pesanan
-    Route::get('historys', [HistoryOrderController::class, 'index'])->name('historys.index');
-    Route::get('historys/{order}/invoice', [HistoryOrderController::class, 'invoice'])->name('historys.invoice');
-    Route::get('historys/{order}/download', [HistoryOrderController::class, 'downloadInvoice'])->name('historys.download');
+        Route::get('historys', [HistoryOrderController::class, 'index'])->name('historys.index');
+        Route::get('historys/{order}/invoice', [HistoryOrderController::class, 'invoice'])->name('historys.invoice');
+        Route::get('historys/{order}/download', [HistoryOrderController::class, 'downloadInvoice'])->name('historys.download');
 
         // Routes untuk Peforma Kurir
         Route::get('peforma-kurir', [PeformaKurirController::class, 'index'])->name('peforma-kurir.index');
@@ -113,23 +114,30 @@ Route::middleware([
         Route::get('products', [ProductController::class, 'index'])->name('products.index');
 
         // Manajemen Customer
-        Route::put('customers/{customer}/note', [CustomerController::class, 'updateNote'])->name('customers.updateNote');
         Route::resource('customers', CustomerController::class)->parameters(['customers' => 'customer']);
+        Route::put('customers/{customer}/note', [CustomerController::class, 'updateNote'])->name('customers.updateNote');
 
-        // Manajemen Pesanan
-        Route::get('/pesanan', [PesananController::class, 'showFilteredOrders'])->name('pesanan.index');
-        Route::get('/pesanan/create', [PesananController::class, 'create'])->name('pesanan.create');
+        // -- MANAJEMEN PESANAN (MENGGUNAKAN GROUP PREFIX) --
+        Route::prefix('pesanan')->name('pesanan.')->group(function () {
+            Route::get('/', [PesananController::class, 'showFilteredOrders'])->name('index');
+            Route::get('/create', [PesananController::class, 'create'])->name('create');
+            Route::get('/{id}/details', [PesananController::class, 'getOrderDetails'])->name('details');
+            Route::post('/{id}/update-status', [PesananController::class, 'updateOrderStatus'])->name('updateStatus');
+            Route::post('/{id}/upload-proof', [PesananController::class, 'uploadPaymentProof'])->name('uploadProof');
+
+            // Rute untuk retur, sesuai controller-nya
+            Route::post('/{order}/request-return', [ReturnController::class, 'requestReturn'])->name('requestReturn');
+            Route::post('/{order}/upload-return-proof', [ReturnController::class, 'uploadReturnProof'])->name('uploadReturnProof');
+        });
+
+        // Rute di luar grup 'pesanan'
         Route::post('/orders/checkout', [PesananController::class, 'checkout'])->name('orders.checkout');
-        // **ROUTE BARU**: Rute untuk detail pesanan dan update status/bukti
-        Route::get('/pesanan/{id}/details', [PesananController::class, 'getOrderDetails'])->name('pesanan.details');
-        Route::post('/pesanan/{id}/upload-proof', [PesananController::class, 'uploadPaymentProof'])->name('pesanan.uploadProof');
-        Route::post('/pesanan/{id}/update-status', [PesananController::class, 'updateOrderStatus'])->name('pesanan.updateStatus');
         Route::get('/customer/{id}/last-order', [PesananController::class, 'getLastOrder'])->name('customer.lastOrder');
 
-        // History Pesanan Gabungan (admin & kurir)
+        // History Pesanan
         Route::get('historys', [HistoryOrderController::class, 'index'])->name('historys.index');
 
-        // Endpoint JSON untuk data di halaman pesanan
+        // Endpoint JSON untuk data produk di halaman pesanan
         Route::get('produk/json', function () {
             $regionId = Auth::user()->region_id;
             return Product::where('is_active', true)->where('region_id', $regionId)
@@ -142,8 +150,5 @@ Route::middleware([
                     'variants' => $p->variants->map(fn($v) => ['id' => $v->id, 'name' => $v->name, 'price' => $v->price]),
                 ]);
         })->name('produk.json');
-
-        // **ROUTE BARU**: Endpoint JSON untuk data customer
-        Route::get('customer/json', [PesananController::class, 'showCustomer'])->name('customer.json');
     });
 });

@@ -132,23 +132,23 @@
                                             class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
                                             data-value="tf" role="menuitem"><i class="fas fa-money-check"></i> Transfer
                                             Bank</a>
-                                        <a href="#"
+                                        {{-- <a href="#"
                                             class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                            data-value="qr" role="menuitem"><i class="fas fa-qrcode"></i>QRIS</a>
+                                            data-value="qr" role="menuitem"><i class="fas fa-qrcode"></i>QRIS</a> --}}
                                     </div>
                                 </div>
                                 <input type="hidden" id="payment-method-input" name="payment_method">
                             </div>
                         </div>
 
-                        <div id="payment-proof-upload" class="hidden mb-4">
+                        {{-- <div id="payment-proof-upload" class="hidden mb-4">
                             <label for="payment-proof"
                                 class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">Bukti
                                 Pembayaran</label>
                             <input type="file" name="payment_proof" id="payment-proof" accept="image/*"
                                 class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
                             <p class="mt-1 text-xs text-gray-500">Format: JPG, PNG. Ukuran maksimal: 2MB.</p>
-                        </div>
+                        </div> --}}
 
                         <div class="mb-4">
                             <label for="note"
@@ -303,7 +303,7 @@
             const paymentMenu = document.getElementById('payment-method-menu');
             const selectedPaymentText = document.getElementById('selected-payment-method');
             const hiddenPaymentInput = document.getElementById('payment-method-input');
-            const paymentProofUploadDiv = document.getElementById('payment-proof-upload');
+            // const paymentProofUploadDiv = document.getElementById('payment-proof-upload');
             paymentButton.addEventListener('click', function(e) {
                 e.stopPropagation();
                 paymentMenu.classList.toggle('hidden');
@@ -315,12 +315,12 @@
                     const text = e.target.textContent;
                     selectedPaymentText.textContent = text;
                     hiddenPaymentInput.value = value;
-                    if (value === 'tf' || value === 'qr') {
-                        paymentProofUploadDiv.classList.remove('hidden');
-                    } else {
-                        paymentProofUploadDiv.classList.add('hidden');
-                        document.getElementById('payment-proof').value = '';
-                    }
+                    // if (value === 'tf' || value === 'qr') {
+                    //     paymentProofUploadDiv.classList.remove('hidden');
+                    // } else {
+                    //     paymentProofUploadDiv.classList.add('hidden');
+                    //     document.getElementById('payment-proof').value = '';
+                    // }
                     paymentMenu.classList.add('hidden');
                 }
             });
@@ -429,7 +429,7 @@
             // Validasi data
             const customerId = document.getElementById('customer-id-input').value;
             const paymentMethod = document.getElementById('payment-method-input').value;
-            const paymentProofFile = document.getElementById('payment-proof').files[0];
+            // const paymentProofFile = document.getElementById('payment-proof').files[0];
 
             if (!customerId) {
                 showToast('Silakan pilih customer terlebih dahulu.', 'error');
@@ -443,10 +443,10 @@
                 showToast('Silakan pilih metode pembayaran.', 'error');
                 return;
             }
-            if ((paymentMethod === 'tf' || paymentMethod === 'qr') && !paymentProofFile) {
-                showToast('Silakan unggah bukti pembayaran.', 'error');
-                return;
-            }
+            // if ((paymentMethod === 'tf' || paymentMethod === 'qr') && !paymentProofFile) {
+            //     showToast('Silakan unggah bukti pembayaran.', 'error');
+            //     return;
+            // }
 
             // Jika valid, tampilkan modal konfirmasi
             showConfirmationModal();
@@ -459,7 +459,7 @@
             const note = document.getElementById('note').value;
             const phone = document.getElementById('phone').value;
             const address = document.getElementById('address').value;
-            const paymentProofFile = document.getElementById('payment-proof').files[0];
+            // const paymentProofFile = document.getElementById('payment-proof').files[0];
             const formData = new FormData();
             formData.append('customer_id', customerId);
             formData.append('phone', phone);
@@ -475,9 +475,9 @@
                 price: item.price,
             }))));
 
-            if (paymentProofFile) {
-                formData.append('payment_proof', paymentProofFile);
-            }
+            // if (paymentProofFile) {
+            //     formData.append('payment_proof', paymentProofFile);
+            // }
 
             const submitButton = document.getElementById('submit-order-button');
             submitButton.disabled = true;
@@ -509,8 +509,8 @@
                     document.getElementById('address').value = '';
                     document.getElementById('selected-payment-method').textContent = '-Pilih metode pembayaran -';
                     document.getElementById('payment-method-input').value = '';
-                    document.getElementById('payment-proof').value = '';
-                    document.getElementById('payment-proof-upload').classList.add('hidden');
+                    // document.getElementById('payment-proof').value = '';
+                    // document.getElementById('payment-proof-upload').classList.add('hidden');
                     document.getElementById('note').value = '';
 
                 } else {

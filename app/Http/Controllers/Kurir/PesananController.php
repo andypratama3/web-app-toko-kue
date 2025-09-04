@@ -4,44 +4,44 @@
 namespace App\Http\Controllers\Kurir;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\ValidationException;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class PesananController extends Controller
 {
     public function index()
     {
-        $orders = collect();
-        $error = null;
         return $this->showFilteredOrders();
     }
 
+    /**
+     * Menampilkan halaman pembuatan pesanan baru.
+     * LOGIKA DARI FILE 2: Hanya menampilkan customer yang dibuat oleh kurir login.
+     */
     public function create()
     {
         $user = Auth::user();
         $customers = Customer::select('id', 'name', 'address', 'phone', 'note')
             ->where('region_id', $user->region_id)
-            ->where('added_by_user_id', $user->id)
+            ->where('added_by_user_id', $user->id) // Filter tambahan
             ->latest()
             ->get();
 
         return view('dashboard.kurir.pesanan.create', compact('customers'));
     }
 
-    public function showCustomer()
-    {
-        $customers = Customer::all();
-        return view('dashboard.kurir.pesanan.create', compact('customers'));
-    }
-
+    /**
+     * Memproses dan menyimpan pesanan baru.
+     * LOGIKA DARI FILE 2: Menggabungkan pembatasan pesanan aktif.
+     */
     public function checkout(Request $request)
     {
         try {
@@ -58,36 +58,30 @@ class PesananController extends Controller
             return response()->json(['message' => 'Validasi gagal', 'errors' => $e->errors()], 422);
         }
 
-        // --- AWAL BLOK PERUBAHAN ---
+        // LOGIKA DARI FILE 2: Pembatasan jumlah pesanan aktif
         $customer = Customer::with('category')->find($validated['customer_id']);
         if (!$customer) {
             return response()->json(['message' => 'Customer tidak ditemukan.'], 404);
         }
 
-        // Tentukan batas maksimal pesanan berdasarkan kategori customer
         $categoryName = strtolower($customer->category->name ?? '');
         $maxOrder = 0;
-        if ($categoryName === 'reseller') {
-            $maxOrder = 7;
-        } elseif ($categoryName === 'supermarket') {
-            $maxOrder = 30;
-        }
+        if ($categoryName === 'reseller') $maxOrder = 7;
+        elseif ($categoryName === 'supermarket') $maxOrder = 30;
 
-        // Jika customer termasuk kategori yang memiliki batasan
         if ($maxOrder > 0) {
-            // Hitung pesanan aktif (status BUKAN 'diverifikasi_admin')
             $activeOrderCount = Order::where('customer_id', $customer->id)
                 ->where('created_by_user_id', Auth::id())
-                ->where('status', '!=', 'diverifikasi_admin') // Diubah dari whereNotIn('status', ['selesai'])
+                ->where('status', '!=', 'diverifikasi_admin')
                 ->count();
 
-            // Jika jumlah pesanan aktif sudah mencapai atau melebihi batas
             if ($activeOrderCount >= $maxOrder) {
                 return response()->json([
                     'message' => "Batas maksimal pesanan aktif untuk customer kategori $categoryName adalah $maxOrder. Pesanan sebelumnya harus diverifikasi admin terlebih dahulu."
-                ], 422); // Kirim status 422 Unprocessable Entity
+                ], 422);
             }
         }
+        // AKHIR BLOK PEMBATASAN PESANAN
 
         DB::beginTransaction();
         try {
@@ -152,11 +146,15 @@ class PesananController extends Controller
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Checkout failed: ' . $e->getMessage());
+            Log::error('Checkout failed: ' . $e->getMessage());
             return response()->json(['message' => 'Gagal menyimpan pesanan. Terjadi kesalahan internal.'], 500);
         }
     }
 
+    /**
+     * Menampilkan daftar pesanan yang dibuat oleh kurir.
+     * LOGIKA GABUNGAN: Filter status aktif dari File 2, logika Peringatan dari File 1.
+     */
     public function showFilteredOrders()
     {
         if (!Auth::check()) {
@@ -164,24 +162,23 @@ class PesananController extends Controller
         }
 
         $loggedInUser = Auth::user();
+        $orders = collect();
+        $error = null;
 
         if (is_null($loggedInUser->region_id)) {
-            \Log::warning('User ' . $loggedInUser->id . ' does not have a region_id.');
-            $orders = collect();
+            Log::warning('User ' . $loggedInUser->id . ' does not have a region_id.');
             $error = 'Region Anda tidak terdaftar. Silakan hubungi administrator.';
             return view('dashboard.kurir.pesanan.index', compact('orders', 'error'));
         }
 
-        $loggedInUserId = $loggedInUser->id;
-        $orders = collect();
-
         try {
-            $orders = Order::where('created_by_user_id', $loggedInUserId)
-                ->where('status', '!=', 'diverifikasi_admin')
+            $orders = Order::where('created_by_user_id', $loggedInUser->id)
+                ->where('status', '!=', 'diverifikasi_admin') // Filter dari File 2
                 ->with('customer')
                 ->latest()
                 ->get();
 
+            // Logika Peringatan dari File 1
             foreach ($orders as $order) {
                 $order->show_warning = false;
                 if (is_null($order->payment_proof)) {
@@ -192,7 +189,7 @@ class PesananController extends Controller
                 }
             }
         } catch (\Exception $e) {
-            \Log::error('Error fetching orders for courier ' . $loggedInUserId . ': ' . $e->getMessage());
+            Log::error('Error fetching orders for courier ' . $loggedInUser->id . ': ' . $e->getMessage());
             $error = 'Gagal memuat pesanan. Terjadi kesalahan pada server.';
             return view('dashboard.kurir.pesanan.index', compact('orders', 'error'));
         }
@@ -200,6 +197,10 @@ class PesananController extends Controller
         return view('dashboard.kurir.pesanan.index', compact('orders'));
     }
 
+    /**
+     * Mengambil detail pesanan berdasarkan ID.
+     * LOGIKA DARI FILE 1: Implementasi paling lengkap dan konsisten.
+     */
     public function getOrderDetails($id)
     {
         if (!Auth::check()) {
@@ -207,7 +208,7 @@ class PesananController extends Controller
         }
 
         try {
-            $order = Order::with(['customer', 'items'])
+            $order = Order::with(['customer', 'items.product'])
                 ->where('id', $id)
                 ->where('created_by_user_id', Auth::id())
                 ->firstOrFail();
@@ -220,11 +221,8 @@ class PesananController extends Controller
                 $paidAt = Carbon::parse($order->paid_at)->startOfDay();
                 $diffInDays = $createdAt->diffInDays($paidAt);
 
-                if ($diffInDays == 1) {
-                    $paidAtLabel = ' (Harian)';
-                } elseif ($diffInDays >= 2 && $diffInDays <= 7) {
-                    $paidAtLabel = ' (Mingguan)';
-                }
+                if ($diffInDays == 1) $paidAtLabel = ' (Harian)';
+                elseif ($diffInDays >= 2 && $diffInDays <= 7) $paidAtLabel = ' (Mingguan)';
                 $paidAtFormatted = Carbon::parse($order->paid_at)->isoFormat('D MMMM YYYY, HH:mm');
             }
 
@@ -247,12 +245,23 @@ class PesananController extends Controller
                     'address' => $order->customer->address ?? 'N/A',
                 ],
                 'products' => $order->items->map(function ($item) {
+                    $returnedQuantity = DB::table('order_returns')
+                        ->join('order_return_products', 'order_returns.id', '=', 'order_return_products.order_return_id')
+                        ->where('order_returns.order_id', $item->order_id)
+                        ->where('order_return_products.product_id', $item->product_id)
+                        ->where('order_return_products.product_variant_id', $item->variant_id)
+                        ->where('order_returns.status', '!=', 'ditolak')
+                        ->sum('order_return_products.quantity');
+
                     return [
-                        'id' => $item->product_id,
+                        'product_id' => $item->product_id,
+                        'variant_id' => $item->variant_id,
                         'name' => $item->product_name,
-                        'price' => $item->price,
-                        'quantity' => $item->quantity,
                         'variant_name' => $item->variant_name,
+                        'quantity' => $item->quantity,
+                        'price' => $item->price,
+                        'image_url' => $item->product->image_url ?? null,
+                        'returned_quantity' => $returnedQuantity,
                     ];
                 })->toArray()
             ];
@@ -261,13 +270,14 @@ class PesananController extends Controller
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['message' => 'Pesanan tidak ditemukan.'], 404);
         } catch (\Exception $e) {
-            \Log::error('Error fetching order details for order ID ' . $id . ': ' . $e->getMessage());
+            Log::error('Error fetching order details for order ID ' . $id . ': ' . $e->getMessage());
             return response()->json(['message' => 'Terjadi kesalahan internal.'], 500);
         }
     }
 
     /**
-     * Metode untuk mengunggah bukti pembayaran.
+     * Mengunggah bukti pembayaran.
+     * LOGIKA DARI FILE 1: Penamaan file kustom yang lebih baik.
      */
     public function uploadPaymentProof(Request $request, $id)
     {
@@ -276,42 +286,43 @@ class PesananController extends Controller
         }
 
         try {
-            $request->validate([
-                'payment_proof' => 'required|image|mimes:jpeg,png,jpg|max:2048',
-            ]);
+            $request->validate(['payment_proof' => 'required|image|mimes:jpeg,png,jpg|max:2048']);
 
-            $order = Order::where('id', $id)
-                ->where('created_by_user_id', Auth::id())
-                ->firstOrFail();
+            $order = Order::where('id', $id)->where('created_by_user_id', Auth::id())->firstOrFail();
 
-            // Hanya izinkan unggah jika status adalah 'diterima_pembeli'.
-            if ($order->status !== 'diterima_pembeli') {
+            if (!in_array($order->status, ['diterima_pembeli', 'selesai'])) {
                 return response()->json(['message' => 'Bukti pembayaran hanya bisa diunggah setelah pesanan diterima oleh pembeli.'], 403);
             }
 
-            // Hapus bukti lama jika ada (untuk skenario re-upload setelah ditolak)
             if ($order->payment_proof) {
                 Storage::disk('public')->delete($order->payment_proof);
             }
 
-            $path = $request->file('payment_proof')->store('payment_proofs', 'public');
+            $file = $request->file('payment_proof');
+            $extension = $file->getClientOriginalExtension();
+            $sanitizedInvoiceNumber = str_replace('/', '-', $order->invoice_number);
+            $fileName = $sanitizedInvoiceNumber . '.' . $extension;
+            $path = $file->storeAs('payment_proofs', $fileName, 'public');
 
             $order->payment_proof = $path;
-            $order->status = 'selesai'; // Kembalikan status ke 'selesai' untuk diverifikasi ulang
-            $order->paid_at = now(); // Perbarui waktu lunas
+            $order->status = 'selesai';
+            $order->paid_at = now();
             $order->save();
 
-            return response()->json(['message' => 'Bukti pembayaran berhasil diunggah ulang. Pesanan menunggu verifikasi admin.'], 200);
+            return response()->json(['message' => 'Bukti pembayaran berhasil diunggah. Pesanan selesai!'], 200);
         } catch (ValidationException $e) {
             return response()->json(['message' => 'Validasi gagal.', 'errors' => $e->errors()], 422);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['message' => 'Pesanan tidak ditemukan.'], 404);
         } catch (\Exception $e) {
-            \Log::error('Error uploading payment proof for order ID ' . $id . ': ' . $e->getMessage());
+            Log::error('Error uploading payment proof for order ID ' . $id . ': ' . $e->getMessage());
             return response()->json(['message' => 'Terjadi kesalahan internal.'], 500);
         }
     }
 
+    /**
+     * Mengubah status pesanan (diambil, diantar, diterima).
+     */
     public function updateOrderStatus(Request $request, $id)
     {
         if (!Auth::check()) {
@@ -319,98 +330,74 @@ class PesananController extends Controller
         }
 
         try {
-            $validated = $request->validate([
-                'new_status' => 'required|string|in:diambil,diantar,diterima_pembeli',
-            ]);
+            $validated = $request->validate(['new_status' => 'required|string|in:diambil,diantar,diterima_pembeli']);
 
-            $order = Order::where('id', $id)
-                ->where('created_by_user_id', Auth::id())
-                ->firstOrFail();
-
+            $order = Order::where('id', $id)->where('created_by_user_id', Auth::id())->firstOrFail();
             $newStatus = $validated['new_status'];
             $updateData = ['status' => $newStatus];
 
             switch ($newStatus) {
                 case 'diambil':
-                    if ($order->status === 'dikemas' || is_null($order->picked_up_at)) {
-                        $updateData['picked_up_at'] = now();
-                        $updateData['status'] = 'diambil';
-                    } else {
-                        if (in_array($order->status, ['diantar', 'diterima_pembeli', 'selesai'])) {
-                            return response()->json(['message' => 'Status tidak dapat diubah ke "Diambil" dari status saat ini.'], 400);
-                        }
+                    if (in_array($order->status, ['diantar', 'diterima_pembeli', 'selesai'])) {
+                        return response()->json(['message' => 'Status tidak dapat diubah kembali ke "Diambil".'], 400);
                     }
+                    if (is_null($order->picked_up_at)) $updateData['picked_up_at'] = now();
                     break;
                 case 'diantar':
-                    if (is_null($order->picked_up_at)) $updateData['picked_up_at'] = now();
-                    if (is_null($order->delivered_at)) {
-                        $updateData['delivered_at'] = now();
-                        $updateData['status'] = 'diantar';
-                    } else {
-                        if (in_array($order->status, ['diterima_pembeli', 'selesai'])) {
-                            return response()->json(['message' => 'Status tidak dapat diubah ke "Diantar" dari status saat ini.'], 400);
-                        }
+                    if (in_array($order->status, ['diterima_pembeli', 'selesai'])) {
+                        return response()->json(['message' => 'Status tidak dapat diubah kembali ke "Diantar".'], 400);
                     }
-                    break;
-                case 'diterima_pembeli':
                     if (is_null($order->picked_up_at)) $updateData['picked_up_at'] = now();
                     if (is_null($order->delivered_at)) $updateData['delivered_at'] = now();
-                    if (is_null($order->received_by_buyer_at)) {
-                        $updateData['received_by_buyer_at'] = now();
-                        $updateData['status'] = 'diterima_pembeli';
-                    } else {
-                        if ($order->status === 'selesai') {
-                            return response()->json(['message' => 'Status sudah "Selesai".'], 400);
-                        }
+                    break;
+                case 'diterima_pembeli':
+                    if ($order->status === 'selesai') {
+                        return response()->json(['message' => 'Status sudah "Selesai".'], 400);
                     }
+                    if (is_null($order->picked_up_at)) $updateData['picked_up_at'] = now();
+                    if (is_null($order->delivered_at)) $updateData['delivered_at'] = now();
+                    if (is_null($order->received_by_buyer_at)) $updateData['received_by_buyer_at'] = now();
                     break;
             }
 
             $order->update($updateData);
 
-            $updatedOrder = Order::with(['customer', 'items'])
-                ->where('id', $id)
-                ->where('created_by_user_id', Auth::id())
-                ->firstOrFail();
+            $updatedOrder = Order::find($id); // Re-fetch untuk data terbaru
 
-            $formattedUpdatedOrder = [
-                'id' => $updatedOrder->id,
-                'status' => $updatedOrder->status,
-                'picked_up_at' => $updatedOrder->picked_up_at ? Carbon::parse($updatedOrder->picked_up_at)->isoFormat('D MMMM YYYY, HH:mm') : null,
-                'delivered_at' => $updatedOrder->delivered_at ? Carbon::parse($updatedOrder->delivered_at)->isoFormat('D MMMM YYYY, HH:mm') : null,
-                'received_by_buyer_at' => $updatedOrder->received_by_buyer_at ? Carbon::parse($updatedOrder->received_by_buyer_at)->isoFormat('D MMMM YYYY, HH:mm') : null,
-            ];
-
-            return response()->json(['message' => 'Status pesanan berhasil diperbarui.', 'order' => $formattedUpdatedOrder], 200);
+            return response()->json([
+                'message' => 'Status pesanan berhasil diperbarui.',
+                'order' => [
+                    'id' => $updatedOrder->id,
+                    'status' => $updatedOrder->status,
+                    'picked_up_at' => $updatedOrder->picked_up_at ? Carbon::parse($updatedOrder->picked_up_at)->isoFormat('D MMMM YYYY, HH:mm') : null,
+                    'delivered_at' => $updatedOrder->delivered_at ? Carbon::parse($updatedOrder->delivered_at)->isoFormat('D MMMM YYYY, HH:mm') : null,
+                    'received_by_buyer_at' => $updatedOrder->received_by_buyer_at ? Carbon::parse($updatedOrder->received_by_buyer_at)->isoFormat('D MMMM YYYY, HH:mm') : null,
+                ]
+            ], 200);
         } catch (ValidationException $e) {
             return response()->json(['message' => 'Validasi gagal.', 'errors' => $e->errors()], 422);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['message' => 'Pesanan tidak ditemukan.'], 404);
         } catch (\Exception $e) {
-            \Log::error('Error updating order status for order ID ' . $id . ': ' . $e->getMessage());
+            Log::error('Error updating order status for order ID ' . $id . ': ' . $e->getMessage());
             return response()->json(['message' => 'Terjadi kesalahan internal.'], 500);
         }
     }
 
     /**
-     * FUNGSI BARU UNTUK MENGAMBIL ITEM DARI PESANAN TERAKHIR CUSTOMER
+     * Mengambil item dari pesanan terakhir customer.
+     * LOGIKA DARI FILE 2: Fitur baru yang penting.
      */
     public function getLastOrder($id)
     {
-        // 1. Cari pesanan terakhir dari customer berdasarkan ID, diurutkan dari yang terbaru
-        $lastOrder = Order::where('customer_id', $id)
-                          ->latest() // Mengurutkan berdasarkan 'created_at' secara descending
-                          ->first();
+        $lastOrder = Order::where('customer_id', $id)->latest()->first();
 
-        // 2. Jika tidak ada pesanan sebelumnya, kembalikan response kosong
         if (!$lastOrder) {
             return response()->json(['items' => []]);
         }
 
-        // 3. Ambil relasi 'items' dari pesanan yang ditemukan
         $lastOrder->load('items');
 
-        // 4. Ubah format data items agar sesuai dengan struktur 'cart' di JavaScript
         $cartItems = $lastOrder->items->map(function ($item) {
             return [
                 'product_id'   => $item->product_id,
@@ -418,11 +405,10 @@ class PesananController extends Controller
                 'variant_id'   => $item->variant_id,
                 'variant_name' => $item->variant_name,
                 'price'        => $item->price,
-                'qty'          => $item->quantity, // 'quantity' dari DB diubah menjadi 'qty' untuk cart JS
+                'qty'          => $item->quantity,
             ];
         });
 
-        // 5. Kembalikan data items dalam format JSON
         return response()->json(['items' => $cartItems]);
     }
 }
