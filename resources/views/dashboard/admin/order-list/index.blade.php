@@ -1,5 +1,3 @@
-{{-- resources/views/dashboard/admin/order-list/index.blade.php (SUDAH DIPERBAIKI) --}}
-
 @extends('layouts.argon')
 @section('title', 'Manajemen Pesanan')
 @section('page_title', 'Pesanan')
@@ -42,6 +40,8 @@
                                         class="inline-block px-2 py-1 text-xs font-semibold rounded
                                         @switch($order->status)
                                             @case('selesai') bg-blue-100 text-blue-800 @break
+                                            {{-- DIUBAH: Menambahkan warna untuk status menunggu verifikasi --}}
+                                            @case('menunggu_verifikasi_admin') bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 @break
                                             @case('diverifikasi_admin') bg-green-100 text-green-800 @break
                                             @default bg-gray-100 text-gray-800
                                         @endswitch">
@@ -51,7 +51,8 @@
                                 <td class="px-4 py-2">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
                                 <td class="px-4 py-2">
                                     {{-- Tombol ini akan membuka modal verifikasi --}}
-                                    @if ($order->status == 'selesai')
+                                    {{-- DIUBAH: Menambahkan kondisi || $order->status == 'menunggu_verifikasi_admin' --}}
+                                    @if ($order->status == 'selesai' || $order->status == 'menunggu_verifikasi_admin')
                                         <button
                                             class="px-3 py-1 text-xs font-bold text-white bg-blue-600 rounded js-open-modal-btn hover:bg-blue-700"
                                             data-target-modal="verifyOrderModal" data-order-id="{{ $order->id }}">
