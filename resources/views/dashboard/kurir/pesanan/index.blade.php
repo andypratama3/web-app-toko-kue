@@ -407,9 +407,11 @@
             const paymentUploadForm = document.getElementById('paymentUploadForm');
             const paymentProofUploaded = document.getElementById('paymentProofUploaded');
             const paymentUploadBlocker = document.getElementById('paymentUploadBlocker');
+            const compressLink = document.getElementById('compress-link');
             paymentUploadForm.classList.add('hidden');
             paymentProofUploaded.classList.add('hidden');
             paymentUploadBlocker.classList.add('hidden');
+            compressLink.classList.add('hidden');
 
             const getImageUrl = (path) => path ? `${APP_URL}/storage/${path.replace(/^public\//, '')}` : '';
             let proofPath = order.payment_proof || (order.order_return ? order.order_return.return_proof : null);
@@ -421,6 +423,7 @@
                 paymentProofUploaded.classList.remove('hidden');
             } else if (order.status === 'diterima_pembeli' || order.status === 'menunggu_retur') {
                 paymentUploadForm.classList.remove('hidden');
+                compressLink.classList.remove('hidden');
                 const isReturn = order.status === 'menunggu_retur';
                 document.getElementById('paymentProofTitle').textContent = isReturn ? 'Unggah Bukti Retur' :
                     'Unggah Bukti Pembayaran';
@@ -721,7 +724,8 @@
 
         function updateTableRowStatus(orderId, newStatus) {
             const rows = document.querySelectorAll(`[data-order-id="${orderId}"]`);
-            const statusText = STATUS_LABEL_MAP[newStatus] || (newStatus.charAt(0).toUpperCase() + newStatus.slice(1).replace(/_/g, ' '));
+            const statusText = STATUS_LABEL_MAP[newStatus] || (newStatus.charAt(0).toUpperCase() + newStatus.slice(1)
+                .replace(/_/g, ' '));
             // const statusText = newStatus.charAt(0).toUpperCase() + newStatus.slice(1).replace(/_/g, ' ');
             let newClasses = 'bg-gray-100 text-gray-800';
             let newColorBarClass = 'bg-gray-400';
