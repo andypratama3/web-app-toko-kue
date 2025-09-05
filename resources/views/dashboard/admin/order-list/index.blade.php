@@ -15,6 +15,23 @@
                 🚩 {{ Auth::user()->region->name ?? 'N/A' }}
             </h2>
             <div class="overflow-x-auto">
+                @php
+                    // Peta status → label tampilan (samakan dengan yang dipakai role kurir)
+                    $statusLabelMap = [
+                        'pending' => 'Menunggu',
+                        'diterima_pembeli' => 'Diterima',
+                        'selesai' => 'Selesai',
+                        'menunggu_verifikasi_admin' => 'Menunggu Verifikasi',
+                        'diverifikasi_admin' => 'Valid',
+                        'dikembalikan' => 'Retur',
+                        'dibatalkan' => 'Dibatalkan',
+                    ];
+
+                    // helper kecil agar tetap aman kalau ada status baru yang belum dipetakan
+                    $labelStatus = function ($status) use ($statusLabelMap) {
+                        return $statusLabelMap[$status] ?? ucwords(str_replace('_', ' ', $status));
+                    };
+                @endphp
                 <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
                     <thead class="align-bottom">
                         <tr
@@ -37,15 +54,15 @@
                                 <td class="px-4 py-2">{{ $order->createdBy->name ?? '-' }}</td>
                                 <td class="px-4 py-2">
                                     <span
-                                        class="inline-block px-2 py-1 text-xs font-semibold rounded
+                                        class="inline-block px-2 py-1 text-xs font-semibold rounded-full
                                         @switch($order->status)
                                             @case('selesai') bg-blue-100 text-blue-800 @break
-                                            {{-- DIUBAH: Menambahkan warna untuk status menunggu verifikasi --}}
                                             @case('menunggu_verifikasi_admin') bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 @break
                                             @case('diverifikasi_admin') bg-green-100 text-green-800 @break
                                             @default bg-gray-100 text-gray-800
                                         @endswitch">
-                                        {{ ucfirst(str_replace('_', ' ', $order->status)) }}
+                                        {{-- {{ ucfirst(str_replace('_', ' ', $order->status)) }} --}}
+                                        {{ $labelStatus($order->status) }}
                                     </span>
                                 </td>
                                 <td class="px-4 py-2">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
