@@ -888,5 +888,40 @@
                 updateButton.addEventListener('click', handleStatusUpdate);
             }
         });
+
+        // Tampilkan viewer dengan gambar penuh
+        function openImageViewer(src) {
+            const modal = document.getElementById('imageViewerModal');
+            const img = document.getElementById('fullSizeImage');
+
+            img.src = src;
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden'); // kunci scroll
+
+            // Jangan tutup jika klik di gambar
+            img.addEventListener('click', function(e) {
+                e.stopPropagation();
+            }, {
+                once: true
+            });
+        }
+
+        // Tutup viewer
+        function closeImageViewer() {
+            const modal = document.getElementById('imageViewerModal');
+            const img = document.getElementById('fullSizeImage');
+
+            modal.classList.add('hidden');
+            img.src = '';
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        // Tutup dengan tombol Esc
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('imageViewerModal');
+                if (modal && !modal.classList.contains('hidden')) closeImageViewer();
+            }
+        });
     </script>
 @endpush
