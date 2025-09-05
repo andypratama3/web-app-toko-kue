@@ -28,6 +28,26 @@
                 </div>
             @endif
 
+            @php
+                $statusLabelMap = [
+                    'baru' => 'Baru',
+                    'dikemas' => 'Dikemas',
+                    'diambil' => 'Diambil',
+                    'diantar' => 'Diantar',
+                    'diterima_pembeli' => 'Diterima',
+                    'selesai' => 'Selesai',
+                    'menunggu_retur' => 'Menunggu Retur',
+                    'menunggu_verifikasi_admin' => 'Menunggu Verifikasi',
+                    'diverifikasi_admin' => 'Valid',
+                    'dikembalikan' => 'Retur',
+                    'dibatalkan' => 'Dibatalkan',
+                ];
+
+                $labelStatus = function ($status) use ($statusLabelMap) {
+                    return $statusLabelMap[$status] ?? ucwords(str_replace('_', ' ', $status));
+                };
+            @endphp
+
             @if ($orders->isEmpty())
                 <div class="p-4 text-blue-700 bg-blue-100 border-l-4 border-blue-500 rounded-md" role="alert">
                     <p class="font-bold">Info:</p>
@@ -76,7 +96,7 @@
                                             class="status-badge px-2.5 py-1 text-xs font-semibold rounded-full
 
                                                 {{-- KELAS WARNA DINAMIS --}}
-                                                @switch($order->status ?? 'dikemas')
+                                                @switch($order->status ?? 'baru')
                                                     @case('diambil') bg-blue-100 text-blue-800 @break
                                                     @case('diantar') bg-yellow-100 text-yellow-800 @break
                                                     @case('diterima_pembeli') bg-purple-100 text-purple-800 @break
@@ -86,8 +106,9 @@
                                                     @default bg-gray-100 text-gray-800
                                                 @endswitch
                                             ">
+                                            {{ $labelStatus($order->status) }}
                                             {{-- TULISAN STATUS (SATU KATA) --}}
-                                            @switch($order->status)
+                                            {{-- @switch($order->status)
                                                 @case('diterima_pembeli')
                                                     Diterima
                                                 @break
@@ -106,7 +127,7 @@
 
                                                 @default
                                                     {{ ucfirst($order->status) }}
-                                            @endswitch
+                                            @endswitch --}}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-sm font-medium text-center whitespace-nowrap">
@@ -160,13 +181,12 @@
                                         <p class="text-sm text-gray-800 truncate dark:text-gray-200">
                                             {{ optional($order->customer)->name ?? 'Pelanggan Dihapus' }}</p>
                                     </div>
-                                    {{-- File: index.blade.php --}}
 
                                     <span {{-- KELAS DASAR UNTUK BENTUK & UKURAN SERAGAM --}}
                                         class="status-badge flex-shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full whitespace-nowrap ml-2
 
                                         {{-- KELAS WARNA DINAMIS --}}
-                                        @switch($order->status ?? 'dikemas')
+                                        @switch($order->status ?? 'baru')
                                             @case('diambil') bg-blue-100 text-blue-800 @break
                                             @case('diantar') bg-yellow-100 text-yellow-800 @break
                                             @case('diterima_pembeli') bg-purple-100 text-purple-800 @break
@@ -175,9 +195,12 @@
                                             @case('selesai') bg-green-100 text-green-800 @break
                                             @default bg-gray-100 text-gray-800
                                         @endswitch
-">
+                                        ">
+
+                                        {{ $labelStatus($order->status) }}
+
                                         {{-- TULISAN STATUS (SATU KATA) --}}
-                                        @switch($order->status)
+                                        {{-- @switch($order->status)
                                             @case('diterima_pembeli')
                                                 Diterima
                                             @break
@@ -196,7 +219,7 @@
 
                                             @default
                                                 {{ ucfirst($order->status) }}
-                                        @endswitch
+                                        @endswitch --}}
                                     </span>
                                 </div>
 
@@ -236,6 +259,7 @@
     <script>
         // Ganti dengan URL aplikasi Anda yang sebenarnya di production
         const APP_URL = "{{ url('/') }}";
+        const STATUS_LABEL_MAP = @json($statusLabelMap);
 
         // --- Helper ---
         function getCsrfToken() {
@@ -277,12 +301,54 @@
             document.getElementById('customerName').textContent = order.customer.name || 'N/A';
             document.getElementById('customerPhone').textContent = order.customer.phone || 'N/A';
             document.getElementById('customerAddress').textContent = order.customer.address || 'N/A';
-            document.getElementById('customerCompanyName').textContent = order.customer.company_name ?
-                `🏢 Toko: ${order.customer.company_name}` : '';
+            // document.getElementById('customerCompanyName').textContent = order.customer.company_name ?
+            //     `🏢 Toko: ${order.customer.company_name}` : '';
+            const companyNameEl = document.getElementById('customerCompanyName');
+            if (order.customer.company_name && order.customer.company_name !== 'N/A') {
+                companyNameEl.textContent = `🏢 ${order.customer.company_name}`;
+                companyNameEl.classList.remove('hidden');
+            } else {
+                companyNameEl.textContent = '';
+                companyNameEl.classList.add('hidden');
+            }
             document.getElementById('paymentMethod').textContent = order.payment_method || 'N/A';
             document.getElementById('orderCreatedAt').textContent = order.created_at || 'Tidak Tersedia';
             document.getElementById('orderPaidAt').textContent = order.paid_at ? (order.paid_at + (order.paid_at_label ||
                 '')) : 'Belum Lunas';
+            const statusBadge = document.getElementById('modalOrderStatusBadge');
+            if (statusBadge) {
+                // 1. Ambil teks status dari map yang sudah ada
+                const statusText = STATUS_LABEL_MAP[order.status] || (order.status.charAt(0).toUpperCase() + order.status
+                    .slice(1).replace(/_/g, ' '));
+                statusBadge.textContent = statusText;
+
+                // 2. Tentukan kelas warna berdasarkan status
+                let badgeColorClasses = 'bg-gray-100 text-gray-800'; // Default
+                switch (order.status) {
+                    case 'diambil':
+                        badgeColorClasses = 'bg-blue-100 text-blue-800';
+                        break;
+                    case 'diantar':
+                        badgeColorClasses = 'bg-yellow-100 text-yellow-800';
+                        break;
+                    case 'diterima_pembeli':
+                        badgeColorClasses = 'bg-purple-100 text-purple-800';
+                        break;
+                    case 'menunggu_retur':
+                        badgeColorClasses = 'bg-red-100 text-red-800';
+                        break;
+                    case 'menunggu_verifikasi_admin':
+                        badgeColorClasses = 'bg-orange-100 text-orange-800';
+                        break;
+                    case 'selesai':
+                        badgeColorClasses = 'bg-green-100 text-green-800';
+                        break;
+                }
+
+                // 3. Gabungkan kelas dasar dengan kelas warna baru
+                const baseClasses = 'flex-shrink-0 px-3 py-1 text-sm font-semibold rounded-full whitespace-nowrap';
+                statusBadge.className = `${baseClasses} ${badgeColorClasses}`;
+            }
 
             // Logika Perhitungan Total Tagihan untuk handle retur
             let calculatedInitialTotal = 0;
@@ -655,7 +721,8 @@
 
         function updateTableRowStatus(orderId, newStatus) {
             const rows = document.querySelectorAll(`[data-order-id="${orderId}"]`);
-            const statusText = newStatus.charAt(0).toUpperCase() + newStatus.slice(1).replace(/_/g, ' ');
+            const statusText = STATUS_LABEL_MAP[newStatus] || (newStatus.charAt(0).toUpperCase() + newStatus.slice(1).replace(/_/g, ' '));
+            // const statusText = newStatus.charAt(0).toUpperCase() + newStatus.slice(1).replace(/_/g, ' ');
             let newClasses = 'bg-gray-100 text-gray-800';
             let newColorBarClass = 'bg-gray-400';
 
