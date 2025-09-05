@@ -38,6 +38,7 @@
             <div>
                 <h4 class="mb-1 text-base sm:text-md font-semibold text-gray-800 dark:text-white">👤 Pelanggan</h4>
                 <p id="customerName" class="text-gray-700 dark:text-gray-300 font-bold text-sm sm:text-base"></p>
+                <p id="customerCompanyName" class="text-sm text-gray-500 dark:text-gray-400"></p>
                 <p id="customerPhone" class="text-sm text-gray-500 dark:text-gray-400"></p>
                 <p id="customerAddress" class="text-sm text-gray-500 dark:text-gray-400"></p>
             </div>

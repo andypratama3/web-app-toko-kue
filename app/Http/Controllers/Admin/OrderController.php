@@ -98,6 +98,7 @@ class OrderController extends Controller
                 'payment_proof' => $order->payment_proof,
                 'customer' => [
                     'name' => $order->customer->name ?? 'N/A',
+                    'company_name' => $order->customer->company_name ?? null,
                     'phone' => $order->customer->phone ?? 'N/A',
                     'address' => $order->customer->address ?? 'N/A',
                 ],

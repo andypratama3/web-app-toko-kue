@@ -66,7 +66,9 @@
                                             <li>
                                                 <a href="#"
                                                     class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-white active:scale-90"
-                                                    data-value="{{ $customer->id }}" data-phone="{{ $customer->phone }}"
+                                                    data-value="{{ $customer->id }}"
+                                                    data-company-name="{{ $customer->company_name }}"
+                                                    data-phone="{{ $customer->phone }}"
                                                     data-address="{{ $customer->address }}">
                                                     {{ $customer->name }}
                                                 </a>
@@ -75,6 +77,8 @@
                                     </ul>
                                 </div>
                             </div>
+                            <p id="company-name-display" class="hidden mt-2 text-sm text-gray-600 dark:text-gray-400"></p>
+
                             <input type="hidden" name="customer_id" id="customer-id-input">
                         </div>
 
@@ -261,6 +265,7 @@
             const searchInput = document.getElementById('search-input');
             const selectedCustomerSpan = document.getElementById('selected-customer');
             const hiddenCustomerIdInput = document.getElementById('customer-id-input');
+            const companyNameDisplay = document.getElementById('company-name-display');
             const phoneInput = document.getElementById('phone');
             const addressInput = document.getElementById('address');
             const customerList = document.getElementById('customer-list');
@@ -286,6 +291,7 @@
                     const selectedLink = e.target;
                     const customerId = selectedLink.getAttribute('data-value');
                     const customerName = selectedLink.textContent.trim();
+                    const companyName = selectedLink.getAttribute('data-company-name');
                     const phone = selectedLink.getAttribute('data-phone');
                     const address = selectedLink.getAttribute('data-address');
 
@@ -294,6 +300,13 @@
                     document.getElementById('phone').value = phone;
                     document.getElementById('address').value = address;
                     document.getElementById('dropdown-menu').classList.add('hidden');
+
+                    if (companyName && companyName !== 'null') {
+                        companyNameDisplay.textContent = `🏢 Toko: ${companyName}`;
+                        companyNameDisplay.classList.remove('hidden');
+                    } else {
+                        companyNameDisplay.classList.add('hidden');
+                    }
 
                     // Panggil fungsi untuk memuat pesanan terakhir setelah customer dipilih
                     loadLastOrder(customerId);

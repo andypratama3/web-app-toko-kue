@@ -178,6 +178,13 @@
                 // Mengisi konten modal umum
                 document.getElementById('verifyModalInvoiceNumber').textContent = data.invoice_number || '-';
                 document.getElementById('verifyModalCustomerName').textContent = data.customer?.name || '-';
+                const companyNameEl = document.getElementById('verifyModalCompanyName');
+                if (data.customer?.company_name) {
+                    companyNameEl.textContent = `🏢 ${data.customer.company_name}`;
+                    companyNameEl.classList.remove('hidden');
+                } else {
+                    companyNameEl.classList.add('hidden');
+                }
                 document.getElementById('verifyModalCustomerPhone').textContent = data.customer?.phone || '';
                 document.getElementById('verifyModalCustomerAddress').textContent = data.customer?.address || '';
                 document.getElementById('verifyModalPaymentMethod').textContent = data.payment_method || '-';

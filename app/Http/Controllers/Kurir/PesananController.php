@@ -29,7 +29,7 @@ class PesananController extends Controller
     public function create()
     {
         $user = Auth::user();
-        $customers = Customer::select('id', 'name', 'address', 'phone', 'note')
+        $customers = Customer::select('id', 'company_name', 'name', 'address', 'phone', 'note')
             ->where('region_id', $user->region_id)
             ->where('added_by_user_id', $user->id) // Filter tambahan
             ->latest()
@@ -242,6 +242,7 @@ class PesananController extends Controller
                 'delivered_at' => $order->delivered_at ? Carbon::parse($order->delivered_at)->isoFormat('D MMMM YYYY, HH:mm') : null,
                 'received_by_buyer_at' => $order->received_by_buyer_at ? Carbon::parse($order->received_by_buyer_at)->isoFormat('D MMMM YYYY, HH:mm') : null,
                 'customer' => [
+                    'company_name' => $order->customer->company_name ?? 'N/A',
                     'name' => $order->customer->name ?? 'N/A',
                     'phone' => $order->customer->phone ?? 'N/A',
                     'address' => $order->customer->address ?? 'N/A',
