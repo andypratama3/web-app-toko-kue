@@ -159,30 +159,19 @@ class ReturnController extends Controller
 
         try {
             if ($request->hasFile('payment_proof')) {
-                // Cari data retur yang terkait dengan pesanan ini
-                $orderReturn = $order->orderReturn; // Asumsi relasi sudah didefinisikan
+                // Cari data retur terbaru yang statusnya menunggu_konfirmasi
+                $orderReturn = $order->returns()->where('status', 'menunggu_konfirmasi')->latest()->first();
 
                 // Jika tidak ada data retur, kirim error
                 if (!$orderReturn) {
-                    return response()->json(['message' => 'Data retur untuk pesanan ini tidak ditemukan.'], 404);
+                    return response()->json(['message' => 'Tidak ada pengajuan retur aktif untuk pesanan ini.'], 400);
                 }
-
-                // Simpan file bukti retur
-                $path = $request->file('payment_proof')->store('public/return_proofs');
 
                 // Ambil file yang diunggah
                 $file = $request->file('payment_proof');
-
-                // Dapatkan ekstensi file asli (contoh: 'jpg')
                 $extension = $file->getClientOriginalExtension();
-
-                // Ganti karakter '/' pada nomor invoice dengan '-' agar menjadi nama file yang valid
                 $safeInvoiceNumber = str_replace('/', '-', $order->invoice_number);
-
-                // Buat nama file baru sesuai format yang diinginkan
                 $newFileName = 'RTN-' . $safeInvoiceNumber . '.' . $extension;
-
-                // Simpan file menggunakan nama baru di folder 'public/return_proofs'
                 $path = $file->storeAs('public/return_proofs', $newFileName);
 
                 // Simpan path file ke tabel order_returns
@@ -194,7 +183,6 @@ class ReturnController extends Controller
                 $order->save();
 
                 return response()->json([
-                    'message' => 'Bukti retur berhasil diunggah. Menunggu verifikasi admin.',
                     'order' => $order
                 ]);
             }

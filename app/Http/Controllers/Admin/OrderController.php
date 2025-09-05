@@ -84,7 +84,7 @@ class OrderController extends Controller
                 $paidAtFormatted = Carbon::parse($order->paid_at)->isoFormat('D MMMM YYYY, HH:mm');
             }
 
-            $activeReturn = $order->returns()->where('status', '!=', 'ditolak')->first();
+            $activeReturn = $order->returns()->where('status', '!=', 'ditolak')->latest()->first();
 
             $formattedOrder = [
                 'id' => $order->id,

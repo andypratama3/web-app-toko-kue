@@ -226,6 +226,8 @@ class PesananController extends Controller
                 $paidAtFormatted = Carbon::parse($order->paid_at)->isoFormat('D MMMM YYYY, HH:mm');
             }
 
+            $activeReturn = $order->returns()->where('status', '!=', 'ditolak')->latest()->first();
+
             $formattedOrder = [
                 'id' => $order->id,
                 'invoice_number' => $order->invoice_number,
@@ -263,7 +265,13 @@ class PesananController extends Controller
                         'image_url' => $item->product->image_url ?? null,
                         'returned_quantity' => $returnedQuantity,
                     ];
-                })->toArray()
+                })->toArray(),
+                'order_return' => $activeReturn ? [
+                    'id' => $activeReturn->id,
+                    'status' => $activeReturn->status,
+                    'return_proof' => $activeReturn->return_proof,
+                    'total_amount_returned' => $activeReturn->total_amount_returned,
+                ] : null,
             ];
 
             return response()->json($formattedOrder);
