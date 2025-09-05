@@ -28,6 +28,26 @@
                 </div>
             @endif
 
+            @php
+                $statusLabelMap = [
+                    'pending' => 'Baru',
+                    'dikemas' => 'Dikemas',
+                    'diambil' => 'Diambil',
+                    'diantar' => 'Diantar',
+                    'diterima_pembeli' => 'Diterima',
+                    'selesai' => 'Selesai',
+                    'menunggu_retur' => 'Menunggu Retur',
+                    'menunggu_verifikasi_admin' => 'Menunggu Verifikasi',
+                    'diverifikasi_admin' => 'Valid',
+                    'dikembalikan' => 'Retur',
+                    'dibatalkan' => 'Dibatalkan',
+                ];
+
+                $labelStatus = function ($status) use ($statusLabelMap) {
+                    return $statusLabelMap[$status] ?? ucwords(str_replace('_', ' ', $status));
+                };
+            @endphp
+
             @if ($orders->isEmpty())
                 <div class="p-4 text-blue-700 bg-blue-100 border-l-4 border-blue-500 rounded-md" role="alert">
                     <p class="font-bold">Info:</p>
@@ -75,7 +95,7 @@
                                         <span {{-- KELAS DASAR UNTUK BENTUK & UKURAN SERAGAM --}}
                                             class="status-badge px-2.5 py-1 text-xs font-semibold rounded-full
 
-                                                {{-- KELAS WARNA DINAMIS --}}
+                                                {{-- KELAS WARNA DINAMIS (TETAP SAMA) --}}
                                                 @switch($order->status ?? 'dikemas')
                                                     @case('diambil') bg-blue-100 text-blue-800 @break
                                                     @case('diantar') bg-yellow-100 text-yellow-800 @break
@@ -86,27 +106,8 @@
                                                     @default bg-gray-100 text-gray-800
                                                 @endswitch
                                             ">
-                                            {{-- TULISAN STATUS (SATU KATA) --}}
-                                            @switch($order->status)
-                                                @case('diterima_pembeli')
-                                                    Diterima
-                                                @break
-
-                                                @case('menunggu_retur')
-                                                    Retur
-                                                @break
-
-                                                @case('menunggu_verifikasi_admin')
-                                                    Verifikasi
-                                                @break
-
-                                                @case('selesai')
-                                                    Selesai
-                                                @break
-
-                                                @default
-                                                    {{ ucfirst($order->status) }}
-                                            @endswitch
+                                            {{-- PERUBAHAN: Menggunakan helper untuk menampilkan teks status --}}
+                                            {{ $labelStatus($order->status) }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-sm font-medium text-center whitespace-nowrap">
@@ -162,10 +163,10 @@
                                     </div>
                                     {{-- File: index.blade.php --}}
 
-                                    <span {{-- KELAS DASAR UNTUK BENTUK & UKURAN SERAGAM --}}
+                                    <span {{-- KELAS DASAR --}}
                                         class="status-badge flex-shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full whitespace-nowrap ml-2
 
-                                        {{-- KELAS WARNA DINAMIS --}}
+                                        {{-- KELAS WARNA DINAMIS (TETAP SAMA) --}}
                                         @switch($order->status ?? 'dikemas')
                                             @case('diambil') bg-blue-100 text-blue-800 @break
                                             @case('diantar') bg-yellow-100 text-yellow-800 @break
@@ -175,28 +176,9 @@
                                             @case('selesai') bg-green-100 text-green-800 @break
                                             @default bg-gray-100 text-gray-800
                                         @endswitch
-">
-                                        {{-- TULISAN STATUS (SATU KATA) --}}
-                                        @switch($order->status)
-                                            @case('diterima_pembeli')
-                                                Diterima
-                                            @break
-
-                                            @case('menunggu_retur')
-                                                Retur
-                                            @break
-
-                                            @case('menunggu_verifikasi_admin')
-                                                Verifikasi
-                                            @break
-
-                                            @case('selesai')
-                                                Selesai
-                                            @break
-
-                                            @default
-                                                {{ ucfirst($order->status) }}
-                                        @endswitch
+                                        ">
+                                        {{-- PERUBAHAN: Menggunakan helper untuk menampilkan teks status --}}
+                                        {{ $labelStatus($order->status) }}
                                     </span>
                                 </div>
 

@@ -18,7 +18,7 @@
                 @php
                     // Peta status → label tampilan (samakan dengan yang dipakai role kurir)
                     $statusLabelMap = [
-                        'pending' => 'Menunggu',
+                        'pending' => 'Baru',
                         'diterima_pembeli' => 'Diterima',
                         'selesai' => 'Selesai',
                         'menunggu_verifikasi_admin' => 'Menunggu Verifikasi',
@@ -65,7 +65,20 @@
                                         {{ $labelStatus($order->status) }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-2">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
+                                    <td class="px-4 py-2">
+                                        @php
+                                            // Cek retur aktif (tidak ditolak)
+                                            $activeReturn = $order->returns->where('status', '!=', 'ditolak')->sortByDesc('id')->first();
+                                            $returnedAmount = $activeReturn ? $activeReturn->total_amount_returned : 0;
+                                            $afterReturn = $order->total_amount - $returnedAmount;
+                                        @endphp
+                                        @if ($activeReturn && $returnedAmount > 0)
+                                            <span class="block text-xs text-gray-500 line-through">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
+                                            <span class="block text-green-600 font-bold">Rp {{ number_format($afterReturn, 0, ',', '.') }}</span>
+                                        @else
+                                            Rp {{ number_format($order->total_amount, 0, ',', '.') }}
+                                        @endif
+                                    </td>
                                 <td class="px-4 py-2">
                                     {{-- Tombol ini akan membuka modal verifikasi --}}
                                     {{-- DIUBAH: Menambahkan kondisi || $order->status == 'menunggu_verifikasi_admin' --}}
