@@ -37,9 +37,10 @@ class OrderReturnProduct extends Model
 
     /**
      * Relasi ke varian produk (jika ada).
+     * Nama relasi harus 'variant' agar bisa diakses sebagai $p->variant di controller.
      */
-    public function productVariant(): BelongsTo
+    public function variant(): BelongsTo
     {
-        return $this->belongsTo(ProductVariant::class);
+        return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
 }

@@ -127,8 +127,15 @@
         async function openVerifyModal(orderId) {
             const loader = document.getElementById('verifyModalLoader');
             const content = document.getElementById('verifyModalContent');
+            const modalTitle = document.querySelector('#verifyOrderModal h3'); // Menargetkan judul modal
+
+            const returnedProductsSection = document.getElementById('returnedProductsSection');
+            const returnedProductsList = document.getElementById('verifyModalReturnedProducts');
+
             loader.classList.remove('hidden');
             content.classList.add('hidden');
+            modalTitle.textContent = "Verifikasi Rincian Pesanan"; // Reset judul
+            returnedProductsSection.classList.add('hidden');
 
             try {
                 const response = await fetch(`/admin/orders/${orderId}/details`);
@@ -138,18 +145,18 @@
                 // Validasi minimal data
                 if (!data || typeof data !== 'object') throw new Error('Data tidak valid.');
 
-                // Mengisi konten modal
+                // Mengisi konten modal umum
                 document.getElementById('verifyModalInvoiceNumber').textContent = data.invoice_number || '-';
                 document.getElementById('verifyModalCustomerName').textContent = data.customer?.name || '-';
                 document.getElementById('verifyModalCustomerPhone').textContent = data.customer?.phone || '';
                 document.getElementById('verifyModalCustomerAddress').textContent = data.customer?.address || '';
                 document.getElementById('verifyModalPaymentMethod').textContent = data.payment_method || '-';
                 document.getElementById('verifyModalOrderCreatedAt').textContent = data.created_at || '-';
-                document.getElementById('verifyModalOrderPaidAt').textContent = data.paid_at ? `${data.paid_at}${data.paid_at_label}` : 'Belum Lunas';
-                document.getElementById('verifyModalTotalAmount').textContent = 'Rp ' + (data.total_amount ? Number(data.total_amount).toLocaleString('id-ID') : '0');
+                document.getElementById('verifyModalOrderPaidAt').textContent = data.paid_at ?
+                    `${data.paid_at}${data.paid_at_label}` : 'Belum Lunas';
                 document.getElementById('verifyModalCourierName').textContent = data.kurir_name || '-';
 
-                // Mengisi rincian produk
+                // Mengisi rincian produk pesanan
                 const productDetailsDiv = document.getElementById('verifyModalProductDetails');
                 productDetailsDiv.innerHTML = '';
                 if (Array.isArray(data.items) && data.items.length > 0) {
@@ -164,21 +171,66 @@
                     productDetailsDiv.innerHTML = '<p>Tidak ada produk.</p>';
                 }
 
-                // Menampilkan bukti pembayaran
+                const paymentProofContainer = document.getElementById('verifyModalPaymentProof').parentElement;
                 const paymentProofDiv = document.getElementById('verifyModalPaymentProof');
-                if (data.payment_proof) {
-                    const imageUrl = `/storage/${data.payment_proof}`;
-                    paymentProofDiv.innerHTML =
-                        `<img src="${imageUrl}" class="object-cover w-32 h-32 border-2 border-gray-300 rounded shadow cursor-zoom-in" alt="Bukti Pembayaran" onclick="showVerifyModalZoom('${imageUrl}')">`;
+                const proofTitle = paymentProofContainer.querySelector('h4');
+
+                if (data.return_details) {
+                    // --- TAMPILAN UNTUK PESANAN RETUR ---
+                    modalTitle.textContent = "Verifikasi Pesanan dengan Retur";
+                    proofTitle.textContent = "✅ Bukti Retur";
+
+                    // Tampilkan bukti retur
+                    if (data.return_details.return_proof) {
+                        const imageUrl = `/storage/${data.return_details.return_proof.replace('public/', '')}`;
+                        paymentProofDiv.innerHTML =
+                            `<img src="${imageUrl}" class="object-cover w-32 h-32 border-2 border-gray-300 rounded shadow cursor-zoom-in" alt="Bukti Retur" onclick="showVerifyModalZoom('${imageUrl}')">`;
+                    } else {
+                        paymentProofDiv.innerHTML = '<span class="text-red-500">Bukti retur belum diupload.</span>';
+                    }
+
+                    // Perbarui total tagihan
+                    const originalTotal = data.total_amount || 0;
+                    const returnedAmount = data.return_details.total_amount_returned || 0;
+                    const newTotal = originalTotal - returnedAmount;
+                    document.getElementById('verifyModalTotalAmount').innerHTML =
+                        `<span class="block text-sm font-normal text-gray-500 line-through">Rp ${Number(originalTotal).toLocaleString('id-ID')}</span>` +
+                        `<span class="block text-green-600 dark:text-green-500">Rp ${Number(newTotal).toLocaleString('id-ID')} (Setelah Retur)</span>`;
+
+                    // **LOGIKA BARU: Tampilkan daftar produk yang diretur**
+                    returnedProductsSection.classList.remove('hidden');
+                    returnedProductsList.innerHTML = ''; // Kosongkan daftar
+                    if (Array.isArray(data.return_details.returned_products) && data.return_details.returned_products
+                        .length > 0) {
+                        data.return_details.returned_products.forEach(item => {
+                            const returnedItem = document.createElement('div');
+                            returnedItem.className = 'text-sm';
+                            returnedItem.innerHTML =
+                                `<p class="font-semibold text-gray-800 dark:text-gray-200">${item.name} ${item.variant_name ? `(${item.variant_name})` : ''}</p><p class="text-gray-600 dark:text-gray-400">Jumlah Diretur: ${item.quantity} x Rp ${new Intl.NumberFormat('id-ID').format(item.price)}</p>`;
+                            returnedProductsList.appendChild(returnedItem);
+                        });
+                    } else {
+                        returnedProductsList.innerHTML = '<p>Tidak ada detail produk retur.</p>';
+                    }
+
                 } else {
-                    paymentProofDiv.innerHTML = '<span class="text-red-500">Belum diupload oleh kurir</span>';
+                    // --- TAMPILAN UNTUK PESANAN NORMAL ---
+                    proofTitle.textContent = "✅ Bukti Pembayaran";
+                    document.getElementById('verifyModalTotalAmount').textContent = 'Rp ' + (data.total_amount ? Number(
+                        data.total_amount).toLocaleString('id-ID') : '0');
+                    if (data.payment_proof) {
+                        const imageUrl = `/storage/${data.payment_proof.replace('public/', '')}`;
+                        paymentProofDiv.innerHTML =
+                            `<img src="${imageUrl}" class="object-cover w-32 h-32 border-2 border-gray-300 rounded shadow cursor-zoom-in" alt="Bukti Pembayaran" onclick="showVerifyModalZoom('${imageUrl}')">`;
+                    } else {
+                        paymentProofDiv.innerHTML = '<span class="text-red-500">Belum diupload oleh kurir</span>';
+                    }
                 }
 
                 // Mengatur event listener untuk tombol aksi
                 document.getElementById('btnVerifyOrder').onclick = () => verifyOrder(orderId);
                 document.getElementById('btnRejectOrder').onclick = () => rejectOrder(orderId);
 
-                // Tampilkan konten
                 loader.classList.add('hidden');
                 content.classList.remove('hidden');
 
