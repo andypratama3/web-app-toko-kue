@@ -275,6 +275,27 @@
             }));
         }
 
+        function openImageViewer(src) { // [!code ++]
+            const imageViewer = document.getElementById('imageViewerModal'); // [!code ++]
+            const fullSizeImage = document.getElementById('fullSizeImage'); // [!code ++]
+            if (imageViewer && fullSizeImage) { // [!code ++]
+                fullSizeImage.src = src; // [!code ++]
+                imageViewer.classList.remove('hidden'); // [!code ++]
+                document.body.classList.add('overflow-hidden'); // Mencegah scroll di belakang modal [!code ++]
+            } // [!code ++]
+        } // [!code ++]
+
+        /**
+         * Menutup modal image viewer.
+         */
+        function closeImageViewer() { // [!code ++]
+            const imageViewer = document.getElementById('imageViewerModal'); // [!code ++]
+            if (imageViewer) { // [!code ++]
+                imageViewer.classList.add('hidden'); // [!code ++]
+                document.body.classList.remove('overflow-hidden'); // Mengembalikan kemampuan scroll [!code ++]
+            } // [!code ++]
+        } // [!code ++]
+
         // --- Logika Modal Rincian ---
         async function fetchOrderDetails(orderId) {
             openModal('orderDetailsModal');
@@ -726,10 +747,11 @@
             const rows = document.querySelectorAll(`[data-order-id="${orderId}"]`);
             const statusText = STATUS_LABEL_MAP[newStatus] || (newStatus.charAt(0).toUpperCase() + newStatus.slice(1)
                 .replace(/_/g, ' '));
-            // const statusText = newStatus.charAt(0).toUpperCase() + newStatus.slice(1).replace(/_/g, ' ');
+
+            // Definisikan kelas warna dinamis
             let newClasses = 'bg-gray-100 text-gray-800';
             let newColorBarClass = 'bg-gray-400';
-
+            // ... (switch case untuk newClasses dan newColorBarClass tetap sama)
             switch (newStatus) {
                 case 'diambil':
                     newClasses = 'bg-blue-100 text-blue-800';
@@ -757,12 +779,16 @@
                     break;
             }
 
+
+            // Definisikan semua kelas dasar yang statis
+            const baseClasses = 'status-badge px-2.5 py-1 text-xs font-semibold rounded-full'; // [!code ++]
+
             rows.forEach(row => {
                 const statusSpan = row.querySelector('.status-badge');
                 if (statusSpan) {
                     statusSpan.textContent = statusText;
-                    statusSpan.className =
-                        `status-badge ${statusSpan.className.split(' ').slice(0, 4).join(' ')} ${newClasses}`;
+                    // Gabungkan kelas dasar dengan kelas warna yang baru
+                    statusSpan.className = `${baseClasses} ${newClasses}`; // [!code ++]
                 }
                 const colorBar = row.querySelector('.absolute.top-0.left-0');
                 if (colorBar) {

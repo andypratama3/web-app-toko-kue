@@ -3,107 +3,329 @@
 @section('page_title', 'History')
 
 @section('content')
-<div class="flex-auto p-3 pt-0 -mx-3">
-    <div class="p-2.5 bg-white shadow-md rounded-xl dark:bg-gray-800 dark:border-gray-700 min-h-[715px]">
-        <h2 class="mb-6 text-black text-md dark:text-white">
-            👤 {{ Auth::user()->name ?? 'Admin' }}
-            🚩 {{ Auth::user()->region->name ?? 'N/A' }}
-        </h2>
-        <div class="overflow-x-auto">
-            <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
-                <thead class="align-bottom">
-                    <tr
-                        class="text-xs font-bold text-left text-gray-500 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                        <th class="px-4 py-3">No</th>
-                        <th class="px-4 py-3">Invoice</th>
-                        <th class="px-4 py-3">Customer</th>
-                        <th class="px-4 py-3">Kurir</th>
-                        <th class="px-4 py-3">Status</th>
-                        <th class="px-4 py-3">Total</th>
-                        <th scope="col" class="px-4 py-3 text-center"><span class="sr-only">Aksi</span></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($orders as $order)
-                    <tr class="text-sm font-normal text-gray-700 border-b dark:text-gray-400 dark:border-gray-700">
-                        <td class="px-4 py-2">{{ $loop->iteration }}</td>
-                        <td class="px-4 py-2 font-mono">{{ $order->invoice_number }}</td>
-                        <td class="px-4 py-2">{{ $order->customer->name ?? '-' }}</td>
-                        <td class="px-4 py-2">{{ $order->createdBy->name ?? '-' }}</td>
-                        <td class="px-4 py-2">
-                            <span
-                                class="inline-block px-2 py-1 text-xs font-semibold text-green-800 bg-green-100 rounded">
-                                {{ ucfirst(str_replace('_', ' ', $order->status)) }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-2">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
-                        <td class="px-4 py-3 text-right">
-                            <div class="relative inline-block">
-                                {{-- Tombol Dropdown Aksi --}}
-                                <button data-target-dropdown="order-actions-dropdown-{{ $order->id }}"
-                                    class="px-2 py-1 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg js-dropdown-toggle hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-2 focus:ring-gray-100 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
-                                    <i class="fas fa-ellipsis-v"></i>
-                                </button>
-                                {{-- Konten Dropdown --}}
-                                <div id="order-actions-dropdown-{{ $order->id }}"
-                                    class="absolute right-0 z-50 hidden mt-2 bg-white divide-y divide-gray-100 rounded shadow js-dropdown-menu w-44 dark:bg-gray-700 dark:divide-gray-600">
-                                    <ul class="py-1 text-sm text-gray-700 dark:text-gray-200">
-                                        {{-- Tombol Direct WA --}}
-                                        <li>
-                                            @php
-                                            $wa_number = $order->customer->phone ?? $order->phone ?? null;
+    <div class="flex-auto p-3 pt-0 -mx-3">
+        <div class="p-2.5 bg-white shadow-md rounded-xl dark:bg-gray-800 dark:border-gray-700 min-h-[715px]">
+            <h2 class="mb-6 text-black text-md dark:text-white">
+                👤 {{ Auth::user()->name ?? 'Admin' }}
+                🚩 {{ Auth::user()->region->name ?? 'N/A' }}
+            </h2>
+            <div class="overflow-x-auto">
+                <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
+                    <thead class="align-bottom">
+                        <tr
+                            class="text-xs font-bold text-left text-gray-500 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                            <th class="px-4 py-3">Invoice</th>
+                            <th class="px-4 py-3">Customer</th>
+                            <th class="px-4 py-3">Kurir</th>
+                            <th class="px-4 py-3">Status</th>
+                            <th class="px-4 py-3">Total</th>
+                            <th class="px-4 py-3 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($orders as $order)
+                            <tr class="border-b dark:border-gray-700">
+                                <td class="px-4 py-2">
+                                    <p class="mb-0 font-semibold leading-tight text-xs">{{ $order->invoice_number }}</p>
+                                    <p class="mb-0 leading-tight text-xs text-slate-400">
+                                        {{ $order->created_at->isoFormat('D MMM YYYY, HH:mm') }}
+                                    </p>
+                                </td>
+                                <td class="px-4 py-2">
+                                    <p class="mb-0 font-semibold leading-tight text-xs">{{ $order->customer->name ?? '-' }}
+                                    </p>
+                                    <p class="mb-0 leading-tight text-xs text-slate-400">
+                                        {{ $order->customer->phone ?? '-' }}</p>
+                                </td>
+                                <td class="px-4 py-2">
+                                    <p class="mb-0 leading-tight text-xs">{{ $order->createdBy->name ?? '-' }}</p>
+                                </td>
+                                <td class="px-4 py-2">
+                                    <span
+                                        class="text-xs font-medium px-2.5 py-0.5 rounded {{ $order->payment_status['class'] }}">
+                                        {{ $order->payment_status['text'] }}
+                                    </span>
+                                    @if ($order->has_return)
+                                        <span
+                                            class="text-xs font-medium px-2.5 py-0.5 rounded bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
+                                            Retur
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-4 py-2">
+                                    <p class="mb-0 font-semibold leading-tight text-xs">
+                                        Rp {{ number_format($order->total_amount, 0, ',', '.') }}
+                                    </p>
+                                </td>
+                                <td class="px-4 py-2">
+                                    <div class="flex justify-center gap-2">
+                                        <button type="button"
+                                            class="js-open-modal-btn text-white bg-blue-500 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-xs px-2.5 py-1.5"
+                                            data-target-modal="showOrderModal" data-order-id="{{ $order->id }}">
+                                            Detail
+                                        </button>
+                                        @php
+                                            $wa_number = $order->customer->phone ?? null;
                                             if ($wa_number) {
-                                            $wa_number = preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $wa_number));
+                                                $wa_number = preg_replace(
+                                                    '/^0/',
+                                                    '62',
+                                                    preg_replace('/[^0-9]/', '', $wa_number),
+                                                );
                                             }
                                             $customer_name = $order->customer->name ?? '-';
-                                            $wa_message = "Yth. Bapak/Ibu *{$customer_name}*,\n\n" .
-                                            "Kami mengonfirmasi bahwa pesanan Anda telah selesai.\n\n" .
-                                            "Sebagai referensi, transaksi ini tercatat dengan nomor invoice berikut: *{$order->invoice_number}*.\n\n" .
-                                            "Terimakasih sudah berbelanja di Toko Kami.\n\n" .
-                                            "Hormat kami.\n*Admin Kue Pandan Asli*";
+                                            $wa_message =
+                                                "Yth. Bapak/Ibu *{$customer_name}*,\n\n" .
+                                                "Kami mengonfirmasi bahwa pesanan Anda telah selesai.\n\n" .
+                                                "Sebagai referensi, transaksi ini tercatat dengan nomor invoice berikut: *{$order->invoice_number}*.\n\n" .
+                                                "Terimakasih sudah berbelanja di Toko Kami.\n\n" .
+                                                "Hormat kami.\n*Admin Kue Pandan Asli*";
                                             $wa_message = urlencode($wa_message);
-                                            @endphp
-                                            @if($wa_number)
-                                            <a href="https://wa.me/{{ $wa_number }}?text={{ $wa_message }}" target="_blank" rel="noopener"
-                                                class="flex items-center w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600">
-                                                <span class="inline-block w-6 mr-2 text-center"><i class="fab fa-whatsapp text-green-500"></i></span>
-                                                <span class="text-green-500">Kirim</span>
+                                        @endphp
+                                        @if ($wa_number)
+                                            <a href="https://wa.me/{{ $wa_number }}?text={{ $wa_message }}"
+                                                target="_blank"
+                                                class="text-white bg-green-500 hover:bg-green-600 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-xs px-2.5 py-1.5">
+                                                WhatsApp
                                             </a>
-                                            @else
-                                            <span class="flex items-center w-full px-4 py-2 text-left text-gray-400 cursor-not-allowed">
-                                                <span class="inline-block w-6 mr-2 text-center"><i class="fab fa-whatsapp"></i></span>
-                                                <span>No WA</span>
-                                            </span>
-                                            @endif
-                                        </li>
-                                        {{-- Tombol Lihat Invoice --}}
-                                        <li>
-                                            <a href="{{ route('admin.historys.invoice', $order->id) }}" target="_blank" rel="noopener"
-                                                class="flex items-center w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600">
-                                                <span class="inline-block w-6 mr-2 text-center"><i class="fas fa-file-invoice"></i></span>
-                                                <span>Lihat Invoice</span>
-                                            </a>
-                                        </li>
-                                        {{-- Tombol Download --}}
-                                        <li>
-                                            <a href="{{ route('admin.historys.download', $order->id) }}" class="flex items-center w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600">
-                                                <span class="inline-block w-6 mr-2 text-center"><i class="fas fa-download"></i></span>
-                                                <span>Download</span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="7" class="py-6 text-center text-gray-500">Tidak ada pesanan history.</td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                                        @endif
+                                        <a href="{{ route('admin.historys.invoice', $order->id) }}" target="_blank"
+                                            class="text-white bg-gray-500 hover:bg-gray-600 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-xs px-2.5 py-1.5">
+                                            Invoice
+                                        </a>
+                                        <a href="{{ route('admin.historys.download', $order->id) }}"
+                                            class="text-white bg-gray-500 hover:bg-gray-600 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-xs px-2.5 py-1.5">
+                                            Download
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="px-4 py-2 text-center">
+                                    <p class="mb-0 text-sm text-gray-500">Tidak ada data history pesanan</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-</div>
 @endsection
+
+@push('flowbite-modals')
+    @include('dashboard.admin.historys.show-modal')
+@endpush
+
+@push('page-scripts')
+    {{-- HANYA SATU BLOK SCRIPT YANG DIPERLUKAN --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modalElement = document.getElementById('showOrderModal');
+            if (!modalElement) return;
+
+            // Ambil semua elemen modal sekali saja
+            const loader = document.getElementById('showOrderModalLoader');
+            const content = document.getElementById('showOrderModalContent');
+            const zoomWrapper = document.getElementById('showOrderModalZoomWrapper');
+            const zoomImg = document.getElementById('showOrderModalZoomImg');
+
+            // Cache elemen-elemen konten modal
+            const elements = {
+                invoiceNumber: document.getElementById('showOrderModalInvoiceNumber'),
+                customerName: document.getElementById('showOrderModalCustomerName'),
+                customerAddress: document.getElementById('showOrderModalCustomerAddress'),
+                paymentMethod: document.getElementById('showOrderModalPaymentMethod'),
+                totalAmount: document.getElementById('showOrderModalTotalAmount'),
+                createdAt: document.getElementById('showOrderModalCreatedAt'),
+                paidAt: document.getElementById('showOrderModalPaidAt'),
+                productDetails: document.getElementById('showOrderModalProductDetails'),
+                returnedProductsSection: document.getElementById('showOrderModalReturnedProductsSection'),
+                returnedProducts: document.getElementById('showOrderModalReturnedProducts'),
+                paymentProof: document.getElementById('showOrderModalPaymentProof'),
+                returnProof: document.getElementById('showOrderModalReturnProof')
+            };
+
+            // Helper functions
+            const formatRupiah = (number) => new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(number);
+            const showLoader = () => {
+                loader.classList.remove('hidden');
+                content.classList.add('hidden');
+            };
+            const hideLoader = () => {
+                loader.classList.add('hidden');
+                content.classList.remove('hidden');
+            };
+
+            const openModal = async (orderId) => {
+                modalElement.classList.remove('hidden');
+                modalElement.classList.add('flex');
+                showLoader();
+
+                const url = `{{ url('admin/historys') }}/${orderId}/details`;
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const data = await response.json();
+                    populateModal(data);
+                } catch (error) {
+                    console.error('Error fetching order details:', error);
+                    content.innerHTML =
+                        `<p class="text-center text-red-500">Gagal memuat detail pesanan. Silakan coba lagi.</p>`;
+                } finally {
+                    hideLoader();
+                }
+            };
+
+            const closeModal = () => {
+                modalElement.classList.add('hidden');
+                modalElement.classList.remove('flex');
+            };
+
+            // Event Delegation untuk seluruh body
+            document.body.addEventListener('click', function(event) {
+                // Tombol buka modal
+                const openBtn = event.target.closest(
+                    '.js-open-modal-btn[data-target-modal="showOrderModal"]');
+                if (openBtn) {
+                    const orderId = openBtn.dataset.orderId;
+                    openModal(orderId);
+                    return;
+                }
+
+                // Tombol tutup modal atau klik di luar area modal
+                const closeBtn = event.target.closest('.js-close-modal-btn');
+                if (closeBtn || event.target === modalElement) {
+                    closeModal();
+                    return;
+                }
+
+                // Zoom gambar
+                if (event.target.tagName === 'IMG' && event.target.dataset.zoomable) {
+                    zoomImg.src = event.target.src;
+                    zoomWrapper.classList.remove('hidden');
+                    zoomWrapper.classList.add('flex');
+                }
+            });
+
+            // Tutup zoom wrapper
+            zoomWrapper.addEventListener('click', () => {
+                zoomWrapper.classList.add('hidden');
+                zoomWrapper.classList.remove('flex');
+            });
+
+            function populateModal(data) {
+                // Helper function untuk format Rupiah, bisa juga diletakkan di luar jika sering dipakai
+                const formatRupiah = (number) => new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 0
+                }).format(number);
+
+                // Ambil referensi ke semua elemen UI dan template yang dibutuhkan
+                const elements = {
+                    invoiceNumber: document.getElementById('showOrderModalInvoiceNumber'),
+                    customerName: document.getElementById('showOrderModalCustomerName'),
+                    customerAddress: document.getElementById('showOrderModalCustomerAddress'),
+                    paymentMethod: document.getElementById('showOrderModalPaymentMethod'),
+                    totalAmount: document.getElementById('showOrderModalTotalAmount'),
+                    createdAt: document.getElementById('showOrderModalCreatedAt'),
+                    paidAt: document.getElementById('showOrderModalPaidAt'),
+                    productDetails: document.getElementById('showOrderModalProductDetails'),
+                    returnedProductsSection: document.getElementById('showOrderModalReturnedProductsSection'),
+                    returnedProducts: document.getElementById('showOrderModalReturnedProducts'),
+                    paymentProof: document.getElementById('showOrderModalPaymentProof'),
+                    returnProof: document.getElementById('showOrderModalReturnProof')
+                };
+                const orderItemTemplate = document.getElementById('orderItemTemplate');
+                const returnItemTemplate = document.getElementById('returnItemTemplate');
+
+                // 1. Reset semua container sebelum mengisi data baru
+                elements.productDetails.innerHTML = '';
+                elements.returnedProducts.innerHTML = '';
+                elements.paymentProof.innerHTML = '';
+                elements.returnProof.innerHTML = '';
+
+                // 2. Isi detail utama pesanan
+                elements.invoiceNumber.textContent = data.invoice_number || '-';
+                elements.customerName.textContent = data.customer_name || '-';
+                elements.customerAddress.textContent = data.customer_address || '-';
+                elements.paymentMethod.textContent =
+                    `Metode: ${data.payment_method ? data.payment_method.charAt(0).toUpperCase() + data.payment_method.slice(1) : '-'}`;
+                elements.totalAmount.textContent = `Total: ${formatRupiah(data.total_amount || 0)}`;
+                elements.createdAt.textContent = data.created_at || '-';
+                elements.paidAt.textContent = data.paid_at || '-';
+
+                // 3. Isi produk yang dipesan menggunakan template
+                if (Array.isArray(data.items) && data.items.length > 0) {
+                    data.items.forEach(item => {
+                        const clone = orderItemTemplate.content.cloneNode(true);
+                        clone.querySelector('[data-role="name"]').textContent = item.name;
+                        const variantEl = clone.querySelector('[data-role="variant"]');
+
+                        if (item.variant) {
+                            variantEl.textContent = `Varian: ${item.variant}`;
+                        } else {
+                            variantEl.remove(); // Hapus elemen varian jika tidak ada
+                        }
+
+                        clone.querySelector('[data-role="quantity-price"]').textContent =
+                            `Jumlah: ${item.quantity} x ${formatRupiah(item.price)}`;
+                        clone.querySelector('[data-role="subtotal"]').textContent = formatRupiah(item
+                            .subtotal);
+                        elements.productDetails.appendChild(clone);
+                    });
+                }
+
+                // 4. Handle bagian retur (jika ada)
+                if (data.return_details && Array.isArray(data.return_details.returned_products) && data
+                    .return_details.returned_products.length > 0) {
+                    elements.returnedProductsSection.classList.remove('hidden');
+
+                    // Isi produk yang diretur menggunakan template
+                    data.return_details.returned_products.forEach(item => {
+                        const clone = returnItemTemplate.content.cloneNode(true);
+                        clone.querySelector('[data-role="name"]').textContent = item.name;
+                        const variantEl = clone.querySelector('[data-role="variant"]');
+
+                        if (item.variant) {
+                            variantEl.textContent = `Varian: ${item.variant}`;
+                        } else {
+                            variantEl.remove();
+                        }
+
+                        clone.querySelector('[data-role="quantity"]').textContent =
+                            `Jumlah Diretur: ${item.quantity}`;
+                        elements.returnedProducts.appendChild(clone);
+                    });
+
+                    // Tampilkan bukti retur jika ada
+                    if (data.return_details.return_proof_url) {
+                        elements.returnProof.innerHTML =
+                            `
+                <h5 class="mb-1 mt-3 font-semibold text-red-800 dark:text-red-400">Bukti Retur:</h5>
+                <img src="${data.return_details.return_proof_url}" alt="Bukti Retur" class="max-w-[200px] rounded border cursor-pointer hover:border-red-500" data-zoomable="true">`;
+                    }
+
+                } else {
+                    elements.returnedProductsSection.classList.add('hidden');
+                }
+
+                // 5. Handle bukti pembayaran
+                if (data.payment_proof_url) {
+                    elements.paymentProof.innerHTML =
+                        `
+            <img src="${data.payment_proof_url}" alt="Bukti Pembayaran" class="max-w-[300px] rounded border cursor-pointer hover:border-blue-500" data-zoomable="true">`;
+                } else {
+                    elements.paymentProof.innerHTML =
+                        '<p class="text-sm text-gray-500">Tidak ada bukti pembayaran</p>';
+                }
+            }
+        });
+    </script>
+@endpush

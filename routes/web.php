@@ -90,6 +90,9 @@ Route::middleware([
         Route::get('historys', [HistoryOrderController::class, 'index'])->name('historys.index');
         Route::get('historys/{order}/invoice', [HistoryOrderController::class, 'invoice'])->name('historys.invoice');
         Route::get('historys/{order}/download', [HistoryOrderController::class, 'downloadInvoice'])->name('historys.download');
+        // Endpoint JSON untuk detail history pesanan (untuk modal show)
+        // Route::get('historys/{order}/details', [HistoryOrderController::class, 'details'])->name('historys.details');
+        Route::get('historys/{order}/details', [HistoryOrderController::class, 'details'])->name('admin.historys.details'); // [!code ++]
 
         // Routes untuk Peforma Kurir
         Route::get('peforma-kurir', [PeformaKurirController::class, 'index'])->name('peforma-kurir.index');

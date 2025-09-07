@@ -179,10 +179,12 @@ class ReturnController extends Controller
                 $orderReturn->save();
 
                 // Ubah status di tabel orders
+                $order->paid_at = now();
                 $order->status = 'menunggu_verifikasi_admin';
                 $order->save();
 
                 return response()->json([
+                    'message' => 'Bukti retur berhasil diunggah.',
                     'order' => $order
                 ]);
             }
