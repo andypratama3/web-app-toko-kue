@@ -28,7 +28,7 @@
     
 
     <div x-data="{ show: true }" x-show="show" class="mb-4">
-        <div class="bg-green-100 border text-black dark:bg-slate-400 dark:text-white px-4 py-3 rounded relative flex items-center justify-between" role="alert">
+        <div class="bg-green-100 text-black dark:bg-slate-850 dark:text-white px-4 py-3 rounded relative flex items-center justify-between" role="alert">
             <span class="ml-2">Ranking hanya menampilkan customer kategori <b>Reseller</b>. Setiap pelanggan akan mendapatkan "Skor Performa" yang dihitung dari kombinasi "Skor Pembelian" dan "Skor Retur".
             </span>
             <button type="button" @click="show = false" class="ml-4 text-blue-700 hover:text-blue-900 focus:outline-none">

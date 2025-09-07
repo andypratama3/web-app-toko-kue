@@ -32,7 +32,7 @@
     </div>
 
     <div x-data="{ show: true }" x-show="show" class="mb-4">
-        <div class="bg-green-100 border text-black dark:bg-slate-400 dark:text-white px-4 py-3 rounded relative flex items-center justify-between" role="alert">
+        <div class="bg-green-100 text-black dark:bg-slate-850 dark:text-white px-4 py-3 rounded relative flex items-center justify-between" role="alert">
             <span class="ml-2">Kurir yang berhasil mengantarkan pesanan <b>"Sudah diverifikasi Admin"</b> maka akan mendapat poin 1, Kurir yang mengantarkan pesanan terbanyak adalah kurir yang memiliki poin skor tertinggi</span>
             <button type="button" @click="show = false" class="ml-4 text-blue-700 hover:text-blue-900 focus:outline-none">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
