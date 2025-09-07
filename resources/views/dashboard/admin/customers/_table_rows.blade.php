@@ -14,20 +14,34 @@
         <td class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
             <div class="flex items-center space-x-2">
                 <span>{{ $customer->name }}</span>
-                @if($customer->is_flagged)
+                {{-- @if ($customer->is_flagged)
                     <button type="button" class="text-red-500 toggle-flag-btn"
                         data-url="{{ route('admin.customers.toggleFlag', $customer) }}"
                         title="Customer Bermasalah. Klik untuk menghapus tanda.">
                         <i id="flag-icon-{{ $customer->id }}" class="fas fa-flag"></i>
                     </button>
-                @endif
+                @endif --}}
+
+                <button type="button" class="toggle-flag-btn"
+                    data-url="{{ route('admin.customers.toggleFlag', $customer) }}">
+                    @if ($customer->is_flagged)
+                        {{-- Tampilan jika customer DITANDAI (bermasalah) --}}
+                        <i class="fas fa-flag text-red-500" title="Customer Bermasalah. Klik untuk menghapus tanda."></i>
+                    @else
+                        {{-- Tampilan jika customer NORMAL --}}
+                        <i class="fas fa-flag text-gray-400 hover:text-gray-600"
+                            title="Tandai sebagai customer bermasalah."></i>
+                    @endif
+                </button>
             </div>
         </td>
 
         {{-- ALAMAT (+ LANDMARK) --}}
         <td class="px-4 py-3 text-gray-900 dark:text-white">
-            {{ $customer->address }}
-            @if($customer->landmark)
+            {{-- DIUBAH: Menggunakan Str::limit() untuk membatasi alamat menjadi 5 kata --}}
+            {{ Str::limit($customer->address, 50, '...') }}
+
+            @if ($customer->landmark)
                 <span class="block mt-1 text-xs text-gray-500 dark:text-gray-400">
                     Patokan: {{ $customer->landmark }}
                 </span>
@@ -74,7 +88,8 @@
                         <li>
                             <button type="button" data-target-modal="note-customer-modal-{{ $customer->id }}"
                                 class="flex items-center w-full px-4 py-2 text-left js-open-modal-btn hover:bg-gray-100 dark:hover:bg-gray-600">
-                                <span class="inline-block w-6 mr-2 text-center"><i class="fas fa-sticky-note"></i></span>
+                                <span class="inline-block w-6 mr-2 text-center"><i
+                                        class="fas fa-sticky-note"></i></span>
                                 <span>Note</span>
                             </button>
                         </li>

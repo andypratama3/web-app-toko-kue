@@ -21,10 +21,10 @@
         </td>
 
         {{-- ALAMAT --}}
-        {{-- <td class="px-4 py-3">{{ Str::limit($customer->address, 35) }}</td> --}}
         <td class="px-4 py-3 text-gray-900 dark:text-white">
-            {{ $customer->address }}
-            @if($customer->landmark)
+            {{ Str::limit($customer->address, 50, '...') }}
+
+            @if ($customer->landmark)
                 <span class="block mt-1 text-xs text-gray-500 dark:text-gray-400">
                     Patokan: {{ $customer->landmark }}
                 </span>

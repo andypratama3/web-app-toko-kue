@@ -103,13 +103,17 @@
 
                 const data = await response.json();
                 if (data.success) {
-                    // Logika untuk mengubah tampilan flag secara dinamis
+                    // DIUBAH: Logika untuk mengubah tampilan bendera secara dinamis
                     if (data.is_flagged) {
+                        // Jika status menjadi DITANDAI
+                        icon.classList.remove('text-gray-400', 'hover:text-gray-600');
                         icon.classList.add('text-red-500');
-                        button.setAttribute('title', 'Customer Bermasalah. Klik untuk menghapus tanda.');
+                        icon.setAttribute('title', 'Customer Bermasalah. Klik untuk menghapus tanda.');
                     } else {
-                        // Jika status flag dihilangkan, kita hapus elemen tombolnya
-                        button.remove();
+                        // Jika status menjadi NORMAL (tanda dihilangkan)
+                        icon.classList.remove('text-red-500');
+                        icon.classList.add('text-gray-400', 'hover:text-gray-600');
+                        icon.setAttribute('title', 'Tandai sebagai customer bermasalah.');
                     }
                 }
             } catch (error) {
