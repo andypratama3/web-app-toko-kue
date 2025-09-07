@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Storage;
 
 class HistoryOrderController extends Controller
 {
@@ -51,7 +52,7 @@ class HistoryOrderController extends Controller
                 'total_amount' => $order->total_amount ?? 0,
                 'created_at' => $order->created_at->isoFormat('D MMMM YYYY, HH:mm'),
                 'paid_at' => $paidAtFormatted,
-                'payment_proof_url' => $order->payment_proof ? asset('storage/' . $order->payment_proof) : null,
+                'payment_proof_url' => $order->payment_proof ? Storage::url($order->payment_proof) : null,
 
                 'items' => $order->items->map(fn($item) => [
                     'name' => $item->product_name,
@@ -65,7 +66,7 @@ class HistoryOrderController extends Controller
                 'return_details' => $activeReturn ? [
                     'status' => $activeReturn->status,
                     'total_amount_returned' => $activeReturn->total_amount_returned,
-                    'return_proof_url' => $activeReturn->return_proof ? asset('storage/' . $activeReturn->return_proof) : null,
+                    'return_proof_url' => $activeReturn->return_proof ? Storage::url($activeReturn->return_proof) : null,
                     'returned_products' => $activeReturn->returnedProducts->map(function ($p) {
                         $productName = $p->product ? $p->product->name : 'Produk Telah Dihapus';
                         $variantName = $p->variant ? $p->variant->name : null;
@@ -81,7 +82,6 @@ class HistoryOrderController extends Controller
             ];
 
             return response()->json($formattedOrder);
-
         } catch (\Exception $e) {
             Log::error('Error fetching history details for order ID ' . $order->id . ': ' . $e->getMessage());
             return response()->json(['message' => 'Terjadi kesalahan internal.'], 500);
@@ -110,9 +110,9 @@ class HistoryOrderController extends Controller
 
     public function invoice($orderId)
     {
-    $order = \App\Models\Order::with(['customer', 'createdBy', 'items'])->findOrFail($orderId);
-    $isPdf = false;
-    return view('dashboard.admin.historys.invoice', compact('order', 'isPdf'));
+        $order = \App\Models\Order::with(['customer', 'createdBy', 'items'])->findOrFail($orderId);
+        $isPdf = false;
+        return view('dashboard.admin.historys.invoice', compact('order', 'isPdf'));
     }
 
     public function index()
@@ -123,9 +123,9 @@ class HistoryOrderController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $orders = Order::with(['customer', 'createdBy', 'returns' => function($query) {
-                $query->where('status', '!=', 'ditolak')->latest();
-            }]);
+        $orders = Order::with(['customer', 'createdBy', 'returns' => function ($query) {
+            $query->where('status', '!=', 'ditolak')->latest();
+        }]);
 
         if ($user->hasRole('admin')) {
             $orders = $orders->where('region_id', $user->region_id);
@@ -135,19 +135,27 @@ class HistoryOrderController extends Controller
 
         $orders = $orders->where('status', 'diverifikasi_admin')
             ->latest()
-            ->get()
-            ->map(function ($order) {
-                $order->has_return = $order->returns->isNotEmpty();
-                $order->payment_status = $order->paid_at
-                    ? ['text' => 'Lunas', 'class' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300']
-                    : ['text' => 'Belum Lunas', 'class' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'];
-                return $order;
-            });
+            ->paginate(10); // [!code ++]
+
+        // Gunakan perulangan untuk memodifikasi setiap item di dalam hasil paginasi
+        foreach ($orders as $order) { // [!code ++]
+            $order->has_return = $order->returns->isNotEmpty(); // [!code ++]
+
+            if ($order->has_return) { // [!code ++]
+                $order->final_total = $order->total_amount - $order->returns->first()->total_amount_returned; // [!code ++]
+            } else { // [!code ++]
+                $order->final_total = $order->total_amount; // [!code ++]
+            } // [!code ++]
+
+            $order->payment_status = $order->paid_at // [!code ++]
+                ? ['text' => 'Lunas', 'class' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'] // [!code ++]
+                : ['text' => 'Belum Lunas', 'class' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300']; // [!code ++]
+        } // [!code ++]
 
         $viewName = $user->hasRole('admin')
             ? 'dashboard.admin.historys.index'
             : 'dashboard.kurir.historys.index';
 
         return view($viewName, compact('orders'));
-}
+    }
 }

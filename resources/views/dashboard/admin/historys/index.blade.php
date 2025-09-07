@@ -14,17 +14,22 @@
                     <thead class="align-bottom">
                         <tr
                             class="text-xs font-bold text-left text-gray-500 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                            <th class="px-4 py-3">No.</th>
                             <th class="px-4 py-3">Invoice</th>
                             <th class="px-4 py-3">Customer</th>
                             <th class="px-4 py-3">Kurir</th>
                             <th class="px-4 py-3">Status</th>
                             <th class="px-4 py-3">Total</th>
-                            <th class="px-4 py-3 text-center">Aksi</th>
+                            <th class="px-4 py-3 text-center"><span class="sr-only">Aksi</span></th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($orders as $order)
                             <tr class="border-b dark:border-gray-700">
+                                {{-- NO --}}
+                                <td class="px-4 py-3 font-medium text-center text-gray-900 dark:text-white">
+                                    {{ ($orders->currentPage() - 1) * $orders->perPage() + $loop->iteration }}
+                                </td>
                                 <td class="px-4 py-2">
                                     <p class="mb-0 font-semibold leading-tight text-xs">{{ $order->invoice_number }}</p>
                                     <p class="mb-0 leading-tight text-xs text-slate-400">
@@ -53,50 +58,93 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-2">
-                                    <p class="mb-0 font-semibold leading-tight text-xs">
-                                        Rp {{ number_format($order->total_amount, 0, ',', '.') }}
-                                    </p>
+                                    @if ($order->has_return)
+                                        {{-- Tampilkan total baru dan coret total lama --}}
+                                        <p
+                                            class="mb-0 font-semibold leading-tight text-xs text-green-600 dark:text-green-400">
+                                            Rp {{ number_format($order->final_total, 0, ',', '.') }}
+                                        </p>
+                                        <p class="mb-0 leading-tight text-xs text-slate-400 line-through">
+                                            Rp {{ number_format($order->total_amount, 0, ',', '.') }}
+                                        </p>
+                                    @else
+                                        {{-- Tampilkan total normal jika tidak ada retur --}}
+                                        <p class="mb-0 font-semibold leading-tight text-xs">
+                                            Rp {{ number_format($order->total_amount, 0, ',', '.') }}
+                                        </p>
+                                    @endif
                                 </td>
-                                <td class="px-4 py-2">
-                                    <div class="flex justify-center gap-2">
+
+                                <td class="px-4 py-2 text-center">
+                                    {{-- Wrapper untuk dropdown --}}
+                                    <div class="relative inline-block text-left">
+                                        {{-- Tombol untuk membuka dropdown --}}
                                         <button type="button"
-                                            class="js-open-modal-btn text-white bg-blue-500 hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-xs px-2.5 py-1.5"
-                                            data-target-modal="showOrderModal" data-order-id="{{ $order->id }}">
-                                            Detail
+                                            class="js-dropdown-toggle flex items-center justify-center w-8 h-8 rounded-full text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:text-gray-400 dark:hover:bg-gray-700"
+                                            data-target-dropdown="actions-dropdown-{{ $order->id }}">
+                                            <span class="sr-only">Buka menu aksi</span>
+                                            <i class="fas fa-ellipsis-v"></i>
                                         </button>
-                                        @php
-                                            $wa_number = $order->customer->phone ?? null;
-                                            if ($wa_number) {
-                                                $wa_number = preg_replace(
-                                                    '/^0/',
-                                                    '62',
-                                                    preg_replace('/[^0-9]/', '', $wa_number),
-                                                );
-                                            }
-                                            $customer_name = $order->customer->name ?? '-';
-                                            $wa_message =
-                                                "Yth. Bapak/Ibu *{$customer_name}*,\n\n" .
-                                                "Kami mengonfirmasi bahwa pesanan Anda telah selesai.\n\n" .
-                                                "Sebagai referensi, transaksi ini tercatat dengan nomor invoice berikut: *{$order->invoice_number}*.\n\n" .
-                                                "Terimakasih sudah berbelanja di Toko Kami.\n\n" .
-                                                "Hormat kami.\n*Admin Kue Pandan Asli*";
-                                            $wa_message = urlencode($wa_message);
-                                        @endphp
-                                        @if ($wa_number)
-                                            <a href="https://wa.me/{{ $wa_number }}?text={{ $wa_message }}"
-                                                target="_blank"
-                                                class="text-white bg-green-500 hover:bg-green-600 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-xs px-2.5 py-1.5">
-                                                WhatsApp
-                                            </a>
-                                        @endif
-                                        <a href="{{ route('admin.historys.invoice', $order->id) }}" target="_blank"
-                                            class="text-white bg-gray-500 hover:bg-gray-600 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-xs px-2.5 py-1.5">
-                                            Invoice
-                                        </a>
-                                        <a href="{{ route('admin.historys.download', $order->id) }}"
-                                            class="text-white bg-gray-500 hover:bg-gray-600 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-xs px-2.5 py-1.5">
-                                            Download
-                                        </a>
+
+                                        {{-- Menu dropdown, awalnya disembunyikan --}}
+                                        <div id="actions-dropdown-{{ $order->id }}"
+                                            class="js-dropdown-menu hidden absolute right-0 z-10 w-48 mt-2 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-700 dark:ring-gray-600">
+                                            <div class="py-1" role="menu" aria-orientation="vertical">
+                                                {{-- Tombol Detail --}}
+                                                <button type="button"
+                                                    class="js-open-modal-btn flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600"
+                                                    data-target-modal="showOrderModal" data-order-id="{{ $order->id }}"
+                                                    role="menuitem">
+                                                    <i class="w-5 text-center fas fa-eye mr-2"></i>
+                                                    <span>Detail</span>
+                                                </button>
+
+                                                {{-- Tombol WhatsApp --}}
+                                                @php
+                                                    $wa_number = $order->customer->phone ?? null;
+                                                    if ($wa_number) {
+                                                        $wa_number = preg_replace(
+                                                            '/^0/',
+                                                            '62',
+                                                            preg_replace('/[^0-9]/', '', $wa_number),
+                                                        );
+                                                    }
+                                                    $customer_name = $order->customer->name ?? '-';
+                                                    $wa_message =
+                                                        "Yth. Bapak/Ibu *{$customer_name}*,\n\n" .
+                                                        "Kami mengonfirmasi bahwa pesanan Anda telah selesai.\n\n" .
+                                                        "Sebagai referensi, transaksi ini tercatat dengan nomor invoice berikut: *{$order->invoice_number}*.\n\n" .
+                                                        "Terimakasih sudah berbelanja di Toko Kami.\n\n" .
+                                                        "Hormat kami.\n*Admin Kue Pandan Asli*";
+                                                    $wa_message = urlencode($wa_message);
+                                                @endphp
+                                                @if ($wa_number)
+                                                    <a href="https://wa.me/{{ $wa_number }}?text={{ $wa_message }}"
+                                                        target="_blank"
+                                                        class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600"
+                                                        role="menuitem">
+                                                        <i class="w-5 text-center fab fa-whatsapp mr-2 text-green-500"></i>
+                                                        <span>WhatsApp</span>
+                                                    </a>
+                                                @endif
+
+                                                {{-- Tombol Invoice --}}
+                                                <a href="{{ route('admin.historys.invoice', $order->id) }}" target="_blank"
+                                                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600"
+                                                    role="menuitem">
+                                                    <i class="w-5 text-center fas fa-file-invoice mr-2"></i>
+                                                    <span>Invoice</span>
+                                                </a>
+
+                                                {{-- Tombol Download --}}
+                                                <a href="{{ route('admin.historys.download', $order->id) }}"
+                                                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600"
+                                                    role="menuitem">
+                                                    <i class="w-5 text-center fas fa-download mr-2"></i>
+                                                    <span>Download</span>
+                                                </a>
+                                            </div>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -109,6 +157,9 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+            <div class="p-4">
+                {{ $orders->links() }}
             </div>
         </div>
     </div>
@@ -220,14 +271,14 @@
             });
 
             function populateModal(data) {
-                // Helper function untuk format Rupiah, bisa juga diletakkan di luar jika sering dipakai
+                // Helper function untuk format Rupiah
                 const formatRupiah = (number) => new Intl.NumberFormat('id-ID', {
                     style: 'currency',
                     currency: 'IDR',
                     minimumFractionDigits: 0
                 }).format(number);
 
-                // Ambil referensi ke semua elemen UI dan template yang dibutuhkan
+                // Ambil referensi ke semua elemen UI dan template
                 const elements = {
                     invoiceNumber: document.getElementById('showOrderModalInvoiceNumber'),
                     customerName: document.getElementById('showOrderModalCustomerName'),
@@ -240,7 +291,12 @@
                     returnedProductsSection: document.getElementById('showOrderModalReturnedProductsSection'),
                     returnedProducts: document.getElementById('showOrderModalReturnedProducts'),
                     paymentProof: document.getElementById('showOrderModalPaymentProof'),
-                    returnProof: document.getElementById('showOrderModalReturnProof')
+                    returnProof: document.getElementById('showOrderModalReturnProof'),
+                    totalReturned: document.getElementById('showOrderModalTotalReturned'),
+                    singleTotalContainer: document.getElementById('singleTotalContainer'),
+                    returnedTotalContainer: document.getElementById('returnedTotalContainer'),
+                    initialTotalAmount: document.getElementById('initialTotalAmount'),
+                    latestTotalAmount: document.getElementById('latestTotalAmount'),
                 };
                 const orderItemTemplate = document.getElementById('orderItemTemplate');
                 const returnItemTemplate = document.getElementById('returnItemTemplate');
@@ -257,7 +313,6 @@
                 elements.customerAddress.textContent = data.customer_address || '-';
                 elements.paymentMethod.textContent =
                     `Metode: ${data.payment_method ? data.payment_method.charAt(0).toUpperCase() + data.payment_method.slice(1) : '-'}`;
-                elements.totalAmount.textContent = `Total: ${formatRupiah(data.total_amount || 0)}`;
                 elements.createdAt.textContent = data.created_at || '-';
                 elements.paidAt.textContent = data.paid_at || '-';
 
@@ -271,7 +326,7 @@
                         if (item.variant) {
                             variantEl.textContent = `Varian: ${item.variant}`;
                         } else {
-                            variantEl.remove(); // Hapus elemen varian jika tidak ada
+                            variantEl.remove();
                         }
 
                         clone.querySelector('[data-role="quantity-price"]').textContent =
@@ -282,12 +337,20 @@
                     });
                 }
 
-                // 4. Handle bagian retur (jika ada)
-                if (data.return_details && Array.isArray(data.return_details.returned_products) && data
-                    .return_details.returned_products.length > 0) {
+                // 4. Handle bagian retur dan tampilan total
+                if (data.return_details) {
+                    // Tampilkan kontainer total ganda, sembunyikan yang tunggal
+                    elements.singleTotalContainer.classList.add('hidden');
+                    elements.returnedTotalContainer.classList.remove('hidden');
+
+                    // Hitung dan isi nominal
+                    const finalTotal = data.total_amount - data.return_details.total_amount_returned;
+                    elements.initialTotalAmount.textContent = formatRupiah(data.total_amount);
+                    elements.latestTotalAmount.textContent = formatRupiah(finalTotal);
+
                     elements.returnedProductsSection.classList.remove('hidden');
 
-                    // Isi produk yang diretur menggunakan template
+                    // Isi produk yang diretur
                     data.return_details.returned_products.forEach(item => {
                         const clone = returnItemTemplate.content.cloneNode(true);
                         clone.querySelector('[data-role="name"]').textContent = item.name;
@@ -304,6 +367,11 @@
                         elements.returnedProducts.appendChild(clone);
                     });
 
+                    if (elements.totalReturned) { // [!code ++]
+                        elements.totalReturned.textContent = formatRupiah(data.return_details
+                            .total_amount_returned); // [!code ++]
+                    }
+
                     // Tampilkan bukti retur jika ada
                     if (data.return_details.return_proof_url) {
                         elements.returnProof.innerHTML =
@@ -311,8 +379,11 @@
                 <h5 class="mb-1 mt-3 font-semibold text-red-800 dark:text-red-400">Bukti Retur:</h5>
                 <img src="${data.return_details.return_proof_url}" alt="Bukti Retur" class="max-w-[200px] rounded border cursor-pointer hover:border-red-500" data-zoomable="true">`;
                     }
-
                 } else {
+                    // Tampilkan kontainer total tunggal, sembunyikan yang ganda
+                    elements.singleTotalContainer.classList.remove('hidden');
+                    elements.returnedTotalContainer.classList.add('hidden');
+                    elements.totalAmount.textContent = `Total: ${formatRupiah(data.total_amount || 0)}`;
                     elements.returnedProductsSection.classList.add('hidden');
                 }
 
