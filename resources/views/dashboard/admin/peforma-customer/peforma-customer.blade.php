@@ -23,7 +23,7 @@
                 </select>
             </div>
             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-semibold">Lihat</button>
-            <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-sm font-semibold"><i class="fas fa-file-export"></i> Export</button>
+            <a href="{{ route('admin.peforma-customer.export.pdf', ['month' => $selectedMonth, 'year' => $selectedYear]) }}" target="_blank" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-sm font-semibold flex items-center"><i class="fas fa-file-export mr-1"></i> Export</a>
     </div>
     
 

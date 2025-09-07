@@ -11,6 +11,37 @@ use Illuminate\Support\Facades\DB;
 class PeformaCustomerController extends Controller
 {
     /**
+     * Export ranking performa customer ke PDF.
+     */
+    public function exportPdf(Request $request)
+    {
+        $admin = auth()->user();
+        $regionId = $admin->region_id;
+
+        $year = $request->input('year', now()->year);
+        $month = $request->input('month', now()->month);
+
+        $months = [
+            '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
+            '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
+            '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember',
+        ];
+
+        $startOfMonth = now()->setYear($year)->setMonth($month)->startOfMonth();
+        $endOfMonth = now()->setYear($year)->setMonth($month)->endOfMonth();
+
+        // Ambil data ranking customer untuk rentang bulan/tahun terpilih
+        $ranking = $this->calculateCustomerPerformance($startOfMonth, $endOfMonth);
+
+        $bulan = $months[str_pad($month, 2, '0', STR_PAD_LEFT)] . ' ' . $year;
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('dashboard.admin.peforma-customer.export-peforma-customer', [
+            'ranking' => $ranking,
+            'bulan' => $bulan,
+        ]);
+        return $pdf->download('peforma-customer-' . $bulan . '.pdf');
+    }
+    /**
      * Hitung dan ranking performa semua customer berdasarkan total pembelian dan total retur dalam 1 bulan terakhir.
      *
      * @return \Illuminate\Support\Collection
