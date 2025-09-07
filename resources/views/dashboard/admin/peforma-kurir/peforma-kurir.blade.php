@@ -11,17 +11,17 @@
                 {{-- Kelas 'appearance-none' di bawah ini berfungsi untuk MENGHAPUS panah dropdown bawaan browser. --}}
                 <select name="month" class="appearance-none border rounded px-4 py-1 text-sm focus:ring focus:ring-blue-200 pr-8">
                     @foreach($months as $num => $name)
-                        <option value="{{ $num }}" @if($selectedMonth == $num) selected @endif>{{ $name }}</option>
+                    <option value="{{ $num }}" @if($selectedMonth==$num) selected @endif>{{ $name }}</option>
                     @endforeach
                 </select>
                 {{-- Icon dropdown custom dihapus --}}
             </div>
 
             <div class="relative">
-                 {{-- Kelas 'appearance-none' di bawah ini juga MENGHAPUS panah dropdown bawaan browser. --}}
+                {{-- Kelas 'appearance-none' di bawah ini juga MENGHAPUS panah dropdown bawaan browser. --}}
                 <select name="year" class="appearance-none border rounded px-4 py-1 text-sm focus:ring focus:ring-blue-200 pr-8">
                     @foreach($years as $year)
-                        <option value="{{ $year }}" @if($selectedYear == $year) selected @endif>{{ $year }}</option>
+                    <option value="{{ $year }}" @if($selectedYear==$year) selected @endif>{{ $year }}</option>
                     @endforeach
                 </select>
                 {{-- Icon dropdown custom dihapus --}}
@@ -29,6 +29,19 @@
             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-semibold">Lihat</button>
         </form>
     </div>
+
+    <div x-data="{ show: true }" x-show="show" class="mb-4">
+        <div class="bg-green-100 border text-black dark:bg-slate-400 dark:text-white px-4 py-3 rounded relative flex items-center justify-between" role="alert">
+            <span class="font-semibold">Info:</span>
+            <span class="ml-2">Ranking hanya menampilkan customer kategori <b>Reseller</b>. Customer Supermarket tidak ikut perhitungan performa.</span>
+            <button type="button" @click="show = false" class="ml-4 text-blue-700 hover:text-blue-900 focus:outline-none">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
     <div class="mb-4 text-gray-600 dark:text-gray-300 font-semibold">
         Ranking Peforma Kurir Bulan {{ $bulan }}
     </div>
@@ -38,36 +51,35 @@
                 <tr>
                     <th class="w-24 px-4 py-2 text-left text-xs font-bold text-gray-700 dark:text-gray-200 uppercase">Rank</th>
                     <th class="px-4 py-2 text-center text-xs font-bold text-gray-700 dark:text-gray-200 uppercase">Nama Kurir</th>
-                    <th class="px-4 py-2 text-center text-xs font-bold text-gray-700 dark:text-gray-200 uppercase">Total Customer Handle</th>
+                    <th class="px-4 py-2 text-center text-xs font-bold text-gray-700 dark:text-gray-200 uppercase">Total Customer</th>
                     <th class="px-4 py-2 text-center text-xs font-bold text-gray-700 dark:text-gray-200 uppercase">Jumlah Pesanan Selesai</th>
                 </tr>
             </thead>
             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 @forelse($ranking as $row)
-                    <tr>
-                        <td class="px-4 py-2 font-bold text-left">
-                            @if($row['rank'] == 1)
-                                🥇
-                            @elseif($row['rank'] == 2)
-                                🥈
-                            @elseif($row['rank'] == 3)
-                                🥉
-                            @else
-                                {{ $row['rank'] }}
-                            @endif
-                        </td>
-                        <td class="px-4 py-2 text-center">{{ $row['nama_kurir'] }}</td>
-                        <td class="px-4 py-2 text-center">{{ $row['total_customer'] }}</td>
-                        <td class="px-4 py-2 text-center">{{ $row['jumlah_order'] }}</td>
-                    </tr>
+                <tr>
+                    <td class="px-4 py-2 font-bold text-left">
+                        @if($row['rank'] == 1)
+                        🥇
+                        @elseif($row['rank'] == 2)
+                        🥈
+                        @elseif($row['rank'] == 3)
+                        🥉
+                        @else
+                        {{ $row['rank'] }}
+                        @endif
+                    </td>
+                    <td class="px-4 py-2 text-center">{{ $row['nama_kurir'] }}</td>
+                    <td class="px-4 py-2 text-center">{{ $row['total_customer'] }}</td>
+                    <td class="px-4 py-2 text-center">{{ $row['jumlah_order'] }}</td>
+                </tr>
                 @empty
-                    <tr>
-                        <td colspan="4" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">Belum ada data peforma kurir bulan ini.</td>
-                    </tr>
+                <tr>
+                    <td colspan="4" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">Belum ada data peforma kurir bulan ini.</td>
+                </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 </div>
 @endsection
-
