@@ -24,18 +24,23 @@ class PeformaCustomerController extends Controller
             $endDate = $now;
         }
 
-        // Ambil data total pembelian per customer
+        // Ambil region admin yang sedang login
+        $regionId = auth()->user()->region_id;
+
+        // Ambil data total pembelian per customer untuk region tertentu
         $orders = DB::table('orders')
             ->select('customer_id', DB::raw('SUM(total_amount) as total_pembelian'))
             ->whereBetween('created_at', [$startDate, $endDate])
+            ->where('region_id', $regionId)
             ->groupBy('customer_id')
             ->get();
 
-        // Ambil data total retur per customer (dari order_returns JOIN orders untuk dapat customer_id)
+        // Ambil data total retur per customer (dari order_returns JOIN orders untuk dapat customer_id) untuk region tertentu
         $returns = DB::table('order_returns')
             ->join('orders', 'order_returns.order_id', '=', 'orders.id')
             ->select('orders.customer_id', DB::raw('SUM(order_returns.total_amount_returned) as total_retur'))
             ->whereBetween('order_returns.created_at', [$startDate, $endDate])
+            ->where('orders.region_id', $regionId)
             ->groupBy('orders.customer_id')
             ->get();
 
@@ -46,8 +51,9 @@ class PeformaCustomerController extends Controller
         // Ambil semua customer yang pernah transaksi/retur dalam periode
         $customerIds = $orderMap->keys()->merge($returnMap->keys())->unique();
 
-        // Ambil nama customer dan kategori
+        // Ambil nama customer dan kategori, filter region
         $customers = Customer::whereIn('id', $customerIds)
+            ->where('region_id', $regionId)
             ->with('category')
             ->get()
             ->keyBy('id');
