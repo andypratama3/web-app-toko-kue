@@ -89,7 +89,8 @@
                                         {{ $order->invoice_number }}
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap dark:text-gray-300">
-                                        {{ optional($order->customer)->name ?? 'Pelanggan Dihapus' }}</td>
+                                        {{ optional($order->customer)->name ?? 'Pelanggan Dihapus' }}
+                                    </td>
 
                                     <td class="px-6 py-4 text-sm whitespace-nowrap">
                                         <span {{-- KELAS DASAR UNTUK BENTUK & UKURAN SERAGAM --}}
@@ -127,7 +128,7 @@
 
                                                 @default
                                                     {{ ucfirst($order->status) }}
-                                            @endswitch --}}
+                                @endswitch --}}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 text-sm font-medium text-center whitespace-nowrap">
@@ -179,7 +180,8 @@
                                             @endif
                                         </p>
                                         <p class="text-sm text-gray-800 truncate dark:text-gray-200">
-                                            {{ optional($order->customer)->name ?? 'Pelanggan Dihapus' }}</p>
+                                            {{ optional($order->customer)->name ?? 'Pelanggan Dihapus' }}
+                                        </p>
                                     </div>
 
                                     <span {{-- KELAS DASAR UNTUK BENTUK & UKURAN SERAGAM --}}
@@ -219,7 +221,7 @@
 
                                             @default
                                                 {{ ucfirst($order->status) }}
-                                        @endswitch --}}
+                            @endswitch --}}
                                     </span>
                                 </div>
 
@@ -275,6 +277,50 @@
             }));
         }
 
+        // tambah jumlah return di setiap produk
+        document.addEventListener('DOMContentLoaded', () => {
+            const returnModal = document.getElementById('returnProductModal');
+
+            if (returnModal) {
+                returnModal.addEventListener('click', function(event) {
+                    const button = event.target.closest(
+                        'button'); // Cari elemen tombol yang paling dekat diklik
+                    if (!button) return; // Jika yang diklik bukan tombol, abaikan
+
+                    // Cari baris atau kartu produk terdekat dari tombol yang diklik
+                    const productContainer = event.target.closest('[data-return-key]');
+                    if (!productContainer) return;
+
+                    // Cari elemen span yang menampilkan angka di dalam container produk itu
+                    const quantitySpan = productContainer.querySelector('.quantity-input');
+                    if (!quantitySpan) return;
+
+                    let currentValue = parseInt(quantitySpan.textContent, 10);
+                    const maxValue = parseInt(quantitySpan.dataset.max, 10);
+
+                    // --- Logika untuk Tombol Tambah (+) ---
+                    if (button.classList.contains('quantity-plus')) {
+                        if (currentValue < maxValue) {
+                            quantitySpan.textContent = currentValue + 1;
+                        }
+                    }
+
+                    // --- Logika untuk Tombol Kurang (-) ---
+                    if (button.classList.contains('quantity-minus')) {
+                        if (currentValue > 0) {
+                            quantitySpan.textContent = currentValue - 1;
+                        }
+                    }
+
+                    // --- Logika untuk Tombol Hapus (Ikon Sampah) ---
+                    if (button.classList.contains('remove-product')) {
+                        // Setel kuantitas kembali ke 0
+                        quantitySpan.textContent = 0;
+                    }
+                });
+            }
+        });
+
         function openImageViewer(src) { // [!code ++]
             const imageViewer = document.getElementById('imageViewerModal'); // [!code ++]
             const fullSizeImage = document.getElementById('fullSizeImage'); // [!code ++]
@@ -316,14 +362,13 @@
             }
         }
 
+
         function populateOrderDetailsModal(order) {
             // Populate data umum
             document.getElementById('modalInvoiceNumber').textContent = order.invoice_number || 'N/A';
             document.getElementById('customerName').textContent = order.customer.name || 'N/A';
             document.getElementById('customerPhone').textContent = order.customer.phone || 'N/A';
             document.getElementById('customerAddress').textContent = order.customer.address || 'N/A';
-            // document.getElementById('customerCompanyName').textContent = order.customer.company_name ?
-            //     `🏢 Toko: ${order.customer.company_name}` : '';
             const companyNameEl = document.getElementById('customerCompanyName');
             if (order.customer.company_name && order.customer.company_name !== 'N/A') {
                 companyNameEl.textContent = `🏢 ${order.customer.company_name}`;
@@ -336,7 +381,11 @@
             document.getElementById('orderCreatedAt').textContent = order.created_at || 'Tidak Tersedia';
             document.getElementById('orderPaidAt').textContent = order.paid_at ? (order.paid_at + (order.paid_at_label ||
                 '')) : 'Belum Lunas';
+
+            // Logika untuk menampilkan ikon di modal rincian
+            const statusSection = document.getElementById('modalOrderStatusSection');
             const statusBadge = document.getElementById('modalOrderStatusBadge');
+            const statusIcon = document.getElementById('modalOrderStatusIcon');
             if (statusBadge) {
                 // 1. Ambil teks status dari map yang sudah ada
                 const statusText = STATUS_LABEL_MAP[order.status] || (order.status.charAt(0).toUpperCase() + order.status
@@ -365,10 +414,18 @@
                         badgeColorClasses = 'bg-green-100 text-green-800';
                         break;
                 }
-
                 // 3. Gabungkan kelas dasar dengan kelas warna baru
                 const baseClasses = 'flex-shrink-0 px-3 py-1 text-sm font-semibold rounded-full whitespace-nowrap';
                 statusBadge.className = `${baseClasses} ${badgeColorClasses}`;
+                // icon success
+                if (order.status === 'selesai' && statusIcon) {
+                    statusIcon.innerHTML =
+                        `<svg class="w-8 h-8" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#10b981" stroke-width="1.5" fill="#d1fae5"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" stroke="#10b981" stroke-width="2"/></svg>`;
+                    statusIcon.classList.remove('hidden');
+                } else if (statusIcon) {
+                    statusIcon.innerHTML = ''; // Kosongkan ikon jika status bukan 'selesai'
+                    statusIcon.classList.add('hidden');
+                }
             }
 
             // Logika Perhitungan Total Tagihan untuk handle retur
@@ -406,22 +463,61 @@
             // Populate Product List
             const productDetailsDiv = document.getElementById('productDetails');
             productDetailsDiv.innerHTML = '';
+            productDetailsDiv.className = 'flex flex-col space-y-2';
             if (order.products && order.products.length > 0) {
                 order.products.forEach(product => {
                     const productItem = document.createElement('div');
-                    productItem.className = 'p-3 border rounded-lg dark:border-gray-700';
+                    // Main container for each product card
+                    productItem.className =
+                        'p-3 border rounded-lg dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 flex items-start space-x-4';
+
+                    const initialQty = product.quantity || 0;
                     const returnedQty = product.returned_quantity || 0;
-                    const currentStock = product.quantity - returnedQty;
-                    let quantityInfo =
-                        `<p class="text-sm text-gray-700 dark:text-gray-300">Jumlah: ${product.quantity}</p>`;
+                    const remainingQty = initialQty - returnedQty;
+                    const price = product.price || 0;
+                    const newSubtotal = remainingQty * price;
+
+                    // SVG icon similar to the one in the image
+                    const iconHTML = `
+                    <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-gray-200 dark:bg-gray-600 rounded-lg mt-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                    </div>
+                `;
+
+                    let quantityLine =
+                        `<p class="text-sm text-gray-600 dark:text-gray-300">Jumlah: ${initialQty}</p>`;
                     if (returnedQty > 0) {
-                        quantityInfo =
-                            `<div class="text-sm text-gray-700 dark:text-gray-300"><span>Jumlah Awal: ${product.quantity}</span><span class="text-red-500 ml-2">(Diretur: ${returnedQty})</span><span class="font-bold text-green-600 block">Stok Terbaru: ${currentStock}</span></div>`;
+                        quantityLine = `
+                        <p class="text-sm text-gray-600 dark:text-gray-300">
+                            Awal: <span class="font-medium text-gray-800 dark:text-gray-200">${initialQty}</span> |
+                            Retur: <span class="font-medium text-red-500">${returnedQty}</span> |
+                            Sisa: <span class="font-medium text-green-600">${remainingQty}</span>
+                        </p>
+                    `;
                     }
-                    productItem.innerHTML =
-                        `<p class="font-semibold text-gray-900 dark:text-white">${product.name} ${product.variant_name ? `(${product.variant_name})` : ''}</p>${quantityInfo}<p class="text-sm">Harga: Rp ${new Intl.NumberFormat('id-ID').format(product.price)}</p>`;
+
+                    const priceLine = `
+                    <p class="text-sm font-medium text-gray-800 dark:text-gray-200 mt-1">
+                        Rp ${new Intl.NumberFormat('id-ID').format(price)} &rarr; Rp ${new Intl.NumberFormat('id-ID').format(newSubtotal)}
+                    </p>
+                `;
+
+                    const detailsHTML = `
+                    <div class="flex-grow">
+                        <p class="font-bold text-gray-900 dark:text-white">${product.name} ${product.variant_name ? `(${product.variant_name})` : ''}</p>
+                        ${quantityLine}
+                        ${priceLine}
+                    </div>
+                `;
+
+                    productItem.innerHTML = iconHTML + detailsHTML;
                     productDetailsDiv.appendChild(productItem);
                 });
+            } else {
+                productDetailsDiv.innerHTML =
+                    '<p class="text-center text-gray-500 dark:text-gray-400">Tidak ada produk dalam pesanan ini.</p>';
             }
 
             // Logika Proof Upload
@@ -800,92 +896,110 @@
         function openReturnProductModal(order) {
             const returnModalLoader = document.getElementById('returnModalLoader');
             const returnModalContent = document.getElementById('returnModalContent');
-            const returnProductList = document.getElementById('returnProductList');
+            const desktopContainer = document.getElementById('return-product-list-desktop');
+            const mobileContainer = document.getElementById('return-product-list-mobile');
             const returnOrderIdInput = document.getElementById('returnOrderId');
 
             returnModalContent.classList.add('hidden');
             returnModalLoader.classList.remove('hidden');
-
             returnOrderIdInput.value = order.id;
-            returnProductList.innerHTML = '';
+            desktopContainer.innerHTML = '';
+            mobileContainer.innerHTML = '';
 
             if (!order.products || order.products.length === 0) {
-                returnProductList.innerHTML =
-                    '<p class="text-center text-gray-500 dark:text-gray-400">Tidak ada produk dalam pesanan ini untuk diretur.</p>';
-                returnModalLoader.classList.add('hidden');
-                returnModalContent.classList.remove('hidden');
-                return;
+                const noProductHTML =
+                    '<p class="py-4 text-center text-gray-500 dark:text-gray-400">Tidak ada produk untuk diretur.</p>';
+                desktopContainer.innerHTML = `<tr><td colspan="4">${noProductHTML}</td></tr>`;
+                mobileContainer.innerHTML = noProductHTML;
+            } else {
+                order.products.forEach((product, index) => {
+                    const productId = product.product_id || product.id;
+                    const variantId = product.variant_id ?? 0;
+                    const returnKey = `${productId}-${variantId}`;
+                    const placeholderImg = 'https://placehold.co/64x64/E2E8F0/64748B?text=No+Img';
+                    // const productImage = product.image_url ? `${APP_URL}/storage/${product.image_url.replace(/^public\//, '')}` : placeholderImg;
+                    const productImage = product.image_url ? `${APP_URL}${product.image_url}` : placeholderImg;
+
+                    // DIUBAH: Template menggunakan <input type="number">
+                    const desktopRowHTML = `
+                        <tr data-return-key="${returnKey}">
+                            <td class="px-4 py-4 whitespace-nowrap"><div class="text-sm text-gray-900 dark:text-white">${index + 1}</div></td>
+                            <td class="px-2 py-4">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 w-16 h-16"><img class="object-cover w-16 h-16 rounded-md" src="${productImage}" alt="${product.name}"></div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900 dark:text-white">${product.name}</div>
+                                        ${product.variant_name ? `<div class="text-xs text-gray-400 dark:text-gray-500">${product.variant_name}</div>` : ''}
+                                        <div class="text-sm text-gray-500 dark:text-gray-400">Jumlah Awal: ${product.quantity}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-4 whitespace-nowrap">
+                                <div class="flex items-center justify-center gap-2">
+                                    <button type="button" class="quantity-minus flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">–</button>
+                                    <input type="number" data-name="return_qty[${returnKey}]" min="0" max="${product.quantity}" value="0" class="quantity-input w-20 p-2 text-center border border-gray-300 rounded-md text-sm text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    <button type="button" class="quantity-plus flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">+</button>
+                                </div>
+                            </td>
+                            <td class="px-4 py-4 text-sm font-medium text-center whitespace-nowrap">
+                                <button type="button" class="remove-product text-red-600 hover:text-red-900 dark:hover:text-red-500" title="Setel kuantitas ke 0">🗑</button>
+                            </td>
+                        </tr>`;
+
+                    const mobileCardHTML = `
+                        <div class="flex items-start gap-4 p-2 mx-0 border-b border-gray-200 dark:border-gray-700" data-return-key="${returnKey}">
+                            <div class="flex-shrink-0 w-24 h-24"><img class="object-cover w-24 h-24 rounded-md" src="${productImage}" alt="${product.name}"></div>
+                            <div class="flex flex-col flex-1">
+                                <div class="flex items-center justify-between mb-1">
+                                    <p class="font-bold text-black dark:text-white">${product.name}</p>
+                                    <button type="button" class="remove-product text-md text-red-600 hover:text-red-900" title="Setel kuantitas ke 0">🗑</button>
+                                </div>
+                                ${product.variant_name ? `<p class="mb-1 text-xs text-gray-500 dark:text-gray-400">${product.variant_name}</p>` : ''}
+                                <p class="text-sm text-gray-600 dark:text-gray-300">Jumlah Awal: ${product.quantity}</p>
+                                <div class="flex items-center justify-start mt-3 gap-2">
+                                    <button type="button" class="quantity-minus flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">–</button>
+                                    <input type="number" data-name="return_qty[${returnKey}]" min="0" max="${product.quantity}" value="0" class="quantity-input w-20 p-2 text-center border border-gray-300 rounded-md text-sm text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    <button type="button" class="quantity-plus flex items-center justify-center w-8 h-8 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">+</button>
+                                </div>
+                            </div>
+                        </div>`;
+
+                    desktopContainer.insertAdjacentHTML('beforeend', desktopRowHTML);
+                    mobileContainer.insertAdjacentHTML('beforeend', mobileCardHTML);
+                });
             }
 
-            order.products.forEach(product => {
-                // Accommodate both `product.product_id` and the older `product.id`
-                const productId = product.product_id || product.id;
-                // Handle cases where variant_id might be null or 0. Default to 0 if not present.
-                const variantId = product.variant_id !== undefined && product.variant_id !== null ? product
-                    .variant_id : 0;
+            // BARU: Event listener dinamis untuk tombol +/- dan hapus
+            // Ini akan menangani semua baris dan kartu produk yang baru dibuat
+            document.querySelectorAll('#returnModalContent [data-return-key]').forEach(container => {
+                const qtyInput = container.querySelector('.quantity-input');
+                const maxVal = parseInt(qtyInput.max, 10);
 
-                if (typeof productId === 'undefined') {
-                    console.error('Product data is missing a valid product ID:', product);
-                    return; // Skip this product if it has no identifier
-                }
-
-                const productItem = document.createElement('div');
-                productItem.className =
-                    'flex items-center space-x-4 p-3 border border-gray-200 rounded-lg dark:border-gray-700';
-                const productImage = product.image_url ||
-                    `https://placehold.co/64x64/E0F2F7/000000?text=${product.name.charAt(0)}`;
-
-                const returnKey = `${productId}-${variantId}`;
-
-                productItem.innerHTML = `
-            <img src="${productImage}" alt="${product.name}" class="w-16 h-16 rounded-md object-cover">
-            <div class="flex-grow">
-                <p class="font-semibold text-gray-900 dark:text-white">${product.name}</p>
-                <p class="text-sm text-gray-600 dark:text-gray-400">${product.variant_name || ''}</p>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Jumlah Awal: ${product.quantity}</p>
-            </div>
-            <div class="flex items-center space-x-2">
-                <button type="button" class="quantity-minus flex items-center justify-center w-8 h-8 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-                    <i class="fas fa-minus"></i>
-                </button>
-                <input type="number" name="return_qty[${returnKey}]" min="0" max="${product.quantity}" value="0" class="w-16 p-2 text-center border border-gray-300 rounded-md text-sm text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-white quantity-input">
-                <button type="button" class="quantity-plus flex items-center justify-center w-8 h-8 text-gray-600 dark:text-gray-400 border border-gray-300 dark:border-gray-600 rounded-full hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-                    <i class="fas fa-plus"></i>
-                </button>
-            </div>
-            <button type="button" class="remove-product text-gray-400 hover:text-red-600 dark:hover:text-red-500 transition-colors">
-                <i class="fas fa-trash-alt"></i>
-            </button>`;
-                returnProductList.appendChild(productItem);
-
-                const qtyInput = productItem.querySelector('.quantity-input');
-
-                productItem.querySelector('.quantity-minus').addEventListener('click', () => {
+                container.querySelector('.quantity-minus').addEventListener('click', () => {
                     let currentVal = parseInt(qtyInput.value, 10);
                     if (currentVal > 0) qtyInput.value = currentVal - 1;
                 });
-                productItem.querySelector('.quantity-plus').addEventListener('click', () => {
+
+                container.querySelector('.quantity-plus').addEventListener('click', () => {
                     let currentVal = parseInt(qtyInput.value, 10);
-                    if (currentVal < product.quantity) qtyInput.value = currentVal + 1;
+                    if (currentVal < maxVal) qtyInput.value = currentVal + 1;
                 });
-                qtyInput.addEventListener('change', () => {
+
+                container.querySelector('.remove-product').addEventListener('click', () => {
+                    qtyInput.value = 0;
+                });
+
+                qtyInput.addEventListener('change', () => { // Validasi jika user mengetik langsung
                     let currentVal = parseInt(qtyInput.value, 10);
                     if (isNaN(currentVal) || currentVal < 0) qtyInput.value = 0;
-                    if (currentVal > product.quantity) qtyInput.value = product.quantity;
-                });
-                productItem.querySelector('.remove-product').addEventListener('click', () => {
-                    productItem.remove();
+                    if (currentVal > maxVal) qtyInput.value = maxVal;
                 });
             });
 
             returnModalLoader.classList.add('hidden');
             returnModalContent.classList.remove('hidden');
 
-            // document.getElementById('returnProductForm').onsubmit = (e) => {
-            //     e.preventDefault();
-            //     handleReturnRequestSubmit(order.id);
-            // };
-
+            // Menghubungkan form submit dengan fungsi handler
             document.getElementById('returnProductForm').onsubmit = (e) => {
                 e.preventDefault();
                 handleReturnRequestSubmit(order.id);
@@ -898,24 +1012,23 @@
             const buttonText = document.getElementById('submitReturnRequestButtonText');
             const buttonSpinner = document.getElementById('submitReturnRequestButtonSpinner');
 
-            // Beri umpan balik ke pengguna (UI loading)
             submitButton.disabled = true;
             buttonText.classList.add('hidden');
             buttonSpinner.classList.remove('hidden');
 
-            // Ambil semua input jumlah yang nilainya lebih dari 0
             const returnQuantities = {};
             let hasValidReturn = false;
-            form.querySelectorAll('.quantity-input').forEach(input => {
-                const key = input.name.match(/\[(.*?)\]/)[1];
-                const quantity = parseInt(input.value, 10);
-                if (quantity > 0) {
+
+            // DIUBAH: Mengambil data dari <input> bukan <span>
+            form.querySelectorAll('.quantity-input').forEach(inputElement => {
+                const key = inputElement.dataset.name.match(/\[(.*?)\]/)[1];
+                const quantity = parseInt(inputElement.value, 10);
+                if (!isNaN(quantity) && quantity > 0) {
                     returnQuantities[key] = quantity;
                     hasValidReturn = true;
                 }
             });
 
-            // Validasi frontend: pastikan ada produk yang diretur
             if (!hasValidReturn) {
                 dispatchToast('Anda harus memasukkan jumlah minimal 1 untuk satu produk.', 'error');
                 submitButton.disabled = false;
@@ -925,7 +1038,6 @@
             }
 
             try {
-                // Kirim data ke server
                 const response = await fetch(`/kurir/pesanan/${orderId}/request-return`, {
                     method: 'POST',
                     headers: {
@@ -944,20 +1056,13 @@
                     throw new Error(errorMsg || 'Gagal mengajukan pengembalian.');
                 }
 
-                // Jika berhasil:
                 dispatchToast(result.message, 'success');
-
-                // Tutup modal retur
                 closeModal(document.getElementById('returnProductModal'));
-
-                // Perbarui UI di latar belakang
                 updateTableRowStatus(orderId, result.order.status);
-                fetchOrderDetails(orderId); // Refresh rincian untuk menampilkan info retur
-
+                fetchOrderDetails(orderId);
             } catch (error) {
                 dispatchToast(`Gagal: ${error.message}`, 'error');
             } finally {
-                // Selalu kembalikan tombol ke keadaan normal
                 submitButton.disabled = false;
                 buttonText.classList.remove('hidden');
                 buttonSpinner.classList.add('hidden');
@@ -966,6 +1071,8 @@
 
         // --- Event Delegation ---
         document.addEventListener('DOMContentLoaded', function() {
+            // DIHAPUS: Event listener untuk modal retur yang lama dihapus dari sini karena sudah ditangani secara dinamis
+
             document.body.addEventListener('click', function(event) {
                 const openStatusBtn = event.target.closest('.js-open-status-modal');
                 if (openStatusBtn) {

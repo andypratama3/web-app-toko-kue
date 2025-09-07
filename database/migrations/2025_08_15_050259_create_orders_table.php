@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('payment_method');
             $table->text('note')->nullable();
             $table->decimal('total_amount', 10, 2)->default(0);
-            $table->string('status')->default('pending');
+            $table->string('status')->default('baru');
             $table->timestamps();
         });
     }

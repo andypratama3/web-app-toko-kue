@@ -8,11 +8,11 @@
                 <div class="flex-1 min-w-0">
                     <h4 class="text-lg font-semibold text-gray-900 truncate dark:text-white" title="{{ $customer->company_name ?? $customer->name }}">
                         {{-- Tampilkan Nama Toko, atau Nama Customer jika Toko kosong --}}
-                        {{ $customer->company_name ?? $customer->name }}
+                        🏪{{ $customer->company_name ?? $customer->name }}
                     </h4>
                     {{-- Tampilkan Nama Customer sebagai subjudul jika Nama Toko ada --}}
                     @if ($customer->company_name)
-                    <p class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                    <p class="flex items-center text-md text-gray-500 dark:text-gray-400">
                         {{ $customer->name }}
                         @if ($customer->is_flagged)
                             <i class="ml-2 text-red-500 fas fa-flag" title="Customer ditandai"></i>

@@ -54,7 +54,6 @@
     <div class="p-6">
         <h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-black sm:text-2xl">💰 Resume Hari Ini</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Income Card -->
             <div
                 class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
                 <div class="flex-auto p-4">
@@ -64,9 +63,16 @@
                                 <p
                                     class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">
                                     INCOME</p>
-                                <h5 class="mb-2 font-bold dark:text-white">IDR 5.000.000</h5>
+                                <h5 class="mb-2 font-bold dark:text-white">IDR
+                                    {{ number_format($incomeToday, 0, ',', '.') }}</h5>
                                 <p class="mb-0 dark:text-white dark:opacity-60">
-                                    <span class="text-sm font-bold leading-normal text-emerald-500">+55%</span>
+                                    @if ($incomePercentageChange >= 0)
+                                        <span
+                                            class="text-sm font-bold leading-normal text-emerald-500">+{{ number_format($incomePercentageChange, 1) }}%</span>
+                                    @else
+                                        <span
+                                            class="text-sm font-bold leading-normal text-red-400">{{ number_format($incomePercentageChange, 1) }}%</span>
+                                    @endif
                                     since yesterday
                                 </p>
                             </div>
@@ -81,7 +87,6 @@
                 </div>
             </div>
 
-            <!-- Total Sales Card -->
             <div
                 class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
                 <div class="flex-auto p-4">
@@ -91,9 +96,15 @@
                                 <p
                                     class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">
                                     Total Sales</p>
-                                <h5 class="mb-2 font-bold dark:text-white">120</h5>
+                                <h5 class="mb-2 font-bold dark:text-white">{{ $totalSalesToday }}</h5>
                                 <p class="mb-0 dark:text-white dark:opacity-60">
-                                    <span class="text-sm font-bold leading-normal text-emerald-500">+5%</span>
+                                    @if ($salesPercentageChange >= 0)
+                                        <span
+                                            class="text-sm font-bold leading-normal text-emerald-500">+{{ number_format($salesPercentageChange, 1) }}%</span>
+                                    @else
+                                        <span
+                                            class="text-sm font-bold leading-normal text-red-400">{{ number_format($salesPercentageChange, 1) }}%</span>
+                                    @endif
                                     than last month
                                 </p>
                             </div>
@@ -108,7 +119,6 @@
                 </div>
             </div>
 
-            <!-- Customer Card -->
             <div
                 class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
                 <div class="flex-auto p-4">
@@ -118,9 +128,16 @@
                                 <p
                                     class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">
                                     Customer {{ $user->region->name ?? 'Tidak ada region' }}</p>
-                                <h5 class="mb-2 font-bold dark:text-white">2,300</h5>
+                                <h5 class="mb-2 font-bold dark:text-white">
+                                    {{ number_format($totalCustomersInRegion, 0, ',', '.') }}</h5>
                                 <p class="mb-0 dark:text-white dark:opacity-60">
-                                    <span class="text-sm font-bold leading-normal text-emerald-500">+3%</span>
+                                    @if ($customerPercentageChange >= 0)
+                                        <span
+                                            class="text-sm font-bold leading-normal text-emerald-500">+{{ number_format($customerPercentageChange, 1) }}%</span>
+                                    @else
+                                        <span
+                                            class="text-sm font-bold leading-normal text-red-400">{{ number_format($customerPercentageChange, 1) }}%</span>
+                                    @endif
                                     since last week
                                 </p>
                             </div>
@@ -135,7 +152,6 @@
                 </div>
             </div>
 
-            <!-- New Customer Card -->
             <div
                 class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
                 <div class="flex-auto p-4">
@@ -145,10 +161,17 @@
                                 <p
                                     class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">
                                     New Customer</p>
-                                <h5 class="mb-2 font-bold dark:text-white">+3,462</h5>
+                                <h5 class="mb-2 font-bold dark:text-white">
+                                    +{{ number_format($newCustomersToday, 0, ',', '.') }}</h5>
                                 <p class="mb-0 dark:text-white dark:opacity-60">
-                                    <span class="text-sm font-bold leading-normal text-red-600">-2%</span>
-                                    since last quarter
+                                    @if ($newCustomerPercentageChange >= 0)
+                                        <span
+                                            class="text-sm font-bold leading-normal text-emerald-500">+{{ number_format($newCustomerPercentageChange, 1) }}%</span>
+                                    @else
+                                        <span
+                                            class="text-sm font-bold leading-normal text-red-400">{{ number_format($newCustomerPercentageChange, 1) }}%</span>
+                                    @endif
+                                    since yesterday
                                 </p>
                             </div>
                         </div>

@@ -1,4 +1,4 @@
-<x-modal-custom id="statusStepperModal" title="Ubah Status Pesanan" size="2xl">
+<x-modal-custom id="statusStepperModal" title="Ubah Status Pesanan" size="xl">
     {{-- Modal body --}}
     <div class="p-6 pt-0 space-y-4">
         <div id="statusStepperModalLoader" class="text-center">

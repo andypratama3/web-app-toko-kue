@@ -63,11 +63,11 @@
                     <p id="modalTotalAmount" class="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-500"></p>
                 </div>
                 <div id="returnedTotalAmountContainer" class="hidden">
-                    <h4 class="mb-1 text-base sm:text-md font-semibold text-gray-800 dark:text-white">📜 Total Tagihan
+                    <h4 class="text-base sm:text-sm font-semibold text-gray-800 dark:text-white">Tagihan
                         Awal</h4>
                     <p id="modalInitialTotalAmount"
                         class="text-lg sm:text-xl font-bold text-gray-500 dark:text-gray-400 line-through"></p>
-                    <h4 class="mt-2 mb-1 text-base sm:text-md font-semibold text-gray-800 dark:text-white">🧾 Total
+                    <h4 class="mt-1 text-base sm:text-md font-semibold text-gray-800 dark:text-white">🧾
                         Tagihan Terbaru</h4>
                     <p id="modalLatestTotalAmount"
                         class="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-500"></p>
@@ -81,15 +81,6 @@
                         class="flex-shrink-0 px-3 py-1 text-sm font-semibold rounded-full whitespace-nowrap"></span>
                 </div>
             </div>
-        </div>
-
-        {{-- Tombol untuk Ajukan Retur --}}
-        <div id="returnRequestButtonContainer" class="hidden pt-4 border-t dark:border-gray-600">
-            <button type="button" id="requestReturnButton"
-                class="js-open-modal-btn inline-flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300"
-                data-target-modal="returnProductModal">
-                <i class="fas fa-undo mr-2"></i> Ajukan Pengembalian Produk
-            </button>
         </div>
 
         <div class="pt-2 sm:pt-4 border-t dark:border-gray-600">
@@ -106,6 +97,16 @@
                 </div>
             </details>
         </div>
+
+        {{-- Tombol untuk Ajukan Retur --}}
+        <div id="returnRequestButtonContainer" class="hidden pt-4 border-t dark:border-gray-600">
+            <button type="button" id="requestReturnButton"
+                class="js-open-modal-btn inline-flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300"
+                data-target-modal="returnProductModal">
+                <i class="fas fa-undo mr-2"></i> Ajukan Pengembalian Produk
+            </button>
+        </div>
+
         <div class="pt-2 sm:pt-4 border-t dark:border-gray-600">
             <details id="paymentProofSection" class="block sm:open" open>
                 <summary class="sm:hidden font-semibold text-gray-800 dark:text-white cursor-pointer py-2">Bukti

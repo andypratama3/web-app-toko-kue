@@ -263,7 +263,7 @@ class PesananController extends Controller
                         'variant_name' => $item->variant_name,
                         'quantity' => $item->quantity,
                         'price' => $item->price,
-                        'image_url' => $item->product->image_url ?? null,
+                        'image_url' => $item->product->image_path ?? null,
                         'returned_quantity' => $returnedQuantity,
                     ];
                 })->toArray(),
