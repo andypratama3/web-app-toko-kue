@@ -30,8 +30,8 @@
 			<tr>
 				<td>{{ $row->peringkat }}</td>
 				<td>{{ $row->nama_customer }}</td>
-				<td>{{ number_format($row->total_pembelian, 0, ',', '.') }}</td>
-				<td>{{ number_format($row->total_retur, 0, ',', '.') }}</td>
+				<td>Rp. {{ number_format($row->total_pembelian, 0, ',', '.') }}</td>
+				<td>Rp. {{ number_format($row->total_retur, 0, ',', '.') }}</td>
 				<td>{{ $row->skor_akhir }}</td>
 			</tr>
 			@empty

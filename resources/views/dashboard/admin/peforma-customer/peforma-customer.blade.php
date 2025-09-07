@@ -68,8 +68,8 @@
                         @endif
                     </td>
                     <td class="px-4 py-2 text-center">{{ $row->nama_customer }}</td>
-                    <td class="px-4 py-2 text-center">{{ number_format($row->total_pembelian, 0, ',', '.') }}</td>
-                    <td class="px-4 py-2 text-center">{{ number_format($row->total_retur, 0, ',', '.') }}</td>
+                    <td class="px-4 py-2 text-center">Rp. {{ number_format($row->total_pembelian, 0, ',', '.') }}</td>
+                    <td class="px-4 py-2 text-center">Rp. {{ number_format($row->total_retur, 0, ',', '.') }}</td>
                     <td class="px-4 py-2 text-center">{{ $row->skor_akhir }}</td>
                 </tr>
                 @empty
