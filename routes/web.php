@@ -61,6 +61,7 @@ Route::middleware([
 
     //---------- RUTE ADMIN ----------//
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
+    Route::get('peforma-kurir/export/pdf', [\App\Http\Controllers\Admin\PeformaKurirController::class, 'exportPdf'])->name('peforma-kurir.export.pdf');
         Route::get('dashboard/{region}', [AdminDashboardController::class, 'index'])->name('dashboard');
 
         // Profil Admin

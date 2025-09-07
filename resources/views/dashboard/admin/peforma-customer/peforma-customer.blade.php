@@ -23,13 +23,14 @@
                 </select>
             </div>
             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-semibold">Lihat</button>
-        </form>
+            <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-sm font-semibold"><i class="fas fa-file-export"></i> Export</button>
     </div>
+    
 
     <div x-data="{ show: true }" x-show="show" class="mb-4">
         <div class="bg-green-100 border text-black dark:bg-slate-400 dark:text-white px-4 py-3 rounded relative flex items-center justify-between" role="alert">
-            <span class="font-semibold">Info:</span>
-            <span class="ml-2">Ranking hanya menampilkan customer kategori <b>Reseller</b>. Customer Supermarket tidak ikut perhitungan performa.</span>
+            <span class="ml-2">Ranking hanya menampilkan customer kategori <b>Reseller</b>. Setiap pelanggan akan mendapatkan "Skor Performa" yang dihitung dari kombinasi "Skor Pembelian" dan "Skor Retur".
+            </span>
             <button type="button" @click="show = false" class="ml-4 text-blue-700 hover:text-blue-900 focus:outline-none">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
