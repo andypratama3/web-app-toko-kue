@@ -596,3 +596,44 @@ body {
 .custom-modal-wrapper [class*="overflow-y-auto"] {
     scrollbar-width: none;
 }
+
+/* ===== Hide Sidebar Scrollbar ===== */
+/* Menargetkan elemen scroll di dalam #sidebar secara spesifik */
+#sidebar .overflow-y-auto::-webkit-scrollbar {
+    display: none; /* Untuk browser WebKit (Chrome, Safari, Edge) */
+}
+
+#sidebar .overflow-y-auto {
+    -ms-overflow-style: none;  /* Untuk Internet Explorer dan Edge (versi lama) */
+    scrollbar-width: none;  /* Untuk Firefox */
+}
+
+/* ===== Hide Main Content Scrollbar ===== */
+#main-content::-webkit-scrollbar {
+    display: none; /* Untuk browser WebKit (Chrome, Safari, Edge) */
+}
+
+#main-content {
+    -ms-overflow-style: none;  /* Untuk Internet Explorer dan Edge (versi lama) */
+    scrollbar-width: none;  /* Untuk Firefox */
+}
+
+/* --- Main Content Scrollbar --- */
+#main-content::-webkit-scrollbar {
+    display: none;
+}
+#main-content {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* [!code focus:start] */
+/* --- Global/Body Scrollbar --- */
+html::-webkit-scrollbar {
+    display: none; /* Untuk browser WebKit (Chrome, Safari, Edge) */
+}
+
+html {
+    -ms-overflow-style: none;  /* Untuk Internet Explorer dan Edge (versi lama) */
+    scrollbar-width: none;  /* Untuk Firefox */
+}

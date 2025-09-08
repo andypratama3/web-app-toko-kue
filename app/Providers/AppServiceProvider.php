@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
             $newOrdersCount = 0;
             if (\Illuminate\Support\Facades\Auth::check() && \Illuminate\Support\Facades\Auth::user()->region_id) {
                 $newOrdersCount = \App\Models\Order::where('region_id', \Illuminate\Support\Facades\Auth::user()->region_id)
-                    ->where('status', 'pending')->count();
+                    ->where('status', 'baru')->count();
             }
             $view->with('newOrdersCount', $newOrdersCount);
         });

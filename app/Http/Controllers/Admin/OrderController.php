@@ -200,4 +200,42 @@ class OrderController extends Controller
 
         return response()->json(['message' => 'Verifikasi pesanan ditolak. Status dikembalikan.']);
     }
+
+    /**
+     * Hapus pesanan secara permanen dari database.
+     * Termasuk menghapus file bukti bayar/retur yang tersimpan.
+     */
+    public function destroy($id)
+    {
+        $admin = Auth::user();
+        DB::beginTransaction();
+
+        try {
+            $order = Order::where('region_id', $admin->region_id)->with('returns')->findOrFail($id);
+
+            // 1. Hapus bukti pembayaran utama
+            if ($order->payment_proof) {
+                Storage::disk('public')->delete($order->payment_proof);
+            }
+
+            // 2. Hapus bukti retur (jika ada)
+            foreach ($order->returns as $return) {
+                if ($return->return_proof) {
+                    Storage::disk('public')->delete($return->return_proof);
+                }
+            }
+
+            // 3. Hapus data pesanan dari database
+            // (Relasi seperti order_items dan returns akan terhapus otomatis jika foreign key di-set cascade)
+            $order->delete();
+
+            DB::commit();
+            return response()->json(['message' => 'Pesanan berhasil dihapus secara permanen.']);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Gagal menghapus pesanan ID ' . $id . ': ' . $e->getMessage());
+            return response()->json(['message' => 'Terjadi kesalahan saat menghapus pesanan.'], 500);
+        }
+    }
 }

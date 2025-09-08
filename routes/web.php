@@ -85,13 +85,13 @@ Route::middleware([
         Route::get('orders/{id}/details', [AdminOrderController::class, 'details']);
         Route::post('orders/{id}/verify', [AdminOrderController::class, 'verify']);
         Route::post('orders/{id}/reject', [AdminOrderController::class, 'reject']);
+        Route::delete('orders/{id}', [AdminOrderController::class, 'destroy'])->name('orders.destroy');
 
         // Manajemen History Pesanan
         Route::get('historys', [HistoryOrderController::class, 'index'])->name('historys.index');
         Route::get('historys/{order}/invoice', [HistoryOrderController::class, 'invoice'])->name('historys.invoice');
         Route::get('historys/{order}/download', [HistoryOrderController::class, 'downloadInvoice'])->name('historys.download');
         // Endpoint JSON untuk detail history pesanan (untuk modal show)
-        // Route::get('historys/{order}/details', [HistoryOrderController::class, 'details'])->name('historys.details');
         Route::get('historys/{order}/details', [HistoryOrderController::class, 'details'])->name('admin.historys.details'); // [!code ++]
 
         // Routes untuk Peforma Kurir

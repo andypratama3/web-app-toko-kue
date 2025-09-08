@@ -65,20 +65,25 @@
                                         {{ $labelStatus($order->status) }}
                                     </span>
                                 </td>
-                                    <td class="px-4 py-2">
-                                        @php
-                                            // Cek retur aktif (tidak ditolak)
-                                            $activeReturn = $order->returns->where('status', '!=', 'ditolak')->sortByDesc('id')->first();
-                                            $returnedAmount = $activeReturn ? $activeReturn->total_amount_returned : 0;
-                                            $afterReturn = $order->total_amount - $returnedAmount;
-                                        @endphp
-                                        @if ($activeReturn && $returnedAmount > 0)
-                                            <span class="block text-xs text-gray-500 line-through">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</span>
-                                            <span class="block text-green-600 font-bold">Rp {{ number_format($afterReturn, 0, ',', '.') }}</span>
-                                        @else
-                                            Rp {{ number_format($order->total_amount, 0, ',', '.') }}
-                                        @endif
-                                    </td>
+                                <td class="px-4 py-2">
+                                    @php
+                                        // Cek retur aktif (tidak ditolak)
+                                        $activeReturn = $order->returns
+                                            ->where('status', '!=', 'ditolak')
+                                            ->sortByDesc('id')
+                                            ->first();
+                                        $returnedAmount = $activeReturn ? $activeReturn->total_amount_returned : 0;
+                                        $afterReturn = $order->total_amount - $returnedAmount;
+                                    @endphp
+                                    @if ($activeReturn && $returnedAmount > 0)
+                                        <span class="block text-xs text-gray-500 line-through">Rp
+                                            {{ number_format($order->total_amount, 0, ',', '.') }}</span>
+                                        <span class="block font-bold text-green-600">Rp
+                                            {{ number_format($afterReturn, 0, ',', '.') }}</span>
+                                    @else
+                                        Rp {{ number_format($order->total_amount, 0, ',', '.') }}
+                                    @endif
+                                </td>
                                 <td class="px-4 py-2">
                                     {{-- Tombol ini akan membuka modal verifikasi --}}
                                     {{-- DIUBAH: Menambahkan kondisi || $order->status == 'menunggu_verifikasi_admin' --}}
@@ -89,8 +94,19 @@
                                             Verifikasi
                                         </button>
                                     @else
-                                        <span class="text-gray-400">-</span>
+                                        <button
+                                            class="px-3 py-1 text-xs font-bold text-white bg-gray-400 rounded cursor-not-allowed"
+                                            disabled>
+                                            Verifikasi
+                                        </button>
                                     @endif
+
+                                    <button
+                                        class="px-3 py-1 text-xs font-bold text-white bg-red-600 rounded js-open-delete-modal hover:bg-red-700"
+                                        data-order-id="{{ $order->id }}"
+                                        data-invoice-number="{{ $order->invoice_number }}">
+                                        Hapus
+                                    </button>
                                 </td>
                             </tr>
                         @empty
@@ -108,6 +124,7 @@
 {{-- Sertakan file modal baru di sini --}}
 @push('flowbite-modals')
     @include('dashboard.admin.order-list.verify-modal')
+    @include('dashboard.admin.order-list.delete')
 @endpush
 
 
@@ -140,6 +157,21 @@
                     const orderId = openBtn.dataset.orderId;
                     openModal('verifyOrderModal');
                     openVerifyModal(orderId);
+                }
+
+                const openDeleteBtn = event.target.closest('.js-open-delete-modal');
+                if (openDeleteBtn) {
+                    const orderId = openDeleteBtn.dataset.orderId;
+                    const invoiceNumber = openDeleteBtn.dataset.invoiceNumber; // Ambil No. Invoice
+
+                    // Masukkan No. Invoice ke dalam modal
+                    document.getElementById('deleteInvoiceNumber').textContent = invoiceNumber;
+
+                    // Buka modal konfirmasi
+                    openModal('deleteConfirmModal');
+
+                    // Atur tombol konfirmasi di dalam modal untuk menargetkan orderId yang benar
+                    document.getElementById('btnConfirmDelete').onclick = () => deleteOrder(orderId);
                 }
             });
 
@@ -323,6 +355,30 @@
 
             } catch (error) {
                 dispatchToast(`Gagal menolak: ${error.message}`, 'error');
+            }
+        }
+
+        // --- FUNGSI BARU UNTUK MENGHAPUS PESANAN ---
+        async function deleteOrder(orderId) {
+            const modalElement = document.getElementById('deleteConfirmModal');
+            try {
+                const response = await fetch(`/admin/orders/${orderId}`, {
+                    method: 'DELETE', // Menggunakan method DELETE
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content'),
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || 'Terjadi kesalahan');
+
+                closeModal(modalElement);
+                dispatchToast('Pesanan berhasil dihapus!', 'success');
+                setTimeout(() => window.location.reload(), 1500);
+
+            } catch (error) {
+                dispatchToast(`Gagal menghapus: ${error.message}`, 'error');
             }
         }
     </script>
