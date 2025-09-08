@@ -98,7 +98,7 @@
                         <ul x-show="open" x-transition class="mt-1 space-y-0.5 list-none">
                             <li>
                                 <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg relative @if (request()->routeIs('admin.orders.*')) bg-blue-500/13 dark:bg-green-900 @endif" href="{{ route('admin.orders.index') }}" data-tooltip="Pesanan">
-                                    <div class="mr-2 sidebar-icon-container flex items-center">
+                                    <div class="flex items-center mr-2 sidebar-icon-container">
                                         @if(isset($newOrdersCount) && $newOrdersCount > 0)
                                             <img src="{{ asset('assets/icon/icon-notif-krenjang.svg') }}" alt="Notifikasi Pesanan" class="w-6 h-6" />
                                         @else
@@ -186,7 +186,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg" @if (request()->routeIs('kurir.historys.*')) bg-blue-500/13 dark:bg-green-900 @endif href="{{ route('kurir.historys.index') }}" data-tooltip="Order History">
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('kurir.historys.*')) bg-blue-500/13 dark:bg-green-900 @endif" href="{{ route('kurir.historys.index') }}" data-tooltip="Order History">
                                     <div class="mr-2 sidebar-icon-container"><i class="text-yellow-500 fas fa-hourglass-half"></i></div>
                                     <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Order History</span>
                                 </a>
@@ -222,13 +222,13 @@
                                                 </a>
                                         </form>
                                                             <!-- Toggle Lightmode/Darkmode: hanya tampil di mobile/tab, center di bawah logout -->
-                                                            <div class="flex xl:hidden justify-center w-full py-4">
-                                                                <label id="theme-toggle-label-sidebar" for="theme-toggle-checkbox-sidebar" class="relative inline-flex items-center cursor-pointer z-40">
+                                                            <div class="flex justify-center w-full py-4 xl:hidden">
+                                                                <label id="theme-toggle-label-sidebar" for="theme-toggle-checkbox-sidebar" class="relative z-40 inline-flex items-center cursor-pointer">
                                                                     <input type="checkbox" value="" id="theme-toggle-checkbox-sidebar" class="sr-only peer" dark-toggle>
-                                                                    <div class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:bg-blue-600"></div>
+                                                                    <div class="h-6 bg-gray-200 rounded-full w-11 peer dark:bg-gray-700 peer-checked:bg-blue-600"></div>
                                                                     <div class="absolute top-0.5 left-[2px] bg-white border-gray-300 border rounded-full h-5 w-5 transition-all peer-checked:translate-x-full flex items-center justify-center">
                                                                         <span class="text-sm">☀️</span>
-                                                                        <span class="text-sm hidden">🌙</span>
+                                                                        <span class="hidden text-sm">🌙</span>
                                                                     </div>
                                                                 </label>
                                                             </div>

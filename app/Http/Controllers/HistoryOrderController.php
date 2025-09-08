@@ -47,6 +47,8 @@ class HistoryOrderController extends Controller
                 'id' => $order->id,
                 'invoice_number' => $order->invoice_number,
                 'customer_name' => $order->customer->name ?? 'N/A',
+                'customer_phone' => $order->customer->phone ?? 'N/A',
+                'customer_company' => $order->customer->company_name ?? 'N/A',
                 'customer_address' => $order->customer->address ?? 'N/A',
                 'payment_method' => $order->payment_method ?? '-',
                 'total_amount' => $order->total_amount ?? 0,
@@ -115,7 +117,7 @@ class HistoryOrderController extends Controller
         return view('dashboard.admin.historys.invoice', compact('order', 'isPdf'));
     }
 
-    public function index()
+    public function index(Request $request) // Tambahkan Request
     {
         $user = Auth::user();
 
@@ -123,34 +125,34 @@ class HistoryOrderController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $orders = Order::with(['customer', 'createdBy', 'returns' => function ($query) {
+        $ordersQuery = Order::with(['customer', 'createdBy', 'returns' => function ($query) {
             $query->where('status', '!=', 'ditolak')->latest();
         }]);
 
         if ($user->hasRole('admin')) {
-            $orders = $orders->where('region_id', $user->region_id);
+            $ordersQuery->where('region_id', $user->region_id);
         } else {
-            $orders = $orders->where('created_by_user_id', $user->id);
+            $ordersQuery->where('created_by_user_id', $user->id);
         }
 
-        $orders = $orders->where('status', 'diverifikasi_admin')
+        $orders = $ordersQuery->where('status', 'diverifikasi_admin')
             ->latest()
-            ->paginate(10); // [!code ++]
+            ->paginate(10);
 
-        // Gunakan perulangan untuk memodifikasi setiap item di dalam hasil paginasi
-        foreach ($orders as $order) { // [!code ++]
-            $order->has_return = $order->returns->isNotEmpty(); // [!code ++]
+        foreach ($orders as $order) {
+            $order->has_return = $order->returns->isNotEmpty();
+            $order->final_total = $order->has_return ? $order->total_amount - $order->returns->first()->total_amount_returned : $order->total_amount;
+            $order->payment_status = $order->paid_at
+                ? ['text' => 'Lunas', 'class' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300']
+                : ['text' => 'Belum Lunas', 'class' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'];
+        }
 
-            if ($order->has_return) { // [!code ++]
-                $order->final_total = $order->total_amount - $order->returns->first()->total_amount_returned; // [!code ++]
-            } else { // [!code ++]
-                $order->final_total = $order->total_amount; // [!code ++]
-            } // [!code ++]
-
-            $order->payment_status = $order->paid_at // [!code ++]
-                ? ['text' => 'Lunas', 'class' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'] // [!code ++]
-                : ['text' => 'Belum Lunas', 'class' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300']; // [!code ++]
-        } // [!code ++]
+        // BARU: Logika untuk menangani request AJAX (untuk load more/infinite scroll)
+        if ($request->ajax()) {
+            $viewPath = $user->hasRole('admin') ? 'dashboard.admin.historys._card' : 'dashboard.kurir.historys._card';
+            $html = view($viewPath, ['orders' => $orders])->render();
+            return response()->json(['html' => $html]);
+        }
 
         $viewName = $user->hasRole('admin')
             ? 'dashboard.admin.historys.index'

@@ -138,6 +138,7 @@ Route::middleware([
 
         // History Pesanan
         Route::get('historys', [HistoryOrderController::class, 'index'])->name('historys.index');
+        Route::get('historys/{order}/details', [HistoryOrderController::class, 'details'])->name('historys.details');
 
         // Endpoint JSON untuk data produk di halaman pesanan
         Route::get('produk/json', function () {

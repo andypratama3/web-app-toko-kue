@@ -9,7 +9,7 @@
                 👤 {{ Auth::user()->name ?? 'Admin' }}
                 🚩 {{ Auth::user()->region->name ?? 'N/A' }}
             </h2>
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto min-h-[580px]">
                 <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
                     <thead class="align-bottom">
                         <tr
@@ -31,19 +31,19 @@
                                     {{ ($orders->currentPage() - 1) * $orders->perPage() + $loop->iteration }}
                                 </td>
                                 <td class="px-4 py-2">
-                                    <p class="mb-0 font-semibold leading-tight text-xs">{{ $order->invoice_number }}</p>
-                                    <p class="mb-0 leading-tight text-xs text-slate-400">
+                                    <p class="mb-0 text-xs font-semibold leading-tight">{{ $order->invoice_number }}</p>
+                                    <p class="mb-0 text-xs leading-tight text-slate-400">
                                         {{ $order->created_at->isoFormat('D MMM YYYY, HH:mm') }}
                                     </p>
                                 </td>
                                 <td class="px-4 py-2">
-                                    <p class="mb-0 font-semibold leading-tight text-xs">{{ $order->customer->name ?? '-' }}
+                                    <p class="mb-0 text-xs font-semibold leading-tight">{{ $order->customer->name ?? '-' }}
                                     </p>
-                                    <p class="mb-0 leading-tight text-xs text-slate-400">
-                                        {{ $order->customer->phone ?? '-' }}</p>
+                                    <p class="mb-0 text-xs leading-tight text-slate-400">
+                                        {{ $order->customer->company_name ?? '-' }}</p>
                                 </td>
                                 <td class="px-4 py-2">
-                                    <p class="mb-0 leading-tight text-xs">{{ $order->createdBy->name ?? '-' }}</p>
+                                    <p class="mb-0 text-xs leading-tight">{{ $order->createdBy->name ?? '-' }}</p>
                                 </td>
                                 <td class="px-4 py-2">
                                     <span
@@ -61,15 +61,15 @@
                                     @if ($order->has_return)
                                         {{-- Tampilkan total baru dan coret total lama --}}
                                         <p
-                                            class="mb-0 font-semibold leading-tight text-xs text-green-600 dark:text-green-400">
+                                            class="mb-0 text-xs font-semibold leading-tight text-green-600 dark:text-green-400">
                                             Rp {{ number_format($order->final_total, 0, ',', '.') }}
                                         </p>
-                                        <p class="mb-0 leading-tight text-xs text-slate-400 line-through">
+                                        <p class="mb-0 text-xs leading-tight line-through text-slate-400">
                                             Rp {{ number_format($order->total_amount, 0, ',', '.') }}
                                         </p>
                                     @else
                                         {{-- Tampilkan total normal jika tidak ada retur --}}
-                                        <p class="mb-0 font-semibold leading-tight text-xs">
+                                        <p class="mb-0 text-xs font-semibold leading-tight">
                                             Rp {{ number_format($order->total_amount, 0, ',', '.') }}
                                         </p>
                                     @endif
@@ -80,7 +80,7 @@
                                     <div class="relative inline-block text-left">
                                         {{-- Tombol untuk membuka dropdown --}}
                                         <button type="button"
-                                            class="js-dropdown-toggle flex items-center justify-center w-8 h-8 rounded-full text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:text-gray-400 dark:hover:bg-gray-700"
+                                            class="flex items-center justify-center w-8 h-8 text-gray-500 rounded-full js-dropdown-toggle hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:text-gray-400 dark:hover:bg-gray-700"
                                             data-target-dropdown="actions-dropdown-{{ $order->id }}">
                                             <span class="sr-only">Buka menu aksi</span>
                                             <i class="fas fa-ellipsis-v"></i>
@@ -88,14 +88,14 @@
 
                                         {{-- Menu dropdown, awalnya disembunyikan --}}
                                         <div id="actions-dropdown-{{ $order->id }}"
-                                            class="js-dropdown-menu hidden absolute right-0 z-10 w-48 mt-2 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-700 dark:ring-gray-600">
+                                            class="absolute right-0 z-10 hidden w-48 mt-2 origin-top-right bg-white rounded-md shadow-lg js-dropdown-menu ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-700 dark:ring-gray-600">
                                             <div class="py-1" role="menu" aria-orientation="vertical">
                                                 {{-- Tombol Detail --}}
                                                 <button type="button"
-                                                    class="js-open-modal-btn flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600"
+                                                    class="flex items-center w-full px-4 py-2 text-sm text-gray-700 js-open-modal-btn hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600"
                                                     data-target-modal="showOrderModal" data-order-id="{{ $order->id }}"
                                                     role="menuitem">
-                                                    <i class="w-5 text-center fas fa-eye mr-2"></i>
+                                                    <i class="w-5 mr-2 text-center fas fa-eye"></i>
                                                     <span>Detail</span>
                                                 </button>
 
@@ -123,7 +123,7 @@
                                                         target="_blank"
                                                         class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600"
                                                         role="menuitem">
-                                                        <i class="w-5 text-center fab fa-whatsapp mr-2 text-green-500"></i>
+                                                        <i class="w-5 mr-2 text-center text-green-500 fab fa-whatsapp"></i>
                                                         <span>WhatsApp</span>
                                                     </a>
                                                 @endif
@@ -132,7 +132,7 @@
                                                 <a href="{{ route('admin.historys.invoice', $order->id) }}" target="_blank"
                                                     class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600"
                                                     role="menuitem">
-                                                    <i class="w-5 text-center fas fa-file-invoice mr-2"></i>
+                                                    <i class="w-5 mr-2 text-center fas fa-file-invoice"></i>
                                                     <span>Invoice</span>
                                                 </a>
 
@@ -140,7 +140,7 @@
                                                 <a href="{{ route('admin.historys.download', $order->id) }}"
                                                     class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600"
                                                     role="menuitem">
-                                                    <i class="w-5 text-center fas fa-download mr-2"></i>
+                                                    <i class="w-5 mr-2 text-center fas fa-download"></i>
                                                     <span>Download</span>
                                                 </a>
                                             </div>
@@ -186,6 +186,8 @@
             const elements = {
                 invoiceNumber: document.getElementById('showOrderModalInvoiceNumber'),
                 customerName: document.getElementById('showOrderModalCustomerName'),
+                customerPhone: document.getElementById('showOrderModalCustomerPhone'),
+                customerCompany: document.getElementById('showOrderModalCustomerCompany'),
                 customerAddress: document.getElementById('showOrderModalCustomerAddress'),
                 paymentMethod: document.getElementById('showOrderModalPaymentMethod'),
                 totalAmount: document.getElementById('showOrderModalTotalAmount'),
@@ -282,6 +284,8 @@
                 const elements = {
                     invoiceNumber: document.getElementById('showOrderModalInvoiceNumber'),
                     customerName: document.getElementById('showOrderModalCustomerName'),
+                    customerPhone: document.getElementById('showOrderModalCustomerPhone'),
+                    customerCompany: document.getElementById('showOrderModalCustomerCompany'),
                     customerAddress: document.getElementById('showOrderModalCustomerAddress'),
                     paymentMethod: document.getElementById('showOrderModalPaymentMethod'),
                     totalAmount: document.getElementById('showOrderModalTotalAmount'),
@@ -310,6 +314,14 @@
                 // 2. Isi detail utama pesanan
                 elements.invoiceNumber.textContent = data.invoice_number || '-';
                 elements.customerName.textContent = data.customer_name || '-';
+                elements.customerPhone.textContent = data.customer_phone || '-';
+                if (data.customer_company && data.customer_company !== 'N/A') {
+                    elements.customerCompany.textContent = `🏢 ${data.customer_company}`;
+                    elements.customerCompany.classList.remove('hidden');
+                } else {
+                    elements.customerCompany.textContent = '';
+                    elements.customerCompany.classList.add('hidden');
+                }
                 elements.customerAddress.textContent = data.customer_address || '-';
                 elements.paymentMethod.textContent =
                     `Metode: ${data.payment_method ? data.payment_method.charAt(0).toUpperCase() + data.payment_method.slice(1) : '-'}`;
@@ -376,7 +388,7 @@
                     if (data.return_details.return_proof_url) {
                         elements.returnProof.innerHTML =
                             `
-                <h5 class="mb-1 mt-3 font-semibold text-red-800 dark:text-red-400">Bukti Retur:</h5>
+                <h5 class="mt-3 mb-1 font-semibold text-red-800 dark:text-red-400">Bukti Retur:</h5>
                 <img src="${data.return_details.return_proof_url}" alt="Bukti Retur" class="max-w-[200px] rounded border cursor-pointer hover:border-red-500" data-zoomable="true">`;
                     }
                 } else {

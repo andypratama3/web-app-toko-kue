@@ -25,8 +25,8 @@
                 <h4 class="mb-1 font-semibold text-gray-800 dark:text-white">👤 Pelanggan</h4>
                 <p id="showOrderModalCustomerName" class="font-bold text-gray-700 dark:text-gray-300"></p>
                 <p id="showOrderModalCustomerCompany" class="text-sm text-gray-500 dark:text-gray-400"></p>
-                <p id="showOrderModalCustomerPhone" class="text-sm text-gray-500 dark:text-gray-400"></p>
                 <p id="showOrderModalCustomerAddress" class="text-sm text-gray-500 dark:text-gray-400"></p>
+                <p id="showOrderModalCustomerPhone" class="text-sm text-gray-500 dark:text-gray-400"></p>
             </div>
         </div>
 
