@@ -35,13 +35,16 @@
                         <li>
                             <button type="button" data-target-modal="note-courier-modal-{{ $courier->id }}"
                                 class="flex items-center w-full px-4 py-2 text-left js-open-modal-btn hover:bg-gray-100 dark:hover:bg-gray-600">
-                                <span class="inline-block w-6 mr-2 text-center"><i class="fas fa-sticky-note"></i></span>
+                                <span class="inline-block w-6 mr-2 text-center"><i
+                                        class="fas fa-sticky-note"></i></span>
                                 <span>Note</span>
                             </button>
                         </li>
                         <li>
                             <button type="button"
-                                class="flex items-center w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600">
+                                class="flex items-center w-full px-4 py-2 text-left js-open-performance-modal hover:bg-gray-100 dark:hover:bg-gray-600"
+                                data-target-modal="performance-modal-{{ $courier->id }}"
+                                data-courier-id="{{ $courier->id }}">
                                 <span class="inline-block w-6 mr-2 text-center"><i class="fas fa-chart-line"></i></span>
                                 <span>Performa</span>
                             </button>

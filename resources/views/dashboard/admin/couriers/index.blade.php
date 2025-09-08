@@ -61,10 +61,130 @@
         @include('dashboard.admin.couriers.edit', ['courier' => $courier])
         @include('dashboard.admin.couriers.note', ['courier' => $courier])
         @include('dashboard.admin.couriers.delete', ['courier' => $courier])
+        @include('dashboard.admin.couriers.performance', ['courier' => $courier])
     @endforeach
 @endpush
 
 @push('page-scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Objek untuk menyimpan instance chart agar bisa di-destroy
+            let performanceCharts = {};
+
+            // Fungsi utama untuk memuat dan merender chart
+            async function loadPerformanceChart(courierId, filter = 'last_7_days') {
+                const loader = document.getElementById(`performance-loader-${courierId}`);
+                const content = document.getElementById(`performance-content-${courierId}`);
+                const canvas = document.getElementById(`performanceChart-${courierId}`);
+
+                // Tampilkan loader
+                loader.style.display = 'block';
+                content.style.display = 'none';
+
+                try {
+                    const response = await fetch(`/admin/couriers/${courierId}/performance-data?filter=${filter}`);
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Gagal memuat data.');
+                    }
+
+                    // Hancurkan chart lama jika ada
+                    if (performanceCharts[courierId]) {
+                        performanceCharts[courierId].destroy();
+                    }
+
+                    // Update info teks
+                    document.getElementById(`date-range-${courierId}`).textContent = `📆 ${data.dateRangeText}`;
+                    document.getElementById(`total-orders-${courierId}`).textContent = data.totalOrdersInRange;
+                    document.getElementById(`total-completed-${courierId}`).textContent = data.totalCompletedOrdersInRange;
+                    document.getElementById(`total-returned-${courierId}`).textContent = data.totalReturnedOrdersInRange;
+
+                    // Buat chart baru
+                    performanceCharts[courierId] = new Chart(canvas, {
+                        type: 'line',
+                        data: {
+                            labels: data.chartLabels,
+                            datasets: [{
+                                label: 'Total Pesanan',
+                                data: data.chartData,
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                fill: true,
+                                tension: 0.4,
+                            }, {
+                                label: 'Selesai',
+                                data: data.chartDataCompleted,
+                                borderColor: '#22c55e',
+                                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                                fill: true,
+                                tension: 0.4,
+                            }, {
+                                label: 'Return',
+                                data: data.chartDataReturned,
+                                borderColor: '#ef4444',
+                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                fill: true,
+                                tension: 0.4,
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { beginAtZero: true, ticks: { color: '#6b7280', stepSize: 1 } },
+                                x: { ticks: { color: '#6b7280' } }
+                            }
+                        }
+                    });
+
+                } catch (error) {
+                    console.error('Error loading performance data:', error);
+                    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height); // Bersihkan canvas
+                    loader.innerHTML = `<p class="text-red-500">${error.message}</p>`;
+                } finally {
+                    // Sembunyikan loader dan tampilkan konten
+                    loader.style.display = 'none';
+                    content.style.display = 'block';
+                }
+            }
+
+            // Event listener untuk membuka modal dan memuat chart pertama kali
+            document.body.addEventListener('click', function(event) {
+                const openBtn = event.target.closest('.js-open-performance-modal');
+                if (openBtn) {
+                    event.preventDefault();
+                    const courierId = openBtn.dataset.courierId;
+                    const modalId = openBtn.dataset.targetModal;
+
+                    // Buka modal (menggunakan fungsi global dari custom-modal.js)
+                    if (window.openModal) {
+                        window.openModal(modalId);
+                    }
+
+                    // Muat chart dengan filter default
+                    loadPerformanceChart(courierId, 'last_7_days');
+                }
+            });
+
+            // Event listener untuk tombol filter di dalam modal
+            document.body.addEventListener('click', function(event) {
+                const filterBtn = event.target.closest('.js-performance-filter');
+                if (filterBtn) {
+                    event.preventDefault();
+                    const courierId = filterBtn.dataset.courierId;
+                    const filter = filterBtn.dataset.filter;
+                    loadPerformanceChart(courierId, filter);
+
+                    // Tutup dropdown setelah filter dipilih
+                    const dropdown = filterBtn.closest('.js-dropdown-menu');
+                    if(dropdown) dropdown.classList.add('hidden');
+                }
+            });
+        });
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             initializeLiveSearch({

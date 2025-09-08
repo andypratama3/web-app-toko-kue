@@ -76,6 +76,7 @@ Route::middleware([
         // Manajemen Kurir
         Route::resource('couriers', CourierController::class)->parameters(['couriers' => 'courier']);
         Route::put('couriers/{courier}/note', [CourierController::class, 'updateNote'])->name('couriers.updateNote');
+        Route::get('couriers/{courier}/performance-data', [CourierController::class, 'performanceData'])->name('couriers.performanceData');
 
         // Manajemen Customer
         Route::put('customers/{customer}/note', [CustomerController::class, 'updateNote'])->name('customers.updateNote');

@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules;
+use Carbon\Carbon;
+use App\Models\Order;
+use App\Models\OrderReturn;
 
 class CourierController extends Controller
 {
@@ -20,7 +23,7 @@ class CourierController extends Controller
     {
         $search = $request->input('search');
         $user = Auth::user();
-        
+
         $couriersQuery = User::with('customers')
             ->where('region_id', $user->region_id)
             ->whereHas('roles', fn($query) => $query->where('name', 'kurir'))
@@ -138,5 +141,92 @@ class CourierController extends Controller
         $courier->delete();
 
         return redirect()->route('admin.couriers.index')->with('success', 'Kurir "' . $courierName . '" berhasil dihapus.');
+    }
+
+    /**
+     * BARU: Menyediakan data performa untuk chart di modal.
+     * Logika chart disalin dari dashboard kurir agar identik.
+     */
+    public function performanceData(Request $request, User $courier)
+    {
+        if ($courier->region_id !== Auth::user()->region_id) {
+            abort(403, 'AKSES DITOLAK');
+        }
+
+        $filter = $request->input('filter', 'last_7_days');
+        $chartLabels = [];
+        $chartData = [];
+        $chartDataCompleted = [];
+        $chartDataReturned = [];
+        $dateRangeText = '';
+        $courierId = $courier->id;
+
+        $currentYear = Carbon::now()->year;
+        $currentMonth = Carbon::now()->month;
+
+        // Logika perhitungan data chart (sama persis seperti di dashboard kurir)
+        switch ($filter) {
+            case 'daily':
+                $daysInMonth = Carbon::now()->daysInMonth;
+                for ($day = 1; $day <= $daysInMonth; $day++) {
+                    $date = Carbon::createFromDate($currentYear, $currentMonth, $day);
+                    $chartLabels[] = $date->format('d');
+                    $chartData[] = Order::where('created_by_user_id', $courierId)->whereDate('created_at', $date)->count();
+                    $chartDataCompleted[] = Order::where('created_by_user_id', $courierId)->whereDate('updated_at', $date)->where('status', 'selesai')->count();
+                    $chartDataReturned[] = OrderReturn::whereHas('order', fn($q) => $q->where('created_by_user_id', $courierId))->whereDate('created_at', $date)->count();
+                }
+                $dateRangeText = Carbon::now()->isoFormat('MMMM YYYY');
+                break;
+            case 'weekly':
+                $startDate = Carbon::now()->startOfMonth();
+                $endDate = Carbon::now()->endOfMonth();
+                $weekNumber = 1;
+                while ($startDate->lte($endDate)) {
+                    $weekEndDate = $startDate->copy()->endOfWeek(Carbon::SATURDAY);
+                    if ($weekEndDate->gt($endDate)) $weekEndDate = $endDate;
+                    $chartLabels[] = 'Minggu Ke-' . $weekNumber;
+                    $chartData[] = Order::where('created_by_user_id', $courierId)->whereBetween('created_at', [$startDate, $weekEndDate])->count();
+                    $chartDataCompleted[] = Order::where('created_by_user_id', $courierId)->whereBetween('updated_at', [$startDate, $weekEndDate])->where('status', 'selesai')->count();
+                    $chartDataReturned[] = OrderReturn::whereHas('order', fn($q) => $q->where('created_by_user_id', $courierId))->whereBetween('created_at', [$startDate, $weekEndDate])->count();
+                    $startDate = $weekEndDate->copy()->addDay();
+                    $weekNumber++;
+                }
+                $dateRangeText = Carbon::now()->isoFormat('MMMM YYYY');
+                break;
+            case 'monthly':
+                for ($month = 1; $month <= 12; $month++) {
+                    $date = Carbon::createFromDate($currentYear, $month, 1);
+                    $chartLabels[] = $date->isoFormat('MMM');
+                    $chartData[] = Order::where('created_by_user_id', $courierId)->whereYear('created_at', $currentYear)->whereMonth('created_at', $month)->count();
+                    $chartDataCompleted[] = Order::where('created_by_user_id', $courierId)->whereYear('updated_at', $currentYear)->whereMonth('updated_at', $month)->where('status', 'selesai')->count();
+                    $chartDataReturned[] = OrderReturn::whereHas('order', fn($q) => $q->where('created_by_user_id', $courierId))->whereYear('created_at', $currentYear)->whereMonth('created_at', $month)->count();
+                }
+                $dateRangeText = $currentYear;
+                break;
+            case 'last_7_days':
+            default:
+                $endDate = Carbon::today();
+                $startDate = Carbon::today()->subDays(6);
+                for ($i = 6; $i >= 0; $i--) {
+                    $date = Carbon::today()->subDays($i);
+                    $chartLabels[] = $date->format('d M');
+                    $chartData[] = Order::where('created_by_user_id', $courierId)->whereDate('created_at', $date)->count();
+                    $chartDataCompleted[] = Order::where('created_by_user_id', $courierId)->whereDate('updated_at', $date)->where('status', 'selesai')->count();
+                    $chartDataReturned[] = OrderReturn::whereHas('order', fn($q) => $q->where('created_by_user_id', $courierId))->whereDate('created_at', $date)->count();
+                }
+                $dateRangeText = $startDate->isoFormat('D MMM') . ' - ' . $endDate->isoFormat('D MMM');
+                break;
+        }
+
+        return response()->json([
+            'chartLabels' => $chartLabels,
+            'chartData' => $chartData,
+            'chartDataCompleted' => $chartDataCompleted,
+            'chartDataReturned' => $chartDataReturned,
+            'dateRangeText' => $dateRangeText,
+            'totalOrdersInRange' => array_sum($chartData),
+            'totalCompletedOrdersInRange' => array_sum($chartDataCompleted),
+            'totalReturnedOrdersInRange' => array_sum($chartDataReturned),
+        ]);
     }
 }
