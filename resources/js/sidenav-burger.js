@@ -200,7 +200,7 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("Desktop: Sidebar initialized as expanded");
         } else {
             // Mobile: hide sidebar by default
-            sidebarVisible = true; // Set to true first so hideSidebar() works correctly
+            sidebarVisible = false;
             hideSidebar();
         }
     }
