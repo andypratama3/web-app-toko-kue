@@ -10,11 +10,12 @@ use App\Models\User;
 use App\Models\Order;
 use App\Models\Customer;
 use App\Models\Region;
+use App\Models\OrderReturn;
 use Carbon\Carbon;
 
 class AdminDashboardController extends Controller
 {
-    public function index(string $region)
+    public function index(Request $request, string $region)
     {
         $admin = Auth::user();
 
@@ -96,6 +97,82 @@ class AdminDashboardController extends Controller
             $query->where('slug', $region);
         })->latest()->paginate(5, ['*'], 'couriers_page');
 
+        // --- LOGIKA BARU UNTUK GRAFIK PENJUALAN ADMIN ---
+        $filter = $request->input('filter', 'last_7_days');
+        $chartLabels = [];
+        $chartDataTotal = [];
+        $chartDataVerified = [];
+        $chartDataVerifiedWithReturn = [];
+        $dateRangeText = '';
+
+        $currentYear = Carbon::now()->year;
+        $currentMonth = Carbon::now()->month;
+
+        switch ($filter) {
+            case 'daily':
+                $daysInMonth = Carbon::now()->daysInMonth;
+                for ($day = 1; $day <= $daysInMonth; $day++) {
+                    $date = Carbon::createFromDate($currentYear, $currentMonth, $day);
+                    $chartLabels[] = $date->format('d');
+
+                    $chartDataTotal[] = Order::where('region_id', $regionId)->whereDate('created_at', $date)->count();
+                    $chartDataVerified[] = Order::where('region_id', $regionId)->where('status', 'diverifikasi_admin')->whereDate('updated_at', $date)->count();
+                    $chartDataVerifiedWithReturn[] = Order::where('region_id', $regionId)->where('status', 'diverifikasi_admin')->whereHas('returns')->whereDate('updated_at', $date)->count();
+                }
+                $dateRangeText = Carbon::now()->isoFormat('MMMM YYYY');
+                break;
+
+            case 'weekly':
+                $startDate = Carbon::now()->startOfMonth();
+                $endDate = Carbon::now()->endOfMonth();
+                $weekNumber = 1;
+                while ($startDate->lte($endDate)) {
+                    $weekEndDate = $startDate->copy()->endOfWeek(Carbon::SATURDAY);
+                    if ($weekEndDate->gt($endDate)) $weekEndDate = $endDate;
+
+                    $chartLabels[] = 'Minggu ' . $weekNumber;
+                    $chartDataTotal[] = Order::where('region_id', $regionId)->whereBetween('created_at', [$startDate, $weekEndDate])->count();
+                    $chartDataVerified[] = Order::where('region_id', $regionId)->where('status', 'diverifikasi_admin')->whereBetween('updated_at', [$startDate, $weekEndDate])->count();
+                    $chartDataVerifiedWithReturn[] = Order::where('region_id', $regionId)->where('status', 'diverifikasi_admin')->whereHas('returns')->whereBetween('updated_at', [$startDate, $weekEndDate])->count();
+
+                    $startDate = $weekEndDate->copy()->addDay();
+                    $weekNumber++;
+                }
+                $dateRangeText = Carbon::now()->isoFormat('MMMM YYYY');
+                break;
+
+            case 'monthly':
+                for ($month = 1; $month <= 12; $month++) {
+                    $date = Carbon::createFromDate($currentYear, $month, 1);
+                    $chartLabels[] = $date->isoFormat('MMM');
+
+                    $chartDataTotal[] = Order::where('region_id', $regionId)->whereYear('created_at', $currentYear)->whereMonth('created_at', $month)->count();
+                    $chartDataVerified[] = Order::where('region_id', $regionId)->where('status', 'diverifikasi_admin')->whereYear('updated_at', $currentYear)->whereMonth('updated_at', $month)->count();
+                    $chartDataVerifiedWithReturn[] = Order::where('region_id', $regionId)->where('status', 'diverifikasi_admin')->whereHas('returns')->whereYear('updated_at', $currentYear)->whereMonth('updated_at', $month)->count();
+                }
+                $dateRangeText = $currentYear;
+                break;
+
+            case 'last_7_days':
+            default:
+                for ($i = 6; $i >= 0; $i--) {
+                    $date = Carbon::today()->subDays($i);
+                    $chartLabels[] = $date->format('d M');
+
+                    $chartDataTotal[] = Order::where('region_id', $regionId)->whereDate('created_at', $date)->count();
+                    $chartDataVerified[] = Order::where('region_id', $regionId)->where('status', 'diverifikasi_admin')->whereDate('updated_at', $date)->count();
+                    $chartDataVerifiedWithReturn[] = Order::where('region_id', $regionId)->where('status', 'diverifikasi_admin')->whereHas('returns')->whereDate('updated_at', $date)->count();
+                }
+                $endDate = Carbon::today();
+                $startDate = Carbon::today()->subDays(6);
+                $dateRangeText = $startDate->isoFormat('D MMM') . ' - ' . $endDate->isoFormat('D MMM');
+                break;
+        }
+
+        $totalOrdersInRange = array_sum($chartDataTotal);
+        $totalVerifiedInRange = array_sum($chartDataVerified);
+        $totalVerifiedWithReturnInRange = array_sum($chartDataVerifiedWithReturn);
+
         // Kirim semua variabel ke view, termasuk variabel persentase yang baru
         return view('dashboard.admin.dashboard', compact(
             'couriers',
@@ -106,7 +183,16 @@ class AdminDashboardController extends Controller
             'incomePercentageChange',
             'salesPercentageChange',
             'customerPercentageChange',
-            'newCustomerPercentageChange'
+            'newCustomerPercentageChange',
+            'filter',
+            'chartLabels',
+            'chartDataTotal',
+            'chartDataVerified',
+            'chartDataVerifiedWithReturn',
+            'dateRangeText',
+            'totalOrdersInRange',
+            'totalVerifiedInRange',
+            'totalVerifiedWithReturnInRange'
         ));
     }
 

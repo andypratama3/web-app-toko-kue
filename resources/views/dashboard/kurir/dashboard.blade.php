@@ -3,22 +3,19 @@
 @section('page_title', 'Dashboard')
 
 @section('content')
-<?php
+    <?php
 
-use App\Models\OrderReturn;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Request;
-use Illuminate\Support\Str;
+    use App\Models\OrderReturn;
+    use Carbon\Carbon;
+    use Illuminate\Support\Facades\Auth;
+    use Illuminate\Support\Facades\Request;
+    use Illuminate\Support\Str;
 
+    $today = Carbon::today();
+    $loggedInCourierRegionId = Auth::user()->region_id;
+    $loggedInCourierId = Auth::id();
 
-$today = Carbon::today();
-$loggedInCourierRegionId = Auth::user()->region_id;
-$loggedInCourierId = Auth::id();
-
-
-
-        $statusLabelMap = [
+    $statusLabelMap = [
         'baru' => 'Baru',
         'dikemas' => 'Dikemas',
         'diambil' => 'Diambil',
@@ -30,283 +27,291 @@ $loggedInCourierId = Auth::id();
         'diverifikasi_admin' => 'Valid',
         'dikembalikan' => 'Retur',
         'dibatalkan' => 'Dibatalkan',
-        ];
+    ];
 
-        $labelStatus = function ($status) use ($statusLabelMap) {
+    $labelStatus = function ($status) use ($statusLabelMap) {
         return $statusLabelMap[$status] ?? ucwords(str_replace('_', ' ', $status));
-        };
+    };
 
-// --- Statistik Harian (Diperbarui dengan filter kurir) ---
-$totalOrdersToday = App\Models\Order::where('created_by_user_id', $loggedInCourierId)
-    ->whereDate('created_at', $today)
-    ->count();
+    // --- Statistik Harian (Diperbarui dengan filter kurir) ---
+    $totalOrdersToday = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereDate('created_at', $today)->count();
 
-$totalCustomersInRegion = App\Models\Customer::where('added_by_user_id', $loggedInCourierId)
-    ->count();
+    $totalCustomersInRegion = App\Models\Customer::where('added_by_user_id', $loggedInCourierId)->count();
 
-$completedOrdersToday = App\Models\Order::where('created_by_user_id', $loggedInCourierId)
-    ->whereDate('updated_at', $today)
-    ->where('status', 'selesai')
-    ->count();
+    $completedOrdersToday = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereDate('updated_at', $today)->where('status', 'selesai')->count();
 
-$receivedByBuyerToday = App\Models\Order::where('created_by_user_id', $loggedInCourierId)
-    ->whereDate('received_by_buyer_at', $today)
-    ->where('status', 'diterima_pembeli')
-    ->count();
+    $receivedByBuyerToday = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereDate('received_by_buyer_at', $today)->where('status', 'diterima_pembeli')->count();
 
-// Menghitung retur berdasarkan pesanan yang dibuat oleh kurir
-$totalReturnedOrdersToday = OrderReturn::whereHas('order', function ($query) use ($loggedInCourierId) {
+    // Menghitung retur berdasarkan pesanan yang dibuat oleh kurir
+    $totalReturnedOrdersToday = OrderReturn::whereHas('order', function ($query) use ($loggedInCourierId) {
         $query->where('created_by_user_id', $loggedInCourierId);
     })
-    ->whereDate('created_at', $today)
-    ->count();
+        ->whereDate('created_at', $today)
+        ->count();
 
+    // --- Pesanan Terbaru (Tetap Sama, sudah difilter) ---
+    $latestOrders = App\Models\Order::where('created_by_user_id', $loggedInCourierId)
+        ->with(['customer', 'items'])
+        ->latest()
+        ->take(3)
+        ->get();
 
-// --- Pesanan Terbaru (Tetap Sama, sudah difilter) ---
-$latestOrders = App\Models\Order::where('created_by_user_id', $loggedInCourierId)
-    ->with(['customer', 'items'])
-    ->latest()
-    ->take(3)
-    ->get();
+    // --- Logika Grafik Diperbarui dengan filter kurir ---
+    $filter = Request::input('filter', 'last_7_days');
+    $chartLabels = [];
+    $chartData = [];
+    $chartDataCompleted = [];
+    $chartDataReturned = [];
+    $chartTitle = 'Chart Pesanan';
+    $currentYear = Carbon::now()->year;
+    $currentMonth = Carbon::now()->month;
+    $dateRangeText = '';
 
-// --- Logika Grafik Diperbarui dengan filter kurir ---
-$filter = Request::input('filter', 'last_7_days');
-$chartLabels = [];
-$chartData = [];
-$chartDataCompleted = [];
-$chartDataReturned = [];
-$chartTitle = 'Chart Pesanan';
-$currentYear = Carbon::now()->year;
-$currentMonth = Carbon::now()->month;
-$dateRangeText = '';
+    // Label untuk dropdown
+    $filterLabels = [
+        'last_7_days' => '7 Hari Terakhir',
+        'daily' => 'Harian (Bulan Ini)',
+        'weekly' => 'Mingguan (Bulan Ini)',
+        'monthly' => 'Bulanan (Tahun Ini)',
+    ];
+    $currentFilterLabel = $filterLabels[$filter] ?? 'Pilih Filter';
 
-// Label untuk dropdown
-$filterLabels = [
-    'last_7_days' => '7 Hari Terakhir',
-    'daily' => 'Harian (Bulan Ini)',
-    'weekly' => 'Mingguan (Bulan Ini)',
-    'monthly' => 'Bulanan (Tahun Ini)',
-];
-$currentFilterLabel = $filterLabels[$filter] ?? 'Pilih Filter';
+    switch ($filter) {
+        case 'daily':
+            $daysInMonth = Carbon::now()->daysInMonth;
+            for ($day = 1; $day <= $daysInMonth; $day++) {
+                $date = Carbon::createFromDate($currentYear, $currentMonth, $day);
+                $chartLabels[] = $date->format('d');
 
-switch ($filter) {
-    case 'daily':
-        $daysInMonth = Carbon::now()->daysInMonth;
-        for ($day = 1; $day <= $daysInMonth; $day++) {
-            $date = Carbon::createFromDate($currentYear, $currentMonth, $day);
-            $chartLabels[] = $date->format('d');
-
-            $chartData[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereDate('created_at', $date)->count();
-            $chartDataCompleted[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereDate('updated_at', $date)->where('status', 'selesai')->count();
-            $chartDataReturned[] = App\Models\OrderReturn::whereHas('order', function ($query) use ($loggedInCourierId) {
-                $query->where('created_by_user_id', $loggedInCourierId);
-            })->whereDate('created_at', $date)->count();
-        }
-        $dateRangeText = Carbon::now()->isoFormat('MMMM YYYY');
-        break;
-
-    case 'weekly':
-        $startDate = Carbon::now()->startOfMonth();
-        $endDate = Carbon::now()->endOfMonth();
-        $weekNumber = 1;
-        while ($startDate->lte($endDate)) {
-            $weekEndDate = $startDate->copy()->endOfWeek(Carbon::SATURDAY);
-            if ($weekEndDate->gt($endDate)) {
-                $weekEndDate = $endDate;
+                $chartData[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereDate('created_at', $date)->count();
+                $chartDataCompleted[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereDate('updated_at', $date)->where('status', 'selesai')->count();
+                $chartDataReturned[] = App\Models\OrderReturn::whereHas('order', function ($query) use ($loggedInCourierId) {
+                    $query->where('created_by_user_id', $loggedInCourierId);
+                })
+                    ->whereDate('created_at', $date)
+                    ->count();
             }
-            $chartLabels[] = 'Minggu Ke-' . $weekNumber;
+            $dateRangeText = Carbon::now()->isoFormat('MMMM YYYY');
+            break;
 
-            $chartData[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereBetween('created_at', [$startDate, $weekEndDate])->count();
-            $chartDataCompleted[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereBetween('updated_at', [$startDate, $weekEndDate])->where('status', 'selesai')->count();
-            $chartDataReturned[] = App\Models\OrderReturn::whereHas('order', function ($query) use ($loggedInCourierId) {
-                $query->where('created_by_user_id', $loggedInCourierId);
-            })->whereBetween('created_at', [$startDate, $weekEndDate])->count();
+        case 'weekly':
+            $startDate = Carbon::now()->startOfMonth();
+            $endDate = Carbon::now()->endOfMonth();
+            $weekNumber = 1;
+            while ($startDate->lte($endDate)) {
+                $weekEndDate = $startDate->copy()->endOfWeek(Carbon::SATURDAY);
+                if ($weekEndDate->gt($endDate)) {
+                    $weekEndDate = $endDate;
+                }
+                $chartLabels[] = 'Minggu Ke-' . $weekNumber;
 
-            $startDate = $weekEndDate->copy()->addDay();
-            $weekNumber++;
-        }
-        $dateRangeText = Carbon::now()->isoFormat('MMMM YYYY');
-        break;
+                $chartData[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)
+                    ->whereBetween('created_at', [$startDate, $weekEndDate])
+                    ->count();
+                $chartDataCompleted[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)
+                    ->whereBetween('updated_at', [$startDate, $weekEndDate])
+                    ->where('status', 'selesai')
+                    ->count();
+                $chartDataReturned[] = App\Models\OrderReturn::whereHas('order', function ($query) use ($loggedInCourierId) {
+                    $query->where('created_by_user_id', $loggedInCourierId);
+                })
+                    ->whereBetween('created_at', [$startDate, $weekEndDate])
+                    ->count();
 
-    case 'monthly':
-        for ($month = 1; $month <= 12; $month++) {
-            $date = Carbon::createFromDate($currentYear, $month, 1);
-            $chartLabels[] = $date->isoFormat('MMM');
+                $startDate = $weekEndDate->copy()->addDay();
+                $weekNumber++;
+            }
+            $dateRangeText = Carbon::now()->isoFormat('MMMM YYYY');
+            break;
 
-            $chartData[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereYear('created_at', $currentYear)->whereMonth('created_at', $month)->count();
-            $chartDataCompleted[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereYear('updated_at', $currentYear)->whereMonth('updated_at', $month)->where('status', 'selesai')->count();
-            $chartDataReturned[] = App\Models\OrderReturn::whereHas('order', function ($query) use ($loggedInCourierId) {
-                $query->where('created_by_user_id', $loggedInCourierId);
-            })->whereYear('created_at', $currentYear)->whereMonth('created_at', $month)->count();
-        }
-        $dateRangeText = $currentYear;
-        break;
+        case 'monthly':
+            for ($month = 1; $month <= 12; $month++) {
+                $date = Carbon::createFromDate($currentYear, $month, 1);
+                $chartLabels[] = $date->isoFormat('MMM');
 
-    case 'last_7_days':
-    default:
-        $endDate = Carbon::today();
-        $startDate = Carbon::today()->subDays(6);
-        for ($i = 6; $i >= 0; $i--) {
-            $date = Carbon::today()->subDays($i);
-            $chartLabels[] = $date->format('d M');
+                $chartData[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereYear('created_at', $currentYear)->whereMonth('created_at', $month)->count();
+                $chartDataCompleted[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereYear('updated_at', $currentYear)->whereMonth('updated_at', $month)->where('status', 'selesai')->count();
+                $chartDataReturned[] = App\Models\OrderReturn::whereHas('order', function ($query) use ($loggedInCourierId) {
+                    $query->where('created_by_user_id', $loggedInCourierId);
+                })
+                    ->whereYear('created_at', $currentYear)
+                    ->whereMonth('created_at', $month)
+                    ->count();
+            }
+            $dateRangeText = $currentYear;
+            break;
 
-            $chartData[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereDate('created_at', $date)->count();
-            $chartDataCompleted[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereDate('updated_at', $date)->where('status', 'selesai')->count();
-            $chartDataReturned[] = App\Models\OrderReturn::whereHas('order', function ($query) use ($loggedInCourierId) {
-                $query->where('created_by_user_id', $loggedInCourierId);
-            })->whereDate('created_at', $date)->count();
-        }
-        $dateRangeText = $startDate->isoFormat('D MMM') . ' - ' . $endDate->isoFormat('D MMM');
-        break;
-}
+        case 'last_7_days':
+        default:
+            $endDate = Carbon::today();
+            $startDate = Carbon::today()->subDays(6);
+            for ($i = 6; $i >= 0; $i--) {
+                $date = Carbon::today()->subDays($i);
+                $chartLabels[] = $date->format('d M');
 
-// Hitung total berdasarkan rentang yang dipilih
-$totalOrdersInRange = array_sum($chartData);
-$totalCompletedOrdersInRange = array_sum($chartDataCompleted);
-$totalReturnedOrdersInRange = array_sum($chartDataReturned);
+                $chartData[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereDate('created_at', $date)->count();
+                $chartDataCompleted[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereDate('updated_at', $date)->where('status', 'selesai')->count();
+                $chartDataReturned[] = App\Models\OrderReturn::whereHas('order', function ($query) use ($loggedInCourierId) {
+                    $query->where('created_by_user_id', $loggedInCourierId);
+                })
+                    ->whereDate('created_at', $date)
+                    ->count();
+            }
+            $dateRangeText = $startDate->isoFormat('D MMM') . ' - ' . $endDate->isoFormat('D MMM');
+            break;
+    }
 
-?>
-<!-- Enhanced Dashboard Cards -->
-<div class="w-full max-w full">
-    <div class="flex flex-wrap gap-6 -mx-3">
-        <div class="w-full max-w-full px-3 space-y-4 lg:flex-nome">
-            <!-- Enhanced Achievement Card -->
-            <div class="mb-6">
-                <div
-                    class="relative overflow-hidden flex flex-col flex-none max-w-full gap-4 p-6 px-6 py-6 shadow-2xl rounded-3xl xl:gap-0 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 border border-amber-100 dark:border-slate-600">
-                    <!-- Background Pattern -->
-                    <div class="absolute top-0 right-0 w-32 h-32 opacity-10">
-                        <div
-                            class="w-full h-full bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full transform rotate-45 translate-x-8 -translate-y-8">
-                        </div>
-                    </div>
+    // Hitung total berdasarkan rentang yang dipilih
+    $totalOrdersInRange = array_sum($chartData);
+    $totalCompletedOrdersInRange = array_sum($chartDataCompleted);
+    $totalReturnedOrdersInRange = array_sum($chartDataReturned);
 
-                    <div class="relative z-10 flex items-center justify-between mb-6">
-                        <div class="flex items-center gap-3">
-                            <div class="p-3 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl shadow-lg">
-                                <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path
-                                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <!-- Greeting Container -->
-                                <div class="flex items-baseline gap-2">
-                                    <div class="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent dark:from-white dark:to-gray-300" id="ucapan">
-                                        <!-- Greeting text will be injected by JS -->
-                                    </div>
-                                    <div id="greeting-emoji" class="text-2xl">
-                                        <!-- Emoji will be injected by JS -->
-                                    </div>
-                                </div>
-                                <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">Your Achievement Today
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Stats Grid -->
-                    <div class="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <!-- Total Pesanan Card -->
-                        <div
-                            class="p-3 bg-white/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl border border-white/20 dark:border-slate-600/20 shadow-lg">
-                            <div class="flex items-center space-x-3">
-                                <div class="flex-shrink-0">
-                                    <div
-                                        class="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full dark:bg-blue-900/50">
-                                        <i class="text-lg text-blue-600 fas fa-shopping-basket dark:text-blue-400"></i>
-                                    </div>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-xs text-gray-500 truncate dark:text-gray-400">Total Hari Ini</p>
-                                    <p class="text-xl font-bold text-gray-800 truncate dark:text-white">
-                                        {{ $totalOrdersToday }}
-                                    </p>
-                                </div>
+    ?>
+    <!-- Enhanced Dashboard Cards -->
+    <div class="w-full max-w full">
+        <div class="flex flex-wrap gap-6 -mx-3">
+            <div class="w-full max-w-full px-3 space-y-4 lg:flex-nome">
+                <!-- Enhanced Achievement Card -->
+                <div class="mb-6">
+                    <div
+                        class="relative overflow-hidden flex flex-col flex-none max-w-full gap-4 p-6 px-6 py-6 shadow-2xl rounded-3xl xl:gap-0 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 border border-amber-100 dark:border-slate-600">
+                        <!-- Background Pattern -->
+                        <div class="absolute top-0 right-0 w-32 h-32 opacity-10">
+                            <div
+                                class="w-full h-full bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full transform rotate-45 translate-x-8 -translate-y-8">
                             </div>
                         </div>
-                        <!-- Jumlah Customer Card -->
-                        <div
-                            class="p-3 bg-white/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl border border-white/20 dark:border-slate-600/20 shadow-lg">
-                            <div class="flex items-center space-x-3">
-                                <div class="flex-shrink-0">
-                                    <div
-                                        class="flex items-center justify-center w-10 h-10 bg-orange-100 rounded-full dark:bg-orange-900/50">
-                                        <i class="text-lg text-orange-600 fas fa-users dark:text-orange-400"></i>
-                                    </div>
+
+                        <div class="relative z-10 flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-3">
+                                <div class="p-3 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl shadow-lg">
+                                    <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path
+                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                    </svg>
                                 </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-xs text-gray-500 truncate dark:text-gray-400">Customer</p>
-                                    <p class="text-xl font-bold text-gray-800 truncate dark:text-white">
-                                        {{ $totalCustomersInRegion }}
-                                    </p>
+                                <div>
+                                    <!-- Greeting Container -->
+                                    <div class="flex items-baseline gap-2">
+                                        <div class="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent dark:from-white dark:to-gray-300"
+                                            id="ucapan">
+                                            <!-- Greeting text will be injected by JS -->
+                                        </div>
+                                        <div id="greeting-emoji" class="text-2xl">
+                                            <!-- Emoji will be injected by JS -->
+                                        </div>
+                                    </div>
+                                    <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">Your Achievement Today
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <!-- Selesai Card -->
-                        <div
-                            class="p-3 bg-white/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl border border-white/20 dark:border-slate-600/20 shadow-lg">
-                            <div class="flex items-center space-x-3">
-                                <div class="flex-shrink-0">
-                                    <div
-                                        class="flex items-center justify-center w-10 h-10 bg-green-100 rounded-full dark:bg-green-900/50">
-                                        <i class="text-lg text-green-600 fas fa-check-circle dark:text-green-400"></i>
+
+                        <!-- Stats Grid -->
+                        <div class="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <!-- Total Pesanan Card -->
+                            <div
+                                class="p-3 bg-white/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl border border-white/20 dark:border-slate-600/20 shadow-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="flex-shrink-0">
+                                        <div
+                                            class="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full dark:bg-blue-900/50">
+                                            <i class="text-lg text-blue-600 fas fa-shopping-basket dark:text-blue-400"></i>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-xs text-gray-500 truncate dark:text-gray-400">Selesai</p>
-                                    <p class="text-xl font-bold text-gray-800 truncate dark:text-white">
-                                        {{ $completedOrdersToday }}
-                                    </p>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-xs text-gray-500 truncate dark:text-gray-400">Total Hari Ini</p>
+                                        <p class="text-xl font-bold text-gray-800 truncate dark:text-white">
+                                            {{ $totalOrdersToday }}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <!-- Kartu Return -->
-                        <div class="p-3 bg-white/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl border border-white/20 dark:border-slate-600/20 shadow-lg">
-                            <div class="flex items-center space-x-3">
-                                <div class="flex-shrink-0">
-                                    <div class="flex items-center justify-center w-10 h-10 bg-red-100 rounded-full dark:bg-red-900/50">
-                                        <i class="text-lg text-red-600 fas fa-undo dark:text-red-400"></i>
+                            <!-- Jumlah Customer Card -->
+                            <div
+                                class="p-3 bg-white/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl border border-white/20 dark:border-slate-600/20 shadow-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="flex-shrink-0">
+                                        <div
+                                            class="flex items-center justify-center w-10 h-10 bg-orange-100 rounded-full dark:bg-orange-900/50">
+                                            <i class="text-lg text-orange-600 fas fa-users dark:text-orange-400"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-xs text-gray-500 truncate dark:text-gray-400">Customer</p>
+                                        <p class="text-xl font-bold text-gray-800 truncate dark:text-white">
+                                            {{ $totalCustomersInRegion }}
+                                        </p>
                                     </div>
                                 </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-xs text-gray-500 truncate dark:text-gray-400">Return</p>
-                                    <p class="text-xl font-bold text-gray-800 truncate dark:text-white">{{ $totalReturnedOrdersToday }}</p>
+                            </div>
+                            <!-- Selesai Card -->
+                            <div
+                                class="p-3 bg-white/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl border border-white/20 dark:border-slate-600/20 shadow-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="flex-shrink-0">
+                                        <div
+                                            class="flex items-center justify-center w-10 h-10 bg-green-100 rounded-full dark:bg-green-900/50">
+                                            <i class="text-lg text-green-600 fas fa-check-circle dark:text-green-400"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-xs text-gray-500 truncate dark:text-gray-400">Selesai</p>
+                                        <p class="text-xl font-bold text-gray-800 truncate dark:text-white">
+                                            {{ $completedOrdersToday }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Kartu Return -->
+                            <div
+                                class="p-3 bg-white/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl border border-white/20 dark:border-slate-600/20 shadow-lg">
+                                <div class="flex items-center space-x-3">
+                                    <div class="flex-shrink-0">
+                                        <div
+                                            class="flex items-center justify-center w-10 h-10 bg-red-100 rounded-full dark:bg-red-900/50">
+                                            <i class="text-lg text-red-600 fas fa-undo dark:text-red-400"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-xs text-gray-500 truncate dark:text-gray-400">Return</p>
+                                        <p class="text-xl font-bold text-gray-800 truncate dark:text-white">
+                                            {{ $totalReturnedOrdersToday }}</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Enhanced Action Cards -->
-            <div class="grid gap-4">
-                <div class="flex flex-wrap -mx-3">
-                    <!-- Enhanced Pesanan Card -->
-                    <a href="{{ route('kurir.pesanan.create') }}" class="w-1/2 px-3">
-                        <div
-                            class="group relative overflow-hidden flex items-center justify-center md:justify-start p-4 transition-all duration-300 ease-out transform bg-gradient-to-br from-green-50 to-emerald-50 dark:from-slate-800 dark:to-slate-700 shadow-xl rounded-2xl hover:shadow-2xl hover:scale-105 border border-green-100 dark:border-slate-600">
-                            <!-- Background Animation -->
+                <!-- Enhanced Action Cards -->
+                <div class="grid gap-4">
+                    <div class="flex flex-wrap -mx-3">
+                        <!-- Enhanced Pesanan Card -->
+                        <a href="{{ route('kurir.pesanan.create') }}" class="w-1/2 px-3">
                             <div
-                                class="absolute inset-0 bg-gradient-to-br from-green-400/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            </div>
-                            <div class="relative z-10 flex items-center">
+                                class="group relative overflow-hidden flex items-center justify-center md:justify-start p-4 transition-all duration-300 ease-out transform bg-gradient-to-br from-green-50 to-emerald-50 dark:from-slate-800 dark:to-slate-700 shadow-xl rounded-2xl hover:shadow-2xl hover:scale-105 border border-green-100 dark:border-slate-600">
+                                <!-- Background Animation -->
                                 <div
-                                    class="flex items-center justify-center w-12 h-12 md:mr-3 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white"
-                                        viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M12 3v2a2 2 0 01-2 2h4a2 2 0 01-2-2V3zm-2 9h4m-4 4h4" />
-                                    </svg>
+                                    class="absolute inset-0 bg-gradient-to-br from-green-400/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                 </div>
-                                <div class="flex-1 min-w-0 hidden md:block">
+                                <div class="relative z-10 flex items-center">
                                     <div
-                                        class="text-lg font-bold text-gray-800 dark:text-white mb-1 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300 truncate">
-                                        Pesanan</div>
-                                    <div class="text-xs text-gray-600 dark:text-gray-400 font-medium truncate">
-                                        Buat pesanan baru</div>
-                                </div>
-                                {{-- <div
+                                        class="flex items-center justify-center w-12 h-12 md:mr-3 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl shadow-lg group-hover:shadow-xl transition-shadow duration-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M12 3v2a2 2 0 01-2 2h4a2 2 0 01-2-2V3zm-2 9h4m-4 4h4" />
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0 hidden md:block">
+                                        <div
+                                            class="text-lg font-bold text-gray-800 dark:text-white mb-1 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300 truncate">
+                                            Pesanan</div>
+                                        <div class="text-xs text-gray-600 dark:text-gray-400 font-medium truncate">
+                                            Buat pesanan baru</div>
+                                    </div>
+                                    {{-- <div
                                         class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex-shrink-0 hidden md:flex ml-auto">
                                         <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
@@ -314,36 +319,36 @@ $totalReturnedOrdersInRange = array_sum($chartDataReturned);
                                                 d="M9 5l7 7-7 7" />
                                         </svg>
                                     </div> --}}
+                                </div>
                             </div>
-                        </div>
-                    </a>
+                        </a>
 
-                    <!-- Enhanced Customer Card -->
-                    <button type="button" id="add-customer" class="w-1/2 px-3 mb-6 js-open-modal-btn"
-                        data-target-modal="create-customer-modal">
-                        <div
-                            class="group relative overflow-hidden flex items-center justify-center md:justify-start p-4 transition-all duration-300 ease-out transform bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-700 shadow-xl rounded-2xl hover:shadow-2xl hover:scale-105 border border-blue-100 dark:border-slate-600">
-                            <!-- Background Animation -->
+                        <!-- Enhanced Customer Card -->
+                        <button type="button" id="add-customer" class="w-1/2 px-3 mb-6 js-open-modal-btn"
+                            data-target-modal="create-customer-modal">
                             <div
-                                class="absolute inset-0 bg-gradient-to-br from-blue-400/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            </div>
-                            <div class="relative z-10 flex items-center">
+                                class="group relative overflow-hidden flex items-center justify-center md:justify-start p-4 transition-all duration-300 ease-out transform bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-700 shadow-xl rounded-2xl hover:shadow-2xl hover:scale-105 border border-blue-100 dark:border-slate-600">
+                                <!-- Background Animation -->
                                 <div
-                                    class="flex items-center justify-center w-12 h-12 md:mr-3 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white"
-                                        viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M18 9v6m3-3h-6M9 16a4 4 0 100-8 4 4 0 000 8zm0 0c-2.21 0-4 1.79-4 4v1h8v-1c0-2.21-1.79-4-4-4z" />
-                                    </svg>
+                                    class="absolute inset-0 bg-gradient-to-br from-blue-400/10 to-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                 </div>
-                                <div class="flex-1 min-w-0 text-left hidden md:block">
+                                <div class="relative z-10 flex items-center">
                                     <div
-                                        class="text-lg font-bold text-gray-800 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 truncate">
-                                        Customer</div>
-                                    <div class="text-xs text-gray-600 dark:text-gray-400 font-medium truncate">
-                                        Tambah customer baru</div>
-                                </div>
-                                {{-- <div
+                                        class="flex items-center justify-center w-12 h-12 md:mr-3 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl shadow-lg group-hover:shadow-xl transition-shadow duration-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-white"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M18 9v6m3-3h-6M9 16a4 4 0 100-8 4 4 0 000 8zm0 0c-2.21 0-4 1.79-4 4v1h8v-1c0-2.21-1.79-4-4-4z" />
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1 min-w-0 text-left hidden md:block">
+                                        <div
+                                            class="text-lg font-bold text-gray-800 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 truncate">
+                                            Customer</div>
+                                        <div class="text-xs text-gray-600 dark:text-gray-400 font-medium truncate">
+                                            Tambah customer baru</div>
+                                    </div>
+                                    {{-- <div
                                         class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex-shrink-0 hidden md:flex ml-auto">
                                         <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
@@ -351,759 +356,791 @@ $totalReturnedOrdersInRange = array_sum($chartDataReturned);
                                                 d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                         </svg>
                                     </div> --}}
-                            </div>
-                        </div>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Enhanced Notes Card -->
-        <div class="w-full max-w-full px-3 mt-0 mb-6 lg:mb-0 lg:flex-none">
-            <div
-                class="relative overflow-hidden flex flex-col min-w-0 break-words bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 shadow-2xl rounded-3xl bg-clip-border border border-gray-100 dark:border-slate-700">
-                <div class="p-6 pb-4 mb-0 rounded-t-4">
-                    <div class="flex-1">
-                        @if (Auth::user()->note)
-                        <div class="flex items-center mb-4">
-                            <div class="p-2 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg mr-3">
-                                <i class="text-sm text-white fas fa-sticky-note"></i>
-                            </div>
-                            <h6 class="mb-0 text-lg font-bold text-gray-800 dark:text-white">Catatan dari Admin
-                            </h6>
-                        </div>
-                        <div
-                            class="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-slate-700 dark:to-slate-600 rounded-2xl border-l-4 border-yellow-400">
-                            <p class="text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
-                                "{{ Auth::user()->note }}"
-                            </p>
-                        </div>
-                        @else
-                        <div class="flex items-center mb-4">
-                            <div class="p-2 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg mr-3">
-                                <i class="text-sm text-white fas fa-check-circle"></i>
-                            </div>
-                            <h6 class="mb-0 text-lg font-bold text-gray-800 dark:text-white">Tidak Ada Catatan Baru
-                            </h6>
-                        </div>
-                        <div
-                            class="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-slate-700 dark:to-slate-600 rounded-2xl border-l-4 border-green-400">
-                            <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
-                                Saat ini tidak ada catatan baru dari admin.
-                            </p>
-                        </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Redesigned Orders Chart -->
-        <div class="w-full max-w-full px-3 mt-0 lg:flex-none">
-            <div
-                class="relative overflow-hidden shadow-2xl rounded-3xl bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700">
-                <div class="p-6">
-                    <div class="flex flex-wrap items-center justify-between gap-4 mb-2">
-                        <div class="flex flex-col">
-                            <h6 class="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                                <svg class="w-6 h-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-                                </svg>
-                                <span>{{ $chartTitle }}</span>
-                            </h6>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">📆 {{ $dateRangeText }}</p>
-                        </div>
-                        <div class="flex items-center gap-4">
-                            <div class="flex items-center">
-                                <span class="w-3 h-3 mr-2 rounded-full bg-blue-500"></span>
-                                <span class="text-sm font-medium text-gray-600 dark:text-gray-300 mr-1">Total </span>
-                                <span class="text-sm font-bold text-gray-800 dark:text-white">{{ $totalOrdersInRange }}</span>
-                            </div>
-                            <div class="flex items-center">
-                                <span class="w-3 h-3 mr-2 rounded-full bg-green-500"></span>
-                                <span class="text-sm font-medium text-gray-600 dark:text-gray-300 mr-1">Selesai </span>
-                                <span class="text-sm font-bold text-gray-800 dark:text-white">{{ $totalCompletedOrdersInRange }}</span>
-                            </div>
-                            <div class="flex items-center">
-                                <span class="w-3 h-3 mr-2 rounded-full bg-red-500"></span>
-                                <span class="text-sm font-medium text-gray-600 dark:text-gray-300 mr-1">Return </span>
-                                <span class="text-sm font-bold text-gray-800 dark:text-white">{{ $totalReturnedOrdersInRange }}</span>
-                            </div>
-                            <div class="relative">
-                                <button id="chartFilterButton" type="button" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white focus:outline-none">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
-                                    </svg>
-                                </button>
-                                <div id="chartFilterDropdown" class="absolute right-0 z-20 mt-2 w-40 bg-white dark:bg-slate-700 rounded-lg shadow-lg border border-gray-200 dark:border-slate-600 hidden">
-                                    <a href="{{ url()->current() }}?filter=last_7_days" class="block px-4 py-2 text-sm font-semibold rounded-t-lg transition-colors duration-150 {{ $filter === 'last_7_days' ? 'bg-blue-100 text-blue-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-slate-600' }}">7 Hari</a>
-                                    <a href="{{ url()->current() }}?filter=daily" class="block px-4 py-2 text-sm font-semibold transition-colors duration-150 {{ $filter === 'daily' ? 'bg-blue-100 text-blue-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-slate-600' }}">Harian</a>
-                                    <a href="{{ url()->current() }}?filter=weekly" class="block px-4 py-2 text-sm font-semibold transition-colors duration-150 {{ $filter === 'weekly' ? 'bg-blue-100 text-blue-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-slate-600' }}">Mingguan</a>
-                                    <a href="{{ url()->current() }}?filter=monthly" class="block px-4 py-2 text-sm font-semibold rounded-b-lg transition-colors duration-150 {{ $filter === 'monthly' ? 'bg-blue-100 text-blue-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-slate-600' }}">Bulanan</a>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex-auto p-4 pt-0">
-                    <div>
-                        <canvas id="ordersChart" class="h-[250px] lg:h-[300px]"></canvas>
+                        </button>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Enhanced Latest Orders -->
-    <div class="flex flex-wrap mt-6 -mx-3">
-        <div class="w-full max-w-full px-3 mt-0 lg:flex-none">
-            <div class="flex flex-wrap mt-6 -mx-3">
-                <div class="w-full max-w-full px-3 mt-0 lg:flex-none">
-                    <div
-                        class="relative overflow-hidden flex flex-col min-w-0 mb-4 break-words bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 shadow-2xl rounded-3xl bg-clip-border border border-gray-100 dark:border-slate-700">
-                        <div class="p-6 pb-0 mb-0 rounded-t-3xl">
-                            <div class="flex items-center justify-between">
-                                <h5 class="text-xl font-bold text-gray-800 dark:text-white mb-1">🎯 Latest Orders
-                                </h5>
-                                <div class="p-2 bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg">
-                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                                    </svg>
+            <!-- Enhanced Notes Card -->
+            <div class="w-full max-w-full px-3 mt-0 mb-6 lg:mb-0 lg:flex-none">
+                <div
+                    class="relative overflow-hidden flex flex-col min-w-0 break-words bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 shadow-2xl rounded-3xl bg-clip-border border border-gray-100 dark:border-slate-700">
+                    <div class="p-6 pb-4 mb-0 rounded-t-4">
+                        <div class="flex-1">
+                            @if (Auth::user()->note)
+                                <div class="flex items-center mb-4">
+                                    <div class="p-2 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg mr-3">
+                                        <i class="text-sm text-white fas fa-sticky-note"></i>
+                                    </div>
+                                    <h6 class="mb-0 text-lg font-bold text-gray-800 dark:text-white">Catatan dari Admin
+                                    </h6>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="flex-auto px-0 pt-0 pb-2">
-                            <!-- Desktop Table View -->
-                            <div class="hidden p-0 overflow-x-auto md:block">
-                                <table class="items-center w-full mb-0 align-top border-collapse text-slate-500">
-                                    <thead class="align-bottom">
-                                        <tr>
-                                            <th
-                                                class="px-4 py-4 font-bold text-center text-gray-700 dark:text-gray-300 uppercase align-middle bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600 text-xs tracking-wider">
-                                                #</th>
-                                            <th
-                                                class="px-6 py-4 font-bold text-left text-gray-700 dark:text-gray-300 uppercase align-middle bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600 text-xs tracking-wider">
-                                                Invoice</th>
-                                            <th
-                                                class="px-6 py-4 font-bold text-left text-gray-700 dark:text-gray-300 uppercase align-middle bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600 text-xs tracking-wider">
-                                                Customer</th>
-                                            <th
-                                                class="px-6 py-4 font-bold text-left text-gray-700 dark:text-gray-300 uppercase align-middle bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600 text-xs tracking-wider">
-                                                Alamat</th>
-                                            <th
-                                                class="px-6 py-4 font-bold text-left text-gray-700 dark:text-gray-300 uppercase align-middle bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600 text-xs tracking-wider">
-                                                Total Pesanan</th>
-                                            <th
-                                                class="px-6 py-4 font-bold text-center text-gray-700 dark:text-gray-300 uppercase align-middle bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600 text-xs tracking-wider">
-                                                Status</th>
-                                            <th
-                                                class="px-4 py-4 font-bold text-center text-gray-700 dark:text-gray-300 uppercase align-middle bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600 text-xs tracking-wider">
-                                                Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @forelse($latestOrders as $loop => $order)
-                                        @php
-                                        $shortInvoice = '#' . substr($order->invoice_number, -3);
-                                        @endphp
-                                        <tr
-                                            class="hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors duration-200">
-                                            <td
-                                                class="p-4 align-middle text-center bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
-                                                <span
-                                                    class="text-sm font-semibold text-gray-600 dark:text-gray-300">{{ $loop->iteration }}</span>
-                                            </td>
-                                            <td
-                                                class="p-4 align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
-                                                <span
-                                                    class="text-sm font-semibold text-gray-800 dark:text-white">{{ $shortInvoice }}</span>
-                                            </td>
-                                            <td
-                                                class="p-4 align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
-                                                <div class="flex px-2 py-1">
-                                                    <div class="flex flex-col justify-center">
-                                                        <h6
-                                                            class="mb-0 text-sm font-semibold leading-normal text-gray-800 dark:text-white">
-                                                            {{ $order->customer->name ?? 'Pelanggan Dihapus' }}
-                                                        </h6>
-                                                        <p
-                                                            class="mb-0 text-xs leading-tight text-gray-500 dark:text-gray-400">
-                                                            {{ $order->phone ?? ($order->customer->phone ?? 'N/A') }}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td
-                                                class="p-4 align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
-                                                <p
-                                                    class="mb-0 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                    {{ Str::limit($order->address ?? 'Alamat tidak ada', 25) }}
-                                                </p>
-                                            </td>
-                                            {{-- PERBAIKAN DI SINI: Tombol Total Pesanan dikembalikan --}}
-                                            <td
-                                                class="p-4 align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
-                                                <button type="button"
-                                                    class="text-lg font-bold text-blue-600 transition-colors js-open-modal-btn dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
-                                                    data-target-modal="orderDetailsModal"
-                                                    onclick="fetchOrderDetails({{ $order->id }})">
-                                                    Rp {{ number_format($order->total_amount, 0, ',', '.') }}
-                                                </button>
-                                            </td>
-                                            <td
-                                                class="p-4 text-sm leading-normal text-center align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
-                                                @php
-                                                $status = $order->status ?? 'dikemas';
-                                                $statusText = ucfirst(str_replace('_', ' ', $status));
-                                                $statusClass = '';
-                                                switch ($status) {
-                                                case 'diambil': $statusClass = 'bg-blue-100 text-blue-800'; break;
-                                                case 'diantar': $statusClass = 'bg-yellow-100 text-yellow-800'; break;
-                                                case 'diterima_pembeli': $statusClass = 'bg-purple-100 text-purple-800'; break;
-                                                case 'selesai': $statusClass = 'bg-green-100 text-green-800'; break;
-                                                case 'menunggu_retur': $statusClass = 'bg-red-100 text-red-800'; break;
-                                                case 'menunggu_verifikasi_admin': $statusClass = 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'; break;
-                                                default: $statusClass = 'bg-gray-100 text-gray-800'; break;
-                                                }
-                                                @endphp
-                                                <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ $statusClass }}">{{ $statusText }}</span>
-                                            </td>
-                                            <td
-                                                class="p-4 text-center align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
-                                                <button type="button"
-                                                    class="p-2 text-gray-500 transition-colors rounded-full js-open-modal-btn hover:bg-gray-100 dark:hover:bg-slate-600"
-                                                    title="Ubah Status" data-target-modal="statusStepperModal"
-                                                    onclick="openStatusStepperModal({{ $order->id }})">
-                                                    <svg class="w-6 h-6" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24"
-                                                        xmlns="http://www.w3.org/2000/svg">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2.5" d="M9 5l7 7-7 7"></path>
-                                                    </svg>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        @empty
-                                        <tr>
-                                            <td colspan="7"
-                                                class="p-6 text-center text-gray-500 dark:text-gray-400">
-                                                Belum ada pesanan yang dibuat.
-                                            </td>
-                                        </tr>
-                                        @endforelse
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <!-- Mobile Card View -->
-                            <div class="px-2 py-2 space-y-3 md:hidden">
-                                @forelse($latestOrders as $loop => $order)
-                                @php
-                                $customerPhone = $order->phone ?? ($order->customer->phone ?? '');
-                                $formattedPhone = preg_replace('/[^0-9]/', '', $customerPhone);
-                                $shortInvoice = '#' . substr($order->invoice_number, -3);
-                                $customerName = $order->customer->name ?? 'Pelanggan Dihapus';
-                                $displayName = Str::words($customerName, 2, '');
-                                @endphp
                                 <div
-                                    class="p-3 bg-white/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl border border-white/20 dark:border-slate-600/20 shadow-lg">
-                                    <div class="flex items-start justify-between w-full space-x-3">
-                                        <div class="flex-shrink-0 pt-1">
-                                            <span
-                                                class="flex items-center justify-center w-6 h-6 text-xs font-bold text-gray-600 bg-gray-200 rounded-full dark:bg-slate-600 dark:text-gray-300">
-                                                {{ $loop->iteration }}
-                                            </span>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <div class="flex items-baseline space-x-2">
-                                                <h6 class="text-base font-bold text-gray-800 dark:text-white">
-                                                    {{ $displayName ?? 'Pelanggan Dihapus' }}
-                                                </h6>
-                                            </div>
-                                            {{-- PERBAIKAN DI SINI: Info pesanan dijadikan tombol modal lagi --}}
-                                            <button type="button"
-                                                class="block w-full mt-2 text-sm text-left text-gray-500 js-open-modal-btn dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                                                data-target-modal="orderDetailsModal"
-                                                onclick="fetchOrderDetails({{ $order->id }})">
-                                                <span>{{ $shortInvoice ?? 'N/A' }}</span>
-                                                <span class="mx-1">|</span>
-                                                <span>Rp
-                                                    {{ number_format($order->total_amount, 0, ',', '.') }}</span>
-                                            </button>
-                                        </div>
+                                    class="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-slate-700 dark:to-slate-600 rounded-2xl border-l-4 border-yellow-400">
+                                    <p class="text-gray-700 dark:text-gray-300 leading-relaxed font-medium">
+                                        "{{ Auth::user()->note }}"
+                                    </p>
+                                </div>
+                            @else
+                                <div class="flex items-center mb-4">
+                                    <div class="p-2 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg mr-3">
+                                        <i class="text-sm text-white fas fa-check-circle"></i>
+                                    </div>
+                                    <h6 class="mb-0 text-lg font-bold text-gray-800 dark:text-white">Tidak Ada Catatan Baru
+                                    </h6>
+                                </div>
+                                <div
+                                    class="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-slate-700 dark:to-slate-600 rounded-2xl border-l-4 border-green-400">
+                                    <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+                                        Saat ini tidak ada catatan baru dari admin.
+                                    </p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                                        <!-- Right side: Actions -->
-                                        <div class="flex flex-col items-end flex-shrink-0 space-y-2">
-                                            <!-- Status Badge -->
-                                            @php
-                                            $status = $order->status ?? 'dikemas';
-                                            $statusText = ucfirst(str_replace('_', ' ', $status));
-                                            $statusClass = '';
-                                            switch ($status) {
-                                            case 'diambil':
-                                            $statusClass = 'bg-blue-100 text-blue-800';
-                                            break;
-                                            case 'diantar':
-                                            $statusClass = 'bg-yellow-100 text-yellow-800';
-                                            break;
-                                            case 'diterima_pembeli':
-                                            $statusClass = 'bg-purple-100 text-purple-800';
-                                            break;
-                                            case 'selesai':
-                                            $statusClass = 'bg-green-100 text-green-800';
-                                            break;
-                                            case 'menunggu_retur':
-                                            $statusClass = 'bg-red-100 text-red-800';
-                                            break;
-                                            case 'menunggu_verifikasi_admin':
-                                            $statusClass = 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
-                                            break;
-                                            default:
-                                            $statusClass = 'bg-gray-100 text-gray-800';
-                                            break;
-                                            }
-                                            @endphp
-                                            <span
-                                                class="px-2 py-1 text-xs font-semibold rounded-full {{ $statusClass }}">
-                                                {{ $statusText }}
-                                            </span>
-                                            <div class="flex items-center space-x-3">
-                                                @if ($formattedPhone)
-                                                <a href="https://wa.me/{{ $formattedPhone }}"
-                                                    target="_blank"
-                                                    class="text-green-500 transition-colors hover:text-green-600">
-                                                    <i class="text-2xl fab fa-whatsapp"></i>
-                                                </a>
-                                                @endif
-                                                <button type="button"
-                                                    class="text-gray-400 js-open-modal-btn hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
-                                                    title="Ubah Status" data-target-modal="statusStepperModal"
-                                                    onclick="openStatusStepperModal({{ $order->id }})">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24"
-                                                        xmlns="http://www.w3.org/2000/svg">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2.5" d="M9 5l7 7-7 7"></path>
-                                                    </svg>
-                                                </button>
-                                            </div>
-                                        </div>
+            <!-- Redesigned Orders Chart -->
+            <div class="w-full max-w-full px-3 mt-0 lg:flex-none">
+                <div
+                    class="relative overflow-hidden shadow-2xl rounded-3xl bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700">
+                    <div class="p-6">
+                        <div class="flex flex-wrap items-center justify-between gap-4 mb-2">
+                            <div class="flex flex-col">
+                                <h6 class="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                                    <svg class="w-6 h-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                            d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+                                    </svg>
+                                    <span>{{ $chartTitle }}</span>
+                                </h6>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">📆 {{ $dateRangeText }}</p>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="flex items-center">
+                                    <span class="w-3 h-3 mr-2 rounded-full bg-blue-500"></span>
+                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-300 mr-1">Total </span>
+                                    <span
+                                        class="text-sm font-bold text-gray-800 dark:text-white">{{ $totalOrdersInRange }}</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-3 h-3 mr-2 rounded-full bg-green-500"></span>
+                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-300 mr-1">Selesai </span>
+                                    <span
+                                        class="text-sm font-bold text-gray-800 dark:text-white">{{ $totalCompletedOrdersInRange }}</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="w-3 h-3 mr-2 rounded-full bg-red-500"></span>
+                                    <span class="text-sm font-medium text-gray-600 dark:text-gray-300 mr-1">Return </span>
+                                    <span
+                                        class="text-sm font-bold text-gray-800 dark:text-white">{{ $totalReturnedOrdersInRange }}</span>
+                                </div>
+                                <div class="relative">
+                                    <button id="chartFilterButton" type="button"
+                                        class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white focus:outline-none">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z">
+                                            </path>
+                                        </svg>
+                                    </button>
+                                    <div id="chartFilterDropdown"
+                                        class="absolute right-0 z-20 mt-2 w-40 bg-white dark:bg-slate-700 rounded-lg shadow-lg border border-gray-200 dark:border-slate-600 hidden">
+                                        <a href="{{ url()->current() }}?filter=last_7_days"
+                                            class="block px-4 py-2 text-sm font-semibold rounded-t-lg transition-colors duration-150 {{ $filter === 'last_7_days' ? 'bg-blue-100 text-blue-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-slate-600' }}">7
+                                            Hari</a>
+                                        <a href="{{ url()->current() }}?filter=daily"
+                                            class="block px-4 py-2 text-sm font-semibold transition-colors duration-150 {{ $filter === 'daily' ? 'bg-blue-100 text-blue-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-slate-600' }}">Harian</a>
+                                        <a href="{{ url()->current() }}?filter=weekly"
+                                            class="block px-4 py-2 text-sm font-semibold transition-colors duration-150 {{ $filter === 'weekly' ? 'bg-blue-100 text-blue-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-slate-600' }}">Mingguan</a>
+                                        <a href="{{ url()->current() }}?filter=monthly"
+                                            class="block px-4 py-2 text-sm font-semibold rounded-b-lg transition-colors duration-150 {{ $filter === 'monthly' ? 'bg-blue-100 text-blue-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-slate-600' }}">Bulanan</a>
                                     </div>
                                 </div>
-                                @empty
-                                <div class="p-6 text-center text-gray-500 dark:text-gray-400">
-                                    Belum ada pesanan yang dibuat.
-                                </div>
-                                @endforelse
                             </div>
+                        </div>
+                    </div>
+                    <div class="flex-auto p-4 pt-0">
+                        <div>
+                            <canvas id="ordersChart" class="h-[250px] lg:h-[300px]"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        <!-- Enhanced Latest Orders -->
+        <div class="flex flex-wrap mt-6 -mx-3">
+            <div class="w-full max-w-full px-3 mt-0 lg:flex-none">
+                <div class="flex flex-wrap mt-6 -mx-3">
+                    <div class="w-full max-w-full px-3 mt-0 lg:flex-none">
+                        <div
+                            class="relative overflow-hidden flex flex-col min-w-0 mb-4 break-words bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 shadow-2xl rounded-3xl bg-clip-border border border-gray-100 dark:border-slate-700">
+                            <div class="p-6 pb-0 mb-0 rounded-t-3xl">
+                                <div class="flex items-center justify-between">
+                                    <h5 class="text-xl font-bold text-gray-800 dark:text-white mb-1">🎯 Latest Orders
+                                    </h5>
+                                    <div class="p-2 bg-gradient-to-br from-purple-400 to-pink-500 rounded-lg">
+                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex-auto px-0 pt-0 pb-2">
+                                <!-- Desktop Table View -->
+                                <div class="hidden p-0 overflow-x-auto md:block">
+                                    <table class="items-center w-full mb-0 align-top border-collapse text-slate-500">
+                                        <thead class="align-bottom">
+                                            <tr>
+                                                <th
+                                                    class="px-4 py-4 font-bold text-center text-gray-700 dark:text-gray-300 uppercase align-middle bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600 text-xs tracking-wider">
+                                                    #</th>
+                                                <th
+                                                    class="px-6 py-4 font-bold text-left text-gray-700 dark:text-gray-300 uppercase align-middle bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600 text-xs tracking-wider">
+                                                    Invoice</th>
+                                                <th
+                                                    class="px-6 py-4 font-bold text-left text-gray-700 dark:text-gray-300 uppercase align-middle bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600 text-xs tracking-wider">
+                                                    Customer</th>
+                                                <th
+                                                    class="px-6 py-4 font-bold text-left text-gray-700 dark:text-gray-300 uppercase align-middle bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600 text-xs tracking-wider">
+                                                    Alamat</th>
+                                                <th
+                                                    class="px-6 py-4 font-bold text-left text-gray-700 dark:text-gray-300 uppercase align-middle bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600 text-xs tracking-wider">
+                                                    Total Pesanan</th>
+                                                <th
+                                                    class="px-6 py-4 font-bold text-center text-gray-700 dark:text-gray-300 uppercase align-middle bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600 text-xs tracking-wider">
+                                                    Status</th>
+                                                <th
+                                                    class="px-4 py-4 font-bold text-center text-gray-700 dark:text-gray-300 uppercase align-middle bg-gray-50 dark:bg-slate-700 border-b border-gray-200 dark:border-slate-600 text-xs tracking-wider">
+                                                    Aksi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse($latestOrders as $loop => $order)
+                                                @php
+                                                    $shortInvoice = '#' . substr($order->invoice_number, -3);
+                                                @endphp
+                                                <tr
+                                                    class="hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors duration-200">
+                                                    <td
+                                                        class="p-4 align-middle text-center bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
+                                                        <span
+                                                            class="text-sm font-semibold text-gray-600 dark:text-gray-300">{{ $loop->iteration }}</span>
+                                                    </td>
+                                                    <td
+                                                        class="p-4 align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
+                                                        <span
+                                                            class="text-sm font-semibold text-gray-800 dark:text-white">{{ $shortInvoice }}</span>
+                                                    </td>
+                                                    <td
+                                                        class="p-4 align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
+                                                        <div class="flex px-2 py-1">
+                                                            <div class="flex flex-col justify-center">
+                                                                <h6
+                                                                    class="mb-0 text-sm font-semibold leading-normal text-gray-800 dark:text-white">
+                                                                    {{ $order->customer->name ?? 'Pelanggan Dihapus' }}
+                                                                </h6>
+                                                                <p
+                                                                    class="mb-0 text-xs leading-tight text-gray-500 dark:text-gray-400">
+                                                                    {{ $order->phone ?? ($order->customer->phone ?? 'N/A') }}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td
+                                                        class="p-4 align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
+                                                        <p
+                                                            class="mb-0 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                            {{ Str::limit($order->address ?? 'Alamat tidak ada', 25) }}
+                                                        </p>
+                                                    </td>
+                                                    {{-- PERBAIKAN DI SINI: Tombol Total Pesanan dikembalikan --}}
+                                                    <td
+                                                        class="p-4 align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
+                                                        <button type="button"
+                                                            class="text-lg font-bold text-blue-600 transition-colors js-open-modal-btn dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                                                            data-target-modal="orderDetailsModal"
+                                                            onclick="fetchOrderDetails({{ $order->id }})">
+                                                            Rp {{ number_format($order->total_amount, 0, ',', '.') }}
+                                                        </button>
+                                                    </td>
+                                                    <td
+                                                        class="p-4 text-sm leading-normal text-center align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
+                                                        @php
+                                                            $status = $order->status ?? 'dikemas';
+                                                            $statusText = ucfirst(str_replace('_', ' ', $status));
+                                                            $statusClass = '';
+                                                            switch ($status) {
+                                                                case 'diambil':
+                                                                    $statusClass = 'bg-blue-100 text-blue-800';
+                                                                    break;
+                                                                case 'diantar':
+                                                                    $statusClass = 'bg-yellow-100 text-yellow-800';
+                                                                    break;
+                                                                case 'diterima_pembeli':
+                                                                    $statusClass = 'bg-purple-100 text-purple-800';
+                                                                    break;
+                                                                case 'selesai':
+                                                                    $statusClass = 'bg-green-100 text-green-800';
+                                                                    break;
+                                                                case 'menunggu_retur':
+                                                                    $statusClass = 'bg-red-100 text-red-800';
+                                                                    break;
+                                                                case 'menunggu_verifikasi_admin':
+                                                                    $statusClass =
+                                                                        'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
+                                                                    break;
+                                                                default:
+                                                                    $statusClass = 'bg-gray-100 text-gray-800';
+                                                                    break;
+                                                            }
+                                                        @endphp
+                                                        <span
+                                                            class="px-2.5 py-1 text-xs font-semibold rounded-full {{ $statusClass }}">{{ $statusText }}</span>
+                                                    </td>
+                                                    <td
+                                                        class="p-4 text-center align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
+                                                        <button type="button"
+                                                            class="p-2 text-gray-500 transition-colors rounded-full js-open-modal-btn hover:bg-gray-100 dark:hover:bg-slate-600"
+                                                            title="Ubah Status" data-target-modal="statusStepperModal"
+                                                            onclick="openStatusStepperModal({{ $order->id }})">
+                                                            <svg class="w-6 h-6" fill="none" stroke="currentColor"
+                                                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2.5" d="M9 5l7 7-7 7"></path>
+                                                            </svg>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="7"
+                                                        class="p-6 text-center text-gray-500 dark:text-gray-400">
+                                                        Belum ada pesanan yang dibuat.
+                                                    </td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Mobile Card View -->
+                                <div class="px-2 py-2 space-y-3 md:hidden">
+                                    @forelse($latestOrders as $loop => $order)
+                                        @php
+                                            $customerPhone = $order->phone ?? ($order->customer->phone ?? '');
+                                            $formattedPhone = preg_replace('/[^0-9]/', '', $customerPhone);
+                                            $shortInvoice = '#' . substr($order->invoice_number, -3);
+                                            $customerName = $order->customer->name ?? 'Pelanggan Dihapus';
+                                            $displayName = Str::words($customerName, 2, '');
+                                        @endphp
+                                        <div
+                                            class="p-3 bg-white/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl border border-white/20 dark:border-slate-600/20 shadow-lg">
+                                            <div class="flex items-start justify-between w-full space-x-3">
+                                                <div class="flex-shrink-0 pt-1">
+                                                    <span
+                                                        class="flex items-center justify-center w-6 h-6 text-xs font-bold text-gray-600 bg-gray-200 rounded-full dark:bg-slate-600 dark:text-gray-300">
+                                                        {{ $loop->iteration }}
+                                                    </span>
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <div class="flex items-baseline space-x-2">
+                                                        <h6 class="text-base font-bold text-gray-800 dark:text-white">
+                                                            {{ $displayName ?? 'Pelanggan Dihapus' }}
+                                                        </h6>
+                                                    </div>
+                                                    {{-- PERBAIKAN DI SINI: Info pesanan dijadikan tombol modal lagi --}}
+                                                    <button type="button"
+                                                        class="block w-full mt-2 text-sm text-left text-gray-500 js-open-modal-btn dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                                                        data-target-modal="orderDetailsModal"
+                                                        onclick="fetchOrderDetails({{ $order->id }})">
+                                                        <span>{{ $shortInvoice ?? 'N/A' }}</span>
+                                                        <span class="mx-1">|</span>
+                                                        <span>Rp
+                                                            {{ number_format($order->total_amount, 0, ',', '.') }}</span>
+                                                    </button>
+                                                </div>
+
+                                                <!-- Right side: Actions -->
+                                                <div class="flex flex-col items-end flex-shrink-0 space-y-2">
+                                                    <!-- Status Badge -->
+                                                    @php
+                                                        $status = $order->status ?? 'dikemas';
+                                                        $statusText = ucfirst(str_replace('_', ' ', $status));
+                                                        $statusClass = '';
+                                                        switch ($status) {
+                                                            case 'diambil':
+                                                                $statusClass = 'bg-blue-100 text-blue-800';
+                                                                break;
+                                                            case 'diantar':
+                                                                $statusClass = 'bg-yellow-100 text-yellow-800';
+                                                                break;
+                                                            case 'diterima_pembeli':
+                                                                $statusClass = 'bg-purple-100 text-purple-800';
+                                                                break;
+                                                            case 'selesai':
+                                                                $statusClass = 'bg-green-100 text-green-800';
+                                                                break;
+                                                            case 'menunggu_retur':
+                                                                $statusClass = 'bg-red-100 text-red-800';
+                                                                break;
+                                                            case 'menunggu_verifikasi_admin':
+                                                                $statusClass =
+                                                                    'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
+                                                                break;
+                                                            default:
+                                                                $statusClass = 'bg-gray-100 text-gray-800';
+                                                                break;
+                                                        }
+                                                    @endphp
+                                                    <span
+                                                        class="px-2 py-1 text-xs font-semibold rounded-full {{ $statusClass }}">
+                                                        {{ $statusText }}
+                                                    </span>
+                                                    <div class="flex items-center space-x-3">
+                                                        @if ($formattedPhone)
+                                                            <a href="https://wa.me/{{ $formattedPhone }}" target="_blank"
+                                                                class="text-green-500 transition-colors hover:text-green-600">
+                                                                <i class="text-2xl fab fa-whatsapp"></i>
+                                                            </a>
+                                                        @endif
+                                                        <button type="button"
+                                                            class="text-gray-400 js-open-modal-btn hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+                                                            title="Ubah Status" data-target-modal="statusStepperModal"
+                                                            onclick="openStatusStepperModal({{ $order->id }})">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                                                                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2.5" d="M9 5l7 7-7 7"></path>
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @empty
+                                        <div class="p-6 text-center text-gray-500 dark:text-gray-400">
+                                            Belum ada pesanan yang dibuat.
+                                        </div>
+                                    @endforelse
+                                </div>
+
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-</div>
-</div>
-<!-- end cards -->
+    </div>
+    </div>
+    <!-- end cards -->
 
-@push('flowbite-modals')
-@if (isset($customerCategories))
-@include('dashboard.kurir.customers.create', ['customerCategories' => $customerCategories])
-@else
-{{-- Fallback jika $customerCategories tidak ada, untuk mencegah error --}}
-@include('dashboard.kurir.customers.create', ['customerCategories' => []])
-@endif
-@include('dashboard.kurir.pesanan.rincian-modal')
-@include('dashboard.kurir.pesanan.status-modal')
-@include('dashboard.kurir.pesanan.return-modal')
-@endpush
+    @push('flowbite-modals')
+        @if (isset($customerCategories))
+            @include('dashboard.kurir.customers.create', ['customerCategories' => $customerCategories])
+        @else
+            {{-- Fallback jika $customerCategories tidak ada, untuk mencegah error --}}
+            @include('dashboard.kurir.customers.create', ['customerCategories' => []])
+        @endif
+        @include('dashboard.kurir.pesanan.rincian-modal')
+        @include('dashboard.kurir.pesanan.status-modal')
+        @include('dashboard.kurir.pesanan.return-modal')
+    @endpush
 
-<!-- Enhanced Scripts -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Dropdown filter chart (fix: only one logic, robust)
-        const chartFilterButton = document.getElementById('chartFilterButton');
-        const chartFilterDropdown = document.getElementById('chartFilterDropdown');
-        if (chartFilterButton && chartFilterDropdown) {
-            chartFilterButton.addEventListener('click', function(e) {
-                e.stopPropagation();
-                chartFilterDropdown.classList.toggle('hidden');
-            });
-            document.addEventListener('click', function(e) {
-                if (!chartFilterDropdown.classList.contains('hidden')) {
-                    if (!chartFilterButton.contains(e.target) && !chartFilterDropdown.contains(e
-                            .target)) {
-                        chartFilterDropdown.classList.add('hidden');
+    <!-- Enhanced Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Dropdown filter chart (fix: only one logic, robust)
+            const chartFilterButton = document.getElementById('chartFilterButton');
+            const chartFilterDropdown = document.getElementById('chartFilterDropdown');
+            if (chartFilterButton && chartFilterDropdown) {
+                chartFilterButton.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    chartFilterDropdown.classList.toggle('hidden');
+                });
+                document.addEventListener('click', function(e) {
+                    if (!chartFilterDropdown.classList.contains('hidden')) {
+                        if (!chartFilterButton.contains(e.target) && !chartFilterDropdown.contains(e
+                                .target)) {
+                            chartFilterDropdown.classList.add('hidden');
+                        }
                     }
-                }
-            });
-        }
-
-        // Modal functionality
-        const modalToggle = document.querySelector('[data-modal-toggle="crud-modal"]');
-        const modal = document.getElementById('crud-modal');
-
-        if (modalToggle && modal) {
-            modalToggle.addEventListener('click', function() {
-                modal.classList.remove('hidden');
-            });
-
-            modal.addEventListener('click', function(e) {
-                if (e.target === modal) {
-                    modal.classList.add('hidden');
-                }
-            });
-
-            const closeButton = modal.querySelector('[data-modal-toggle="crud-modal"]');
-            if (closeButton) {
-                closeButton.addEventListener('click', function() {
-                    modal.classList.add('hidden');
                 });
             }
-        }
 
-        // --- Enhanced Orders Chart ---
-        var ctx = document.getElementById('ordersChart');
-        if (ctx && window.Chart) {
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: @json($chartLabels),
-                    datasets: [{
-                            label: 'Total Pesanan',
-                            data: @json($chartData),
-                            borderColor: '#3b82f6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            fill: true,
-                            tension: 0.4,
-                            pointBackgroundColor: '#3b82f6',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
-                            pointRadius: 5,
-                            pointHoverRadius: 7,
-                            pointHoverBackgroundColor: '#1d4ed8',
-                            pointHoverBorderColor: '#fff',
-                            pointHoverBorderWidth: 2
-                        },
-                        {
-                            label: 'Selesai',
-                            data: @json($chartDataCompleted),
-                            borderColor: '#22c55e',
-                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                            fill: true,
-                            tension: 0.4,
-                            pointBackgroundColor: '#22c55e',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
-                            pointRadius: 5,
-                            pointHoverRadius: 7,
-                            pointHoverBackgroundColor: '#16a34a',
-                            pointHoverBorderColor: '#fff',
-                            pointHoverBorderWidth: 2
-                        },
-                        {
-                            label: 'Return',
-                            data: @json($chartDataReturned),
-                            borderColor: '#ef4444',
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            fill: true,
-                            tension: 0.4,
-                            pointBackgroundColor: '#ef4444',
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
-                            pointRadius: 5,
-                            pointHoverRadius: 7,
-                            pointHoverBackgroundColor: '#dc2626',
-                            pointHoverBorderColor: '#fff',
-                            pointHoverBorderWidth: 2
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            enabled: true,
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.dataset.label}: ${context.parsed.y}`;
-                                }
+            // Modal functionality
+            const modalToggle = document.querySelector('[data-modal-toggle="crud-modal"]');
+            const modal = document.getElementById('crud-modal');
+
+            if (modalToggle && modal) {
+                modalToggle.addEventListener('click', function() {
+                    modal.classList.remove('hidden');
+                });
+
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                    }
+                });
+
+                const closeButton = modal.querySelector('[data-modal-toggle="crud-modal"]');
+                if (closeButton) {
+                    closeButton.addEventListener('click', function() {
+                        modal.classList.add('hidden');
+                    });
+                }
+            }
+
+            // --- Enhanced Orders Chart ---
+            var ctx = document.getElementById('ordersChart');
+            if (ctx && window.Chart) {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: @json($chartLabels),
+                        datasets: [{
+                                label: 'Total Pesanan',
+                                data: @json($chartData),
+                                borderColor: '#3b82f6',
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: '#3b82f6',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                pointRadius: 5,
+                                pointHoverRadius: 7,
+                                pointHoverBackgroundColor: '#1d4ed8',
+                                pointHoverBorderColor: '#fff',
+                                pointHoverBorderWidth: 2
                             },
-                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                            titleColor: '#1f2937',
-                            bodyColor: '#374151',
-                            borderColor: '#e5e7eb',
-                            borderWidth: 1,
-                            displayColors: true,
-                            padding: 12,
-                            cornerRadius: 8,
-                            usePointStyle: true,
-                        }
+                            {
+                                label: 'Selesai',
+                                data: @json($chartDataCompleted),
+                                borderColor: '#22c55e',
+                                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: '#22c55e',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                pointRadius: 5,
+                                pointHoverRadius: 7,
+                                pointHoverBackgroundColor: '#16a34a',
+                                pointHoverBorderColor: '#fff',
+                                pointHoverBorderWidth: 2
+                            },
+                            {
+                                label: 'Return',
+                                data: @json($chartDataReturned),
+                                borderColor: '#ef4444',
+                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: '#ef4444',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
+                                pointRadius: 5,
+                                pointHoverRadius: 7,
+                                pointHoverBackgroundColor: '#dc2626',
+                                pointHoverBorderColor: '#fff',
+                                pointHoverBorderWidth: 2
+                            }
+                        ]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                color: '#6b7280',
-                                callback: function(value) {
-                                    if (Math.floor(value) === value) {
-                                        return value;
-                                    }
-                                }
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
                             },
-                            grid: {
-                                color: 'rgba(107, 114, 128, 0.1)',
-                                drawBorder: false
+                            tooltip: {
+                                enabled: true,
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${context.parsed.y}`;
+                                    }
+                                },
+                                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                titleColor: '#1f2937',
+                                bodyColor: '#374151',
+                                borderColor: '#e5e7eb',
+                                borderWidth: 1,
+                                displayColors: true,
+                                padding: 12,
+                                cornerRadius: 8,
+                                usePointStyle: true,
                             }
                         },
-                        x: {
-                            ticks: {
-                                color: '#6b7280'
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: '#6b7280',
+                                    callback: function(value) {
+                                        if (Math.floor(value) === value) {
+                                            return value;
+                                        }
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(107, 114, 128, 0.1)',
+                                    drawBorder: false
+                                }
                             },
-                            grid: {
-                                display: false
+                            x: {
+                                ticks: {
+                                    color: '#6b7280'
+                                },
+                                grid: {
+                                    display: false
+                                }
                             }
                         }
                     }
-                }
-            });
-        }
-
-        // Time-based greeting
-        const courierName = @json(Str::words(Auth::user()->name, 2, ''));
-        function updateGreeting() {
-            const hour = new Date().getHours();
-            let greetingText = '';
-            let emoji = '';
-
-            if (hour >= 4 && hour < 11) {
-                greetingText = `Selamat Pagi, ${courierName}`;
-                emoji = '🌤️';
-            } else if (hour >= 11 && hour < 15) {
-                greetingText = `Selamat Siang, ${courierName}`;
-                emoji = '☀️';
-            } else if (hour >= 15 && hour < 18) {
-                greetingText = `Selamat Sore, ${courierName}`;
-                emoji = '🌇';
-            } else {
-                greetingText = `Selamat Malam, ${courierName}`;
-                emoji = '🌙';
+                });
             }
 
-            document.getElementById("ucapan").textContent = greetingText;
-            document.getElementById("greeting-emoji").textContent = emoji;
-        }
-        updateGreeting();
+            // Time-based greeting
+            const courierName = @json(Str::words(Auth::user()->name, 2, ''));
 
-    });
-</script>
+            function updateGreeting() {
+                const hour = new Date().getHours();
+                let greetingText = '';
+                let emoji = '';
 
+                if (hour >= 4 && hour < 11) {
+                    greetingText = `Selamat Pagi, ${courierName}`;
+                    emoji = '🌤️';
+                } else if (hour >= 11 && hour < 15) {
+                    greetingText = `Selamat Siang, ${courierName}`;
+                    emoji = '☀️';
+                } else if (hour >= 15 && hour < 18) {
+                    greetingText = `Selamat Sore, ${courierName}`;
+                    emoji = '🌇';
+                } else {
+                    greetingText = `Selamat Malam, ${courierName}`;
+                    emoji = '🌙';
+                }
 
-<script>
-    // Ganti dengan URL aplikasi Anda yang sebenarnya di production
-    const APP_URL = "{{ url('/') }}";
-    const STATUS_LABEL_MAP = @json($statusLabelMap);
-
-    // --- Helper ---
-    function getCsrfToken() {
-        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-    }
-
-    function dispatchToast(message, type = 'success') {
-        window.dispatchEvent(new CustomEvent('show-toast', {
-            detail: {
-                type: type,
-                message: message
+                document.getElementById("ucapan").textContent = greetingText;
+                document.getElementById("greeting-emoji").textContent = emoji;
             }
-        }));
-    }
+            updateGreeting();
 
-    // tambah jumlah return di setiap produk
-    document.addEventListener('DOMContentLoaded', () => {
-        const returnModal = document.getElementById('returnProductModal');
+        });
+    </script>
 
-        if (returnModal) {
-            returnModal.addEventListener('click', function(event) {
-                const button = event.target.closest('button'); // Cari elemen tombol yang paling dekat diklik
-                if (!button) return; // Jika yang diklik bukan tombol, abaikan
 
-                // Cari baris atau kartu produk terdekat dari tombol yang diklik
-                const productContainer = event.target.closest('[data-return-key]');
-                if (!productContainer) return;
+    <script>
+        // Ganti dengan URL aplikasi Anda yang sebenarnya di production
+        const APP_URL = "{{ url('/') }}";
+        const STATUS_LABEL_MAP = @json($statusLabelMap);
 
-                // Cari elemen span yang menampilkan angka di dalam container produk itu
-                const quantitySpan = productContainer.querySelector('.quantity-input');
-                if (!quantitySpan) return;
-
-                let currentValue = parseInt(quantitySpan.textContent, 10);
-                const maxValue = parseInt(quantitySpan.dataset.max, 10);
-
-                // --- Logika untuk Tombol Tambah (+) ---
-                if (button.classList.contains('quantity-plus')) {
-                    if (currentValue < maxValue) {
-                        quantitySpan.textContent = currentValue + 1;
-                    }
-                }
-
-                // --- Logika untuk Tombol Kurang (-) ---
-                if (button.classList.contains('quantity-minus')) {
-                    if (currentValue > 0) {
-                        quantitySpan.textContent = currentValue - 1;
-                    }
-                }
-
-                // --- Logika untuk Tombol Hapus (Ikon Sampah) ---
-                if (button.classList.contains('remove-product')) {
-                    // Setel kuantitas kembali ke 0
-                    quantitySpan.textContent = 0;
-                }
-            });
+        // --- Helper ---
+        function getCsrfToken() {
+            return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
         }
-    });
 
-    // --- Logika Modal Rincian ---
-    async function fetchOrderDetails(orderId) {
-        openModal('orderDetailsModal');
-        const modalLoader = document.getElementById('modalLoader');
-        const modalContent = document.getElementById('modalContent');
-        modalContent.classList.add('hidden');
-        modalLoader.classList.remove('hidden');
-        modalLoader.innerHTML =
-            `<svg class="w-8 h-8 mx-auto text-blue-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><p class="mt-4 text-lg font-medium text-gray-700 dark:text-gray-300">Memuat Detail Pesanan...</p>`;
-        try {
-            const response = await fetch(`/kurir/pesanan/${orderId}/details`);
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Gagal mengambil data.');
-            populateOrderDetailsModal(data);
-        } catch (error) {
+        function dispatchToast(message, type = 'success') {
+            window.dispatchEvent(new CustomEvent('show-toast', {
+                detail: {
+                    type: type,
+                    message: message
+                }
+            }));
+        }
+
+        // tambah jumlah return di setiap produk
+        document.addEventListener('DOMContentLoaded', () => {
+            const returnModal = document.getElementById('returnProductModal');
+
+            if (returnModal) {
+                returnModal.addEventListener('click', function(event) {
+                    const button = event.target.closest(
+                    'button'); // Cari elemen tombol yang paling dekat diklik
+                    if (!button) return; // Jika yang diklik bukan tombol, abaikan
+
+                    // Cari baris atau kartu produk terdekat dari tombol yang diklik
+                    const productContainer = event.target.closest('[data-return-key]');
+                    if (!productContainer) return;
+
+                    // Cari elemen span yang menampilkan angka di dalam container produk itu
+                    const quantitySpan = productContainer.querySelector('.quantity-input');
+                    if (!quantitySpan) return;
+
+                    let currentValue = parseInt(quantitySpan.textContent, 10);
+                    const maxValue = parseInt(quantitySpan.dataset.max, 10);
+
+                    // --- Logika untuk Tombol Tambah (+) ---
+                    if (button.classList.contains('quantity-plus')) {
+                        if (currentValue < maxValue) {
+                            quantitySpan.textContent = currentValue + 1;
+                        }
+                    }
+
+                    // --- Logika untuk Tombol Kurang (-) ---
+                    if (button.classList.contains('quantity-minus')) {
+                        if (currentValue > 0) {
+                            quantitySpan.textContent = currentValue - 1;
+                        }
+                    }
+
+                    // --- Logika untuk Tombol Hapus (Ikon Sampah) ---
+                    if (button.classList.contains('remove-product')) {
+                        // Setel kuantitas kembali ke 0
+                        quantitySpan.textContent = 0;
+                    }
+                });
+            }
+        });
+
+        // --- Logika Modal Rincian ---
+        async function fetchOrderDetails(orderId) {
+            openModal('orderDetailsModal');
+            const modalLoader = document.getElementById('modalLoader');
+            const modalContent = document.getElementById('modalContent');
+            modalContent.classList.add('hidden');
+            modalLoader.classList.remove('hidden');
             modalLoader.innerHTML =
-                `<div class="text-center"><p class="font-bold text-red-600">Gagal Memuat Data</p><p class="mt-2 text-sm text-gray-500">${error.message}</p></div>`;
-        }
-    }
-
-
-    function populateOrderDetailsModal(order) {
-        // Populate data umum
-        document.getElementById('modalInvoiceNumber').textContent = order.invoice_number || 'N/A';
-        document.getElementById('customerName').textContent = order.customer.name || 'N/A';
-        document.getElementById('customerPhone').textContent = order.customer.phone || 'N/A';
-        document.getElementById('customerAddress').textContent = order.customer.address || 'N/A';
-        const companyNameEl = document.getElementById('customerCompanyName');
-        if (order.customer.company_name && order.customer.company_name !== 'N/A') {
-            companyNameEl.textContent = `🏢 ${order.customer.company_name}`;
-            companyNameEl.classList.remove('hidden');
-        } else {
-            companyNameEl.textContent = '';
-            companyNameEl.classList.add('hidden');
-        }
-        document.getElementById('paymentMethod').textContent = order.payment_method || 'N/A';
-        document.getElementById('orderCreatedAt').textContent = order.created_at || 'Tidak Tersedia';
-        document.getElementById('orderPaidAt').textContent = order.paid_at ? (order.paid_at + (order.paid_at_label ||
-            '')) : 'Belum Lunas';
-
-       // Logika untuk menampilkan ikon di modal rincian
-        const statusSection = document.getElementById('modalOrderStatusSection');
-        const statusBadge = document.getElementById('modalOrderStatusBadge');
-        const statusIcon = document.getElementById('modalOrderStatusIcon');
-        if (statusBadge) {
-            // 1. Ambil teks status dari map yang sudah ada
-            const statusText = STATUS_LABEL_MAP[order.status] || (order.status.charAt(0).toUpperCase() + order.status
-                .slice(1).replace(/_/g, ' '));
-            statusBadge.textContent = statusText;
-
-            // 2. Tentukan kelas warna berdasarkan status
-            let badgeColorClasses = 'bg-gray-100 text-gray-800'; // Default
-            switch (order.status) {
-                case 'diambil':
-                    badgeColorClasses = 'bg-blue-100 text-blue-800';
-                    break;
-                case 'diantar':
-                    badgeColorClasses = 'bg-yellow-100 text-yellow-800';
-                    break;
-                case 'diterima_pembeli':
-                    badgeColorClasses = 'bg-purple-100 text-purple-800';
-                    break;
-                case 'menunggu_retur':
-                    badgeColorClasses = 'bg-red-100 text-red-800';
-                    break;
-                case 'menunggu_verifikasi_admin':
-                    badgeColorClasses = 'bg-orange-100 text-orange-800';
-                    break;
-                case 'selesai':
-                    badgeColorClasses = 'bg-green-100 text-green-800';
-                    break;
-            }
-            // 3. Gabungkan kelas dasar dengan kelas warna baru
-            const baseClasses = 'flex-shrink-0 px-3 py-1 text-sm font-semibold rounded-full whitespace-nowrap';
-            statusBadge.className = `${baseClasses} ${badgeColorClasses}`;
-            // icon success
-            if (order.status === 'selesai' && statusIcon) {
-                statusIcon.innerHTML = `<svg class="w-8 h-8" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#10b981" stroke-width="1.5" fill="#d1fae5"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" stroke="#10b981" stroke-width="2"/></svg>`;
-                statusIcon.classList.remove('hidden');
-            } else if (statusIcon) {
-                statusIcon.innerHTML = ''; // Kosongkan ikon jika status bukan 'selesai'
-                statusIcon.classList.add('hidden');
+                `<svg class="w-8 h-8 mx-auto text-blue-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><p class="mt-4 text-lg font-medium text-gray-700 dark:text-gray-300">Memuat Detail Pesanan...</p>`;
+            try {
+                const response = await fetch(`/kurir/pesanan/${orderId}/details`);
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || 'Gagal mengambil data.');
+                populateOrderDetailsModal(data);
+            } catch (error) {
+                modalLoader.innerHTML =
+                    `<div class="text-center"><p class="font-bold text-red-600">Gagal Memuat Data</p><p class="mt-2 text-sm text-gray-500">${error.message}</p></div>`;
             }
         }
 
-        // Logika Perhitungan Total Tagihan untuk handle retur
-        let calculatedInitialTotal = 0;
-        let calculatedLatestTotal = 0;
-        let isReturned = false;
-        if (order.products && order.products.length > 0) {
-            order.products.forEach(p => {
-                const initialQuantity = p.quantity || 0;
-                const returnedQuantity = p.returned_quantity || 0;
-                const price = p.price || 0;
-                calculatedInitialTotal += initialQuantity * price;
-                const latestQuantity = initialQuantity - returnedQuantity;
-                calculatedLatestTotal += latestQuantity * price;
-                if (returnedQuantity > 0) isReturned = true;
-            });
-        }
 
-        const singleTotalContainer = document.getElementById('singleTotalAmountContainer');
-        const returnedTotalContainer = document.getElementById('returnedTotalAmountContainer');
-        if (isReturned && calculatedInitialTotal !== calculatedLatestTotal) {
-            document.getElementById('modalInitialTotalAmount').textContent =
-                `Rp ${new Intl.NumberFormat('id-ID').format(calculatedInitialTotal)}`;
-            document.getElementById('modalLatestTotalAmount').textContent =
-                `Rp ${new Intl.NumberFormat('id-ID').format(calculatedLatestTotal)}`;
-            singleTotalContainer.classList.add('hidden');
-            returnedTotalContainer.classList.remove('hidden');
-        } else {
-            document.getElementById('modalTotalAmount').textContent =
-                `Rp ${new Intl.NumberFormat('id-ID').format(order.total_amount || 0)}`;
-            singleTotalContainer.classList.remove('hidden');
-            returnedTotalContainer.classList.add('hidden');
-        }
+        function populateOrderDetailsModal(order) {
+            // Populate data umum
+            document.getElementById('modalInvoiceNumber').textContent = order.invoice_number || 'N/A';
+            document.getElementById('customerName').textContent = order.customer.name || 'N/A';
+            document.getElementById('customerPhone').textContent = order.customer.phone || 'N/A';
+            document.getElementById('customerAddress').textContent = order.customer.address || 'N/A';
+            const companyNameEl = document.getElementById('customerCompanyName');
+            if (order.customer.company_name && order.customer.company_name !== 'N/A') {
+                companyNameEl.textContent = `🏢 ${order.customer.company_name}`;
+                companyNameEl.classList.remove('hidden');
+            } else {
+                companyNameEl.textContent = '';
+                companyNameEl.classList.add('hidden');
+            }
+            document.getElementById('paymentMethod').textContent = order.payment_method || 'N/A';
+            document.getElementById('orderCreatedAt').textContent = order.created_at || 'Tidak Tersedia';
+            document.getElementById('orderPaidAt').textContent = order.paid_at ? (order.paid_at + (order.paid_at_label ||
+                '')) : 'Belum Lunas';
 
-        // Populate Product List
-        const productDetailsDiv = document.getElementById('productDetails');
-        productDetailsDiv.innerHTML = '';
-        productDetailsDiv.className = 'flex flex-col space-y-2';
-        if (order.products && order.products.length > 0) {
-            order.products.forEach(product => {
-                const productItem = document.createElement('div');
-                // Main container for each product card
-                productItem.className = 'p-3 border rounded-lg dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 flex items-start space-x-4';
+            // Logika untuk menampilkan ikon di modal rincian
+            const statusSection = document.getElementById('modalOrderStatusSection');
+            const statusBadge = document.getElementById('modalOrderStatusBadge');
+            const statusIcon = document.getElementById('modalOrderStatusIcon');
+            if (statusBadge) {
+                // 1. Ambil teks status dari map yang sudah ada
+                const statusText = STATUS_LABEL_MAP[order.status] || (order.status.charAt(0).toUpperCase() + order.status
+                    .slice(1).replace(/_/g, ' '));
+                statusBadge.textContent = statusText;
 
-                const initialQty = product.quantity || 0;
-                const returnedQty = product.returned_quantity || 0;
-                const remainingQty = initialQty - returnedQty;
-                const price = product.price || 0;
-                const newSubtotal = remainingQty * price;
+                // 2. Tentukan kelas warna berdasarkan status
+                let badgeColorClasses = 'bg-gray-100 text-gray-800'; // Default
+                switch (order.status) {
+                    case 'diambil':
+                        badgeColorClasses = 'bg-blue-100 text-blue-800';
+                        break;
+                    case 'diantar':
+                        badgeColorClasses = 'bg-yellow-100 text-yellow-800';
+                        break;
+                    case 'diterima_pembeli':
+                        badgeColorClasses = 'bg-purple-100 text-purple-800';
+                        break;
+                    case 'menunggu_retur':
+                        badgeColorClasses = 'bg-red-100 text-red-800';
+                        break;
+                    case 'menunggu_verifikasi_admin':
+                        badgeColorClasses = 'bg-orange-100 text-orange-800';
+                        break;
+                    case 'selesai':
+                        badgeColorClasses = 'bg-green-100 text-green-800';
+                        break;
+                }
+                // 3. Gabungkan kelas dasar dengan kelas warna baru
+                const baseClasses = 'flex-shrink-0 px-3 py-1 text-sm font-semibold rounded-full whitespace-nowrap';
+                statusBadge.className = `${baseClasses} ${badgeColorClasses}`;
+                // icon success
+                if (order.status === 'selesai' && statusIcon) {
+                    statusIcon.innerHTML =
+                        `<svg class="w-8 h-8" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#10b981" stroke-width="1.5" fill="#d1fae5"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" stroke="#10b981" stroke-width="2"/></svg>`;
+                    statusIcon.classList.remove('hidden');
+                } else if (statusIcon) {
+                    statusIcon.innerHTML = ''; // Kosongkan ikon jika status bukan 'selesai'
+                    statusIcon.classList.add('hidden');
+                }
+            }
 
-                // SVG icon similar to the one in the image
-                const iconHTML = `
+            // Logika Perhitungan Total Tagihan untuk handle retur
+            let calculatedInitialTotal = 0;
+            let calculatedLatestTotal = 0;
+            let isReturned = false;
+            if (order.products && order.products.length > 0) {
+                order.products.forEach(p => {
+                    const initialQuantity = p.quantity || 0;
+                    const returnedQuantity = p.returned_quantity || 0;
+                    const price = p.price || 0;
+                    calculatedInitialTotal += initialQuantity * price;
+                    const latestQuantity = initialQuantity - returnedQuantity;
+                    calculatedLatestTotal += latestQuantity * price;
+                    if (returnedQuantity > 0) isReturned = true;
+                });
+            }
+
+            const singleTotalContainer = document.getElementById('singleTotalAmountContainer');
+            const returnedTotalContainer = document.getElementById('returnedTotalAmountContainer');
+            if (isReturned && calculatedInitialTotal !== calculatedLatestTotal) {
+                document.getElementById('modalInitialTotalAmount').textContent =
+                    `Rp ${new Intl.NumberFormat('id-ID').format(calculatedInitialTotal)}`;
+                document.getElementById('modalLatestTotalAmount').textContent =
+                    `Rp ${new Intl.NumberFormat('id-ID').format(calculatedLatestTotal)}`;
+                singleTotalContainer.classList.add('hidden');
+                returnedTotalContainer.classList.remove('hidden');
+            } else {
+                document.getElementById('modalTotalAmount').textContent =
+                    `Rp ${new Intl.NumberFormat('id-ID').format(order.total_amount || 0)}`;
+                singleTotalContainer.classList.remove('hidden');
+                returnedTotalContainer.classList.add('hidden');
+            }
+
+            // Populate Product List
+            const productDetailsDiv = document.getElementById('productDetails');
+            productDetailsDiv.innerHTML = '';
+            productDetailsDiv.className = 'flex flex-col space-y-2';
+            if (order.products && order.products.length > 0) {
+                order.products.forEach(product => {
+                    const productItem = document.createElement('div');
+                    // Main container for each product card
+                    productItem.className =
+                        'p-3 border rounded-lg dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 flex items-start space-x-4';
+
+                    const initialQty = product.quantity || 0;
+                    const returnedQty = product.returned_quantity || 0;
+                    const remainingQty = initialQty - returnedQty;
+                    const price = product.price || 0;
+                    const newSubtotal = remainingQty * price;
+
+                    // SVG icon similar to the one in the image
+                    const iconHTML = `
                     <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-gray-200 dark:bg-gray-600 rounded-lg mt-1">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -1111,24 +1148,25 @@ $totalReturnedOrdersInRange = array_sum($chartDataReturned);
                     </div>
                 `;
 
-                let quantityLine = `<p class="text-sm text-gray-600 dark:text-gray-300">Jumlah: ${initialQty}</p>`;
-                if (returnedQty > 0) {
-                    quantityLine = `
+                    let quantityLine =
+                        `<p class="text-sm text-gray-600 dark:text-gray-300">Jumlah: ${initialQty}</p>`;
+                    if (returnedQty > 0) {
+                        quantityLine = `
                         <p class="text-sm text-gray-600 dark:text-gray-300">
                             Awal: <span class="font-medium text-gray-800 dark:text-gray-200">${initialQty}</span> |
                             Retur: <span class="font-medium text-red-500">${returnedQty}</span> |
                             Sisa: <span class="font-medium text-green-600">${remainingQty}</span>
                         </p>
                     `;
-                }
+                    }
 
-                const priceLine = `
+                    const priceLine = `
                     <p class="text-sm font-medium text-gray-800 dark:text-gray-200 mt-1">
                         Rp ${new Intl.NumberFormat('id-ID').format(price)} &rarr; Rp ${new Intl.NumberFormat('id-ID').format(newSubtotal)}
                     </p>
                 `;
 
-                const detailsHTML = `
+                    const detailsHTML = `
                     <div class="flex-grow">
                         <p class="font-bold text-gray-900 dark:text-white">${product.name} ${product.variant_name ? `(${product.variant_name})` : ''}</p>
                         ${quantityLine}
@@ -1136,423 +1174,426 @@ $totalReturnedOrdersInRange = array_sum($chartDataReturned);
                     </div>
                 `;
 
-                productItem.innerHTML = iconHTML + detailsHTML;
-                productDetailsDiv.appendChild(productItem);
-            });
-        } else {
-            productDetailsDiv.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400">Tidak ada produk dalam pesanan ini.</p>';
-        }
-
-        // Logika Proof Upload
-        const paymentUploadForm = document.getElementById('paymentUploadForm');
-        const paymentProofUploaded = document.getElementById('paymentProofUploaded');
-        const paymentUploadBlocker = document.getElementById('paymentUploadBlocker');
-        const compressLink = document.getElementById('compress-link');
-        paymentUploadForm.classList.add('hidden');
-        paymentProofUploaded.classList.add('hidden');
-        paymentUploadBlocker.classList.add('hidden');
-        compressLink.classList.add('hidden');
-
-        const getImageUrl = (path) => path ? `${APP_URL}/storage/${path.replace(/^public\//, '')}` : '';
-        let proofPath = order.payment_proof || (order.order_return ? order.order_return.return_proof : null);
-
-        if (proofPath) {
-            document.getElementById('proofImage').src = getImageUrl(proofPath);
-            document.getElementById('proofUploadedTitle').textContent = order.payment_proof ? 'Bukti Pembayaran' :
-                'Bukti Retur';
-            paymentProofUploaded.classList.remove('hidden');
-        } else if (order.status === 'diterima_pembeli' || order.status === 'menunggu_retur') {
-            paymentUploadForm.classList.remove('hidden');
-            compressLink.classList.remove('hidden');
-            const isReturn = order.status === 'menunggu_retur';
-            document.getElementById('paymentProofTitle').textContent = isReturn ? 'Unggah Bukti Retur' :
-                'Unggah Bukti Pembayaran';
-            document.getElementById('uploadButtonText').textContent = isReturn ? 'Unggah Bukti Retur' :
-                'Unggah Bukti Pembayaran';
-            paymentUploadForm.onsubmit = (e) => {
-                e.preventDefault();
-                handleProofUpload(order.id, order.status);
-            };
-        } else {
-            paymentUploadBlocker.classList.remove('hidden');
-        }
-
-        // Tombol Retur
-        const returnRequestButtonContainer = document.getElementById('returnRequestButtonContainer');
-        if (order.status === 'diterima_pembeli') {
-            returnRequestButtonContainer.classList.remove('hidden');
-            document.getElementById('requestReturnButton').onclick = () => openReturnProductModal(order);
-        } else {
-            returnRequestButtonContainer.classList.add('hidden');
-        }
-
-        document.getElementById('modalLoader').classList.add('hidden');
-        document.getElementById('modalContent').classList.remove('hidden');
-    }
-
-    async function handleProofUpload(orderId, status) {
-        const form = document.getElementById('paymentUploadForm');
-        const submitButton = form.querySelector('button[type="submit"]');
-        let url, nextStatus;
-
-        if (status === 'diterima_pembeli') {
-            url = `/kurir/pesanan/${orderId}/upload-proof`;
-            nextStatus = 'selesai';
-        } else if (status === 'menunggu_retur') {
-            url = `/kurir/pesanan/${orderId}/upload-return-proof`;
-            nextStatus = 'menunggu_verifikasi_admin';
-        } else return;
-
-        submitButton.disabled = true;
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                body: new FormData(form),
-                headers: {
-                    'X-CSRF-TOKEN': getCsrfToken(),
-                    'Accept': 'application/json'
-                }
-            });
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.message);
-            dispatchToast(result.message, 'success');
-            fetchOrderDetails(orderId);
-            updateTableRowStatus(orderId, nextStatus);
-        } catch (error) {
-            dispatchToast(error.message, 'error');
-        } finally {
-            submitButton.disabled = false;
-        }
-    }
-
-    // --- Logika Modal Status & Stepper ---
-    async function openStatusStepperModal(orderId) {
-        openModal('statusStepperModal');
-        const modalLoader = document.getElementById('statusStepperModalLoader');
-        const modalContent = document.getElementById('statusStepperModalContent');
-        modalContent.classList.add('hidden');
-        modalLoader.classList.remove('hidden');
-        modalLoader.innerHTML =
-            `<svg class="w-8 h-8 mx-auto text-blue-600 animate-spin" ...></svg><p class="mt-4 ...">Memuat Status...</p>`;
-        try {
-            const response = await fetch(`/kurir/pesanan/${orderId}/details`);
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message);
-            populateStatusStepperModal(data);
-        } catch (error) {
-            modalLoader.innerHTML =
-                `<div class="text-center"><p class="font-bold text-red-600">Gagal Memuat</p><p class="mt-2 text-sm">${error.message}</p></div>`;
-        }
-    }
-
-    function populateStatusStepperModal(order) {
-        // 1. Peta status yang sudah dilengkapi semua kemungkinan
-        const statusMap = {
-            'baru': {
-                label: 'Baru',
-                nextStatus: 'diambil',
-                buttonText: 'Ubah Status ke Diambil'
-            },
-            'dikemas': {
-                label: 'Dikemas',
-                nextStatus: 'diambil',
-                buttonText: 'Ubah Status ke Diambil'
-            },
-            'diambil': {
-                label: 'Diambil',
-                nextStatus: 'diantar',
-                buttonText: 'Ubah Status ke Diantar'
-            },
-            'diantar': {
-                label: 'Diantar',
-                nextStatus: 'diterima_pembeli',
-                buttonText: 'Ubah Status ke Diterima Pembeli'
-            },
-            'diterima_pembeli': {
-                label: 'Diterima Pembeli',
-                nextStatus: null,
-                buttonText: 'Menunggu Bukti Pembayaran'
-            },
-            'menunggu_retur': {
-                label: 'Menunggu Retur',
-                nextStatus: null,
-                buttonText: 'Menunggu Proses Retur'
-            },
-            'menunggu_verifikasi_admin': {
-                label: 'Menunggu Verifikasi Admin',
-                nextStatus: null,
-                buttonText: 'Menunggu Verifikasi Admin'
-            },
-            'selesai': {
-                label: 'Selesai (Lunas)',
-                nextStatus: null,
-                buttonText: 'Pesanan Selesai'
-            },
-            'diverifikasi_admin': {
-                label: 'Telah Diverifikasi Admin',
-                nextStatus: null,
-                buttonText: 'Telah Diverifikasi Admin'
+                    productItem.innerHTML = iconHTML + detailsHTML;
+                    productDetailsDiv.appendChild(productItem);
+                });
+            } else {
+                productDetailsDiv.innerHTML =
+                    '<p class="text-center text-gray-500 dark:text-gray-400">Tidak ada produk dalam pesanan ini.</p>';
             }
-        };
 
-        // 2. Mengisi info dasar modal
-        document.getElementById('modalStatusInvoiceNumber').textContent = order.invoice_number || 'N/A';
-        document.getElementById('modalStatusCustomerName').textContent = order.customer.name || 'N/A';
+            // Logika Proof Upload
+            const paymentUploadForm = document.getElementById('paymentUploadForm');
+            const paymentProofUploaded = document.getElementById('paymentProofUploaded');
+            const paymentUploadBlocker = document.getElementById('paymentUploadBlocker');
+            const compressLink = document.getElementById('compress-link');
+            paymentUploadForm.classList.add('hidden');
+            paymentProofUploaded.classList.add('hidden');
+            paymentUploadBlocker.classList.add('hidden');
+            compressLink.classList.add('hidden');
 
-        // 3. Memperbarui UI Stepper dengan memanggil fungsi terpisah
-        updateStepperUI(order);
+            const getImageUrl = (path) => path ? `${APP_URL}/storage/${path.replace(/^public\//, '')}` : '';
+            let proofPath = order.payment_proof || (order.order_return ? order.order_return.return_proof : null);
 
-        // 4. Mengatur tombol aksi utama
-        const updateButton = document.getElementById('updateStatusButton');
-        const updateButtonText = document.getElementById('updateStatusButtonText');
-        const currentStatus = order.status || 'baru';
-        const currentStatusInfo = statusMap[currentStatus];
+            if (proofPath) {
+                document.getElementById('proofImage').src = getImageUrl(proofPath);
+                document.getElementById('proofUploadedTitle').textContent = order.payment_proof ? 'Bukti Pembayaran' :
+                    'Bukti Retur';
+                paymentProofUploaded.classList.remove('hidden');
+            } else if (order.status === 'diterima_pembeli' || order.status === 'menunggu_retur') {
+                paymentUploadForm.classList.remove('hidden');
+                compressLink.classList.remove('hidden');
+                const isReturn = order.status === 'menunggu_retur';
+                document.getElementById('paymentProofTitle').textContent = isReturn ? 'Unggah Bukti Retur' :
+                    'Unggah Bukti Pembayaran';
+                document.getElementById('uploadButtonText').textContent = isReturn ? 'Unggah Bukti Retur' :
+                    'Unggah Bukti Pembayaran';
+                paymentUploadForm.onsubmit = (e) => {
+                    e.preventDefault();
+                    handleProofUpload(order.id, order.status);
+                };
+            } else {
+                paymentUploadBlocker.classList.remove('hidden');
+            }
 
-        // 5. Pengecekan pengaman untuk menghindari error
-        if (currentStatusInfo) {
-            updateButtonText.textContent = currentStatusInfo.buttonText;
+            // Tombol Retur
+            const returnRequestButtonContainer = document.getElementById('returnRequestButtonContainer');
+            if (order.status === 'diterima_pembeli') {
+                returnRequestButtonContainer.classList.remove('hidden');
+                document.getElementById('requestReturnButton').onclick = () => openReturnProductModal(order);
+            } else {
+                returnRequestButtonContainer.classList.add('hidden');
+            }
 
-            // Menonaktifkan tombol jika status sudah final
-            if (!currentStatusInfo.nextStatus || ['selesai', 'diverifikasi_admin', 'menunggu_verifikasi_admin',
-                    'menunggu_retur'
-                ].includes(currentStatus)) {
+            document.getElementById('modalLoader').classList.add('hidden');
+            document.getElementById('modalContent').classList.remove('hidden');
+        }
+
+        async function handleProofUpload(orderId, status) {
+            const form = document.getElementById('paymentUploadForm');
+            const submitButton = form.querySelector('button[type="submit"]');
+            let url, nextStatus;
+
+            if (status === 'diterima_pembeli') {
+                url = `/kurir/pesanan/${orderId}/upload-proof`;
+                nextStatus = 'selesai';
+            } else if (status === 'menunggu_retur') {
+                url = `/kurir/pesanan/${orderId}/upload-return-proof`;
+                nextStatus = 'menunggu_verifikasi_admin';
+            } else return;
+
+            submitButton.disabled = true;
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    headers: {
+                        'X-CSRF-TOKEN': getCsrfToken(),
+                        'Accept': 'application/json'
+                    }
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message);
+                dispatchToast(result.message, 'success');
+                fetchOrderDetails(orderId);
+                updateTableRowStatus(orderId, nextStatus);
+            } catch (error) {
+                dispatchToast(error.message, 'error');
+            } finally {
+                submitButton.disabled = false;
+            }
+        }
+
+        // --- Logika Modal Status & Stepper ---
+        async function openStatusStepperModal(orderId) {
+            openModal('statusStepperModal');
+            const modalLoader = document.getElementById('statusStepperModalLoader');
+            const modalContent = document.getElementById('statusStepperModalContent');
+            modalContent.classList.add('hidden');
+            modalLoader.classList.remove('hidden');
+            modalLoader.innerHTML =
+                `<svg class="w-8 h-8 mx-auto text-blue-600 animate-spin" ...></svg><p class="mt-4 ...">Memuat Status...</p>`;
+            try {
+                const response = await fetch(`/kurir/pesanan/${orderId}/details`);
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message);
+                populateStatusStepperModal(data);
+            } catch (error) {
+                modalLoader.innerHTML =
+                    `<div class="text-center"><p class="font-bold text-red-600">Gagal Memuat</p><p class="mt-2 text-sm">${error.message}</p></div>`;
+            }
+        }
+
+        function populateStatusStepperModal(order) {
+            // 1. Peta status yang sudah dilengkapi semua kemungkinan
+            const statusMap = {
+                'baru': {
+                    label: 'Baru',
+                    nextStatus: 'diambil',
+                    buttonText: 'Ubah Status ke Diambil'
+                },
+                'dikemas': {
+                    label: 'Dikemas',
+                    nextStatus: 'diambil',
+                    buttonText: 'Ubah Status ke Diambil'
+                },
+                'diambil': {
+                    label: 'Diambil',
+                    nextStatus: 'diantar',
+                    buttonText: 'Ubah Status ke Diantar'
+                },
+                'diantar': {
+                    label: 'Diantar',
+                    nextStatus: 'diterima_pembeli',
+                    buttonText: 'Ubah Status ke Diterima Pembeli'
+                },
+                'diterima_pembeli': {
+                    label: 'Diterima Pembeli',
+                    nextStatus: null,
+                    buttonText: 'Menunggu Bukti Pembayaran'
+                },
+                'menunggu_retur': {
+                    label: 'Menunggu Retur',
+                    nextStatus: null,
+                    buttonText: 'Menunggu Proses Retur'
+                },
+                'menunggu_verifikasi_admin': {
+                    label: 'Menunggu Verifikasi Admin',
+                    nextStatus: null,
+                    buttonText: 'Menunggu Verifikasi Admin'
+                },
+                'selesai': {
+                    label: 'Selesai (Lunas)',
+                    nextStatus: null,
+                    buttonText: 'Pesanan Selesai'
+                },
+                'diverifikasi_admin': {
+                    label: 'Telah Diverifikasi Admin',
+                    nextStatus: null,
+                    buttonText: 'Telah Diverifikasi Admin'
+                }
+            };
+
+            // 2. Mengisi info dasar modal
+            document.getElementById('modalStatusInvoiceNumber').textContent = order.invoice_number || 'N/A';
+            document.getElementById('modalStatusCustomerName').textContent = order.customer.name || 'N/A';
+
+            // 3. Memperbarui UI Stepper dengan memanggil fungsi terpisah
+            updateStepperUI(order);
+
+            // 4. Mengatur tombol aksi utama
+            const updateButton = document.getElementById('updateStatusButton');
+            const updateButtonText = document.getElementById('updateStatusButtonText');
+            const currentStatus = order.status || 'baru';
+            const currentStatusInfo = statusMap[currentStatus];
+
+            // 5. Pengecekan pengaman untuk menghindari error
+            if (currentStatusInfo) {
+                updateButtonText.textContent = currentStatusInfo.buttonText;
+
+                // Menonaktifkan tombol jika status sudah final
+                if (!currentStatusInfo.nextStatus || ['selesai', 'diverifikasi_admin', 'menunggu_verifikasi_admin',
+                        'menunggu_retur'
+                    ].includes(currentStatus)) {
+                    updateButton.disabled = true;
+                    updateButton.classList.add('opacity-50', 'cursor-not-allowed');
+                    if (currentStatus === 'diverifikasi_admin') {
+                        updateButton.classList.remove('bg-blue-700', 'hover:bg-blue-800');
+                        updateButton.classList.add('bg-teal-600', 'hover:bg-teal-700');
+                    }
+                } else {
+                    updateButton.disabled = false;
+                    updateButton.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-teal-600', 'hover:bg-teal-700');
+                    updateButton.classList.add('bg-blue-700', 'hover:bg-blue-800');
+                    updateButton.setAttribute('data-next-status', currentStatusInfo.nextStatus);
+                }
+            } else {
+                // Fallback jika status tidak dikenal
+                updateButtonText.textContent = `Status Tidak Dikenal: ${currentStatus}`;
                 updateButton.disabled = true;
                 updateButton.classList.add('opacity-50', 'cursor-not-allowed');
-                if (currentStatus === 'diverifikasi_admin') {
-                    updateButton.classList.remove('bg-blue-700', 'hover:bg-blue-800');
-                    updateButton.classList.add('bg-teal-600', 'hover:bg-teal-700');
-                }
-            } else {
-                updateButton.disabled = false;
-                updateButton.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-teal-600', 'hover:bg-teal-700');
-                updateButton.classList.add('bg-blue-700', 'hover:bg-blue-800');
-                updateButton.setAttribute('data-next-status', currentStatusInfo.nextStatus);
             }
-        } else {
-            // Fallback jika status tidak dikenal
-            updateButtonText.textContent = `Status Tidak Dikenal: ${currentStatus}`;
+
+            updateButton.setAttribute('data-order-id', order.id);
+
+            // 6. Menampilkan konten modal
+            document.getElementById('statusStepperModalLoader').classList.add('hidden');
+            document.getElementById('statusStepperModalContent').classList.remove('hidden');
+        }
+
+        // Fungsi pembantu untuk memperbarui UI Stepper secara spesifik
+        function updateStepperUI(order) {
+            const steps = ['diambil', 'diantar', 'diterima_pembeli'];
+            const timestamps = {
+                diambil: order.picked_up_at,
+                diantar: order.delivered_at,
+                diterima_pembeli: order.received_by_buyer_at
+            };
+            const icons = {
+                diambil: 'fa-box',
+                diantar: 'fa-truck-moving',
+                diterima_pembeli: 'fa-home'
+            };
+            const timeSpans = {
+                diambil: 'pickedUpAt',
+                diantar: 'deliveredAt',
+                diterima_pembeli: 'receivedByBuyerAt'
+            };
+
+            // Loop tunggal untuk mengatur setiap langkah
+            steps.forEach(step => {
+                const iconEl = document.getElementById(`step-${step}-icon`);
+                const timeSpanEl = document.getElementById(timeSpans[step]);
+                const mobileLineEl = document.getElementById(`line-${step}-mobile`);
+                const desktopLineEl = document.getElementById(step === 'diambil' ? 'line-diantar' : `line-${step}`);
+
+                // Reset warna
+                iconEl.classList.remove('bg-green-600', 'text-green-600', 'border-green-600');
+                if (mobileLineEl) mobileLineEl.classList.remove('bg-green-600');
+                if (desktopLineEl) desktopLineEl.classList.remove('bg-green-600');
+
+                // Cek apakah langkah sudah selesai
+                if (timestamps[step]) {
+                    iconEl.innerHTML = '<i class="fas fa-check-circle text-green-600"></i>';
+                    iconEl.classList.add('bg-green-600', 'text-green-600', 'border-green-600');
+                    timeSpanEl.textContent = timestamps[step];
+                    if (mobileLineEl) mobileLineEl.classList.add('bg-green-600');
+                    if (desktopLineEl) desktopLineEl.classList.add('bg-green-600');
+                } else {
+                    iconEl.innerHTML = `<i class="fas ${icons[step]} text-green-600"></i>`;
+                    timeSpanEl.textContent = '';
+                }
+            });
+        }
+
+        async function handleStatusUpdate() {
+            const updateButton = document.getElementById('updateStatusButton');
+            const orderId = updateButton.getAttribute('data-order-id');
+            const newStatus = updateButton.getAttribute('data-next-status');
+
+            if (!orderId || !newStatus) {
+                dispatchToast('Error: Status atau Order ID tidak ditemukan.', 'error');
+                return;
+            }
+
+            const buttonText = document.getElementById('updateStatusButtonText');
+            const buttonSpinner = document.getElementById('updateStatusButtonSpinner');
+
+            buttonText.classList.add('hidden');
+            buttonSpinner.classList.remove('hidden');
             updateButton.disabled = true;
             updateButton.classList.add('opacity-50', 'cursor-not-allowed');
-        }
 
-        updateButton.setAttribute('data-order-id', order.id);
+            try {
+                const response = await fetch(`/kurir/pesanan/${orderId}/update-status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': getCsrfToken()
+                    },
+                    body: JSON.stringify({
+                        new_status: newStatus
+                    })
+                });
 
-        // 6. Menampilkan konten modal
-        document.getElementById('statusStepperModalLoader').classList.add('hidden');
-        document.getElementById('statusStepperModalContent').classList.remove('hidden');
-    }
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message || 'Gagal memperbarui status.');
 
-    // Fungsi pembantu untuk memperbarui UI Stepper secara spesifik
-    function updateStepperUI(order) {
-        const steps = ['diambil', 'diantar', 'diterima_pembeli'];
-        const timestamps = {
-            diambil: order.picked_up_at,
-            diantar: order.delivered_at,
-            diterima_pembeli: order.received_by_buyer_at
-        };
-        const icons = {
-            diambil: 'fa-box',
-            diantar: 'fa-truck-moving',
-            diterima_pembeli: 'fa-home'
-        };
-        const timeSpans = {
-            diambil: 'pickedUpAt',
-            diantar: 'deliveredAt',
-            diterima_pembeli: 'receivedByBuyerAt'
-        };
+                dispatchToast(result.message, 'success');
 
-        // Loop tunggal untuk mengatur setiap langkah
-        steps.forEach(step => {
-            const iconEl = document.getElementById(`step-${step}-icon`);
-            const timeSpanEl = document.getElementById(timeSpans[step]);
-            const mobileLineEl = document.getElementById(`line-${step}-mobile`);
-            const desktopLineEl = document.getElementById(step === 'diambil' ? 'line-diantar' : `line-${step}`);
+                // --- PERBAIKAN UTAMA: Perbarui UI secara langsung dengan waktu lokal ---
+                // 1. Dapatkan waktu saat ini dari perangkat pengguna (Date.now())
+                const now = new Date();
+                const localTimestamp = now.toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                }) + ', ' + now.toLocaleTimeString('id-ID', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
 
-            // Reset warna
-            iconEl.classList.remove('bg-green-600', 'text-green-600', 'border-green-600');
-            if (mobileLineEl) mobileLineEl.classList.remove('bg-green-600');
-            if (desktopLineEl) desktopLineEl.classList.remove('bg-green-600');
+                // 2. Perbarui teks timestamp di UI stepper secara langsung
+                const timeSpanId = {
+                    'diambil': 'pickedUpAt',
+                    'diantar': 'deliveredAt',
+                    'diterima_pembeli': 'receivedByBuyerAt'
+                } [newStatus];
 
-            // Cek apakah langkah sudah selesai
-            if (timestamps[step]) {
-                iconEl.innerHTML = '<i class="fas fa-check-circle text-green-600"></i>';
-                iconEl.classList.add('bg-green-600', 'text-green-600', 'border-green-600');
-                timeSpanEl.textContent = timestamps[step];
-                if (mobileLineEl) mobileLineEl.classList.add('bg-green-600');
-                if (desktopLineEl) desktopLineEl.classList.add('bg-green-600');
-            } else {
-                iconEl.innerHTML = `<i class="fas ${icons[step]} text-green-600"></i>`;
-                timeSpanEl.textContent = '';
+                if (timeSpanId) {
+                    document.getElementById(timeSpanId).textContent = localTimestamp;
+                }
+
+                // 3. Muat ulang konten modal untuk mendapatkan data server terbaru di latar belakang
+                // Ini memastikan tombol dan status berikutnya sudah benar tanpa harus menampilkan timestamp server.
+                openStatusStepperModal(orderId);
+
+                // 4. Perbarui status pada baris tabel di halaman utama
+                updateTableRowStatus(orderId, result.order.status);
+
+            } catch (error) {
+                console.error('Error updating order status:', error);
+                dispatchToast(`Gagal: ${error.message}`, 'error');
+            } finally {
+                buttonText.classList.remove('hidden');
+                buttonSpinner.classList.add('hidden');
             }
-        });
-    }
-
-    async function handleStatusUpdate() {
-        const updateButton = document.getElementById('updateStatusButton');
-        const orderId = updateButton.getAttribute('data-order-id');
-        const newStatus = updateButton.getAttribute('data-next-status');
-
-        if (!orderId || !newStatus) {
-            dispatchToast('Error: Status atau Order ID tidak ditemukan.', 'error');
-            return;
         }
 
-        const buttonText = document.getElementById('updateStatusButtonText');
-        const buttonSpinner = document.getElementById('updateStatusButtonSpinner');
+        function updateTableRowStatus(orderId, newStatus) {
+            const rows = document.querySelectorAll(`[data-order-id="${orderId}"]`);
+            const statusText = STATUS_LABEL_MAP[newStatus] || (newStatus.charAt(0).toUpperCase() + newStatus.slice(1)
+                .replace(/_/g, ' '));
+            // const statusText = newStatus.charAt(0).toUpperCase() + newStatus.slice(1).replace(/_/g, ' ');
+            let newClasses = 'bg-gray-100 text-gray-800';
+            let newColorBarClass = 'bg-gray-400';
 
-        buttonText.classList.add('hidden');
-        buttonSpinner.classList.remove('hidden');
-        updateButton.disabled = true;
-        updateButton.classList.add('opacity-50', 'cursor-not-allowed');
+            switch (newStatus) {
+                case 'diambil':
+                    newClasses = 'bg-blue-100 text-blue-800';
+                    newColorBarClass = 'bg-blue-500';
+                    break;
+                case 'diantar':
+                    newClasses = 'bg-yellow-100 text-yellow-800';
+                    newColorBarClass = 'bg-yellow-500';
+                    break;
+                case 'diterima_pembeli':
+                    newClasses = 'bg-purple-100 text-purple-800';
+                    newColorBarClass = 'bg-purple-500';
+                    break;
+                case 'menunggu_retur':
+                    newClasses = 'bg-red-100 text-red-800';
+                    newColorBarClass = 'bg-red-500';
+                    break;
+                case 'menunggu_verifikasi_admin':
+                    newClasses = 'bg-orange-100 text-orange-800';
+                    newColorBarClass = 'bg-orange-500';
+                    break;
+                case 'selesai':
+                    newClasses = 'bg-green-100 text-green-800';
+                    newColorBarClass = 'bg-green-500';
+                    break;
+            }
 
-        try {
-            const response = await fetch(`/kurir/pesanan/${orderId}/update-status`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': getCsrfToken()
-                },
-                body: JSON.stringify({
-                    new_status: newStatus
-                })
+            rows.forEach(row => {
+                const statusSpan = row.querySelector('.status-badge');
+                if (statusSpan) {
+                    statusSpan.textContent = statusText;
+                    statusSpan.className =
+                        `status-badge ${statusSpan.className.split(' ').slice(0, 4).join(' ')} ${newClasses}`;
+                }
+                const colorBar = row.querySelector('.absolute.top-0.left-0');
+                if (colorBar) {
+                    colorBar.className = colorBar.className.replace(/bg-\w+-\d+/g, '') + ` ${newColorBarClass}`;
+                }
             });
-
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.message || 'Gagal memperbarui status.');
-
-            dispatchToast(result.message, 'success');
-
-            // --- PERBAIKAN UTAMA: Perbarui UI secara langsung dengan waktu lokal ---
-            // 1. Dapatkan waktu saat ini dari perangkat pengguna (Date.now())
-            const now = new Date();
-            const localTimestamp = now.toLocaleDateString('id-ID', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
-            }) + ', ' + now.toLocaleTimeString('id-ID', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-
-            // 2. Perbarui teks timestamp di UI stepper secara langsung
-            const timeSpanId = {
-                'diambil': 'pickedUpAt',
-                'diantar': 'deliveredAt',
-                'diterima_pembeli': 'receivedByBuyerAt'
-            } [newStatus];
-
-            if (timeSpanId) {
-                document.getElementById(timeSpanId).textContent = localTimestamp;
-            }
-
-            // 3. Muat ulang konten modal untuk mendapatkan data server terbaru di latar belakang
-            // Ini memastikan tombol dan status berikutnya sudah benar tanpa harus menampilkan timestamp server.
-            openStatusStepperModal(orderId);
-
-            // 4. Perbarui status pada baris tabel di halaman utama
-            updateTableRowStatus(orderId, result.order.status);
-
-        } catch (error) {
-            console.error('Error updating order status:', error);
-            dispatchToast(`Gagal: ${error.message}`, 'error');
-        } finally {
-            buttonText.classList.remove('hidden');
-            buttonSpinner.classList.add('hidden');
-        }
-    }
-
-    function updateTableRowStatus(orderId, newStatus) {
-        const rows = document.querySelectorAll(`[data-order-id="${orderId}"]`);
-        const statusText = STATUS_LABEL_MAP[newStatus] || (newStatus.charAt(0).toUpperCase() + newStatus.slice(1)
-            .replace(/_/g, ' '));
-        // const statusText = newStatus.charAt(0).toUpperCase() + newStatus.slice(1).replace(/_/g, ' ');
-        let newClasses = 'bg-gray-100 text-gray-800';
-        let newColorBarClass = 'bg-gray-400';
-
-        switch (newStatus) {
-            case 'diambil':
-                newClasses = 'bg-blue-100 text-blue-800';
-                newColorBarClass = 'bg-blue-500';
-                break;
-            case 'diantar':
-                newClasses = 'bg-yellow-100 text-yellow-800';
-                newColorBarClass = 'bg-yellow-500';
-                break;
-            case 'diterima_pembeli':
-                newClasses = 'bg-purple-100 text-purple-800';
-                newColorBarClass = 'bg-purple-500';
-                break;
-            case 'menunggu_retur':
-                newClasses = 'bg-red-100 text-red-800';
-                newColorBarClass = 'bg-red-500';
-                break;
-            case 'menunggu_verifikasi_admin':
-                newClasses = 'bg-orange-100 text-orange-800';
-                newColorBarClass = 'bg-orange-500';
-                break;
-            case 'selesai':
-                newClasses = 'bg-green-100 text-green-800';
-                newColorBarClass = 'bg-green-500';
-                break;
         }
 
-        rows.forEach(row => {
-            const statusSpan = row.querySelector('.status-badge');
-            if (statusSpan) {
-                statusSpan.textContent = statusText;
-                statusSpan.className =
-                    `status-badge ${statusSpan.className.split(' ').slice(0, 4).join(' ')} ${newClasses}`;
+        function openReturnProductModal(order) {
+            // --- Bagian Atas Fungsi (Tetap Sama) ---
+            const returnModalLoader = document.getElementById('returnModalLoader');
+            const returnModalContent = document.getElementById('returnModalContent');
+            const returnOrderIdInput = document.getElementById('returnOrderId');
+
+            // Diubah: Menggunakan dua container terpisah untuk desktop dan mobile, seperti kode lama
+            const desktopContainer = document.getElementById('return-product-list-desktop');
+            const mobileContainer = document.getElementById('return-product-list-mobile');
+
+            returnModalContent.classList.add('hidden');
+            returnModalLoader.classList.remove('hidden');
+
+            returnOrderIdInput.value = order.id;
+
+            // Diubah: Membersihkan kedua container
+            desktopContainer.innerHTML = '';
+            mobileContainer.innerHTML = '';
+
+            // --- Penanganan Jika Produk Kosong (Disesuaikan) ---
+            if (!order.products || order.products.length === 0) {
+                // Diubah: Menangani kasus "tidak ada produk" untuk kedua layout
+                const noProductHTML =
+                    '<p class="py-4 text-center text-gray-500 dark:text-gray-400">Tidak ada produk dalam pesanan ini untuk diretur.</p>';
+                desktopContainer.innerHTML = `<tr><td colspan="4">${noProductHTML}</td></tr>`;
+                mobileContainer.innerHTML = noProductHTML;
+
+                returnModalLoader.classList.add('hidden');
+                returnModalContent.classList.remove('hidden');
+                return;
             }
-            const colorBar = row.querySelector('.absolute.top-0.left-0');
-            if (colorBar) {
-                colorBar.className = colorBar.className.replace(/bg-\w+-\d+/g, '') + ` ${newColorBarClass}`;
-            }
-        });
-    }
 
-    function openReturnProductModal(order) {
-        // --- Bagian Atas Fungsi (Tetap Sama) ---
-        const returnModalLoader = document.getElementById('returnModalLoader');
-        const returnModalContent = document.getElementById('returnModalContent');
-        const returnOrderIdInput = document.getElementById('returnOrderId');
+            // --- Loop untuk Setiap Produk (Tampilan Disesuaikan) ---
+            order.products.forEach((product, index) => {
+                // Logika untuk mendapatkan ID dan gambar produk (dipertahankan dari kode baru Anda)
+                const productId = product.product_id || product.id;
+                const variantId = product.variant_id !== undefined && product.variant_id !== null ? product
+                    .variant_id : 0;
+                const returnKey = `${productId}-${variantId}`;
+                const productImage = product.image_url || 'https://placehold.co/64x64/E2E8F0/64748B?text=No+Img';
 
-        // Diubah: Menggunakan dua container terpisah untuk desktop dan mobile, seperti kode lama
-        const desktopContainer = document.getElementById('return-product-list-desktop');
-        const mobileContainer = document.getElementById('return-product-list-mobile');
-
-        returnModalContent.classList.add('hidden');
-        returnModalLoader.classList.remove('hidden');
-
-        returnOrderIdInput.value = order.id;
-
-        // Diubah: Membersihkan kedua container
-        desktopContainer.innerHTML = '';
-        mobileContainer.innerHTML = '';
-
-        // --- Penanganan Jika Produk Kosong (Disesuaikan) ---
-        if (!order.products || order.products.length === 0) {
-            // Diubah: Menangani kasus "tidak ada produk" untuk kedua layout
-            const noProductHTML = '<p class="py-4 text-center text-gray-500 dark:text-gray-400">Tidak ada produk dalam pesanan ini untuk diretur.</p>';
-            desktopContainer.innerHTML = `<tr><td colspan="4">${noProductHTML}</td></tr>`;
-            mobileContainer.innerHTML = noProductHTML;
-
-            returnModalLoader.classList.add('hidden');
-            returnModalContent.classList.remove('hidden');
-            return;
-        }
-
-        // --- Loop untuk Setiap Produk (Tampilan Disesuaikan) ---
-        order.products.forEach((product, index) => {
-            // Logika untuk mendapatkan ID dan gambar produk (dipertahankan dari kode baru Anda)
-            const productId = product.product_id || product.id;
-            const variantId = product.variant_id !== undefined && product.variant_id !== null ? product.variant_id : 0;
-            const returnKey = `${productId}-${variantId}`;
-            const productImage = product.image_url || 'https://placehold.co/64x64/E2E8F0/64748B?text=No+Img';
-
-            // Diubah: Menggunakan template HTML dari kode lama Anda
-            // --- TEMPLATE UNTUK DESKTOP (TABLE ROW) ---
-            const desktopRowHTML = `
+                // Diubah: Menggunakan template HTML dari kode lama Anda
+                // --- TEMPLATE UNTUK DESKTOP (TABLE ROW) ---
+                const desktopRowHTML = `
             <tr data-return-key="${returnKey}">
                 <td class="px-4 py-4 whitespace-nowrap">
                     <div class="text-sm text-gray-900 dark:text-white">${index + 1}</div>
@@ -1584,8 +1625,8 @@ $totalReturnedOrdersInRange = array_sum($chartDataReturned);
             </tr>
         `;
 
-            // --- TEMPLATE UNTUK MOBILE (CARD) ---
-            const mobileCardHTML = `
+                // --- TEMPLATE UNTUK MOBILE (CARD) ---
+                const mobileCardHTML = `
             <div class="flex items-start gap-4 px-4 py-2 mx-0 border-b border-gray-200 dark:border-gray-700" data-return-key="${returnKey}">
                 <div class="flex-shrink-0 w-24 h-24">
                     <img class="object-cover w-24 h-24 rounded-md" src="${productImage}" alt="${product.name}">
@@ -1608,141 +1649,141 @@ $totalReturnedOrdersInRange = array_sum($chartDataReturned);
             </div>
         `;
 
-            // Dihapus: Logika `createElement` dan `appendChild` dari kode baru Anda.
-            // Diganti dengan `insertAdjacentHTML` seperti pada kode lama.
-            desktopContainer.insertAdjacentHTML('beforeend', desktopRowHTML);
-            mobileContainer.insertAdjacentHTML('beforeend', mobileCardHTML);
-        });
-
-        // --- Bagian Bawah Fungsi (Tetap Sama) ---
-        returnModalLoader.classList.add('hidden');
-        returnModalContent.classList.remove('hidden');
-
-        // Catatan: Event listener untuk form submit tetap ada jika dibutuhkan
-        document.getElementById('returnProductForm').onsubmit = (e) => {
-            e.preventDefault();
-            // Pastikan Anda memiliki fungsi handleReturnRequestSubmit
-            handleReturnRequestSubmit(order.id);
-        };
-    }
-
-    async function handleReturnRequestSubmit(orderId) {
-        const form = document.getElementById('returnProductForm');
-        const submitButton = document.getElementById('submitReturnRequestButton');
-        const buttonText = document.getElementById('submitReturnRequestButtonText');
-        const buttonSpinner = document.getElementById('submitReturnRequestButtonSpinner');
-
-        // Beri umpan balik ke pengguna (UI loading)
-        submitButton.disabled = true;
-        buttonText.classList.add('hidden');
-        buttonSpinner.classList.remove('hidden');
-
-        // Ambil semua input jumlah yang nilainya lebih dari 0
-        const returnQuantities = {};
-        let hasValidReturn = false;
-
-        // PERBAIKAN DIMULAI DI SINI
-        form.querySelectorAll('.quantity-input').forEach(spanElement => {
-            // DIUBAH: Mengambil 'key' dari atribut 'data-name'
-            const key = spanElement.dataset.name.match(/\[(.*?)\]/)[1];
-
-            // DIUBAH: Mengambil kuantitas dari isi teks 'span' (textContent)
-            const quantity = parseInt(spanElement.textContent, 10);
-
-            if (!isNaN(quantity) && quantity > 0) {
-                returnQuantities[key] = quantity;
-                hasValidReturn = true;
-            }
-        });
-        // PERBAIKAN SELESAI
-
-        // Validasi frontend: pastikan ada produk yang diretur
-        if (!hasValidReturn) {
-            dispatchToast('Anda harus memasukkan jumlah minimal 1 untuk satu produk.', 'error');
-            submitButton.disabled = false;
-            buttonText.classList.remove('hidden');
-            buttonSpinner.classList.add('hidden');
-            return;
-        }
-
-        try {
-            // Kirim data ke server (bagian ini sudah benar)
-            const response = await fetch(`/kurir/pesanan/${orderId}/request-return`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': getCsrfToken()
-                },
-                body: JSON.stringify({
-                    return_quantities: returnQuantities
-                })
+                // Dihapus: Logika `createElement` dan `appendChild` dari kode baru Anda.
+                // Diganti dengan `insertAdjacentHTML` seperti pada kode lama.
+                desktopContainer.insertAdjacentHTML('beforeend', desktopRowHTML);
+                mobileContainer.insertAdjacentHTML('beforeend', mobileCardHTML);
             });
 
-            const result = await response.json();
-            if (!response.ok) {
-                const errorMsg = result.errors ? Object.values(result.errors).flat().join(' ') : result.message;
-                throw new Error(errorMsg || 'Gagal mengajukan pengembalian.');
-            }
+            // --- Bagian Bawah Fungsi (Tetap Sama) ---
+            returnModalLoader.classList.add('hidden');
+            returnModalContent.classList.remove('hidden');
 
-            // Jika berhasil:
-            dispatchToast(result.message, 'success');
-
-            // Tutup modal retur
-            const returnModal = document.getElementById('returnProductModal');
-            if (typeof closeModal === 'function') {
-                closeModal(returnModal);
-            } else {
-                // Fallback jika fungsi closeModal global tidak ada
-                const modal = new Modal(returnModal);
-                modal.hide();
-            }
-
-
-            // Perbarui UI di latar belakang
-            updateTableRowStatus(orderId, result.order.status);
-            // Panggil kembali fetchOrderDetails untuk refresh data di modal rincian jika dibuka lagi
-            // Anda bisa menonaktifkan baris ini jika tidak ingin modal rincian otomatis terbuka
-            fetchOrderDetails(orderId);
-
-        } catch (error) {
-            dispatchToast(`Gagal: ${error.message}`, 'error');
-        } finally {
-            // Selalu kembalikan tombol ke keadaan normal
-            submitButton.disabled = false;
-            buttonText.classList.remove('hidden');
-            buttonSpinner.classList.add('hidden');
+            // Catatan: Event listener untuk form submit tetap ada jika dibutuhkan
+            document.getElementById('returnProductForm').onsubmit = (e) => {
+                e.preventDefault();
+                // Pastikan Anda memiliki fungsi handleReturnRequestSubmit
+                handleReturnRequestSubmit(order.id);
+            };
         }
-    }
 
+        async function handleReturnRequestSubmit(orderId) {
+            const form = document.getElementById('returnProductForm');
+            const submitButton = document.getElementById('submitReturnRequestButton');
+            const buttonText = document.getElementById('submitReturnRequestButtonText');
+            const buttonSpinner = document.getElementById('submitReturnRequestButtonSpinner');
 
-    // --- Event Delegation ---
-    document.addEventListener('DOMContentLoaded', function() {
-        document.body.addEventListener('click', function(event) {
-            const openStatusBtn = event.target.closest('.js-open-status-modal');
-            if (openStatusBtn) {
-                const orderId = openStatusBtn.getAttribute('data-order-id');
-                openStatusStepperModal(orderId);
+            // Beri umpan balik ke pengguna (UI loading)
+            submitButton.disabled = true;
+            buttonText.classList.add('hidden');
+            buttonSpinner.classList.remove('hidden');
+
+            // Ambil semua input jumlah yang nilainya lebih dari 0
+            const returnQuantities = {};
+            let hasValidReturn = false;
+
+            // PERBAIKAN DIMULAI DI SINI
+            form.querySelectorAll('.quantity-input').forEach(spanElement => {
+                // DIUBAH: Mengambil 'key' dari atribut 'data-name'
+                const key = spanElement.dataset.name.match(/\[(.*?)\]/)[1];
+
+                // DIUBAH: Mengambil kuantitas dari isi teks 'span' (textContent)
+                const quantity = parseInt(spanElement.textContent, 10);
+
+                if (!isNaN(quantity) && quantity > 0) {
+                    returnQuantities[key] = quantity;
+                    hasValidReturn = true;
+                }
+            });
+            // PERBAIKAN SELESAI
+
+            // Validasi frontend: pastikan ada produk yang diretur
+            if (!hasValidReturn) {
+                dispatchToast('Anda harus memasukkan jumlah minimal 1 untuk satu produk.', 'error');
+                submitButton.disabled = false;
+                buttonText.classList.remove('hidden');
+                buttonSpinner.classList.add('hidden');
                 return;
             }
 
-            const openDetailsBtn = event.target.closest('.js-open-details-modal');
-            if (openDetailsBtn) {
-                const orderId = openDetailsBtn.getAttribute('data-order-id');
+            try {
+                // Kirim data ke server (bagian ini sudah benar)
+                const response = await fetch(`/kurir/pesanan/${orderId}/request-return`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': getCsrfToken()
+                    },
+                    body: JSON.stringify({
+                        return_quantities: returnQuantities
+                    })
+                });
+
+                const result = await response.json();
+                if (!response.ok) {
+                    const errorMsg = result.errors ? Object.values(result.errors).flat().join(' ') : result.message;
+                    throw new Error(errorMsg || 'Gagal mengajukan pengembalian.');
+                }
+
+                // Jika berhasil:
+                dispatchToast(result.message, 'success');
+
+                // Tutup modal retur
+                const returnModal = document.getElementById('returnProductModal');
+                if (typeof closeModal === 'function') {
+                    closeModal(returnModal);
+                } else {
+                    // Fallback jika fungsi closeModal global tidak ada
+                    const modal = new Modal(returnModal);
+                    modal.hide();
+                }
+
+
+                // Perbarui UI di latar belakang
+                updateTableRowStatus(orderId, result.order.status);
+                // Panggil kembali fetchOrderDetails untuk refresh data di modal rincian jika dibuka lagi
+                // Anda bisa menonaktifkan baris ini jika tidak ingin modal rincian otomatis terbuka
                 fetchOrderDetails(orderId);
-                return;
+
+            } catch (error) {
+                dispatchToast(`Gagal: ${error.message}`, 'error');
+            } finally {
+                // Selalu kembalikan tombol ke keadaan normal
+                submitButton.disabled = false;
+                buttonText.classList.remove('hidden');
+                buttonSpinner.classList.add('hidden');
+            }
+        }
+
+
+        // --- Event Delegation ---
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.addEventListener('click', function(event) {
+                const openStatusBtn = event.target.closest('.js-open-status-modal');
+                if (openStatusBtn) {
+                    const orderId = openStatusBtn.getAttribute('data-order-id');
+                    openStatusStepperModal(orderId);
+                    return;
+                }
+
+                const openDetailsBtn = event.target.closest('.js-open-details-modal');
+                if (openDetailsBtn) {
+                    const orderId = openDetailsBtn.getAttribute('data-order-id');
+                    fetchOrderDetails(orderId);
+                    return;
+                }
+            });
+
+            const updateButton = document.getElementById('updateStatusButton');
+            if (updateButton) {
+                updateButton.addEventListener('click', handleStatusUpdate);
             }
         });
+    </script>
 
-        const updateButton = document.getElementById('updateStatusButton');
-        if (updateButton) {
-            updateButton.addEventListener('click', handleStatusUpdate);
-        }
-    });
-</script>
-
-<script src="/assets/argon/js/plugins/chartjs.min.js"></script>
-<script src="/assets/argon/js/plugins/perfect-scrollbar.min.js" async></script>
-<script src="/assets-argon-dashboard-tailwind.js?v=1.0.1" async></script>
+    <script src="/assets/argon/js/plugins/chartjs.min.js"></script>
+    <script src="/assets/argon/js/plugins/perfect-scrollbar.min.js" async></script>
+    <script src="/assets-argon-dashboard-tailwind.js?v=1.0.1" async></script>
 
 @endsection

@@ -37,7 +37,7 @@
 
     <!-- Welcome Card Section -->
     <div class="p-6">
-        <div class="bg-green-100 dark:bg-slate-850 dark:shadow-dark-xl p-6 rounded-lg shadow">
+        <div class="p-6 bg-green-100 rounded-lg shadow dark:bg-slate-850 dark:shadow-dark-xl">
             <div>
                 <h2 class="text-2xl font-bold text-gray-800 dark:text-white">
                     Hai, {{ $greeting }} <span
@@ -53,7 +53,7 @@
     <!-- Stats Cards Section -->
     <div class="p-6">
         <h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-black sm:text-2xl">💰 Resume Hari Ini</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             <div
                 class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
                 <div class="flex-auto p-4">
@@ -189,135 +189,187 @@
 
     <!-- Chart Section -->
     <div class="p-6">
-        <h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-black sm:text-2xl">📊 Grafik</h2>
-        <div class="w-full bg-white rounded-lg shadow-xl dark:bg-gray-800 p-4 md:p-6">
-            <div class="flex justify-between mb-5">
-                <div>
-                    <h5 class="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">$12,423</h5>
-                    <p class="text-base font-normal text-gray-500 dark:text-gray-400">Sales this week</p>
-                </div>
-                <div
-                    class="flex items-center px-2.5 py-0.5 text-base font-semibold text-green-500 dark:text-green-500 text-center">
-                    23%
-                    <svg class="w-3 h-3 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                        viewBox="0 0 10 14">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M5 13V1m0 0L1 5m4-4 4 4" />
-                    </svg>
-                </div>
-            </div>
-            <div id="legend-chart"></div>
-            <div class="grid grid-cols-1 items-center border-gray-200 border-t dark:border-gray-700 justify-between mt-5">
-                <div class="flex justify-between items-center pt-5">
-                    <button id="dropdownDefaultButton" data-dropdown-toggle="lastDaysdropdown"
-                        data-dropdown-placement="bottom"
-                        class="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 text-center inline-flex items-center dark:hover:text-white"
-                        type="button">
-                        Last 7 days
-                        <svg class="w-2.5 m-2.5 ms-1.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 10 6">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="m1 1 4 4 4-4" />
-                        </svg>
-                    </button>
-                    <div id="lastDaysdropdown"
-                        class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700">
-                        <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">
-                            <li>
-                                <a href="#"
-                                    class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Yesterday</a>
-                            </li>
-                            <li>
-                                <a href="#"
-                                    class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Today</a>
-                            </li>
-                            <li>
-                                <a href="#"
-                                    class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Last
-                                    7 days</a>
-                            </li>
-                            <li>
-                                <a href="#"
-                                    class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Last
-                                    30 days</a>
-                            </li>
-                            <li>
-                                <a href="#"
-                                    class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Last
-                                    90 days</a>
-                            </li>
-                        </ul>
+        <div
+            class="relative overflow-hidden bg-white border border-gray-100 shadow-2xl rounded-3xl dark:bg-slate-800 dark:border-slate-700">
+            <div class="p-6">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-2">
+                    <div class="flex flex-col">
+                        <h6 class="flex items-center gap-2 text-lg font-bold text-gray-800 dark:text-white">
+                            <i class="text-blue-500 fas fa-chart-line"></i>
+                            <span>Grafik Penjualan</span>
+                        </h6>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">📆 {{ $dateRangeText }}</p>
                     </div>
-                    <a href="#"
-                        class="uppercase text-sm font-semibold inline-flex items-center rounded-lg text-blue-600 hover:text-blue-700 dark:hover:text-blue-500 hover:bg-gray-100 dark:hover:bg-gray-700 dark:focus:ring-gray-700 dark:border-gray-700 px-3 py-2">
-                        Sales Report
-                        <svg class="w-2.5 h-2.5 ms-1.5 rtl:rotate-180" aria-hidden="true"
-                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="m1 9 4-4-4-4" />
-                        </svg>
-                    </a>
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center">
+                            <span class="w-3 h-3 mr-2 bg-blue-500 rounded-full"></span>
+                            <span class="mr-1 text-sm font-medium text-gray-600 dark:text-gray-300">Total </span>
+                            <span class="text-sm font-bold text-gray-800 dark:text-white">{{ $totalOrdersInRange }}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="w-3 h-3 mr-2 bg-green-500 rounded-full"></span>
+                            <span class="mr-1 text-sm font-medium text-gray-600 dark:text-gray-300">Verifikasi </span>
+                            <span
+                                class="text-sm font-bold text-gray-800 dark:text-white">{{ $totalVerifiedInRange }}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="w-3 h-3 mr-2 bg-orange-500 rounded-full"></span>
+                            <span class="mr-1 text-sm font-medium text-gray-600 dark:text-gray-300">Retur </span>
+                            <span
+                                class="text-sm font-bold text-gray-800 dark:text-white">{{ $totalVerifiedWithReturnInRange }}</span>
+                        </div>
+                        <div class="relative">
+                            <button id="chartFilterButton" type="button"
+                                class="text-gray-500 js-dropdown-toggle hover:text-gray-700 dark:text-gray-400 dark:hover:text-white focus:outline-none"
+                                data-target-dropdown="chartFilterDropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div id="chartFilterDropdown"
+                                class="absolute right-0 z-20 hidden w-40 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-slate-700 js-dropdown-menu dark:border-slate-600">
+                                <a href="{{ route('admin.dashboard', ['region' => Auth::user()->region->slug, 'filter' => 'last_7_days']) }}"
+                                    class="block px-4 py-2 text-sm font-semibold rounded-t-lg transition-colors duration-150 {{ $filter === 'last_7_days' ? 'bg-blue-100 text-blue-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-slate-600' }}">7
+                                    Hari</a>
+                                <a href="{{ route('admin.dashboard', ['region' => Auth::user()->region->slug, 'filter' => 'daily']) }}"
+                                    class="block px-4 py-2 text-sm font-semibold transition-colors duration-150 {{ $filter === 'daily' ? 'bg-blue-100 text-blue-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-slate-600' }}">Harian</a>
+                                <a href="{{ route('admin.dashboard', ['region' => Auth::user()->region->slug, 'filter' => 'weekly']) }}"
+                                    class="block px-4 py-2 text-sm font-semibold transition-colors duration-150 {{ $filter === 'weekly' ? 'bg-blue-100 text-blue-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-slate-600' }}">Mingguan</a>
+                                <a href="{{ route('admin.dashboard', ['region' => Auth::user()->region->slug, 'filter' => 'monthly']) }}"
+                                    class="block px-4 py-2 text-sm font-semibold rounded-b-lg transition-colors duration-150 {{ $filter === 'monthly' ? 'bg-blue-100 text-blue-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-slate-600' }}">Bulanan</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-auto p-4 pt-0">
+                    <div>
+                        <canvas id="adminOrdersChart" class="h-[250px] lg:h-[300px]"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Monitoring Kurir Section -->
-    <div class="p-6">
-        <h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-black sm:text-2xl">🛵 Monitoring Kurir</h2>
-        <div class="relative bg-white shadow-md dark:bg-gray-800 sm:rounded-lg">
-            <div class="flex flex-col items-center justify-between p-4 space-y-3 md:flex-row md:space-y-0 md:space-x-4">
-                <div class="w-full">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                        📦 Monitoring Kurir di Region {{ Auth::user()->region->name }}
-                    </h3>
+        <!-- Monitoring Kurir Section -->
+        <div class="p-6">
+            <h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-black sm:text-2xl">🛵 Monitoring Kurir</h2>
+            <div class="relative bg-white shadow-md dark:bg-gray-800 sm:rounded-lg">
+                <div class="flex flex-col items-center justify-between p-4 space-y-3 md:flex-row md:space-y-0 md:space-x-4">
+                    <div class="w-full">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                            📦 Monitoring Kurir di Region {{ Auth::user()->region->name }}
+                        </h3>
+                    </div>
                 </div>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                        <tr>
-                            {{-- PENYESUAIAN LEBAR KOLOM --}}
-                            <th scope="col" class="px-4 py-3 w-[5%] text-center">No.</th>
-                            <th scope="col" class="px-4 py-3 w-[40%] text-center">Nama Kurir</th>
-                            <th scope="col" class="px-4 py-3 w-[40%] text-center">Email</th>
-                            <th scope="col" class="px-4 py-3 w-[15%] text-center">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($couriers as $kurir)
-                            <tr class="border-b dark:border-gray-700">
-                                <td class="px-4 py-3 font-medium text-center text-gray-900 dark:text-white">
-                                    {{ ($couriers->currentPage() - 1) * $couriers->perPage() + $loop->iteration }}
-                                </td>
-                                <th scope="row"
-                                    class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white text-center">
-                                    {{ $kurir->name }}
-                                </th>
-                                <td class="px-4 py-3 text-center">{{ $kurir->email }}</td>
-                                <td class="px-4 py-3 text-center">
-                                    <span
-                                        class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
-                                        Aktif
-                                    </span>
-                                </td>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                            <tr>
+                                {{-- PENYESUAIAN LEBAR KOLOM --}}
+                                <th scope="col" class="px-4 py-3 w-[5%] text-center">No.</th>
+                                <th scope="col" class="px-4 py-3 w-[40%] text-center">Nama Kurir</th>
+                                <th scope="col" class="px-4 py-3 w-[40%] text-center">Email</th>
+                                <th scope="col" class="px-4 py-3 w-[15%] text-center">Status</th>
                             </tr>
-                        @empty
-                            <tr class="border-b dark:border-gray-700">
-                                {{-- Pastikan colspan sesuai dengan jumlah kolom (4) --}}
-                                <td colspan="4" class="px-4 py-3 text-center text-gray-500">Tidak ada data kurir di
-                                    region ini.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @forelse($couriers as $kurir)
+                                <tr class="border-b dark:border-gray-700">
+                                    <td class="px-4 py-3 font-medium text-center text-gray-900 dark:text-white">
+                                        {{ ($couriers->currentPage() - 1) * $couriers->perPage() + $loop->iteration }}
+                                    </td>
+                                    <th scope="row"
+                                        class="px-4 py-3 font-medium text-center text-gray-900 whitespace-nowrap dark:text-white">
+                                        {{ $kurir->name }}
+                                    </th>
+                                    <td class="px-4 py-3 text-center">{{ $kurir->email }}</td>
+                                    <td class="px-4 py-3 text-center">
+                                        <span
+                                            class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
+                                            Aktif
+                                        </span>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr class="border-b dark:border-gray-700">
+                                    {{-- Pastikan colspan sesuai dengan jumlah kolom (4) --}}
+                                    <td colspan="4" class="px-4 py-3 text-center text-gray-500">Tidak ada data kurir di
+                                        region ini.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                <nav class="flex justify-end w-full p-4" aria-label="Table navigation">
+                    {{ $couriers->links() }}
+                </nav>
+
             </div>
-
-            <nav class="flex justify-end w-full p-4" aria-label="Table navigation">
-                {{ $couriers->links() }}
-            </nav>
-
         </div>
-    </div>
 
-@endsection
+    @endsection
+
+    @push('page-scripts')
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var ctx = document.getElementById('adminOrdersChart');
+                if (ctx && window.Chart) {
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: @json($chartLabels),
+                            datasets: [{
+                                    label: 'Total Pesanan',
+                                    data: @json($chartDataTotal),
+                                    borderColor: '#3b82f6', // Biru
+                                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                    fill: true,
+                                    tension: 0.4,
+                                },
+                                {
+                                    label: 'Diverifikasi',
+                                    data: @json($chartDataVerified),
+                                    borderColor: '#22c55e', // Hijau
+                                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                                    fill: true,
+                                    tension: 0.4,
+                                },
+                                {
+                                    label: 'Retur',
+                                    data: @json($chartDataVerifiedWithReturn),
+                                    borderColor: '#f97316', // Oranye
+                                    backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                                    fill: true,
+                                    tension: 0.4,
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        color: document.documentElement.classList.contains('dark') ? '#9ca3af' :
+                                            '#6b7280',
+                                        stepSize: 1
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        color: document.documentElement.classList.contains('dark') ? '#9ca3af' :
+                                            '#6b7280'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        </script>
+    @endpush
