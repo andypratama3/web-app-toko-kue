@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class HistoryOrderController extends Controller
 {
@@ -135,28 +136,98 @@ class HistoryOrderController extends Controller
         return view('dashboard.admin.historys.invoice', compact('order', 'isPdf'));
     }
 
-    public function index(Request $request) // Tambahkan Request
+    public function downloadHistoryPdf(Request $request)
     {
         $user = Auth::user();
+        $selectedMonth = $request->input('month', now()->format('m'));
+        $selectedYear = $request->input('year', now()->format('Y'));
 
-        if (!$user->hasRole('admin') && !$user->hasRole('kurir')) {
-            abort(403, 'Unauthorized');
+        $months = [
+            '01' => 'Januari',
+            '02' => 'Februari',
+            '03' => 'Maret',
+            '04' => 'April',
+            '05' => 'Mei',
+            '06' => 'Juni',
+            '07' => 'Juli',
+            '08' => 'Agustus',
+            '09' => 'September',
+            '10' => 'Oktober',
+            '11' => 'November',
+            '12' => 'Desember',
+        ];
+
+        // Query dasar - tambahkan eager load 'returns'
+        $ordersQuery = Order::with(['customer', 'createdBy', 'returns' => fn($q) => $q->where('status', '!=', 'ditolak')->latest()])
+            ->where('status', 'diverifikasi_admin')
+            ->where('region_id', $user->region_id);
+
+        // Terapkan filter bulan dan tahun
+        $ordersQuery->whereMonth('created_at', $selectedMonth)
+            ->whereYear('created_at', $selectedYear);
+
+        $orders = $ordersQuery->latest()->get();
+
+        // [!code focus:start]
+        // TAMBAHKAN LOGIKA INI - Kalkulasi total akhir untuk setiap pesanan
+        foreach ($orders as $order) {
+            $order->has_return = $order->returns->isNotEmpty();
+            $order->final_total = $order->has_return ? $order->total_amount - $order->returns->first()->total_amount_returned : $order->total_amount;
         }
+        // [!code focus:end]
 
-        $ordersQuery = Order::with(['customer', 'createdBy', 'returns' => function ($query) {
-            $query->where('status', '!=', 'ditolak')->latest();
-        }]);
+        // Siapkan data untuk view PDF
+        $bulan = $months[$selectedMonth] . ' ' . $selectedYear;
+        $regionName = $user->region->name ?? 'Semua Region';
 
-        if ($user->hasRole('admin')) {
+        $pdf = Pdf::loadView('dashboard.admin.historys.history-export', [
+            'orders' => $orders,
+            'bulan' => $bulan,
+            'regionName' => $regionName
+        ]);
+
+        return $pdf->download('history-pesanan-' . $bulan . '.pdf');
+    }
+
+    /**
+     * MODIFIKASI: Method index untuk menangani filter
+     */
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        $role = $user->hasRole('admin') ? 'admin' : 'kurir';
+
+        // Ambil filter bulan & tahun dari request, default ke bulan & tahun sekarang
+        $selectedMonth = $request->input('month', now()->format('m'));
+        $selectedYear = $request->input('year', now()->format('Y'));
+
+        // Siapkan data bulan dan tahun untuk dropdown filter
+        $months = [
+            '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
+            '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
+            '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember',
+        ];
+        $currentYear = now()->year;
+        $years = range($currentYear, $currentYear - 5); // 5 tahun ke belakang
+
+        // Query dasar
+        $ordersQuery = Order::with(['customer', 'createdBy', 'returns' => fn($q) => $q->where('status', '!=', 'ditolak')->latest()])
+            ->where('status', 'diverifikasi_admin');
+
+        // Sesuaikan query berdasarkan role
+        if ($role === 'admin') {
             $ordersQuery->where('region_id', $user->region_id);
-        } else {
+        } else { // Untuk kurir
             $ordersQuery->where('created_by_user_id', $user->id);
         }
 
-        $orders = $ordersQuery->where('status', 'diverifikasi_admin')
-            ->latest()
-            ->paginate(10);
+        // Terapkan filter bulan dan tahun untuk semua role
+        $ordersQuery->whereMonth('created_at', $selectedMonth)
+                    ->whereYear('created_at', $selectedYear);
 
+        $orders = $ordersQuery->latest()->paginate(10);
+
+        // Proses data order (kalkulasi total, status, dll.)
         foreach ($orders as $order) {
             $order->has_return = $order->returns->isNotEmpty();
             $order->final_total = $order->has_return ? $order->total_amount - $order->returns->first()->total_amount_returned : $order->total_amount;
@@ -165,17 +236,13 @@ class HistoryOrderController extends Controller
                 : ['text' => 'Belum Lunas', 'class' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'];
         }
 
-        // BARU: Logika untuk menangani request AJAX (untuk load more/infinite scroll)
-        if ($request->ajax()) {
-            $viewPath = $user->hasRole('admin') ? 'dashboard.admin.historys._card' : 'dashboard.kurir.historys._card';
-            $html = view($viewPath, ['orders' => $orders])->render();
-            return response()->json(['html' => $html]);
-        }
+        // Siapkan data yang akan dikirim ke view
+        $viewData = compact('orders', 'months', 'years', 'selectedMonth', 'selectedYear');
 
-        $viewName = $user->hasRole('admin')
+        $viewName = $role === 'admin'
             ? 'dashboard.admin.historys.index'
             : 'dashboard.kurir.historys.index';
 
-        return view($viewName, compact('orders'));
+        return view($viewName, $viewData);
     }
 }

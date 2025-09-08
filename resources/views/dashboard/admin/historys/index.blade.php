@@ -5,10 +5,43 @@
 @section('content')
     <div class="flex-auto p-3 pt-0 -mx-3">
         <div class="p-2.5 bg-white shadow-md rounded-xl dark:bg-gray-800 dark:border-gray-700 min-h-[715px]">
-            <h2 class="mb-6 text-black text-md dark:text-white">
+            {{-- <h2 class="mb-6 text-black text-md dark:text-white">
                 👤 {{ Auth::user()->name ?? 'Admin' }}
                 🚩 {{ Auth::user()->region->name ?? 'N/A' }}
-            </h2>
+            </h2> --}}
+
+            <div class="flex flex-col gap-4 mb-4 md:flex-row md:items-center md:justify-between">
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white">
+                    History Pesanan 🚩 {{ Auth::user()->region->name ?? 'N/A' }}
+                </h2>
+                <form method="GET" class="flex flex-row flex-wrap items-center gap-2">
+                    <div class="relative">
+                        <select name="month"
+                            class="px-4 py-1 pr-8 text-sm border rounded appearance-none focus:ring focus:ring-blue-200">
+                            @foreach ($months as $num => $name)
+                                <option value="{{ $num }}" @if ($selectedMonth == $num) selected @endif>
+                                    {{ $name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="relative">
+                        <select name="year"
+                            class="px-4 py-1 pr-8 text-sm border rounded appearance-none focus:ring focus:ring-blue-200">
+                            @foreach ($years as $year)
+                                <option value="{{ $year }}" @if ($selectedYear == $year) selected @endif>
+                                    {{ $year }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <button type="submit"
+                        class="px-3 py-1 text-sm font-semibold text-white bg-blue-600 rounded hover:bg-blue-700">Lihat</button>
+                    <a href="{{ route('admin.historys.export.pdf', ['month' => $selectedMonth, 'year' => $selectedYear]) }}"
+                        target="_blank"
+                        class="flex items-center px-3 py-1 text-sm font-semibold text-white bg-orange-500 rounded hover:bg-orange-600">
+                        <i class="mr-1 fas fa-file-export"></i> Export PDF
+                    </a>
+                </form>
+            </div>
             <div class="overflow-x-auto min-h-[580px]">
                 <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
                     <thead class="align-bottom">
