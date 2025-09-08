@@ -14,40 +14,32 @@
 
             <!-- Profile Information -->
             @if (Laravel\Fortify\Features::canUpdateProfileInformation())
-                <div class="p-6 rounded-lg shadow-sm bg-gray-50">
-                    <h3 class="mb-4 text-lg font-semibold text-slate-700">Informasi Profil</h3>
-                    <p class="mb-4 text-sm text-gray-600">Update your account's profile information and email address.</p>
+                <div class="p-6 rounded-lg shadow-sm bg-gray-50 dark:bg-slate-850">
+                    <h3 class="mb-4 text-lg font-semibold text-slate-700 dark:text-white">Informasi Profil</h3>
+                    <p class="mb-4 text-sm text-gray-600 dark:text-white">Update your account's profile information and email address.</p>
                     @include('dashboard.admin.profile.update-profile-form')
                 </div>
             @endif
 
             <!-- Update Password -->
             @if (Laravel\Fortify\Features::enabled(Laravel\Fortify\Features::updatePasswords()))
-                <div class="p-6 rounded-lg shadow-sm bg-gray-50">
-                    <h3 class="mb-4 text-lg font-semibold text-slate-700">Ubah Password</h3>
-                    <p class="mb-4 text-sm text-gray-600">Ensure your account is using a long, random password to stay secure.</p>
+                <div class="p-6 rounded-lg shadow-sm bg-gray-50 dark:bg-slate-850">
+                    <h3 class="mb-4 text-lg font-semibold text-slate-700 dark:text-white">Ubah Password</h3>
+                    <p class="mb-4 text-sm text-gray-600 dark:text-white">Pastikan akun Anda menggunakan kata sandi yang panjang dan acak agar tetap aman.</p>
                     @include('dashboard.admin.profile.update-password-form')
                 </div>
             @endif
 
-            <!-- Two Factor Authentication (Keep Livewire for this complex feature) -->
-            @if (Laravel\Fortify\Features::canManageTwoFactorAuthentication())
-                <div class="p-6 rounded-lg shadow-sm bg-gray-50">
-                    <h3 class="mb-4 text-lg font-semibold text-slate-700">Keamanan 2 Faktor</h3>
-                    @livewire('profile.two-factor-authentication-form')
-                </div>
-            @endif
-
             <!-- Logout Other Browser Sessions (Keep Livewire for this complex feature) -->
-            <div class="p-6 rounded-lg shadow-sm bg-gray-50">
-                <h3 class="mb-4 text-lg font-semibold text-slate-700">Logout dari Sesi Lain</h3>
+            <div class="p-6 rounded-lg shadow-sm bg-gray-50 dark:bg-slate-850">
+                <h3 class="mb-4 text-lg font-semibold text-slate-700 dark:text-white">Logout dari Sesi Lain</h3>
                 @livewire('profile.logout-other-browser-sessions-form')
             </div>
 
             <!-- Delete Account (Keep Livewire for this complex feature) -->
             @if (Laravel\Jetstream\Jetstream::hasAccountDeletionFeatures())
-                <div class="p-6 rounded-lg shadow-sm bg-red-50">
-                    <h3 class="mb-4 text-lg font-semibold text-red-600">Hapus Akun</h3>
+                <div class="p-6 rounded-lg shadow-sm bg-red-50 dark:bg-slate-850">
+                    <h3 class="mb-4 text-lg font-semibold text-red-600 dark:text-white">Hapus Akun</h3>
                     @livewire('profile.delete-user-form')
                 </div>
             @endif
