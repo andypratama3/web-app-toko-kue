@@ -62,12 +62,12 @@
 
                 @role('admin')
                     {{-- Management Section (Collapsible) --}}
-                    <li class="w-full mt-4" x-data="{ open: true }">
-                        <button @click="open = !open" class="flex items-center justify-between w-full py-2 pl-6 pr-4 text-xs font-bold leading-tight text-left uppercase transition-opacity sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80">
+                    <li class="w-full mt-4" x-data="{ openManagement: true }">
+                        <button @click="openManagement = !openManagement" class="flex items-center justify-between w-full py-2 pl-6 pr-4 text-xs font-bold leading-tight text-left uppercase transition-opacity sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80">
                             <span>Management Section</span>
-                            <i class="text-xs transition-transform duration-300 fas fa-chevron-down" :class="{ 'rotate-180': open }"></i>
+                            <i class="text-xs transition-transform duration-300 fas fa-chevron-down" :class="{ 'rotate-180': openManagement }"></i>
                         </button>
-                        <ul x-show="open" x-transition class="mt-1 space-y-0.5 list-none">
+                        <ul x-show="openManagement" x-transition class="mt-1 space-y-0.5 list-none">
                             <li>
                                 <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('admin.customers.*')) bg-blue-500/13 dark:bg-green-900 @endif" href="{{ route('admin.customers.index') }}" data-tooltip="Manajemen Customer">
                                     <div class="mr-2 sidebar-icon-container"><i class="text-orange-500 fas fa-users"></i></div>
@@ -90,12 +90,12 @@
                     </li>
 
                     {{-- Order Section (Collapsible) --}}
-                    <li class="w-full mt-4" x-data="{ open: true }">
-                        <button @click="open = !open" class="flex items-center justify-between w-full py-2 pl-6 pr-4 text-xs font-bold leading-tight text-left uppercase transition-opacity sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80">
+                    <li class="w-full mt-4" x-data="{ openOrder: true }">
+                        <button @click="openOrder = !openOrder" class="flex items-center justify-between w-full py-2 pl-6 pr-4 text-xs font-bold leading-tight text-left uppercase transition-opacity sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80">
                             <span>Order Section</span>
-                            <i class="text-xs transition-transform duration-300 fas fa-chevron-down" :class="{ 'rotate-180': open }"></i>
+                            <i class="text-xs transition-transform duration-300 fas fa-chevron-down" :class="{ 'rotate-180': openOrder }"></i>
                         </button>
-                        <ul x-show="open" x-transition class="mt-1 space-y-0.5 list-none">
+                        <ul x-show="openOrder" x-transition class="mt-1 space-y-0.5 list-none">
                             <li>
                                 <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg relative @if (request()->routeIs('admin.orders.*')) bg-blue-500/13 dark:bg-green-900 @endif" href="{{ route('admin.orders.index') }}" data-tooltip="Pesanan">
                                     <div class="flex items-center mr-2 sidebar-icon-container">
@@ -128,11 +128,12 @@
                                 </a>
                             </li>
                         </ul>
-                        <button @click="open = !open" class="flex items-center justify-between w-full py-2 pl-6 pr-4 text-xs font-bold leading-tight text-left uppercase transition-opacity sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80">
+                        <li class="w-full mt-4" x-data="{ openPerforma: true }">
+                        <button @click="openPerforma = !openPerforma" class="flex items-center justify-between w-full py-2 pl-6 pr-4 text-xs font-bold leading-tight text-left uppercase transition-opacity sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80">
                             <span>Performa Section</span>
-                            <i class="text-xs transition-transform duration-300 fas fa-chevron-down" :class="{ 'rotate-180': open }"></i>
+                            <i class="text-xs transition-transform duration-300 fas fa-chevron-down" :class="{ 'rotate-180': openPerforma }"></i>
                         </button>
-                        <ul x-show="open" x-transition class="mt-1 space-y-0.5 list-none">
+                        <ul x-show="openPerforma" x-transition class="mt-1 space-y-0.5 list-none">
                             <li>
                                 <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('admin.peforma-customer.*')) bg-blue-500/13 dark:bg-green-900 @endif" href="{{ route('admin.peforma-customer.index') }}" data-tooltip="Performa Customer">
                                     <div class="mr-2 sidebar-icon-container"><i class="text-purple-500 fas fa-chart-line"></i></div>
@@ -149,12 +150,12 @@
                     </li>
 
                     {{-- Account Settings Section (Collapsible) --}}
-                    <li class="w-full mt-4" x-data="{ open: true }">
-                        <button @click="open = !open" class="flex items-center justify-between w-full py-2 pl-6 pr-4 text-xs font-bold leading-tight text-left uppercase transition-opacity sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80">
+                    <li class="w-full mt-4" x-data="{ openAccount: true }" style="margin-top: 1rem !important;">
+                        <button @click="openAccount = !openAccount" class="flex items-center justify-between w-full py-2 pl-6 pr-4 text-xs font-bold leading-tight text-left uppercase transition-opacity sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80 mt-2">
                             <span>Account Settings</span>
-                            <i class="text-xs transition-transform duration-300 fas fa-chevron-down" :class="{ 'rotate-180': open }"></i>
+                            <i class="text-xs transition-transform duration-300 fas fa-chevron-down" :class="{ 'rotate-180': openAccount }"></i>
                         </button>
-                        <ul x-show="open" x-transition class="mt-1 space-y-0.5 list-none">
+                        <ul x-show="openAccount" x-transition class="mt-1 space-y-0.5 list-none">
                             <li>
                                 <a class="sidebar-menu-item py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg font-semibold @if (request()->routeIs('admin.profile')) bg-blue-500/13 dark:bg-green-900 text-blue-700 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif" href="{{ route('admin.profile') }}" data-tooltip="Profil Saya">
                                     <div class="mr-2 sidebar-icon-container"><i class="fas fa-user @if (request()->routeIs('admin.profile')) text-blue-500 @else text-slate-700 @endif"></i></div>
