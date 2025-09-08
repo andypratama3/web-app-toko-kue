@@ -92,7 +92,16 @@ class HistoryOrderController extends Controller
 
     public function downloadInvoice($orderId)
     {
-        $order = \App\Models\Order::with(['customer', 'createdBy', 'items'])->findOrFail($orderId);
+        $order = \App\Models\Order::with([
+            'customer',
+            'createdBy',
+            'items',
+            'returns' => function ($query) {
+                $query->where('status', '!=', 'ditolak')->latest();
+            },
+            'returns.returnedProducts.product',
+            'returns.returnedProducts.variant',
+        ])->findOrFail($orderId);
         $isPdf = true;
         $pdf = \PDF::loadView('dashboard.admin.historys.invoice', compact('order', 'isPdf'))
             ->setPaper('A4', 'portrait')
@@ -112,7 +121,16 @@ class HistoryOrderController extends Controller
 
     public function invoice($orderId)
     {
-        $order = \App\Models\Order::with(['customer', 'createdBy', 'items'])->findOrFail($orderId);
+        $order = \App\Models\Order::with([
+            'customer',
+            'createdBy',
+            'items',
+            'returns' => function ($query) {
+                $query->where('status', '!=', 'ditolak')->latest();
+            },
+            'returns.returnedProducts.product',
+            'returns.returnedProducts.variant',
+        ])->findOrFail($orderId);
         $isPdf = false;
         return view('dashboard.admin.historys.invoice', compact('order', 'isPdf'));
     }
