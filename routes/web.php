@@ -123,7 +123,7 @@ Route::middleware([
 
         // -- MANAJEMEN PESANAN (MENGGUNAKAN GROUP PREFIX) --
         Route::prefix('pesanan')->name('pesanan.')->group(function () {
-            Route::get('/', [PesananController::class, 'showFilteredOrders'])->name('index');
+            Route::get('/', [PesananController::class, 'index'])->name('index'); //ini sebelumnya showFilteredOrders terus tak ganti index
             Route::get('/create', [PesananController::class, 'create'])->name('create');
             Route::get('/{id}/details', [PesananController::class, 'getOrderDetails'])->name('details');
             Route::post('/{id}/update-status', [PesananController::class, 'updateOrderStatus'])->name('updateStatus');

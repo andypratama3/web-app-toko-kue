@@ -684,7 +684,23 @@
                         'https://placehold.co/64x64/E2E8F0/64748B?text=No+Img';
                     // Desktop row
                     tableHTML +=
-                        `<tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700"><td class="flex items-center gap-2 px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"><img src="${imageUrl}" alt="${item.product_name}" class="object-cover w-10 h-10 border rounded" />${item.product_name}</td><td class="px-2 py-2">${item.variant_name ? item.variant_name : '-'}</td><td class="px-2 py-2">Rp ${item.price.toLocaleString('id-ID')}</td><td class="px-2 py-2"><div class="flex items-center gap-1"><button type="button" class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300" onclick="ubahQtyCart(${idx}, -1)">-</button><span class="mx-2">${item.qty}</span><button type="button" class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300" onclick="ubahQtyCart(${idx}, 1)">+</button></div></td><td class="px-2 py-2 font-semibold">Rp ${subtotal.toLocaleString('id-ID')}</td><td class="px-2 py-2"><button type="button" class="px-2 py-1 text-xs text-white bg-red-500 rounded hover:bg-red-600" onclick="hapusProdukCart(${idx})"><i class="fas fa-trash"></i> Hapus</button></td></tr>`;
+                        `<tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                            <td class="flex items-center gap-2 px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"><img src="${imageUrl}" alt="${item.product_name}" class="object-cover w-10 h-10 border rounded" />
+                                ${item.product_name}</td>
+                            <td class="px-2 py-2">${item.variant_name ? item.variant_name : '-'}</td>
+                            <td class="px-2 py-2">Rp ${item.price.toLocaleString('id-ID')}</td>
+                            <td class="px-2 py-2">
+                                <div class="flex items-center gap-1">
+                                    <button type="button" class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300" onclick="ubahQtyCart(${idx}, -1)">-</button>
+                                    <span class="mx-2">${item.qty}</span>
+                                    <button type="button" class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300" onclick="ubahQtyCart(${idx}, 1)">+</button>
+                                </div>
+                            </td>
+                            <td class="px-2 py-2 font-semibold">Rp ${subtotal.toLocaleString('id-ID')}</td>
+                            <td class="px-2 py-2"><button type="button" class="px-2 py-1 text-xs text-white bg-red-500 rounded hover:bg-red-600" onclick="hapusProdukCart(${idx})">
+                                <i class="fas fa-trash"></i> Hapus</button>
+                            </td>
+                        </tr>`;
                     // Mobile card
                     mobileCardsHTML +=
                         `<div class="flex items-center gap-3 p-3 mb-2 bg-white border rounded shadow-sm dark:bg-gray-800 dark:border-gray-700"><img src="${imageUrl}" alt="${item.product_name}" class="object-cover w-12 h-12 border rounded" /><div class="flex-1"><div class="font-semibold text-gray-900 dark:text-white">${item.product_name}</div>${item.variant_name ? `<div class="text-xs text-gray-500">${item.variant_name}</div>` : ''}<div class="text-xs text-gray-600 dark:text-gray-400">Harga: Rp ${item.price.toLocaleString('id-ID')}</div><div class="flex items-center gap-1 mt-1"><button type="button" class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300" onclick="ubahQtyCart(${idx}, -1)">-</button><span class="mx-2">${item.qty}</span><button type="button" class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300" onclick="ubahQtyCart(${idx}, 1)">+</button></div><div class="mt-1 font-semibold">Subtotal: Rp ${subtotal.toLocaleString('id-ID')}</div></div><button type="button" class="px-2 py-1 text-xs text-white bg-red-500 rounded hover:bg-red-600" onclick="hapusProdukCart(${idx})"><i class="fas fa-trash"></i></button></div>`;
