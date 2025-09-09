@@ -70,7 +70,9 @@ return $statusLabelMap[$status] ?? ucwords(str_replace('_', ' ', $status));
                         </p>
                     </span>
                 </div>
-            </div>           
+            </div>   
+            
+            
         </div>
         <div class="flex justify-end pt-2 space-x-2 border-t border-gray-200 dark:border-gray-600">
             <button type="button"

@@ -311,6 +311,7 @@ class PesananController extends Controller
                 'status' => $order->status,
                 'total_amount' => $order->total_amount,
                 'payment_method' => $order->payment_method,
+                'note' => $order->note,
                 'created_at' => $order->created_at->isoFormat('D MMMM YYYY, HH:mm'),
                 'paid_at' => $paidAtFormatted,
                 'paid_at_label' => $paidAtLabel,

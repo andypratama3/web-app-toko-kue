@@ -297,7 +297,7 @@ $allStatuses = [
         document.getElementById('customerAddress').textContent = order.customer.address || 'N/A';
         const companyNameEl = document.getElementById('customerCompanyName');
         if (order.customer.company_name && order.customer.company_name !== 'N/A') {
-            companyNameEl.textContent = `🏢 ${order.customer.company_name}`;
+            companyNameEl.textContent = `${order.customer.company_name}`;
             companyNameEl.classList.remove('hidden');
         } else {
             companyNameEl.textContent = '';
@@ -308,7 +308,9 @@ $allStatuses = [
         document.getElementById('orderPaidAt').textContent = order.paid_at ? (order.paid_at + (order.paid_at_label ||
             '')) : 'Belum Lunas';
 
-        // Logika untuk menampilkan ikon di modal rincian
+        // Populate Order Notes
+        const notesContainer = document.getElementById('orderNotesContainer').textContent = order.note || '"Tidak ada catatan."';
+        
         const statusSection = document.getElementById('modalOrderStatusSection');
         const statusBadge = document.getElementById('modalOrderStatusBadge');
         const statusIcon = document.getElementById('modalOrderStatusIcon');
@@ -863,7 +865,14 @@ $allStatuses = [
                             <td class="py-4 whitespace-nowrap">
                                 <div class="flex items-center justify-center gap-2">
                                     <button type="button" class="quantity-minus px-2 text-black transition rounded hover:bg-gray-300 dark:text-white dark:hover:bg-gray-700 hover:scale-110 active:scale-90">–</button>
-                                    <span data-name="return_qty[${returnKey}]" data-max="${product.quantity}" class="quantity-input px-2 text-black bg-gray-200 rounded dark:text-white dark:bg-gray-700">0</span>
+                                    <input type="number"
+                                           data-name="return_qty[${returnKey}]"
+                                           data-max="${product.quantity}"
+                                           value="0"
+                                           min="0"
+                                           max="${product.quantity}"
+                                           class="quantity-input w-5 px-1 py-0 text-center text-black bg-transparent rounded dark:text-white dark:bg-transparent
+                                           [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0">
                                     <button type="button" class="quantity-plus px-2 text-black transition rounded hover:bg-gray-300 dark:text-white dark:hover:bg-gray-700 hover:scale-110 active:scale-90">+</button>
                                 </div>
                             </td>
@@ -884,7 +893,14 @@ $allStatuses = [
                                 <p class="text-sm text-gray-600 dark:text-gray-300">Jumlah Awal: ${product.quantity}</p>
                                     <div class="flex items-center justify-start mt-3 gap-2">
                                         <button type="button" class="quantity-minus px-2 text-black rounded dark:text-white hover:scale-110 active:scale-90">–</button>
-                                        <span data-name="return_qty[${returnKey}]" data-max="${product.quantity}" class="quantity-input px-2 text-black bg-gray-200 rounded dark:text-white dark:bg-gray-700">0</span>
+                                        <input type="number"
+                                           data-name="return_qty[${returnKey}]"
+                                           data-max="${product.quantity}"
+                                           value="0"
+                                           min="0"
+                                           max="${product.quantity}"
+                                           class="quantity-input w-5 px-1 py-0 text-center text-black bg-transparent rounded dark:text-white dark:bg-transparent
+                                           [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0">
                                         <button type="button" class="quantity-plus px-2 text-black rounded dark:text-white hover:scale-110 active:scale-90">+</button>
                                     </div>
                             </div>
@@ -945,10 +961,10 @@ $allStatuses = [
         const returnQuantities = {};
         let hasValidReturn = false;
 
-        // Menyesuaikan: Mengambil data dari <span> dan atribut data-name
-        form.querySelectorAll('.quantity-input').forEach(spanElement => {
-            const key = spanElement.dataset.name.match(/\[(.*?)\]/)[1];
-            const quantity = parseInt(spanElement.textContent, 10); // Mengambil teks dari span
+        // Menyesuaikan: Mengambil data dari <input> dan atribut data-name
+        form.querySelectorAll('.quantity-input').forEach(inputElement => {
+            const key = inputElement.dataset.name.match(/\[(.*?)\]/)[1];
+            const quantity = parseInt(inputElement.value, 10); // Mengambil nilai dari input
             if (!isNaN(quantity) && quantity > 0) {
                 returnQuantities[key] = quantity;
                 hasValidReturn = true;
