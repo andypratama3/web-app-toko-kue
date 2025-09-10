@@ -57,8 +57,16 @@
         {{-- Produk Retur (jika ada) --}}
         <div id="returnedProductsSection" class="hidden pt-4 border-t border-red-300 dark:border-red-700">
             <h4 class="mb-2 font-semibold text-red-800 dark:text-red-400">♻️ Produk yang Diretur</h4>
-            <div id="verifyModalReturnedProducts" class="p-3 space-y-2 bg-red-50 rounded-lg dark:bg-gray-700">
+            <div id="verifyModalReturnedProducts" class="p-3 space-y-2 rounded-lg bg-red-50 dark:bg-gray-700">
                 {{-- Daftar produk retur akan diisi oleh JavaScript --}}
+            </div>
+        </div>
+
+        {{-- Catatan dari Kurir --}}
+        <div class="pt-4 border-t dark:border-gray-600">
+            <h4 class="mb-2 font-semibold text-gray-800 dark:text-white">📝 Catatan dari Kurir</h4>
+            <div id="verifyModalOrderNote" class="p-3 text-sm bg-yellow-50 rounded-lg dark:bg-gray-700 text-gray-700 dark:text-gray-300 min-h-[50px]">
+                {{-- Catatan akan diisi oleh JavaScript --}}
             </div>
         </div>
 

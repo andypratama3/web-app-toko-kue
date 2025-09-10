@@ -42,6 +42,7 @@
                             <th class="px-4 py-3">Kurir</th>
                             <th class="px-4 py-3">Status</th>
                             <th class="px-4 py-3">Total</th>
+                            <th class="px-4 py-3 text-center">Catatan</th>
                             <th class="px-4 py-3">Aksi</th>
                         </tr>
                     </thead>
@@ -82,6 +83,21 @@
                                             {{ number_format($afterReturn, 0, ',', '.') }}</span>
                                     @else
                                         Rp {{ number_format($order->total_amount, 0, ',', '.') }}
+                                    @endif
+                                </td>
+                                <td class="px-4 py-2 text-center">
+                                    @if ($order->note)
+                                        <button type="button"
+                                            class="text-gray-500 js-open-modal-btn hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
+                                            data-target-modal="viewNoteModal"
+                                            data-note="{{ $order->note }}"
+                                            title="Lihat Catatan">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
+                                            </svg>
+                                        </button>
+                                    @else
+                                        <span class="text-gray-400 dark:text-gray-500">-</span>
                                     @endif
                                 </td>
                                 <td class="px-4 py-2">
@@ -125,6 +141,7 @@
 @push('flowbite-modals')
     @include('dashboard.admin.order-list.verify-modal')
     @include('dashboard.admin.order-list.delete')
+    @include('dashboard.admin.order-list.note-modal')
 @endpush
 
 
@@ -149,29 +166,36 @@
 
         // --- FUNGSI UTAMA MODAL ---
         document.addEventListener('DOMContentLoaded', function() {
-            // Event listener untuk tombol buka modal verifikasi
             document.body.addEventListener('click', function(event) {
-                const openBtn = event.target.closest(
-                    '.js-open-modal-btn[data-target-modal="verifyOrderModal"]');
-                if (openBtn) {
-                    const orderId = openBtn.dataset.orderId;
+                const target = event.target.closest('.js-open-modal-btn, .js-open-delete-modal');
+                if (!target) return;
+
+                // Logika untuk modal verifikasi
+                if (target.matches('[data-target-modal="verifyOrderModal"]')) {
+                    const orderId = target.dataset.orderId;
                     openModal('verifyOrderModal');
                     openVerifyModal(orderId);
+                    return;
                 }
 
-                const openDeleteBtn = event.target.closest('.js-open-delete-modal');
-                if (openDeleteBtn) {
-                    const orderId = openDeleteBtn.dataset.orderId;
-                    const invoiceNumber = openDeleteBtn.dataset.invoiceNumber; // Ambil No. Invoice
+                // [!code block:start]
+                // Logika untuk modal catatan
+                if (target.matches('[data-target-modal="viewNoteModal"]')) {
+                    const noteContent = target.dataset.note;
+                    document.getElementById('fullOrderNote').textContent = noteContent || 'Tidak ada catatan.';
+                    // openModal() akan dipanggil otomatis oleh custom-modal.js
+                    return;
+                }
+                // [!code block:end]
 
-                    // Masukkan No. Invoice ke dalam modal
+                // Logika untuk modal hapus
+                if (target.matches('.js-open-delete-modal')) {
+                    const orderId = target.dataset.orderId;
+                    const invoiceNumber = target.dataset.invoiceNumber;
                     document.getElementById('deleteInvoiceNumber').textContent = invoiceNumber;
-
-                    // Buka modal konfirmasi
                     openModal('deleteConfirmModal');
-
-                    // Atur tombol konfirmasi di dalam modal untuk menargetkan orderId yang benar
                     document.getElementById('btnConfirmDelete').onclick = () => deleteOrder(orderId);
+                    return;
                 }
             });
 
@@ -295,6 +319,9 @@
                         paymentProofDiv.innerHTML = '<span class="text-red-500">Belum diupload oleh kurir</span>';
                     }
                 }
+
+                const orderNoteEl = document.getElementById('verifyModalOrderNote');
+                orderNoteEl.textContent = data.note || 'Tidak ada catatan dari kurir.';
 
                 // Mengatur event listener untuk tombol aksi
                 document.getElementById('btnVerifyOrder').onclick = () => verifyOrder(orderId);

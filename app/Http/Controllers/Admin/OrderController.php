@@ -96,6 +96,7 @@ class OrderController extends Controller
                 'paid_at' => $paidAtFormatted,
                 'paid_at_label' => $paidAtLabel,
                 'payment_proof' => $order->payment_proof,
+                'note' => $order->note,
                 'customer' => [
                     'name' => $order->customer->name ?? 'N/A',
                     'company_name' => $order->customer->company_name ?? null,
