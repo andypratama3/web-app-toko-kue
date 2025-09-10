@@ -17,14 +17,94 @@ use Illuminate\Validation\ValidationException;
 
 class PesananController extends Controller
 {
-    public function index()
+    /**
+     * INI UNTUK FITUR SEARCH DI ORDER TRACKING YA
+     * Menampilkan daftar pesanan dengan fungsionalitas pencarian.
+     * Metode ini menangani pemuatan halaman awal dan permintaan pencarian AJAX.
+     */
+    public function index(Request $request)
     {
-        return $this->showFilteredOrders();
+        $loggedInUser = Auth::user();
+        $search = $request->input('search');
+        $activeStatus = $request->input('status', 'semua'); // Default ke tab 'semua'
+
+        // Daftar status yang akan ditampilkan sebagai tab filter
+        $filterableStatuses = [
+            'semua' => 'Semua',
+            'diambil' => 'Diambil',
+            'diantar' => 'Diantar',
+            'diterima_pembeli' => 'Diterima',
+            'selesai' => 'Selesai',
+            'menunggu_retur' => 'Retur',
+        ];
+
+        $statusLabelMap = [
+            'baru' => 'Baru', 'dikemas' => 'Dikemas', 'diambil' => 'Diambil', 'diantar' => 'Diantar',
+            'diterima_pembeli' => 'Diterima', 'selesai' => 'Selesai', 'menunggu_retur' => 'Menunggu Retur',
+            'menunggu_verifikasi_admin' => 'Menunggu Verifikasi', 'diverifikasi_admin' => 'Valid',
+            'dikembalikan' => 'Retur', 'dibatalkan' => 'Dibatalkan',
+        ];
+
+        if (is_null($loggedInUser->region_id)) {
+            Log::warning('User ' . $loggedInUser->id . ' does not have a region_id.');
+            $error = 'Region Anda tidak terdaftar. Silakan hubungi administrator.';
+            $orders = new LengthAwarePaginator([], 0, 10);
+            return view('dashboard.kurir.pesanan.index', compact('orders', 'error', 'statusLabelMap', 'filterableStatuses', 'activeStatus'));
+        }
+
+        try {
+            $ordersQuery = Order::where('created_by_user_id', $loggedInUser->id)
+                ->where('status', '!=', 'diverifikasi_admin')
+                ->with('customer');
+
+            // Terapkan filter status dari tab
+            $ordersQuery->when($activeStatus !== 'semua', function ($query) use ($activeStatus) {
+                return $query->where('status', $activeStatus);
+            });
+
+            // Terapkan filter pencarian pada nomor invoice atau nama pelanggan
+            $ordersQuery->when($search, function ($query, $searchTerm) {
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('invoice_number', 'like', "%{$searchTerm}%")
+                        ->orWhereHas('customer', function ($subQuery) use ($searchTerm) {
+                            $subQuery->where('name', 'like', "%{$searchTerm}%");
+                        });
+                });
+            });
+
+            $orders = $ordersQuery->latest()->paginate(10);
+
+            // Logika untuk menampilkan peringatan pembayaran > 5 hari
+            foreach ($orders as $order) {
+                $order->show_warning = false;
+                if (is_null($order->payment_proof)) {
+                    $daysSinceCreation = Carbon::parse($order->created_at)->diffInDays(now());
+                    if ($daysSinceCreation >= 5) {
+                        $order->show_warning = true;
+                    }
+                }
+                
+            }
+
+            if ($request->ajax()) {
+                $viewData = compact('orders', 'statusLabelMap');
+                $desktopHtml = view('dashboard.kurir.pesanan._table_rows', $viewData)->render();
+                $mobileHtml = view('dashboard.kurir.pesanan._card_view', $viewData)->render();
+                return response()->json(['desktop_html' => $desktopHtml, 'mobile_html' => $mobileHtml]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error fetching orders for courier ' . $loggedInUser->id . ': ' . $e->getMessage());
+            $error = 'Gagal memuat pesanan. Terjadi kesalahan pada server.';
+            $orders = new LengthAwarePaginator([], 0, 10);
+            return view('dashboard.kurir.pesanan.index', compact('orders', 'error', 'statusLabelMap', 'filterableStatuses', 'activeStatus'));
+        }
+
+        return view('dashboard.kurir.pesanan.index', compact('orders', 'statusLabelMap', 'filterableStatuses', 'activeStatus'));
     }
 
+    
     /**
      * Menampilkan halaman pembuatan pesanan baru.
-     * LOGIKA DARI FILE 2: Hanya menampilkan customer yang dibuat oleh kurir login.
      */
     public function create()
     {
@@ -40,7 +120,6 @@ class PesananController extends Controller
 
     /**
      * Memproses dan menyimpan pesanan baru.
-     * LOGIKA DARI FILE 2: Menggabungkan pembatasan pesanan aktif.
      */
     public function checkout(Request $request)
     {
@@ -153,53 +232,51 @@ class PesananController extends Controller
 
     /**
      * Menampilkan daftar pesanan yang dibuat oleh kurir.
-     * LOGIKA GABUNGAN: Filter status aktif dari File 2, logika Peringatan dari File 1.
      */
-    public function showFilteredOrders()
-    {
-        if (!Auth::check()) {
-            return redirect('/login')->with('error', 'Anda harus login untuk melihat pesanan.');
-        }
+    // public function showFilteredOrders()
+    // {
+    //     if (!Auth::check()) {
+    //         return redirect('/login')->with('error', 'Anda harus login untuk melihat pesanan.');
+    //     }
 
-        $loggedInUser = Auth::user();
-        $orders = collect();
-        $error = null;
+    //     $loggedInUser = Auth::user();
+    //     $orders = collect();
+    //     $error = null;
 
-        if (is_null($loggedInUser->region_id)) {
-            Log::warning('User ' . $loggedInUser->id . ' does not have a region_id.');
-            $error = 'Region Anda tidak terdaftar. Silakan hubungi administrator.';
-            return view('dashboard.kurir.pesanan.index', compact('orders', 'error'));
-        }
+    //     if (is_null($loggedInUser->region_id)) {
+    //         Log::warning('User ' . $loggedInUser->id . ' does not have a region_id.');
+    //         $error = 'Region Anda tidak terdaftar. Silakan hubungi administrator.';
+    //         return view('dashboard.kurir.pesanan.index', compact('orders', 'error'));
+    //     }
 
-        try {
-            $orders = Order::where('created_by_user_id', $loggedInUser->id)
-                ->where('status', '!=', 'diverifikasi_admin') // Filter dari File 2
-                ->with('customer')
-                ->latest()
-                ->get();
+    //     try {
+    //         $orders = Order::where('created_by_user_id', $loggedInUser->id)
+    //             ->where('status', '!=', 'diverifikasi_admin') // Filter dari File 2
+    //             ->with('customer')
+    //             ->latest()
+    //             ->get();
 
-            // Logika Peringatan dari File 1
-            foreach ($orders as $order) {
-                $order->show_warning = false;
-                if (is_null($order->payment_proof)) {
-                    $daysSinceCreation = Carbon::parse($order->created_at)->diffInDays(now());
-                    if ($daysSinceCreation >= 5) {
-                        $order->show_warning = true;
-                    }
-                }
-            }
-        } catch (\Exception $e) {
-            Log::error('Error fetching orders for courier ' . $loggedInUser->id . ': ' . $e->getMessage());
-            $error = 'Gagal memuat pesanan. Terjadi kesalahan pada server.';
-            return view('dashboard.kurir.pesanan.index', compact('orders', 'error'));
-        }
+    //         // Logika Peringatan dari File 1
+    //         foreach ($orders as $order) {
+    //             $order->show_warning = false;
+    //             if (is_null($order->payment_proof)) {
+    //                 $daysSinceCreation = Carbon::parse($order->created_at)->diffInDays(now());
+    //                 if ($daysSinceCreation >= 5) {
+    //                     $order->show_warning = true;
+    //                 }
+    //             }
+    //         }
+    //     } catch (\Exception $e) {
+    //         Log::error('Error fetching orders for courier ' . $loggedInUser->id . ': ' . $e->getMessage());
+    //         $error = 'Gagal memuat pesanan. Terjadi kesalahan pada server.';
+    //         return view('dashboard.kurir.pesanan.index', compact('orders', 'error'));
+    //     }
 
-        return view('dashboard.kurir.pesanan.index', compact('orders'));
-    }
+    //     return view('dashboard.kurir.pesanan.index', compact('orders'));
+    // }
 
     /**
      * Mengambil detail pesanan berdasarkan ID.
-     * LOGIKA DARI FILE 1: Implementasi paling lengkap dan konsisten.
      */
     public function getOrderDetails($id)
     {
@@ -234,6 +311,7 @@ class PesananController extends Controller
                 'status' => $order->status,
                 'total_amount' => $order->total_amount,
                 'payment_method' => $order->payment_method,
+                'note' => $order->note,
                 'created_at' => $order->created_at->isoFormat('D MMMM YYYY, HH:mm'),
                 'paid_at' => $paidAtFormatted,
                 'paid_at_label' => $paidAtLabel,
@@ -286,7 +364,6 @@ class PesananController extends Controller
 
     /**
      * Mengunggah bukti pembayaran.
-     * LOGIKA DARI FILE 1: Penamaan file kustom yang lebih baik.
      */
     public function uploadPaymentProof(Request $request, $id)
     {
