@@ -17,15 +17,22 @@ return $statusLabelMap[$status] ?? ucwords(str_replace('_', ' ', $status));
         <span title="Pembayaran melewati 5 hari">⚠️</span>
         @endif
     </td>
-    {{-- ... sisa kode tidak berubah ... --}}
     <td class="px-6 py-1 text-gray-900 whitespace-nowrap dark:text-white">
-        <p class="text-md font-semibold text-gray-900 dark:text-white">{{ $order->invoice_number }}</p>
+        <p class="font-semibold text-gray-900 text-md dark:text-white">{{ $order->invoice_number }}</p>
         <p class="text-xs text-gray-500 dark:text-gray-400">
             {{ $order->created_at->isoFormat('D MMM YYYY, HH:mm') }}
         </p>
+        {{-- [!code block:start] --}}
+        @if ($order->rejection_note)
+            <div class="flex items-center gap-1 mt-1 text-xs text-red-600 dark:text-red-400" title="{{ $order->rejection_note }}">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>Verifikasi Ditolak</span>
+            </div>
+        @endif
+        {{-- [!code block:end] --}}
     </td>
     <td class="px-6 py-1 text-gray-500 whitespace-nowrap dark:text-gray-300">
-        <p class="text-md font-semibold text-gray-800 dark:text-gray-200">
+        <p class="font-semibold text-gray-800 text-md dark:text-gray-200">
             {{ optional($order->customer)->name ?? 'Pelanggan Dihapus' }}</p>
         <p class="text-xs text-gray-600 dark:text-gray-300">
             {{ $order->customer->company_name ?? '' }}

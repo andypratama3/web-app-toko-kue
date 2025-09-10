@@ -83,7 +83,7 @@ class PesananController extends Controller
                         $order->show_warning = true;
                     }
                 }
-                
+
             }
 
             if ($request->ajax()) {
@@ -102,7 +102,7 @@ class PesananController extends Controller
         return view('dashboard.kurir.pesanan.index', compact('orders', 'statusLabelMap', 'filterableStatuses', 'activeStatus'));
     }
 
-    
+
     /**
      * Menampilkan halaman pembuatan pesanan baru.
      */
@@ -312,6 +312,7 @@ class PesananController extends Controller
                 'total_amount' => $order->total_amount,
                 'payment_method' => $order->payment_method,
                 'note' => $order->note,
+                'rejection_note' => $order->rejection_note,
                 'created_at' => $order->created_at->isoFormat('D MMMM YYYY, HH:mm'),
                 'paid_at' => $paidAtFormatted,
                 'paid_at_label' => $paidAtLabel,

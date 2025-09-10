@@ -24,6 +24,7 @@ class Order extends Model
         'payment_method',
         'payment_proof',
         'note',
+        'rejection_note',
         'created_by_user_id',
         'region_id',
         'status',

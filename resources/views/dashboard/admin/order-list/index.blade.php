@@ -8,6 +8,12 @@
 @endsection
 
 @section('content')
+    @if (session('success'))
+        <div class="p-4 mb-4 text-sm text-green-800 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400"
+            role="alert">
+            <span class="font-medium">Sukses!</span> {{ session('success') }}
+        </div>
+    @endif
     <div class="flex-auto p-3 pt-0 -mx-3">
         <div class="p-2.5 bg-white shadow-md rounded-xl dark:bg-gray-800 dark:border-gray-700 min-h-[715px]">
             <h2 class="mb-6 text-black text-md dark:text-white">
@@ -89,11 +95,13 @@
                                     @if ($order->note)
                                         <button type="button"
                                             class="text-gray-500 js-open-modal-btn hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
-                                            data-target-modal="viewNoteModal"
-                                            data-note="{{ $order->note }}"
+                                            data-target-modal="viewNoteModal" data-note="{{ $order->note }}"
                                             title="Lihat Catatan">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 20 20"
+                                                fill="currentColor">
+                                                <path fill-rule="evenodd"
+                                                    d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                                                    clip-rule="evenodd" />
                                             </svg>
                                         </button>
                                     @else
@@ -142,6 +150,7 @@
     @include('dashboard.admin.order-list.verify-modal')
     @include('dashboard.admin.order-list.delete')
     @include('dashboard.admin.order-list.note-modal')
+    @include('dashboard.admin.order-list.rejection-modal')
 @endpush
 
 
@@ -165,62 +174,100 @@
         }
 
         // --- FUNGSI UTAMA MODAL ---
+        let currentOrderId = null;
+
         document.addEventListener('DOMContentLoaded', function() {
+            // Event listener untuk klik tombol (TETAP SAMA)
             document.body.addEventListener('click', function(event) {
-                const target = event.target.closest('.js-open-modal-btn, .js-open-delete-modal');
+                const target = event.target.closest('button');
                 if (!target) return;
 
-                // Logika untuk modal verifikasi
-                if (target.matches('[data-target-modal="verifyOrderModal"]')) {
-                    const orderId = target.dataset.orderId;
-                    openModal('verifyOrderModal');
-                    openVerifyModal(orderId);
+                if (target.matches('.js-open-modal-btn')) {
+                    const modalId = target.dataset.targetModal;
+                    if (modalId === 'verifyOrderModal') {
+                        currentOrderId = target.dataset.orderId;
+                        openVerifyModal(currentOrderId);
+                    }
+                    if (modalId === 'viewNoteModal') {
+                        const noteContent = target.dataset.note;
+                        document.getElementById('fullOrderNote').textContent = noteContent ||
+                            'Tidak ada catatan.';
+                    }
+                    openModal(modalId);
                     return;
                 }
 
-                // [!code block:start]
-                // Logika untuk modal catatan
-                if (target.matches('[data-target-modal="viewNoteModal"]')) {
-                    const noteContent = target.dataset.note;
-                    document.getElementById('fullOrderNote').textContent = noteContent || 'Tidak ada catatan.';
-                    // openModal() akan dipanggil otomatis oleh custom-modal.js
-                    return;
-                }
-                // [!code block:end]
-
-                // Logika untuk modal hapus
                 if (target.matches('.js-open-delete-modal')) {
-                    const orderId = target.dataset.orderId;
+                    currentOrderId = target.dataset.orderId;
                     const invoiceNumber = target.dataset.invoiceNumber;
                     document.getElementById('deleteInvoiceNumber').textContent = invoiceNumber;
                     openModal('deleteConfirmModal');
-                    document.getElementById('btnConfirmDelete').onclick = () => deleteOrder(orderId);
+                    return;
+                }
+
+                if (target.matches('#btnVerifyOrder')) {
+                    if (currentOrderId) verifyOrder(currentOrderId);
+                    return;
+                }
+
+                if (target.matches('#btnOpenRejectModal')) {
+                    if (currentOrderId) {
+                        closeModal(document.getElementById('verifyOrderModal'));
+                        openModal('rejectionNoteModal');
+                    }
+                    return;
+                }
+
+                if (target.matches('#btnConfirmDelete')) {
+                    if (currentOrderId) deleteOrder(currentOrderId);
                     return;
                 }
             });
 
-            // Event listener untuk menutup gambar zoom
+            // Event listener zoom (TETAP SAMA)
             const zoomWrapper = document.getElementById('verifyModalZoomWrapper');
             if (zoomWrapper) {
-                zoomWrapper.addEventListener('click', () => {
-                    zoomWrapper.classList.add('hidden');
-                    zoomWrapper.classList.remove('flex');
-                });
-            }
+                /* ... */ }
         });
+
+        // [!code block:start]
+        // --- FUNGSI BARU DAN FINAL UNTUK SUBMIT FORM PENOLAKAN ---
+        function submitRejectionForm() {
+            const rejectionForm = document.getElementById('rejectionForm');
+            const noteTextarea = document.getElementById('rejection_note');
+            const noteValue = noteTextarea.value.trim();
+
+            // 1. Validasi manual di JavaScript
+            if (noteValue.length < 10) {
+                dispatchToast('Alasan penolakan harus diisi minimal 10 karakter.', 'error');
+                noteTextarea.focus(); // Fokuskan ke textarea agar mudah diisi
+                return; // Hentikan fungsi
+            }
+
+            // 2. Pastikan Order ID ada
+            if (!currentOrderId) {
+                dispatchToast('Error: Order ID tidak ditemukan. Silakan coba lagi.', 'error');
+                return;
+            }
+
+            // 3. Atur action form secara dinamis
+            rejectionForm.action = `/admin/orders/${currentOrderId}/reject`;
+
+            // 4. Submit form secara programmatic
+            rejectionForm.submit();
+        }
 
         // Mengambil data dan mengisi modal verifikasi
         async function openVerifyModal(orderId) {
             const loader = document.getElementById('verifyModalLoader');
             const content = document.getElementById('verifyModalContent');
-            const modalTitle = document.querySelector('#verifyOrderModal h3'); // Menargetkan judul modal
-
+            const modalTitle = document.querySelector('#verifyOrderModal h3');
             const returnedProductsSection = document.getElementById('returnedProductsSection');
             const returnedProductsList = document.getElementById('verifyModalReturnedProducts');
 
             loader.classList.remove('hidden');
             content.classList.add('hidden');
-            modalTitle.textContent = "Verifikasi Rincian Pesanan"; // Reset judul
+            modalTitle.textContent = "Verifikasi Rincian Pesanan";
             returnedProductsSection.classList.add('hidden');
 
             try {
@@ -228,10 +275,9 @@
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.message || 'Gagal memuat data.');
 
-                // Validasi minimal data
                 if (!data || typeof data !== 'object') throw new Error('Data tidak valid.');
 
-                // Mengisi konten modal umum
+                // Mengisi konten modal umum (kode ini tidak berubah)
                 document.getElementById('verifyModalInvoiceNumber').textContent = data.invoice_number || '-';
                 document.getElementById('verifyModalCustomerName').textContent = data.customer?.name || '-';
                 const companyNameEl = document.getElementById('verifyModalCompanyName');
@@ -249,7 +295,7 @@
                     `${data.paid_at}${data.paid_at_label}` : 'Belum Lunas';
                 document.getElementById('verifyModalCourierName').textContent = data.kurir_name || '-';
 
-                // Mengisi rincian produk pesanan
+                // Mengisi rincian produk pesanan (kode ini tidak berubah)
                 const productDetailsDiv = document.getElementById('verifyModalProductDetails');
                 productDetailsDiv.innerHTML = '';
                 if (Array.isArray(data.items) && data.items.length > 0) {
@@ -264,16 +310,15 @@
                     productDetailsDiv.innerHTML = '<p>Tidak ada produk.</p>';
                 }
 
+                // Logika untuk menampilkan bukti bayar atau retur (kode ini tidak berubah)
                 const paymentProofContainer = document.getElementById('verifyModalPaymentProof').parentElement;
                 const paymentProofDiv = document.getElementById('verifyModalPaymentProof');
                 const proofTitle = paymentProofContainer.querySelector('h4');
 
                 if (data.return_details) {
-                    // --- TAMPILAN UNTUK PESANAN RETUR ---
+                    // Tampilan retur
                     modalTitle.textContent = "Verifikasi Pesanan dengan Retur";
                     proofTitle.textContent = "✅ Bukti Retur";
-
-                    // Tampilkan bukti retur
                     if (data.return_details.return_proof) {
                         const imageUrl = `/storage/${data.return_details.return_proof.replace('public/', '')}`;
                         paymentProofDiv.innerHTML =
@@ -281,18 +326,14 @@
                     } else {
                         paymentProofDiv.innerHTML = '<span class="text-red-500">Bukti retur belum diupload.</span>';
                     }
-
-                    // Perbarui total tagihan
                     const originalTotal = data.total_amount || 0;
                     const returnedAmount = data.return_details.total_amount_returned || 0;
                     const newTotal = originalTotal - returnedAmount;
                     document.getElementById('verifyModalTotalAmount').innerHTML =
                         `<span class="block text-sm font-normal text-gray-500 line-through">Rp ${Number(originalTotal).toLocaleString('id-ID')}</span>` +
                         `<span class="block text-green-600 dark:text-green-500">Rp ${Number(newTotal).toLocaleString('id-ID')} (Setelah Retur)</span>`;
-
-                    // **LOGIKA BARU: Tampilkan daftar produk yang diretur**
                     returnedProductsSection.classList.remove('hidden');
-                    returnedProductsList.innerHTML = ''; // Kosongkan daftar
+                    returnedProductsList.innerHTML = '';
                     if (Array.isArray(data.return_details.returned_products) && data.return_details.returned_products
                         .length > 0) {
                         data.return_details.returned_products.forEach(item => {
@@ -305,9 +346,8 @@
                     } else {
                         returnedProductsList.innerHTML = '<p>Tidak ada detail produk retur.</p>';
                     }
-
                 } else {
-                    // --- TAMPILAN UNTUK PESANAN NORMAL ---
+                    // Tampilan normal
                     proofTitle.textContent = "✅ Bukti Pembayaran";
                     document.getElementById('verifyModalTotalAmount').textContent = 'Rp ' + (data.total_amount ? Number(
                         data.total_amount).toLocaleString('id-ID') : '0');
@@ -320,12 +360,15 @@
                     }
                 }
 
+                // Mengisi catatan (kode ini tidak berubah)
                 const orderNoteEl = document.getElementById('verifyModalOrderNote');
                 orderNoteEl.textContent = data.note || 'Tidak ada catatan dari kurir.';
 
-                // Mengatur event listener untuk tombol aksi
-                document.getElementById('btnVerifyOrder').onclick = () => verifyOrder(orderId);
-                document.getElementById('btnRejectOrder').onclick = () => rejectOrder(orderId);
+                // [!code block:start]
+                // HAPUS BLOK .onclick YANG MENYEBABKAN ERROR
+                // document.getElementById('btnVerifyOrder').onclick = () => verifyOrder(orderId);
+                // document.getElementById('btnRejectOrder').onclick = () => rejectOrder(orderId);
+                // [!code block:end]
 
                 loader.classList.add('hidden');
                 content.classList.remove('hidden');

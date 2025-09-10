@@ -162,44 +162,43 @@ class OrderController extends Controller
     /**
      * Tolak verifikasi pesanan (kembalikan status ke diterima_pembeli).
      */
-    public function reject($id)
+    public function reject(Request $request, $id)
     {
+        $validated = $request->validate([
+            'rejection_note' => 'required|string|min:10',
+        ]);
+
         $admin = Auth::user();
         $order = Order::where('region_id', $admin->region_id)
             ->whereIn('status', ['selesai', 'menunggu_verifikasi_admin'])
             ->findOrFail($id);
 
-        // Cek apakah pesanan ini sedang dalam proses retur
+        // (Logika penolakan lainnya tetap sama)
         $returnRequest = $order->returns()->where('status', 'menunggu_konfirmasi')->first();
-
         if ($returnRequest) {
-            // --- LOGIKA BARU UNTUK PENOLAKAN RETUR ---
-            // 1. Hapus file bukti retur
             if ($returnRequest->return_proof) {
                 Storage::disk('public')->delete($returnRequest->return_proof);
             }
-            // 2. Tandai retur sebagai ditolak
             $returnRequest->status = 'ditolak';
             $returnRequest->admin_notes = 'Verifikasi retur ditolak oleh admin.';
             $returnRequest->save();
-
-            // 3. Kembalikan status pesanan utama
             $order->status = 'diterima_pembeli';
         } else {
-            // --- LOGIKA LAMA UNTUK PENOLAKAN PEMBAYARAN BIASA ---
-            // 1. Hapus file bukti pembayaran
             if ($order->payment_proof) {
                 Storage::disk('public')->delete($order->payment_proof);
             }
-            // 2. Kembalikan status & hapus path file
             $order->status = 'diterima_pembeli';
             $order->payment_proof = null;
-            $order->paid_at = null; // Opsional: reset juga tanggal lunas
+            $order->paid_at = null;
         }
 
+        $order->rejection_note = $validated['rejection_note'];
         $order->save();
 
-        return response()->json(['message' => 'Verifikasi pesanan ditolak. Status dikembalikan.']);
+        // [!code block:start]
+        // Ganti respons JSON dengan redirect dan pesan flash
+        return redirect()->route('admin.orders.index')->with('success', 'Verifikasi pesanan berhasil ditolak.');
+        // [!code block:end]
     }
 
     /**

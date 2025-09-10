@@ -115,11 +115,11 @@ $allStatuses = [
             <ul class="space-y-2 text-sm" aria-labelledby="dropdownDefault">
                 @foreach ($allStatuses as $key => $label)
                 <li class="flex items-center">
-                    <a href="{{ route('kurir.pesanan.index', array_merge(request()->except('page'), ['status' => $key == 'semua' ? null : $key])) }}" class="w-full px-3 py-2 rounded-md text-sm font-medium 
-                        @if ((empty($activeStatus) && $key == 'semua') || $activeStatus == $key) 
-                            bg-blue-100 text-blue-700 dark:bg-gray-600 dark:text-white 
-                        @else 
-                            text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600 
+                    <a href="{{ route('kurir.pesanan.index', array_merge(request()->except('page'), ['status' => $key == 'semua' ? null : $key])) }}" class="w-full px-3 py-2 rounded-md text-sm font-medium
+                        @if ((empty($activeStatus) && $key == 'semua') || $activeStatus == $key)
+                            bg-blue-100 text-blue-700 dark:bg-gray-600 dark:text-white
+                        @else
+                            text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600
                         @endif">
                         {{ $label }}
                     </a>
@@ -309,8 +309,18 @@ $allStatuses = [
             '')) : 'Belum Lunas';
 
         // Populate Order Notes
-        const notesContainer = document.getElementById('orderNotesContainer').textContent = order.note || '"Tidak ada catatan."';
-        
+        document.getElementById('orderNotesContainer').textContent = order.note || '"Tidak ada catatan."';
+
+        // Logika untuk menampilkan catatan penolakan
+        const rejectionContainer = document.getElementById('rejectionNoteContainer');
+        const rejectionText = document.getElementById('rejectionNoteText');
+        if (order.rejection_note) {
+            rejectionText.textContent = order.rejection_note;
+            rejectionContainer.classList.remove('hidden');
+        } else {
+            rejectionContainer.classList.add('hidden');
+        }
+
         const statusSection = document.getElementById('modalOrderStatusSection');
         const statusBadge = document.getElementById('modalOrderStatusBadge');
         const statusIcon = document.getElementById('modalOrderStatusIcon');

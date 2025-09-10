@@ -26,15 +26,22 @@ return $statusLabelMap[$status] ?? ucwords(str_replace('_', ' ', $status));
 
     <div class="pl-2">
         <div class="flex items-start justify-between mb-1">
-            <p class="text-sm font-semibold text-black truncate dark:text-white">
-                {{ $order->invoice_number ?? 'N/A' }}
-                @if ($order->show_warning)
-                <span title="Pembayaran melewati 5 hari" class="text-xs">⚠️</span>
+            <div>
+                <p class="text-sm font-semibold text-black truncate dark:text-white">
+                    {{ $order->invoice_number ?? 'N/A' }}
+                    @if ($order->show_warning)
+                    <span title="Pembayaran melewati 5 hari" class="text-xs">⚠️</span>
+                    @endif
+                </p>
+                {{-- [!code block:start] --}}
+                @if ($order->rejection_note)
+                    <div class="flex items-center gap-1 mt-1 text-xs text-red-600 dark:text-red-400" title="{{ $order->rejection_note }}">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Verifikasi Ditolak</span>
+                    </div>
                 @endif
-            </p>
-            <!-- <p class="text-md  text-gray-800 truncate dark:text-gray-200">
-                    <i class="far fa-user"></i> {{ optional($order->customer)->name ?? 'Pelanggan Dihapus' }}
-                </p> -->
+                {{-- [!code block:end] --}}
+            </div>
             <span class="status-badge flex-shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full whitespace-nowrap ml-2
                     @switch($order->status ?? 'baru')
                         @case('diambil') bg-blue-100 text-blue-800 @break
@@ -53,7 +60,6 @@ return $statusLabelMap[$status] ?? ucwords(str_replace('_', ' ', $status));
         <div class="flex items-start justify-between mt-1">
             {{-- SISI KIRI: DATA CUSTOMER --}}
             <div class="pr-4">
-                <!-- <p class="text-xs text-gray-500 dark:text-gray-400">Customer:</p> -->
                 <p class="text-md font-bold text-gray-800 dark:text-gray-200 mb-1">
                     {{ $order->customer->name ?? '-' }}
                 </p>
@@ -70,9 +76,7 @@ return $statusLabelMap[$status] ?? ucwords(str_replace('_', ' ', $status));
                         </p>
                     </span>
                 </div>
-            </div>   
-            
-            
+            </div>
         </div>
         <div class="flex justify-end pt-2 space-x-2 border-t border-gray-200 dark:border-gray-600">
             <button type="button"
