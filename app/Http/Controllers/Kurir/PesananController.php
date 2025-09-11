@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use App\Models\Product;
+use App\Models\ProductVariant;
 
 class PesananController extends Controller
 {
@@ -477,16 +479,39 @@ class PesananController extends Controller
      */
     public function getLastOrder($id)
     {
-        $lastOrder = Order::where('customer_id', $id)->latest()->first();
+        // Ambil pesanan terakhir beserta itemnya
+        $lastOrder = Order::with('items')->where('customer_id', $id)->latest()->first();
 
+        // Jika tidak ada pesanan sebelumnya, kembalikan array kosong
         if (!$lastOrder) {
             return response()->json(['items' => []]);
         }
 
-        $lastOrder->load('items');
+        // Siapkan array kosong untuk menampung item yang valid
+        $activeCartItems = [];
 
-        $cartItems = $lastOrder->items->map(function ($item) {
-            return [
+        // Lakukan iterasi pada setiap item di pesanan terakhir
+        foreach ($lastOrder->items as $item) {
+            // 1. Cek Produk Utama
+            $product = Product::find($item->product_id);
+
+            // Lewati item ini jika produknya sudah dihapus atau tidak aktif
+            if (!$product || !$product->is_active) {
+                continue;
+            }
+
+            // 2. Cek Varian Produk (jika ada)
+            if ($item->variant_id) {
+                $variant = ProductVariant::find($item->variant_id);
+
+                // Lewati item ini jika variannya sudah dihapus atau tidak aktif
+                if (!$variant || !$variant->is_active) {
+                    continue;
+                }
+            }
+
+            // 3. Jika semua pengecekan lolos, tambahkan item ke keranjang baru
+            $activeCartItems[] = [
                 'product_id'   => $item->product_id,
                 'product_name' => $item->product_name,
                 'variant_id'   => $item->variant_id,
@@ -494,8 +519,9 @@ class PesananController extends Controller
                 'price'        => $item->price,
                 'qty'          => $item->quantity,
             ];
-        });
+        }
 
-        return response()->json(['items' => $cartItems]);
+        // Kembalikan hanya item yang aktif
+        return response()->json(['items' => $activeCartItems]);
     }
 }
