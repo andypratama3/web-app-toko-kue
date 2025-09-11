@@ -3,13 +3,13 @@
 @section('page_title', 'Peforma Kurir')
 
 @section('content')
-<div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 w-full">
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-4">
-        <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-2 md:mb-0">Peforma Kurir</h2>
-        <form method="GET" class="flex flex-row flex-wrap gap-2 items-center">
+<div class="w-full p-6 bg-white rounded-lg shadow dark:bg-gray-800 min-h-[715px]">
+    <div class="flex flex-col gap-4 mb-4 md:flex-row md:items-center md:justify-between">
+        <h2 class="mb-2 text-2xl font-bold text-gray-800 dark:text-white md:mb-0">Peforma Kurir</h2>
+        <form method="GET" class="flex flex-row flex-wrap items-center gap-2">
             <div class="relative">
                 {{-- Kelas 'appearance-none' di bawah ini berfungsi untuk MENGHAPUS panah dropdown bawaan browser. --}}
-                <select name="month" class="appearance-none border rounded px-4 py-1 text-sm focus:ring focus:ring-blue-200 pr-8">
+                <select name="month" class="px-4 py-1 pr-8 text-sm border rounded appearance-none focus:ring focus:ring-blue-200">
                     @foreach($months as $num => $name)
                     <option value="{{ $num }}" @if($selectedMonth==$num) selected @endif>{{ $name }}</option>
                     @endforeach
@@ -19,43 +19,43 @@
 
             <div class="relative">
                 {{-- Kelas 'appearance-none' di bawah ini juga MENGHAPUS panah dropdown bawaan browser. --}}
-                <select name="year" class="appearance-none border rounded px-4 py-1 text-sm focus:ring focus:ring-blue-200 pr-8">
+                <select name="year" class="px-4 py-1 pr-8 text-sm border rounded appearance-none focus:ring focus:ring-blue-200">
                     @foreach($years as $year)
                     <option value="{{ $year }}" @if($selectedYear==$year) selected @endif>{{ $year }}</option>
                     @endforeach
                 </select>
                 {{-- Icon dropdown custom dihapus --}}
             </div>
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-semibold">Lihat</button>
-                        <a href="{{ route('admin.peforma-kurir.export.pdf', ['month' => $selectedMonth, 'year' => $selectedYear]) }}" target="_blank" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-sm font-semibold flex items-center"><i class="fas fa-file-export mr-1"></i> Export</a>
+            <button type="submit" class="px-3 py-1 text-sm font-semibold text-white bg-blue-600 rounded hover:bg-blue-700">Lihat</button>
+                        <a href="{{ route('admin.peforma-kurir.export.pdf', ['month' => $selectedMonth, 'year' => $selectedYear]) }}" target="_blank" class="flex items-center px-3 py-1 text-sm font-semibold text-white bg-orange-500 rounded hover:bg-orange-600"><i class="mr-1 fas fa-file-export"></i> Export</a>
         </form>
     </div>
 
     <div x-data="{ show: true }" x-show="show" class="mb-4">
-        <div class="bg-green-100 text-black dark:bg-slate-850 dark:text-white px-4 py-3 rounded relative flex items-center justify-between" role="alert">
+        <div class="relative flex items-center justify-between px-4 py-3 text-black bg-green-100 rounded dark:bg-slate-850 dark:text-white" role="alert">
             <span class="ml-2">Kurir yang berhasil mengantarkan pesanan <b>"Sudah diverifikasi Admin"</b> maka akan mendapat poin 1, Kurir yang mengantarkan pesanan terbanyak adalah kurir yang memiliki poin skor tertinggi</span>
             <button type="button" @click="show = false" class="ml-4 text-blue-700 hover:text-blue-900 focus:outline-none">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </button>
         </div>
     </div>
 
-    <div class="mb-4 text-gray-600 dark:text-gray-300 font-semibold">
+    <div class="mb-4 font-semibold text-gray-600 dark:text-gray-300">
         Ranking Peforma Kurir Bulan {{ $bulan }}
     </div>
     <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 table-fixed">
+        <table class="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-700">
             <thead class="bg-gray-100 dark:bg-gray-700">
                 <tr>
-                    <th class="w-24 px-4 py-2 text-left text-xs font-bold text-gray-700 dark:text-gray-200 uppercase">Rank</th>
-                    <th class="px-4 py-2 text-center text-xs font-bold text-gray-700 dark:text-gray-200 uppercase">Nama Kurir</th>
-                    <th class="px-4 py-2 text-center text-xs font-bold text-gray-700 dark:text-gray-200 uppercase">Total Customer</th>
-                    <th class="px-4 py-2 text-center text-xs font-bold text-gray-700 dark:text-gray-200 uppercase">Jumlah Pesanan Selesai</th>
+                    <th class="w-24 px-4 py-2 text-xs font-bold text-left text-gray-700 uppercase dark:text-gray-200">Rank</th>
+                    <th class="px-4 py-2 text-xs font-bold text-center text-gray-700 uppercase dark:text-gray-200">Nama Kurir</th>
+                    <th class="px-4 py-2 text-xs font-bold text-center text-gray-700 uppercase dark:text-gray-200">Total Customer</th>
+                    <th class="px-4 py-2 text-xs font-bold text-center text-gray-700 uppercase dark:text-gray-200">Jumlah Pesanan Selesai</th>
                 </tr>
             </thead>
-            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                 @forelse($ranking as $row)
                 <tr>
                     <td class="px-4 py-2 font-bold text-left">
@@ -80,6 +80,9 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
+    <div class="mt-4">
+        {{ $ranking->withQueryString()->links() }}
     </div>
 </div>
 @endsection

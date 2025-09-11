@@ -8,6 +8,8 @@ use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 
 class PeformaKurirController extends Controller
 {
@@ -72,16 +74,13 @@ class PeformaKurirController extends Controller
         $admin = auth()->user();
         $regionId = $admin->region_id;
 
-        // Ambil tahun dan bulan dari request, default ke bulan & tahun sekarang
         $year = $request->input('year', now()->year);
         $month = $request->input('month', now()->month);
 
-    // Dropdown tahun: dari tahun paling awal di order sampai 10 tahun ke depan
-    $minYear = \App\Models\Order::min(DB::raw('YEAR(created_at)')) ?? now()->year;
-    $maxYear = now()->year + 10;
-    $years = range($minYear, $maxYear);
+        $minYear = \App\Models\Order::min(DB::raw('YEAR(created_at)')) ?? now()->year;
+        $maxYear = now()->year + 10;
+        $years = range($minYear, $maxYear);
 
-        // Untuk dropdown bulan
         $months = [
             1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
             7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
@@ -90,13 +89,11 @@ class PeformaKurirController extends Controller
         $startOfMonth = now()->setYear($year)->setMonth($month)->startOfMonth();
         $endOfMonth = now()->setYear($year)->setMonth($month)->endOfMonth();
 
-        // Ambil data order yang sudah diverifikasi admin, region sesuai admin, bulan & tahun terpilih
         $orders = \App\Models\Order::where('region_id', $regionId)
             ->where('status', 'diverifikasi_admin')
             ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
             ->get();
 
-        // Group by kurir dan hitung jumlah order
         $ranking = $orders->groupBy('created_by_user_id')
             ->map(function ($orders, $kurirId) {
                 return [
@@ -107,11 +104,9 @@ class PeformaKurirController extends Controller
             ->sortByDesc('jumlah_order')
             ->values();
 
-        // Ambil data nama kurir
         $kurirIds = $ranking->pluck('kurir_id')->all();
         $kurirs = \App\Models\User::whereIn('id', $kurirIds)->get()->keyBy('id');
 
-        // Gabungkan nama kurir dan total customer yang dihandle ke ranking
         $ranking = $ranking->map(function ($item, $i) use ($kurirs) {
             $user = $kurirs[$item['kurir_id']] ?? null;
             $item['nama_kurir'] = $user ? $user->name : '-';
@@ -120,8 +115,22 @@ class PeformaKurirController extends Controller
             return $item;
         });
 
+        // [!code focus:start]
+        // BUAT PAGINASI MANUAL
+        $perPage = 10; // Tentukan jumlah item per halaman
+        $currentPage = Paginator::resolveCurrentPage('page');
+        $currentPageItems = $ranking->slice(($currentPage - 1) * $perPage, $perPage)->all();
+        $paginatedRanking = new LengthAwarePaginator(
+            $currentPageItems,
+            count($ranking),
+            $perPage,
+            $currentPage,
+            ['path' => Paginator::resolveCurrentPath()]
+        );
+        // [!code focus:end]
+
         return view('dashboard.admin.peforma-kurir.peforma-kurir', [
-            'ranking' => $ranking,
+            'ranking' => $paginatedRanking, // [!code focus]
             'bulan' => $months[$month] . ' ' . $year,
             'selectedMonth' => $month,
             'selectedYear' => $year,

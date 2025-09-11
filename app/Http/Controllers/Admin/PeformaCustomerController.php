@@ -7,6 +7,8 @@ use App\Models\Customer;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Pagination\LengthAwarePaginator; // [!code ++]
+use Illuminate\Pagination\Paginator;
 
 class PeformaCustomerController extends Controller
 {
@@ -146,11 +148,11 @@ class PeformaCustomerController extends Controller
     /**
      * Display a listing of customer performance.
      */
-    public function index()
+    public function index(Request $request) // [!code focus]
     {
         // Ambil filter bulan & tahun dari request, default ke bulan & tahun sekarang
-        $selectedMonth = request('month', now()->format('m'));
-        $selectedYear = request('year', now()->format('Y'));
+        $selectedMonth = $request->input('month', now()->format('m')); // [!code focus]
+        $selectedYear = $request->input('year', now()->format('Y')); // [!code focus]
 
         // Daftar bulan (dalam bahasa Indonesia)
         $months = [
@@ -170,12 +172,26 @@ class PeformaCustomerController extends Controller
         // Ambil data ranking customer untuk rentang bulan/tahun terpilih
         $ranking = $this->calculateCustomerPerformance($startDate, $endDate);
 
+        // [!code focus:start]
+        // BUAT PAGINASI MANUAL
+        $perPage = 10; // Tentukan jumlah item per halaman
+        $currentPage = Paginator::resolveCurrentPage('page');
+        $currentPageItems = $ranking->slice(($currentPage - 1) * $perPage, $perPage)->all();
+        $paginatedRanking = new LengthAwarePaginator(
+            $currentPageItems,
+            count($ranking),
+            $perPage,
+            $currentPage,
+            ['path' => Paginator::resolveCurrentPath()]
+        );
+        // [!code focus:end]
+
         // Nama bulan untuk judul
         $bulan = $months[$selectedMonth] . ' ' . $selectedYear;
 
         return view('dashboard.admin.peforma-customer.peforma-customer', compact(
-            'ranking', 'bulan', 'months', 'years', 'selectedMonth', 'selectedYear'
-        ));
+            'paginatedRanking', 'bulan', 'months', 'years', 'selectedMonth', 'selectedYear' // [!code focus]
+        ))->with('ranking', $paginatedRanking); // [!code focus]
     }
 
     /**
