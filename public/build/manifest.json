@@ -1,0 +1,33 @@
+{
+  "resources/css/app.css": {
+    "file": "assets/app-CupYGeCM.css",
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/css/argon-dashboard-tailwind.css": {
+    "file": "assets/argon-dashboard-tailwind--TFY1OqR.css",
+    "src": "resources/css/argon-dashboard-tailwind.css",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-Rhxy9Yan.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "css": [
+      "assets/app-CupYGeCM.css"
+    ]
+  },
+  "resources/js/argon-dashboard-tailwind.js": {
+    "file": "assets/argon-dashboard-tailwind-BAdjiKXr.js",
+    "name": "argon-dashboard-tailwind",
+    "src": "resources/js/argon-dashboard-tailwind.js",
+    "isEntry": true
+  },
+  "resources/js/script_homepage.js": {
+    "file": "assets/script_homepage-CfoifSuV.js",
+    "name": "script_homepage",
+    "src": "resources/js/script_homepage.js",
+    "isEntry": true
+  }
+}
