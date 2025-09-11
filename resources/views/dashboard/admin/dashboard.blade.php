@@ -188,7 +188,8 @@
     </div>
 
     <!-- Chart Section -->
-    <div class="p-6">
+    <div class="flex flex-col gap-6 p-6">
+
         <div
             class="relative overflow-hidden bg-white border border-gray-100 shadow-2xl rounded-3xl dark:bg-slate-800 dark:border-slate-700">
             <div class="p-6">
@@ -247,39 +248,50 @@
             </div>
         </div>
 
-        <!-- Monitoring Kurir Section -->
-        <div class="p-6">
-            <h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-black sm:text-2xl">🛵 Monitoring Kurir</h2>
-            <div class="relative bg-white shadow-md dark:bg-gray-800 sm:rounded-lg">
-                <div class="flex flex-col items-center justify-between p-4 space-y-3 md:flex-row md:space-y-0 md:space-x-4">
-                    <div class="w-full">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                            📦 Monitoring Kurir di Region {{ Auth::user()->region->name }}
-                        </h3>
+        <div
+            class="relative flex flex-col overflow-hidden bg-white border border-gray-100 shadow-2xl rounded-3xl dark:bg-slate-800 dark:border-slate-700">
+            <div class="p-6">
+                {{-- Header Kartu --}}
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                    <div class="flex flex-col">
+                        <h6 class="flex items-center gap-2 text-lg font-bold text-gray-800 dark:text-white">
+                            <i class="text-blue-500 fas fa-shipping-fast"></i>
+                            <span>Monitoring Kurir</span>
+                        </h6>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            Daftar kurir aktif di region {{ Auth::user()->region->name }}
+                        </p>
+                    </div>
+                    <div class="flex items-center">
+                        <a href="{{ route('admin.couriers.index') }}"
+                            class="px-4 py-2 text-xs font-bold text-white uppercase bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                            Lihat Semua
+                        </a>
                     </div>
                 </div>
+
+                {{-- Konten Tabel --}}
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                             <tr>
-                                {{-- PENYESUAIAN LEBAR KOLOM --}}
                                 <th scope="col" class="px-4 py-3 w-[5%] text-center">No.</th>
-                                <th scope="col" class="px-4 py-3 w-[40%] text-center">Nama Kurir</th>
-                                <th scope="col" class="px-4 py-3 w-[40%] text-center">Email</th>
+                                <th scope="col" class="px-4 py-3 w-[40%]">Nama Kurir</th>
+                                <th scope="col" class="px-4 py-3 w-[40%]">Email</th>
                                 <th scope="col" class="px-4 py-3 w-[15%] text-center">Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse($couriers as $kurir)
-                                <tr class="border-b dark:border-gray-700">
+                                <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
                                     <td class="px-4 py-3 font-medium text-center text-gray-900 dark:text-white">
                                         {{ ($couriers->currentPage() - 1) * $couriers->perPage() + $loop->iteration }}
                                     </td>
                                     <th scope="row"
-                                        class="px-4 py-3 font-medium text-center text-gray-900 whitespace-nowrap dark:text-white">
+                                        class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                         {{ $kurir->name }}
                                     </th>
-                                    <td class="px-4 py-3 text-center">{{ $kurir->email }}</td>
+                                    <td class="px-4 py-3">{{ $kurir->email }}</td>
                                     <td class="px-4 py-3 text-center">
                                         <span
                                             class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
@@ -289,21 +301,23 @@
                                 </tr>
                             @empty
                                 <tr class="border-b dark:border-gray-700">
-                                    {{-- Pastikan colspan sesuai dengan jumlah kolom (4) --}}
-                                    <td colspan="4" class="px-4 py-3 text-center text-gray-500">Tidak ada data kurir di
-                                        region ini.</td>
+                                    <td colspan="4" class="px-4 py-3 text-center text-gray-500">
+                                        Tidak ada data kurir di region ini.
+                                    </td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
 
-                <nav class="flex justify-end w-full p-4" aria-label="Table navigation">
+                {{-- Navigasi Paginasi --}}
+                <nav class="flex justify-end w-full pt-4 mt-auto" aria-label="Table navigation">
                     {{ $couriers->links() }}
                 </nav>
-
             </div>
         </div>
+
+    </div>
 
     @endsection
 
