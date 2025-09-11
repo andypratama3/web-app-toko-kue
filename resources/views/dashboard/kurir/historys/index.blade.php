@@ -5,15 +5,20 @@
 @section('content')
     <div class="flex-auto p-3 pt-0 -mx-3">
         <div class="p-2.5 bg-white shadow-md rounded-xl dark:bg-gray-800 dark:border-gray-700 min-h-[715px]">
-            {{-- <h2 class="mb-6 text-black text-md dark:text-white">
-                👤 {{ Auth::user()->name ?? 'Kurir' }}
-                🚩 {{ Auth::user()->region->name ?? 'N/A' }}
-            </h2> --}}
-
             <div class="flex flex-col gap-4 mb-4 md:flex-row md:items-center md:justify-between">
-                <h2 class="text-xl font-bold text-gray-800 dark:text-white">
-                    History Pesanan 👤 {{ Auth::user()->name ?? 'Kurir' }}
-                </h2>
+                <div class="w-full md:w-1/2 lg:w-1/3">
+                    <form onsubmit="return false;">
+                        <label for="live-search-input" class="sr-only">Cari</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg aria-hidden="true" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
+                            </div>
+                            <input type="text" id="live-search-input" name="search"
+                                class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                                placeholder="Cari invoice atau customer...">
+                        </div>
+                    </form>
+                </div>
                 <form method="GET" class="flex flex-row flex-wrap items-center gap-2">
                     <div class="relative">
                         <select name="month" class="px-4 py-1 pr-8 text-sm border rounded appearance-none focus:ring focus:ring-blue-200">
@@ -34,88 +39,8 @@
             </div>
 
         {{-- CARD VIEW UNTUK MOBILE (md:hidden) --}}
-        <div class="space-y-4 md:hidden">
-            @forelse ($orders as $order)
-            <div class="px-3 py-2 border-l-8 border-green-500 rounded-lg shadow-md bg-gray-50 dark:bg-gray-700">
-                {{-- BAGIAN ATAS: INVOICE & TOMBOL DETAIL ICON --}}
-                <div class="flex items-start justify-between pb-1 border-b dark:border-gray-600">
-                    <div>
-                        <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ $order->invoice_number }}</p>
-
-                    </div>
-                    <button type="button"
-                        class="text-xl text-blue-500 js-open-modal-btn hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                        data-target-modal="showOrderModal" data-order-id="{{ $order->id }}">
-                        <i class="fas fa-info-circle"></i>
-                    </button>
-                </div>
-
-                {{-- BAGIAN TENGAH: CUSTOMER (KIRI) & TOTAL (KANAN) --}}
-                <div class="flex items-start justify-between mt-1">
-                    {{-- SISI KIRI: DATA CUSTOMER --}}
-                    <div class="pr-4">
-                        <!-- <p class="text-xs text-gray-500 dark:text-gray-400">Customer:</p> -->
-                        <p class="mb-2 font-bold text-gray-800 text-md dark:text-gray-200">
-                            {{ $order->customer->name ?? '-' }}
-                        </p>
-                        <p class="text-xs text-gray-600 dark:text-gray-300">
-                            <i class="mr-1 fas fa-store"></i> {{ $order->customer->company_name ?? '' }}
-                        </p>
-                        <div class="flex items-center mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            <span>
-                                <p class="text-xs text-gray-500 dark:text-gray-400">
-                                    {{ $order->updated_at->isoFormat('D MMM YYYY, HH:mm') }}
-                                </p>
-                            </span>
-                        </div>
-                        <!-- <p class="text-xs text-gray-600 dark:text-gray-300">{{ $order->customer->phone ?? '' }}</p> -->
-                        <!-- <p class="text-xs text-gray-600 dark:text-gray-300">{{ $order->customer->address ?? '' }}</p> -->
-                    </div>
-
-                    {{-- SISI KANAN: TOTAL HARGA & STATUS --}}
-                    <div class="text-right shrink-0">
-                        {{-- Status Lunas & Retur --}}
-                        <div class="flex flex-row items-end justify-end mt-2 mb-2 space-x-1">
-                            <span class="text-xs font-medium px-2.5 py-0.5 rounded {{ $order->payment_status['class'] }}">
-                                {{ $order->payment_status['text'] }}
-                            </span>
-                            @if ($order->has_return)
-                            <span class="text-xs font-medium px-2.5 py-0.5 rounded bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
-                                Retur
-                            </span>
-                            @endif
-                        </div>
-                        {{-- Total Harga --}}
-                        <div>
-                            <!-- <p class="mb-1 text-xs text-gray-500 dark:text-gray-400">Total:</p> -->
-                            @if ($order->has_return)
-                            {{-- Jika ada retur, tampilkan total baru dan coret total lama --}}
-                            <p class="text-xs leading-tight line-through text-slate-400">
-                                Rp {{ number_format($order->total_amount, 0, ',', '.') }}
-                            </p>
-                            <p class="text-xl font-bold text-green-600 dark:text-green-400">
-                                Rp {{ number_format($order->final_total, 0, ',', '.') }}
-                            </p>
-
-                            @else
-                            {{-- Tampilkan total normal jika tidak ada retur --}}
-                            <p class="text-lg font-bold text-green-800 dark:text-green-200">
-                                Rp {{ number_format($order->total_amount, 0, ',', '.') }}
-                            </p>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-                {{-- [!code focus:end] --}}
-            </div>
-            @empty
-            <div class="py-10 text-center">
-                <p class="text-sm text-gray-500">Tidak ada data history pesanan</p>
-            </div>
-            @endforelse
+        <div id="history-results-container-mobile" class="space-y-4 md:hidden">
+            @include('dashboard.kurir.historys._card_view', ['orders' => $orders])
         </div>
 
         {{-- TABLE VIEW UNTUK DESKTOP (hidden md:block) --}}
@@ -129,75 +54,16 @@
                         <th class="px-4 py-3">Customer</th>
                         <th class="px-4 py-3">Status</th>
                         <th class="px-4 py-3">Total</th>
-                        <th class="px-4 py-3 text-center"><span class="sr-only">Aksi</span></th>
+                        <th class="px-4 py-3 text-center">Detail</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @forelse ($orders as $order)
-                    <tr class="border-b dark:border-gray-700">
-                        {{-- NO --}}
-                        <td class="px-4 py-3 font-medium text-center text-gray-900 dark:text-white">
-                            {{ ($orders->currentPage() - 1) * $orders->perPage() + $loop->iteration }}
-                        </td>
-                        <td class="px-4 py-2">
-                            <p class="mb-0.5 text-md text-gray-900 dark:text-white font-semibold leading-tight">{{ $order->invoice_number }}</p>
-                            <p class="mb-0 text-xs leading-tight text-slate-400">
-                                {{ $order->created_at->isoFormat('D MMM YYYY, HH:mm') }}
-                            </p>
-                        </td>
-                        <td class="px-4 py-2">
-                            <p class="mb-0 font-semibold leading-tight text-gray-900 text-md dark:text-white">{{ $order->customer->name ?? '-' }}
-                            </p>
-                            <p class="mb-0 text-xs leading-tight text-slate-400">
-                                {{ $order->customer->company_name ?? '-' }}
-                            </p>
-                        </td>
-                        <td class="px-4 py-2">
-                            <span
-                                class="text-xs mr-1 font-medium px-2.5 py-0.5 rounded {{ $order->payment_status['class'] }}">
-                                {{ $order->payment_status['text'] }}
-                            </span>
-                            @if ($order->has_return)
-                            <span
-                                class="text-xs font-medium px-2.5 py-0.5 rounded bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
-                                Retur
-                            </span>
-                            @endif
-                        </td>
-                        <td class="px-4 py-2">
-                            @if ($order->has_return) <p
-                                class="mb-0 font-semibold leading-tight text-green-600 text-md dark:text-green-400">
-                                Rp {{ number_format($order->final_total, 0, ',', '.') }}
-                            </p>
-                            <p class="mb-0 text-xs leading-tight line-through text-slate-400">
-                                Rp {{ number_format($order->total_amount, 0, ',', '.') }}
-                            </p>
-                            @else
-                            <p class="mb-0 font-semibold leading-tight text-md">
-                                Rp {{ number_format($order->total_amount, 0, ',', '.') }}
-                            </p>
-                            @endif
-                        </td>
-                        <td class="px-4 py-2 text-center">
-                            <button type="button"
-                                class="js-open-modal-btn text-xs px-3 py-1.5 font-semibold text-white bg-blue-500 rounded-lg shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
-                                data-target-modal="showOrderModal" data-order-id="{{ $order->id }}">
-                                Detail
-                            </button>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="6" class="px-4 py-2 text-center">
-                            <p class="mb-0 text-sm text-gray-500">Tidak ada data history pesanan</p>
-                        </td>
-                    </tr>
-                    @endforelse
+                <tbody id="history-results-container-desktop">
+                    @include('dashboard.kurir.historys._table_rows', ['orders' => $orders])
                 </tbody>
             </table>
         </div>
         <div class="p-4">
-            {{ $orders->links() }}
+            {{ $orders->withQueryString()->links() }}
         </div>
     </div>
 </div>
@@ -400,4 +266,16 @@
         }
     });
 </script>
+
+<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof initializeLiveSearch === 'function') {
+                initializeLiveSearch({
+                    searchInputId: 'live-search-input',
+                    desktopContainerId: 'history-results-container-desktop',
+                    mobileContainerId: 'history-results-container-mobile' // Tambahkan ini
+                });
+            }
+        });
+    </script>
 @endpush

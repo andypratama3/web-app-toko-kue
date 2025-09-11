@@ -184,7 +184,7 @@
             </div>
         </form>
     </div>
-
+</div>
     <div
         class="fixed bottom-0 left-0 z-50 flex items-center justify-between w-full p-4 bg-white border-t border-gray-300 dark:bg-gray-800 xl:hidden">
         <p id="cart-total" class="text-lg font-bold cart-total-display dark:text-white">Total: Rp 0</p>

@@ -151,7 +151,7 @@
 
                     {{-- Account Settings Section (Collapsible) --}}
                     <li class="w-full mt-4" x-data="{ openAccount: true }" style="margin-top: 1rem !important;">
-                        <button @click="openAccount = !openAccount" class="flex items-center justify-between w-full py-2 pl-6 pr-4 text-xs font-bold leading-tight text-left uppercase transition-opacity sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80 mt-2">
+                        <button @click="openAccount = !openAccount" class="flex items-center justify-between w-full py-2 pl-6 pr-4 mt-2 text-xs font-bold leading-tight text-left uppercase transition-opacity sidebar-section-header sidenav-text dark:text-white opacity-60 hover:opacity-80">
                             <span>Account Settings</span>
                             <i class="text-xs transition-transform duration-300 fas fa-chevron-down" :class="{ 'rotate-180': openAccount }"></i>
                         </button>
@@ -239,7 +239,7 @@
 
         <div id="dropdown-cta" class="p-4 mt-6 rounded-lg bg-green-50 dark:bg-orange-900" role="alert">
             <div class="flex items-center mb-3">
-                <span class="bg-orange-100 text-orange-800 text-sm font-semibold me-2 px-2.5 py-0.5 rounded-sm dark:bg-orange-200 dark:text-orange-900">Development</span>
+                <span class="bg-orange-100 text-orange-800 text-sm font-semibold me-2 px-2.5 py-0.5 rounded-sm dark:bg-orange-200 dark:text-orange-900">Production</span>
                 <button type="button"
                     class="ms-auto -mx-1.5 -my-1.5 bg-green-50 inline-flex justify-center items-center w-6 h-6 text-green-900 rounded-lg focus:ring-2 focus:ring-green-400 p-1 hover:bg-green-200 dark:bg-orange-900 dark:text-white dark:hover:bg-orange-900"
                     data-dismiss-target="#dropdown-cta" aria-label="Close">

@@ -193,56 +193,79 @@ class HistoryOrderController extends Controller
      * MODIFIKASI: Method index untuk menangani filter
      */
     public function index(Request $request)
-    {
-        $user = Auth::user();
-        $role = $user->hasRole('admin') ? 'admin' : 'kurir';
+{
+    $user = Auth::user();
+    $role = $user->hasRole('admin') ? 'admin' : 'kurir';
 
-        // Ambil filter bulan & tahun dari request, default ke bulan & tahun sekarang
-        $selectedMonth = $request->input('month', now()->format('m'));
-        $selectedYear = $request->input('year', now()->format('Y'));
+    $selectedMonth = $request->input('month', now()->format('m'));
+    $selectedYear = $request->input('year', now()->format('Y'));
+    $search = $request->input('search');
 
-        // Siapkan data bulan dan tahun untuk dropdown filter
-        $months = [
-            '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
-            '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
-            '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember',
-        ];
-        $currentYear = now()->year;
-        $years = range($currentYear, $currentYear - 5); // 5 tahun ke belakang
+    $months = [
+        '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
+        '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
+        '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember',
+    ];
+    $currentYear = now()->year;
+    $years = range($currentYear, $currentYear - 5);
 
-        // Query dasar
-        $ordersQuery = Order::with(['customer', 'createdBy', 'returns' => fn($q) => $q->where('status', '!=', 'ditolak')->latest()])
-            ->where('status', 'diverifikasi_admin');
+    $ordersQuery = Order::with(['customer', 'createdBy', 'returns' => fn($q) => $q->where('status', '!=', 'ditolak')->latest()])
+        ->where('status', 'diverifikasi_admin');
 
-        // Sesuaikan query berdasarkan role
-        if ($role === 'admin') {
-            $ordersQuery->where('region_id', $user->region_id);
-        } else { // Untuk kurir
-            $ordersQuery->where('created_by_user_id', $user->id);
-        }
-
-        // Terapkan filter bulan dan tahun untuk semua role
-        $ordersQuery->whereMonth('created_at', $selectedMonth)
-                    ->whereYear('created_at', $selectedYear);
-
-        $orders = $ordersQuery->latest()->paginate(10);
-
-        // Proses data order (kalkulasi total, status, dll.)
-        foreach ($orders as $order) {
-            $order->has_return = $order->returns->isNotEmpty();
-            $order->final_total = $order->has_return ? $order->total_amount - $order->returns->first()->total_amount_returned : $order->total_amount;
-            $order->payment_status = $order->paid_at
-                ? ['text' => 'Lunas', 'class' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300']
-                : ['text' => 'Belum Lunas', 'class' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'];
-        }
-
-        // Siapkan data yang akan dikirim ke view
-        $viewData = compact('orders', 'months', 'years', 'selectedMonth', 'selectedYear');
-
-        $viewName = $role === 'admin'
-            ? 'dashboard.admin.historys.index'
-            : 'dashboard.kurir.historys.index';
-
-        return view($viewName, $viewData);
+    if ($role === 'admin') {
+        $ordersQuery->where('region_id', $user->region_id);
+    } else { // Untuk kurir
+        $ordersQuery->where('created_by_user_id', $user->id);
     }
+
+    $ordersQuery->whereMonth('created_at', $selectedMonth)
+                ->whereYear('created_at', $selectedYear);
+
+    $ordersQuery->when($search, function ($query, $searchTerm) {
+        $query->where(function($q) use ($searchTerm) {
+            $q->where('invoice_number', 'like', "%{$searchTerm}%")
+              ->orWhereHas('customer', function ($subQuery) use ($searchTerm) {
+                  $subQuery->where('name', 'like', "%{$searchTerm}%")
+                           ->orWhere('company_name', 'like', "%{$searchTerm}%");
+              });
+        });
+    });
+
+    $orders = $ordersQuery->latest()->paginate(10);
+
+    foreach ($orders as $order) {
+        $order->has_return = $order->returns->isNotEmpty();
+        $order->final_total = $order->has_return ? $order->total_amount - $order->returns->first()->total_amount_returned : $order->total_amount;
+        $order->payment_status = $order->paid_at
+            ? ['text' => 'Lunas', 'class' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300']
+            : ['text' => 'Belum Lunas', 'class' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'];
+    }
+
+    // [!code focus:start]
+    // MODIFIKASI: Handle request AJAX untuk live search
+    if ($request->ajax()) {
+        $response = [];
+
+        if ($role === 'admin') {
+            $desktopHtml = view('dashboard.admin.historys._table_rows', compact('orders'))->render();
+            $response['desktop_html'] = $desktopHtml;
+        } else { // Untuk Kurir, render keduanya
+            $desktopHtml = view('dashboard.kurir.historys._table_rows', compact('orders'))->render();
+            $mobileHtml = view('dashboard.kurir.historys._card_view', compact('orders'))->render();
+            $response['desktop_html'] = $desktopHtml;
+            $response['mobile_html'] = $mobileHtml;
+        }
+
+        return response()->json($response);
+    }
+    // [!code focus:end]
+
+    $viewData = compact('orders', 'months', 'years', 'selectedMonth', 'selectedYear');
+
+    $viewName = $role === 'admin'
+        ? 'dashboard.admin.historys.index'
+        : 'dashboard.kurir.historys.index';
+
+    return view($viewName, $viewData);
+}
 }

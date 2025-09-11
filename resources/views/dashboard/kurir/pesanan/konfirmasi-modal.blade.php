@@ -51,7 +51,7 @@
             Batal
         </button>
         <button type="button" id="submit-order-button" onclick="submitOrder()" class="px-6 py-2 text-sm font-medium text-white bg-[#748c54] rounded-lg hover:bg-[#5a6e40] focus:outline-none focus:ring-4 focus:ring-green-300 dark:focus:ring-green-800">
-            Konfirmasi & Simpan Pesanan
+            Konfirmasi Pesanan
         </button>
     </div>
 </x-modal-custom>
