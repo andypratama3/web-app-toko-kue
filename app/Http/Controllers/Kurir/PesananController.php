@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 
 class PesananController extends Controller
 {
@@ -28,9 +30,8 @@ class PesananController extends Controller
     {
         $loggedInUser = Auth::user();
         $search = $request->input('search');
-        $activeStatus = $request->input('status', 'semua'); // Default ke tab 'semua'
+        $activeStatus = $request->input('status', 'semua');
 
-        // Daftar status yang akan ditampilkan sebagai tab filter
         $filterableStatuses = [
             'semua' => 'Semua',
             'diambil' => 'Diambil',
