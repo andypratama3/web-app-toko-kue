@@ -6,6 +6,7 @@
     <?php
 
     use App\Models\OrderReturn;
+    use App\Models\OrderReturnProduct;
     use Carbon\Carbon;
     use Illuminate\Support\Facades\Auth;
     use Illuminate\Support\Facades\Request;
@@ -35,11 +36,8 @@
 
     // --- Statistik Harian (Diperbarui dengan filter kurir) ---
     $totalOrdersToday = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereDate('created_at', $today)->count();
-
     $totalCustomersInRegion = App\Models\Customer::where('added_by_user_id', $loggedInCourierId)->count();
-
     $completedOrdersToday = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereDate('updated_at', $today)->where('status', 'diverifikasi_admin')->count();
-
     $receivedByBuyerToday = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereDate('received_by_buyer_at', $today)->where('status', 'diterima_pembeli')->count();
 
     // Menghitung retur berdasarkan pesanan yang dibuat oleh kurir
@@ -49,8 +47,9 @@
         ->whereDate('created_at', $today)
         ->count();
 
-    // --- Pesanan Terbaru (Tetap Sama, sudah difilter) ---
+    // --- Pesanan Terbaru (Diperbarui untuk mengecualikan status 'diverifikasi_admin') ---
     $latestOrders = App\Models\Order::where('created_by_user_id', $loggedInCourierId)
+        ->where('status', '!=', 'diverifikasi_admin')
         ->with(['customer', 'items'])
         ->latest()
         ->take(3)
@@ -523,7 +522,47 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @forelse($latestOrders as $loop => $order)
+                                           @forelse($latestOrders as $loop => $order)
+                                                @php
+                                                    // Menghitung total awal dan total terbaru berdasarkan data retur
+                                                    $initialTotal = 0;
+                                                    foreach ($order->items as $item) {
+                                                        $initialTotal += ($item->quantity ?? 0) * ($item->price ?? 0);
+                                                    }
+
+                                                    $latestTotal = $order->total_amount;
+                                                    $showReturnedView = false;
+
+                                                    if ($order->status === 'menunggu_retur' || $order->status === 'menunggu_verifikasi_admin' ) {
+                                                        $showReturnedView = true;
+                                                        $orderReturn = OrderReturn::where('order_id', $order->id)->first();
+                                                        if ($orderReturn) {
+                                                            $returnProducts = OrderReturnProduct::where('order_return_id', $orderReturn->id)->get();
+                                                            $totalReturnValue = 0;
+                                                            foreach ($returnProducts as $returnItem) {
+                                                                $totalReturnValue += ($returnItem->quantity ?? 0) * ($returnItem->price ?? 0);
+                                                            }
+                                                            $latestTotal = $initialTotal - $totalReturnValue;
+                                                        } else {
+                                                            $latestTotal = $initialTotal;
+                                                        }
+                                                    } else {
+                                                        $calculatedLatestTotal = 0;
+                                                        $hasReturnedItems = false;
+                                                        foreach ($order->items as $item) {
+                                                            $initialQty = $item->quantity ?? 0;
+                                                            $returnedQty = $item->returned_quantity ?? 0;
+                                                            $price = $item->price ?? 0;
+                                                            $calculatedLatestTotal += ($initialQty - $returnedQty) * $price;
+                                                            if ($returnedQty > 0) $hasReturnedItems = true;
+                                                        }
+                                                        if ($hasReturnedItems && $calculatedLatestTotal < $initialTotal) {
+                                                            $latestTotal = $calculatedLatestTotal;
+                                                            $showReturnedView = true;
+                                                        }
+                                                    }
+                                                @endphp
+
                                                 @php
                                                     $shortInvoice = '#' . substr($order->invoice_number, -3);
                                                 @endphp
@@ -561,14 +600,24 @@
                                                             {{ Str::limit($order->address ?? 'Alamat tidak ada', 25) }}
                                                         </p>
                                                     </td>
-                                                    {{-- PERBAIKAN DI SINI: Tombol Total Pesanan dikembalikan --}}
-                                                    <td
-                                                        class="p-4 align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
-                                                        <button type="button"
-                                                            class="text-lg font-bold text-blue-600 transition-colors js-open-modal-btn dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
-                                                            data-target-modal="orderDetailsModal"
-                                                            onclick="fetchOrderDetails({{ $order->id }})">
-                                                            Rp {{ number_format($order->total_amount, 0, ',', '.') }}
+                                                    <td class="p-4 align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
+                                                        <button type="button" class="w-full text-left transition-colors js-open-modal-btn hover:opacity-80"
+                                                            data-target-modal="orderDetailsModal" onclick="fetchOrderDetails({{ $order->id }})">
+                                                            @if ($showReturnedView)
+                                                                <div>
+                                                                    <p class="text-sm font-bold text-gray-400 dark:text-gray-500 line-through">
+                                                                        Rp {{ number_format($initialTotal, 0, ',', '.') }}
+                                                                    </p>
+                                                                    <p class="text-lg font-extrabold text-green-600 dark:text-green-500">
+                                                                        Rp {{ number_format($latestTotal, 0, ',', '.') }}
+                                                                    </p>
+                                                                </div>
+                                                            @else
+                                                                <p class="text-lg font-extrabold text-blue-600 dark:text-blue-400">
+                                                                    Rp
+                                                                    {{ number_format($order->total_amount, 0, ',', '.') }}
+                                                                </p>
+                                                            @endif
                                                         </button>
                                                     </td>
                                                     <td
@@ -635,6 +684,45 @@
                                 <div class="px-2 py-2 space-y-3 md:hidden">
                                     @forelse($latestOrders as $loop => $order)
                                         @php
+                                            // Menghitung total awal dan total terbaru berdasarkan data retur untuk tampilan mobile
+                                            $initialTotal = 0;
+                                            foreach ($order->items as $item) {
+                                                $initialTotal += ($item->quantity ?? 0) * ($item->price ?? 0);
+                                            }
+
+                                            $latestTotal = $order->total_amount;
+                                            $showReturnedView = false;
+
+                                            if ($order->status === 'menunggu_retur' || $order->status === 'menunggu_verifikasi_admin') {
+                                                $showReturnedView = true;
+                                                $orderReturn = OrderReturn::where('order_id', $order->id)->first();
+                                                if ($orderReturn) {
+                                                    $returnProducts = OrderReturnProduct::where('order_return_id', $orderReturn->id)->get();
+                                                    $totalReturnValue = 0;
+                                                    foreach ($returnProducts as $returnItem) {
+                                                        $totalReturnValue += ($returnItem->quantity ?? 0) * ($returnItem->price ?? 0);
+                                                    }
+                                                    $latestTotal = $initialTotal - $totalReturnValue;
+                                                } else {
+                                                    $latestTotal = $initialTotal;
+                                                }
+                                            } else {
+                                                $calculatedLatestTotal = 0;
+                                                $hasReturnedItems = false;
+                                                foreach ($order->items as $item) {
+                                                    $initialQty = $item->quantity ?? 0;
+                                                    $returnedQty = $item->returned_quantity ?? 0;
+                                                    $price = $item->price ?? 0;
+                                                    $calculatedLatestTotal += ($initialQty - $returnedQty) * $price;
+                                                    if ($returnedQty > 0) $hasReturnedItems = true;
+                                                }
+                                                if ($hasReturnedItems && $calculatedLatestTotal < $initialTotal) {
+                                                    $latestTotal = $calculatedLatestTotal;
+                                                    $showReturnedView = true;
+                                                }
+                                            }
+                                        @endphp
+                                        @php
                                             $customerPhone = $order->phone ?? ($order->customer->phone ?? '');
                                             $formattedPhone = preg_replace('/[^0-9]/', '', $customerPhone);
                                             $shortInvoice = '#' . substr($order->invoice_number, -3);
@@ -656,15 +744,23 @@
                                                             {{ $displayName ?? 'Pelanggan Dihapus' }}
                                                         </h6>
                                                     </div>
-                                                    {{-- PERBAIKAN DI SINI: Info pesanan dijadikan tombol modal lagi --}}
                                                     <button type="button"
                                                         class="block w-full mt-2 text-sm text-left text-gray-500 transition-colors js-open-modal-btn dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
                                                         data-target-modal="orderDetailsModal"
                                                         onclick="fetchOrderDetails({{ $order->id }})">
                                                         <span>{{ $shortInvoice ?? 'N/A' }}</span>
                                                         <span class="mx-1">|</span>
-                                                        <span>Rp
-                                                            {{ number_format($order->total_amount, 0, ',', '.') }}</span>
+                                                        @if ($showReturnedView)
+                                                            <span class="inline-flex items-center gap-1">
+                                                                <del class="text-xs mr-1 text-gray-500">Rp
+                                                                    {{ number_format($initialTotal, 0, ',', '.') }}</del>
+                                                                <span class="font-bold text-green-600 dark:text-green-500">Rp
+                                                                    {{ number_format($latestTotal, 0, ',', '.') }}</span>
+                                                            </span>
+                                                        @else
+                                                            <span class="font-bold text-blue-600 dark:text-blue-400">Rp
+                                                                {{ number_format($order->total_amount, 0, ',', '.') }}</span>
+                                                        @endif
                                                     </button>
                                                 </div>
 
@@ -1043,6 +1139,9 @@
             document.getElementById('orderCreatedAt').textContent = order.created_at || 'Tidak Tersedia';
             document.getElementById('orderPaidAt').textContent = order.paid_at ? (order.paid_at + (order.paid_at_label ||
                 '')) : 'Belum Lunas';
+
+            // Populate Order Notes
+            document.getElementById('orderNotesContainer').textContent = order.note || '"Tidak ada catatan."';
 
             // Logika untuk menampilkan ikon di modal rincian
             const statusSection = document.getElementById('modalOrderStatusSection');
