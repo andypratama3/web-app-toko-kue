@@ -533,7 +533,7 @@
                                                     $latestTotal = $order->total_amount;
                                                     $showReturnedView = false;
 
-                                                    if ($order->status === 'menunggu_retur') {
+                                                    if ($order->status === 'menunggu_retur' || $order->status === 'menunggu_verifikasi_admin' ) {
                                                         $showReturnedView = true;
                                                         $orderReturn = OrderReturn::where('order_id', $order->id)->first();
                                                         if ($orderReturn) {
@@ -693,7 +693,7 @@
                                             $latestTotal = $order->total_amount;
                                             $showReturnedView = false;
 
-                                            if ($order->status === 'menunggu_retur') {
+                                            if ($order->status === 'menunggu_retur' || $order->status === 'menunggu_verifikasi_admin') {
                                                 $showReturnedView = true;
                                                 $orderReturn = OrderReturn::where('order_id', $order->id)->first();
                                                 if ($orderReturn) {
