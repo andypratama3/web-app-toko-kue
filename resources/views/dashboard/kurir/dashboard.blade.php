@@ -577,6 +577,12 @@
                                                         class="p-4 align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
                                                         <span
                                                             class="text-sm font-semibold text-gray-800 dark:text-white">{{ $shortInvoice }}</span>
+                                                            @if ($order->rejection_note)
+                                                                <div class="flex items-center gap-1 mt-1 text-xs text-red-600 dark:text-red-400" title="{{ $order->rejection_note }}">
+                                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                                    <span>Verifikasi Ditolak</span>
+                                                                </div>
+                                                            @endif
                                                     </td>
                                                     <td
                                                         class="p-4 align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
@@ -738,12 +744,18 @@
                                                         {{ $loop->iteration }}
                                                     </span>
                                                 </div>
-                                                <div class="flex-1 min-w-0">
+                                                <div class="flex-1 min-w-0">                                                    
                                                     <div class="flex items-baseline space-x-2">
                                                         <h6 class="text-base font-bold text-gray-800 dark:text-white">
                                                             {{ $displayName ?? 'Pelanggan Dihapus' }}
                                                         </h6>
                                                     </div>
+                                                    @if ($order->rejection_note)
+                                                        <div class="flex items-center gap-1 mt-0.5 text-xs text-red-600 dark:text-red-400" title="{{ $order->rejection_note }}">
+                                                            <i class="fas fa-exclamation-triangle"></i>
+                                                            <span>Verifikasi Ditolak</span>
+                                                        </div>
+                                                    @endif
                                                     <button type="button"
                                                         class="block w-full mt-2 text-sm text-left text-gray-500 transition-colors js-open-modal-btn dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
                                                         data-target-modal="orderDetailsModal"
@@ -1142,6 +1154,16 @@
 
             // Populate Order Notes
             document.getElementById('orderNotesContainer').textContent = order.note || '"Tidak ada catatan."';
+
+            // Logika untuk menampilkan catatan penolakan
+            const rejectionContainer = document.getElementById('rejectionNoteContainer');
+            const rejectionText = document.getElementById('rejectionNoteText');
+            if (order.rejection_note) {
+                rejectionText.textContent = order.rejection_note;
+                rejectionContainer.classList.remove('hidden');
+            } else {
+                rejectionContainer.classList.add('hidden');
+            }
 
             // Logika untuk menampilkan ikon di modal rincian
             const statusSection = document.getElementById('modalOrderStatusSection');
