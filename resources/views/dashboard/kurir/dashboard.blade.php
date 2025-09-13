@@ -483,13 +483,15 @@
                                 <div class="flex items-center justify-between">
                                     <h5 class="mb-1 text-xl font-bold text-gray-800 dark:text-white">🎯 Latest Orders
                                     </h5>
-                                    <div class="p-2 rounded-lg bg-gradient-to-br from-purple-400 to-pink-500">
-                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
-                                            viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                                        </svg>
-                                    </div>
+                                    <a href="{{ route('kurir.pesanan.index') }}" title="Lihat Pesanan">
+                                        <div class="p-2 transition-all duration-300 rounded-lg bg-gradient-to-br from-purple-400 to-pink-500 hover:from-purple-500 hover:to-pink-600">
+                                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                            </svg>
+                                        </div>
+                                    </a>
                                 </div>
                             </div>
                             <div class="flex-auto px-0 pt-0 pb-2">
@@ -522,7 +524,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                           @forelse($latestOrders as $loop => $order)
+                                            @forelse($latestOrders as $loop => $order)
                                                 @php
                                                     // Menghitung total awal dan total terbaru berdasarkan data retur
                                                     $initialTotal = 0;
@@ -577,6 +579,12 @@
                                                         class="p-4 align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
                                                         <span
                                                             class="text-sm font-semibold text-gray-800 dark:text-white">{{ $shortInvoice }}</span>
+                                                            @if ($order->rejection_note)
+                                                                <div class="flex items-center gap-1 mt-1 text-xs text-red-600 dark:text-red-400" title="{{ $order->rejection_note }}">
+                                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                                    <span>Verifikasi Ditolak</span>
+                                                                </div>
+                                                            @endif
                                                     </td>
                                                     <td
                                                         class="p-4 align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
@@ -605,7 +613,7 @@
                                                             data-target-modal="orderDetailsModal" onclick="fetchOrderDetails({{ $order->id }})">
                                                             @if ($showReturnedView)
                                                                 <div>
-                                                                    <p class="text-sm font-bold text-gray-400 dark:text-gray-500 line-through">
+                                                                    <p class="text-sm font-bold text-gray-400 line-through dark:text-gray-500">
                                                                         Rp {{ number_format($initialTotal, 0, ',', '.') }}
                                                                     </p>
                                                                     <p class="text-lg font-extrabold text-green-600 dark:text-green-500">
@@ -744,6 +752,12 @@
                                                             {{ $displayName ?? 'Pelanggan Dihapus' }}
                                                         </h6>
                                                     </div>
+                                                    @if ($order->rejection_note)
+                                                        <div class="flex items-center gap-1 mt-0.5 text-xs text-red-600 dark:text-red-400" title="{{ $order->rejection_note }}">
+                                                            <i class="fas fa-exclamation-triangle"></i>
+                                                            <span>Verifikasi Ditolak</span>
+                                                        </div>
+                                                    @endif
                                                     <button type="button"
                                                         class="block w-full mt-2 text-sm text-left text-gray-500 transition-colors js-open-modal-btn dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
                                                         data-target-modal="orderDetailsModal"
@@ -752,7 +766,7 @@
                                                         <span class="mx-1">|</span>
                                                         @if ($showReturnedView)
                                                             <span class="inline-flex items-center gap-1">
-                                                                <del class="text-xs mr-1 text-gray-500">Rp
+                                                                <del class="mr-1 text-xs text-gray-500">Rp
                                                                     {{ number_format($initialTotal, 0, ',', '.') }}</del>
                                                                 <span class="font-bold text-green-600 dark:text-green-500">Rp
                                                                     {{ number_format($latestTotal, 0, ',', '.') }}</span>
@@ -1142,6 +1156,16 @@
 
             // Populate Order Notes
             document.getElementById('orderNotesContainer').textContent = order.note || '"Tidak ada catatan."';
+
+            // Logika untuk menampilkan catatan penolakan
+            const rejectionContainer = document.getElementById('rejectionNoteContainer');
+            const rejectionText = document.getElementById('rejectionNoteText');
+            if (order.rejection_note) {
+                rejectionText.textContent = order.rejection_note;
+                rejectionContainer.classList.remove('hidden');
+            } else {
+                rejectionContainer.classList.add('hidden');
+            }
 
             // Logika untuk menampilkan ikon di modal rincian
             const statusSection = document.getElementById('modalOrderStatusSection');
