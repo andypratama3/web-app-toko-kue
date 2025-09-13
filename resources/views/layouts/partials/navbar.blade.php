@@ -24,16 +24,16 @@
   });
 </script>
 {{-- FIXED: Fixed navbar with proper alignment between breadcrumb and profile --}}
-<nav id="navbar-main" class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-0 py-0 transition-all ease-in duration-300 lg:flex-nowrap lg:justify-start bg-greenlight dark:bg-slate-900  dark:shadow-none" navbar-main navbar-scroll="true">
+<nav id="navbar-main" class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-0 py-0 transition-all duration-300 ease-in lg:flex-nowrap lg:justify-start bg-greenlight dark:bg-slate-900 dark:shadow-none" navbar-main navbar-scroll="true">
     <div class="flex items-center justify-between w-full h-20 px-6">
 
       {{-- Left side: Mobile toggle + Breadcrumb --}}
       <div class="flex items-center flex-grow h-full">
         {{-- Mobile Hamburger Toggle Button --}}
   <a href="javascript:;" class="flex items-center justify-center p-2 text-white transition-all ease-nav-brand lg:hidden" id="mobile-toggle" sidenav-trigger>
-            <i class="fas fa-bars text-xl"></i>
+            <i class="text-xl fas fa-bars"></i>
         </a>
-@push('scripts')
+@push('page-scripts')
 <script>
   // Hamburger menu auto hide saat sidebar terbuka (mobile & tablet)
   document.addEventListener('DOMContentLoaded', function() {
@@ -64,7 +64,7 @@
 @endpush
 
         {{-- Breadcrumb Navigation --}}
-  <div class="hidden xl:flex flex-col justify-center flex-grow h-full ml-4 xl:ml-0">
+  <div class="flex-col justify-center flex-grow hidden h-full ml-4 xl:flex xl:ml-0">
           <ol class="flex flex-wrap bg-transparent rounded-lg">
             <li class="text-sm leading-normal">
              @php
@@ -91,20 +91,20 @@
 
       {{-- Toogle Lightmode - Darkmode --}}
   <!-- Toggle Lightmode/Darkmode: hanya tampil di desktop/tab -->
-  <label id="theme-toggle-label-navbar" for="theme-toggle-checkbox-navbar" class="relative inline-flex items-center cursor-pointer z-40 hidden xl:inline-flex">
+  <label id="theme-toggle-label-navbar" for="theme-toggle-checkbox-navbar" class="relative z-40 inline-flex items-center hidden cursor-pointer xl:inline-flex">
     <input type="checkbox" value="" id="theme-toggle-checkbox-navbar" class="sr-only peer" dark-toggle>
-    <div class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-checked:bg-blue-600"></div>
+    <div class="h-6 bg-gray-200 rounded-full w-11 peer dark:bg-gray-700 peer-checked:bg-blue-600"></div>
     <div class="absolute top-0.5 left-[2px] bg-white border-gray-300 border rounded-full h-5 w-5 transition-all peer-checked:translate-x-full flex items-center justify-center">
       <span class="text-sm">☀️</span>
-      <span class="text-sm hidden">🌙</span>
+      <span class="hidden text-sm">🌙</span>
     </div>
   </label>
 
       {{-- Right side: Profile section - visible on all devices with proper margin --}}
       <div class="flex items-center justify-end h-full pr-4">
-        <ul class="flex flex-row items-center justify-end pl-0 mb-0 list-none h-full">
+        <ul class="flex flex-row items-center justify-end h-full pl-0 mb-0 list-none">
           <!-- Avatar with dropdown settings -->
-          <li class="relative flex items-center px-3 group h-full">
+          <li class="relative flex items-center h-full px-3 group">
             <div class="w-8 h-8 overflow-hidden border-2 border-white rounded-full cursor-pointer">
               @php
                 $avatarSrc = '/assets/icon/admin.png';
@@ -127,12 +127,12 @@
                 @endphp
                 <div class="mb-2">
                   <span class="font-semibold text-gray-900">{{ $user->name ?? 'User' }}</span>
-                  <span class="block text-xs text-gray-500 mt-1">📍 Region: {{ $user->region->name ?? 'Tidak ada region' }}</span>
+                  <span class="block mt-1 text-xs text-gray-500">📍 Region: {{ $user->region->name ?? 'Tidak ada region' }}</span>
                   <span class="block text-xs text-gray-500">Email: {{ $user->email ?? 'Tidak ada email' }}</span>
                 </div>
                 <div class="pt-2 border-t border-gray-100">
-                  <span class="font-semibold text-gray-900 text-sm">👨🏻‍💻 Last Activity:</span>
-                  <span class="block mt-1 text-sm text-gray-700 font-medium">{{ $lastLogin }}</span>
+                  <span class="text-sm font-semibold text-gray-900">👨🏻‍💻 Last Activity:</span>
+                  <span class="block mt-1 text-sm font-medium text-gray-700">{{ $lastLogin }}</span>
                 </div>
               </div>
               @php

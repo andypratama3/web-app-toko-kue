@@ -79,8 +79,10 @@
     @include('layouts.partials.sidenav')
 
     {{-- PERBAIKAN: Menambahkan id="main-content" --}}
+    {{-- <main id="main-content"
+        class="relative h-full max-h-screen transition-all duration-200 ease-in-out main-content rounded-xl"> --}}
     <main id="main-content"
-        class="relative h-full max-h-screen transition-all duration-200 ease-in-out main-content rounded-xl">
+        class="relative h-full max-h-screen transition-all transition-opacity duration-200 duration-500 ease-in-out opacity-0 main-content rounded-xl">
         @include('layouts.partials.navbar')
         @include('layouts.partials.content')
         @include('layouts.partials.footer')
@@ -100,6 +102,26 @@
     {{-- <script src="https://unpkg.com/flowbite@1.6.5/dist/flowbite.min.js"></script> --}}
 
     @stack('page-scripts')
+    <script>
+      window.addEventListener('load', function() {
+        const preloader = document.getElementById('preloader');
+        const mainContent = document.getElementById('main-content');
+        const sidebar = document.getElementById('sidebar'); // Assuming your sidebar has id="sidebar"
+
+        // Pastikan semua elemen ada sebelum melanjutkan
+        if (preloader && mainContent && sidebar) {
+          // 1. Tampilkan konten utama dan sidebar
+          mainContent.classList.remove('opacity-0');
+          sidebar.classList.remove('opacity-0'); // Hapus class ini dari sidebar juga
+
+          // 2. Hilangkan preloader dengan efek fade-out
+          preloader.style.opacity = '0';
+          setTimeout(() => {
+            preloader.style.display = 'none';
+          }, 500); // Durasi harus cocok dengan transisi CSS
+        }
+      });
+    </script>
 </body>
 
 
