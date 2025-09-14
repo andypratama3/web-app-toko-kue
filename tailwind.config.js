@@ -9,7 +9,7 @@ export default {
         "./vendor/laravel/jetstream/**/*.blade.php",
         "./storage/framework/views/*.php",
         "./resources/views/**/*.blade.php",
-        "./resources/**/*.js", // <-- TAMBAHKAN BARIS INI
+        "./resources/**/*.js", // <-- Pastikan baris ini ada
     ],
     darkMode: "class",
     theme: {
@@ -18,12 +18,40 @@ export default {
                 sans: ["Figtree", ...defaultTheme.fontFamily.sans],
             },
             colors: {
-                greenlight: "#97b67d", // Light green sesuai logo
-                greendark: "#2e5d22", // Dark green,
+                greenlight: "#97b67d",
+                greendark: "#2e5d32",
                 bluedark: "#111c43",
             },
         },
     },
 
+    // Safelist yang komprehensif untuk mencegah penghapusan kelas penting
+    safelist: [
+        'hidden',
+        'flex',
+        'items-center',
+        'justify-center',
+        'sidebar-collapsed',
+        '-translate-x-full',
+        'translate-x-0',
+        'w-20',
+        'w-64',
+        'rotate-180',
+        {
+            // Pola untuk semua warna yang Anda gunakan (termasuk hover)
+            pattern: /^(bg|text|border|ring)-(red|green|blue|gray|slate|orange|cyan|emerald|purple|indigo)-(50|100|200|300|400|500|600|700|800|900)$/,
+            variants: ['hover', 'focus'],
+        },
+        {
+            // Pola untuk responsive design
+            pattern: /^(sm|md|lg|xl|2xl):(hidden|block|flex|grid)$/,
+        },
+        'font-bold',
+        'font-semibold',
+        'rounded',
+        'rounded-lg',
+    ],
+
     plugins: [forms, typography],
 };
+
