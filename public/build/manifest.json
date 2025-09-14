@@ -1,21 +1,24 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-CupYGeCM.css",
+    "file": "assets/app-HwLuKEVm.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
   "resources/css/argon-dashboard-tailwind.css": {
-    "file": "assets/argon-dashboard-tailwind--TFY1OqR.css",
+    "file": "assets/argon-dashboard-tailwind-CzM6MeM3.css",
     "src": "resources/css/argon-dashboard-tailwind.css",
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-Rhxy9Yan.js",
+    "file": "assets/app-Dcn9rDsc.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
+    "imports": [
+      "resources/js/argon-dashboard-tailwind.js"
+    ],
     "css": [
-      "assets/app-CupYGeCM.css"
+      "assets/app-HwLuKEVm.css"
     ]
   },
   "resources/js/argon-dashboard-tailwind.js": {
@@ -25,9 +28,15 @@
     "isEntry": true
   },
   "resources/js/script_homepage.js": {
-    "file": "assets/script_homepage-CfoifSuV.js",
+    "file": "assets/script_homepage-C1HhaH3w.js",
     "name": "script_homepage",
     "src": "resources/js/script_homepage.js",
+    "isEntry": true
+  },
+  "resources/js/sidenav-burger.js": {
+    "file": "assets/sidenav-burger-C1Ki2HOM.js",
+    "name": "sidenav-burger",
+    "src": "resources/js/sidenav-burger.js",
     "isEntry": true
   }
 }
