@@ -9,6 +9,7 @@ export default {
         "./vendor/laravel/jetstream/**/*.blade.php",
         "./storage/framework/views/*.php",
         "./resources/views/**/*.blade.php",
+        "./resources/**/*.js", // <-- TAMBAHKAN BARIS INI
     ],
     darkMode: "class",
     theme: {
@@ -18,7 +19,7 @@ export default {
             },
             colors: {
                 greenlight: "#97b67d", // Light green sesuai logo
-                greendark: "#2e5d32", // Dark green,
+                greendark: "#2e5d22", // Dark green,
                 bluedark: "#111c43",
             },
         },
