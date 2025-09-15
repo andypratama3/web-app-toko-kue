@@ -15,7 +15,7 @@
             <button type="button" data-target-modal="create-product-modal"
                 class="flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-blue-700 rounded-lg js-open-modal-btn hover:bg-blue-800 focus:ring-4 focus:ring-blue-300">
                 <i class="mr-2 fas fa-plus"></i>
-                Tambah Produk Baru
+                Tambah Produk
             </button>
         </div>
 
