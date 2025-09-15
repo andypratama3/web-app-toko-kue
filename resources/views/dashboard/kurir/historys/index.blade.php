@@ -81,7 +81,7 @@
         if (!modalElement) return;
 
         const loader = document.getElementById('showOrderModalLoader');
-        const content = document.getElementById('showOrderModalContent');
+                const url = `{{ url('kurir/historys') }}/${orderId}/details`;
         const zoomWrapper = document.getElementById('showOrderModalZoomWrapper');
         const zoomImg = document.getElementById('showOrderModalZoomImg');
 
@@ -205,7 +205,14 @@
                     const variantEl = clone.querySelector('[data-role="variant"]');
 
                     if (item.variant) {
-                        variantEl.textContent = `Varian: ${item.variant}`;
+                if (data.payment_proof) {
+                    // Gunakan asset() URL dari backend jika sudah benar
+                    const imageUrl = data.payment_proof_url && data.payment_proof_url.startsWith('http')
+                        ? data.payment_proof_url
+                        : `/${data.payment_proof.replace(/^public\//, '')}`;
+                    elements.paymentProof.innerHTML =
+                        `
+                    <img src="${imageUrl}" alt="Bukti Pembayaran" class="max-w-[300px] rounded border cursor-pointer hover:border-blue-500" data-zoomable="true">`;
                     } else {
                         variantEl.remove();
                     }
