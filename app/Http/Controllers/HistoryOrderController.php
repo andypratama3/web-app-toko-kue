@@ -49,7 +49,7 @@ class HistoryOrderController extends Controller
                 if (!$path) return null;
                 $path = preg_replace('#^public/#', '', $path); // hilangkan public/ di depan
                 $path = ltrim($path, '/');
-                return Storage::url($path);
+                return asset($path);
             };
 
             $formattedOrder = [

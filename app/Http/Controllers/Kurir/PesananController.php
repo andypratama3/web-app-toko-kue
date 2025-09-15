@@ -394,8 +394,8 @@ class PesananController extends Controller
             $extension = $file->getClientOriginalExtension();
             $sanitizedInvoiceNumber = str_replace('/', '-', $order->invoice_number);
             $fileName = $sanitizedInvoiceNumber . '_' . uniqid() . '.' . $extension;
-            $file->move(public_path('storage/payment_proofs'), $fileName);
-            $path = 'storage/payment_proofs/' . $fileName;
+            $file->move(public_path('payment_proofs'), $fileName);
+            $path = 'payment_proofs/' . $fileName;
 
             $order->payment_proof = $path;
             $order->status = 'selesai';
