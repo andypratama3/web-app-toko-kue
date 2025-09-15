@@ -355,7 +355,10 @@
                     document.getElementById('verifyModalTotalAmount').textContent = 'Rp ' + (data.total_amount ? Number(
                         data.total_amount).toLocaleString('id-ID') : '0');
                     if (data.payment_proof) {
-                        const imageUrl = `/storage/${data.payment_proof.replace('public/', '')}`;
+                        // Gunakan asset() URL dari backend jika sudah benar
+                        const imageUrl = data.payment_proof.startsWith('http')
+                            ? data.payment_proof
+                            : `/${data.payment_proof.replace(/^public\//, '')}`;
                         paymentProofDiv.innerHTML =
                             `<img src="${imageUrl}" class="object-cover w-32 h-32 border-2 border-gray-300 rounded shadow cursor-zoom-in" alt="Bukti Pembayaran" onclick="showVerifyModalZoom('${imageUrl}')">`;
                     } else {
