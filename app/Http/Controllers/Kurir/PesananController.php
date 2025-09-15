@@ -384,15 +384,18 @@ class PesananController extends Controller
                 return response()->json(['message' => 'Bukti pembayaran hanya bisa diunggah setelah pesanan diterima oleh pembeli.'], 403);
             }
 
+
             if ($order->payment_proof) {
-                Storage::disk('public')->delete($order->payment_proof);
+                $oldPath = public_path($order->payment_proof);
+                if (file_exists($oldPath)) @unlink($oldPath);
             }
 
             $file = $request->file('payment_proof');
             $extension = $file->getClientOriginalExtension();
             $sanitizedInvoiceNumber = str_replace('/', '-', $order->invoice_number);
-            $fileName = $sanitizedInvoiceNumber . '.' . $extension;
-            $path = $file->storeAs('payment_proofs', $fileName, 'public');
+            $fileName = $sanitizedInvoiceNumber . '_' . uniqid() . '.' . $extension;
+            $file->move(public_path('storage/payment_proofs'), $fileName);
+            $path = 'storage/payment_proofs/' . $fileName;
 
             $order->payment_proof = $path;
             $order->status = 'selesai';
