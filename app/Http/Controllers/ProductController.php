@@ -55,16 +55,19 @@ class ProductController extends Controller
         ]);
 
         DB::transaction(function () use ($request) {
-            $imagePath = $request->file('image')->store('public/products');
+            $image = $request->file('image');
+            $imageName = uniqid() . '_' . time() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('storage/products'), $imageName);
+            $imagePath = 'storage/products/' . $imageName;
 
             $product = Product::create([
                 'name' => $request->name,
                 'category_id' => $request->category_id,
                 'region_id' => Auth::user()->region_id,
                 'description' => $request->description,
-                'image_path' => Storage::url($imagePath),
+                'image_path' => $imagePath,
                 'tag' => $request->tag,
-                'is_active' => true, // <-- UBAH DI SINI: Langsung diatur ke 'true' (atau 1)
+                'is_active' => true,
             ]);
 
             foreach ($request->variants as $variantData) {
@@ -97,10 +100,13 @@ class ProductController extends Controller
 
             if ($request->hasFile('image')) {
                 if ($product->image_path) {
-                    Storage::delete(str_replace('/storage', 'public', $product->image_path));
+                    $oldPath = public_path($product->image_path);
+                    if (file_exists($oldPath)) @unlink($oldPath);
                 }
-                $imagePath = $request->file('image')->store('public/products');
-                $productData['image_path'] = Storage::url($imagePath);
+                $image = $request->file('image');
+                $imageName = uniqid() . '_' . time() . '.' . $image->getClientOriginalExtension();
+                $image->move(public_path('storage/products'), $imageName);
+                $productData['image_path'] = 'storage/products/' . $imageName;
             }
             $product->update($productData);
 
