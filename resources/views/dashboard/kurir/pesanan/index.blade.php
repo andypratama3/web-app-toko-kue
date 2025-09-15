@@ -468,7 +468,12 @@ $allStatuses = [
         paymentUploadBlocker.classList.add('hidden');
         compressLink.classList.add('hidden');
 
-        const getImageUrl = (path) => path ? `${APP_URL}/storage/${path.replace(/^public\//, '')}` : '';
+        const getImageUrl = (path) => {
+            if (!path) return '';
+            if (path.startsWith('http')) return path;
+            if (path.startsWith('storage/')) return `${APP_URL}/${path}`;
+            return `${APP_URL}/storage/${path.replace(/^public\//, '')}`;
+        };
         let proofPath = order.payment_proof || (order.order_return ? order.order_return.return_proof : null);
 
         if (proofPath) {
