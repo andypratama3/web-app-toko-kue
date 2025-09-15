@@ -44,6 +44,14 @@ class HistoryOrderController extends Controller
             $activeReturn = $order->returns->first();
 
             // Format data agar mudah dikonsumsi oleh JavaScript
+            // Helper untuk path agar tidak double public/ atau storage/
+            $normalizeStoragePath = function($path) {
+                if (!$path) return null;
+                $path = preg_replace('#^public/#', '', $path); // hilangkan public/ di depan
+                $path = ltrim($path, '/');
+                return Storage::url($path);
+            };
+
             $formattedOrder = [
                 'id' => $order->id,
                 'invoice_number' => $order->invoice_number,
@@ -55,7 +63,7 @@ class HistoryOrderController extends Controller
                 'total_amount' => $order->total_amount ?? 0,
                 'created_at' => $order->created_at->isoFormat('D MMMM YYYY, HH:mm'),
                 'paid_at' => $paidAtFormatted,
-                'payment_proof_url' => $order->payment_proof ? Storage::url($order->payment_proof) : null,
+                'payment_proof_url' => $normalizeStoragePath($order->payment_proof),
 
                 'items' => $order->items->map(fn($item) => [
                     'name' => $item->product_name,
@@ -69,7 +77,7 @@ class HistoryOrderController extends Controller
                 'return_details' => $activeReturn ? [
                     'status' => $activeReturn->status,
                     'total_amount_returned' => $activeReturn->total_amount_returned,
-                    'return_proof_url' => $activeReturn->return_proof ? Storage::url($activeReturn->return_proof) : null,
+                    'return_proof_url' => $normalizeStoragePath($activeReturn->return_proof),
                     'returned_products' => $activeReturn->returnedProducts->map(function ($p) {
                         $productName = $p->product ? $p->product->name : 'Produk Telah Dihapus';
                         $variantName = $p->variant ? $p->variant->name : null;

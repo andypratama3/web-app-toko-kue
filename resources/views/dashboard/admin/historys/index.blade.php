@@ -86,6 +86,14 @@
     {{-- HANYA SATU BLOK SCRIPT YANG DIPERLUKAN --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Helper untuk path gambar agar tidak pecah di hosting
+            const APP_URL = "{{ url('/') }}";
+            function getImageUrl(path) {
+                if (!path) return '';
+                if (path.startsWith('http')) return path;
+                if (path.startsWith('storage/')) return `${APP_URL}/${path}`;
+                return `${APP_URL}/storage/${path.replace(/^public\//, '')}`;
+            }
             const modalElement = document.getElementById('showOrderModal');
             if (!modalElement) return;
 
@@ -299,10 +307,11 @@
 
                     // Tampilkan bukti retur jika ada
                     if (data.return_details.return_proof_url) {
+                        const proofUrl = getImageUrl(data.return_details.return_proof_url);
                         elements.returnProof.innerHTML =
                             `
                 <h5 class="mt-3 mb-1 font-semibold text-red-800 dark:text-red-400">Bukti Retur:</h5>
-                <img src="${data.return_details.return_proof_url}" alt="Bukti Retur" class="max-w-[200px] rounded border cursor-pointer hover:border-red-500" data-zoomable="true">`;
+                <img src="${proofUrl}" alt="Bukti Retur" class="max-w-[200px] rounded border cursor-pointer hover:border-red-500" data-zoomable="true">`;
                     }
                 } else {
                     // Tampilkan kontainer total tunggal, sembunyikan yang ganda
@@ -314,9 +323,10 @@
 
                 // 5. Handle bukti pembayaran
                 if (data.payment_proof_url) {
+                    const paymentUrl = getImageUrl(data.payment_proof_url);
                     elements.paymentProof.innerHTML =
                         `
-            <img src="${data.payment_proof_url}" alt="Bukti Pembayaran" class="max-w-[300px] rounded border cursor-pointer hover:border-blue-500" data-zoomable="true">`;
+            <img src="${paymentUrl}" alt="Bukti Pembayaran" class="max-w-[300px] rounded border cursor-pointer hover:border-blue-500" data-zoomable="true">`;
                 } else {
                     elements.paymentProof.innerHTML =
                         '<p class="text-sm text-gray-500">Tidak ada bukti pembayaran</p>';
