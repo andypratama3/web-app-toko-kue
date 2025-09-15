@@ -43,15 +43,7 @@ class HistoryOrderController extends Controller
             // Ambil retur aktif pertama dari koleksi yang sudah di-load
             $activeReturn = $order->returns->first();
 
-            // Format data agar mudah dikonsumsi oleh JavaScript
-            // Helper untuk path agar tidak double public/ atau storage/
-            $normalizeStoragePath = function($path) {
-                if (!$path) return null;
-                $path = preg_replace('#^public/#', '', $path); // hilangkan public/ di depan
-                $path = ltrim($path, '/');
-                return asset($path);
-            };
-
+            // Format data agar mudah dikonsumsi oleh JavaScriptZ
             $formattedOrder = [
                 'id' => $order->id,
                 'invoice_number' => $order->invoice_number,
@@ -63,7 +55,7 @@ class HistoryOrderController extends Controller
                 'total_amount' => $order->total_amount ?? 0,
                 'created_at' => $order->created_at->isoFormat('D MMMM YYYY, HH:mm'),
                 'paid_at' => $paidAtFormatted,
-                'payment_proof_url' => $normalizeStoragePath($order->payment_proof),
+                'payment_proof_url' => $order->payment_proof ? Storage::url($order->payment_proof) : null,
 
                 'items' => $order->items->map(fn($item) => [
                     'name' => $item->product_name,
@@ -77,7 +69,7 @@ class HistoryOrderController extends Controller
                 'return_details' => $activeReturn ? [
                     'status' => $activeReturn->status,
                     'total_amount_returned' => $activeReturn->total_amount_returned,
-                    'return_proof_url' => $normalizeStoragePath($activeReturn->return_proof),
+                    'return_proof_url' => $activeReturn->return_proof ? Storage::url($activeReturn->return_proof) : null,
                     'returned_products' => $activeReturn->returnedProducts->map(function ($p) {
                         $productName = $p->product ? $p->product->name : 'Produk Telah Dihapus';
                         $variantName = $p->variant ? $p->variant->name : null;
@@ -203,7 +195,7 @@ class HistoryOrderController extends Controller
     public function index(Request $request)
 {
     $user = Auth::user();
-    $role = $user->role === 'admin' ? 'admin' : 'kurir';
+    $role = $user->hasRole('admin') ? 'admin' : 'kurir';
 
     $selectedMonth = $request->input('month', now()->format('m'));
     $selectedYear = $request->input('year', now()->format('Y'));
@@ -242,12 +234,11 @@ class HistoryOrderController extends Controller
     $orders = $ordersQuery->latest()->paginate(10);
 
     foreach ($orders as $order) {
-        $has_return = $order->returns->isNotEmpty();
-        $final_total = $has_return ? $order->total_amount - $order->returns->first()->total_amount_returned : $order->total_amount;
-        $payment_status = $order->paid_at
+        $order->has_return = $order->returns->isNotEmpty();
+        $order->final_total = $order->has_return ? $order->total_amount - $order->returns->first()->total_amount_returned : $order->total_amount;
+        $order->payment_status = $order->paid_at
             ? ['text' => 'Lunas', 'class' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300']
             : ['text' => 'Belum Lunas', 'class' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'];
-        // Jika ingin dipakai di view, bisa compact() di bawah
     }
 
     // [!code focus:start]
