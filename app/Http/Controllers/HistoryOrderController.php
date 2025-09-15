@@ -203,7 +203,7 @@ class HistoryOrderController extends Controller
     public function index(Request $request)
 {
     $user = Auth::user();
-    $role = $user->hasRole('admin') ? 'admin' : 'kurir';
+    $role = $user->role === 'admin' ? 'admin' : 'kurir';
 
     $selectedMonth = $request->input('month', now()->format('m'));
     $selectedYear = $request->input('year', now()->format('Y'));
@@ -242,11 +242,12 @@ class HistoryOrderController extends Controller
     $orders = $ordersQuery->latest()->paginate(10);
 
     foreach ($orders as $order) {
-        $order->has_return = $order->returns->isNotEmpty();
-        $order->final_total = $order->has_return ? $order->total_amount - $order->returns->first()->total_amount_returned : $order->total_amount;
-        $order->payment_status = $order->paid_at
+        $has_return = $order->returns->isNotEmpty();
+        $final_total = $has_return ? $order->total_amount - $order->returns->first()->total_amount_returned : $order->total_amount;
+        $payment_status = $order->paid_at
             ? ['text' => 'Lunas', 'class' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300']
             : ['text' => 'Belum Lunas', 'class' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'];
+        // Jika ingin dipakai di view, bisa compact() di bawah
     }
 
     // [!code focus:start]
