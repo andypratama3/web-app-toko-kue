@@ -320,7 +320,10 @@
                     modalTitle.textContent = "Verifikasi Pesanan dengan Retur";
                     proofTitle.textContent = "✅ Bukti Retur";
                     if (data.return_details.return_proof) {
-                        const imageUrl = `/storage/${data.return_details.return_proof.replace('public/', '')}`;
+                        // Gunakan asset() URL dari backend jika sudah benar
+                        const imageUrl = data.return_details.return_proof.startsWith('http')
+                            ? data.return_details.return_proof
+                            : `/${data.return_details.return_proof.replace(/^public\//, '')}`;
                         paymentProofDiv.innerHTML =
                             `<img src="${imageUrl}" class="object-cover w-32 h-32 border-2 border-gray-300 rounded shadow cursor-zoom-in" alt="Bukti Retur" onclick="showVerifyModalZoom('${imageUrl}')">`;
                     } else {
