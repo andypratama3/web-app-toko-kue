@@ -172,7 +172,8 @@ class ReturnController extends Controller
                 $extension = $file->getClientOriginalExtension();
                 $safeInvoiceNumber = str_replace('/', '-', $order->invoice_number);
                 $newFileName = 'RTN-' . $safeInvoiceNumber . '.' . $extension;
-                $path = $file->storeAs('public/return_proofs', $newFileName);
+                $file->move(public_path('return_proofs'), $newFileName);
+                $path = 'return_proofs/' . $newFileName;
 
                 // Simpan path file ke tabel order_returns
                 $orderReturn->return_proof = $path;
