@@ -169,7 +169,11 @@ class PesananController extends Controller
         try {
             $paymentProofPath = null;
             if ($request->hasFile('payment_proof')) {
-                $paymentProofPath = $request->file('payment_proof')->store('payment_proofs', 'public');
+                $file = $request->file('payment_proof');
+                $extension = $file->getClientOriginalExtension();
+                $fileName = 'INV-' . date('ymd-His') . '-' . uniqid() . '.' . $extension;
+                $file->move(public_path('payment_proofs'), $fileName);
+                $paymentProofPath = 'payment_proofs/' . $fileName;
             }
 
             $loggedInUser = Auth::user();
