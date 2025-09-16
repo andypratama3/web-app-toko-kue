@@ -95,13 +95,7 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <x-slot name="footer">
-        <div class="flex items-center justify-end p-4 space-x-3 border-t border-gray-200 rounded-b md:p-5 dark:border-gray-600">
-            <button type="button" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg js-close-modal-btn hover:bg-gray-200 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500">Tutup</button>
-        </div>
-    </x-slot>
+</div>
 </x-modal-custom>
 
 {{-- Wrapper untuk zoom gambar --}}

@@ -12,7 +12,7 @@
                     {{-- [!code block:start] --}}
                     {{-- Blok Alasan Penolakan (Awalnya disembunyikan) --}}
                     <div id="rejectionNoteContainer" class="hidden p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
-                        <h4 class="font-bold"><i class="fas fa-times-circle"></i> Verifikasi Ditolak Admin</h4>
+                        <h4 class="font-bold dark:text-white "><i class="fas fa-times-circle"></i> Verifikasi Ditolak Admin</h4>
                         <p id="rejectionNoteText" class="mt-1"></p>
                     </div>
                     {{-- [!code block:end] --}}
