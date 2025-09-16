@@ -792,7 +792,6 @@
                     year: 'numeric',
                     hour: '2-digit',
                     minute: '2-digit',
-                    second: '2-digit' // Opsional, jika Anda butuh detik
                 });
 
                 // 3. Format tanggal saat ini menggunakan formatter yang sudah dibuat
