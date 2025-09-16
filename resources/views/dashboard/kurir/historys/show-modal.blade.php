@@ -38,7 +38,7 @@
                     {{-- Bagian Catatan Pesanan --}}
                     <div class="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
                         <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Catatan Pesanan</label>
-                        <div class="text-center font-bold p-3 mt-1 text-sm text-gray-700 bg-yellow-100 border border-yellow-200 rounded-lg dark:bg-yellow-900/20 dark:text-yellow-200 dark:border-yellow-800/50">
+                        <div class="text-center font-bold p-3 mt-1 text-sm text-gray-700 bg-yellow-100 border border-yellow-200 rounded-lg dark:bg-yellow-900/20 dark:text-white dark:border-yellow-800/50">
                             <p id="showOrderModalNotesContainer">"Tidak ada catatan."</p>
                         </div>
                     </div>
