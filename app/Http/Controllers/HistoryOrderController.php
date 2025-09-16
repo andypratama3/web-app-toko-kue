@@ -62,7 +62,8 @@ class HistoryOrderController extends Controller
                 'paid_at' => $paidAtFormatted,
 
                 // --- PERBAIKAN PATH BUKTI PEMBAYARAN ---
-                'payment_proof_url' => $order->payment_proof ? Storage::url(preg_replace('#^(storage/|public/)#', '', $order->payment_proof)) : null,
+                // 'payment_proof_url' => $order->payment_proof ? Storage::url(preg_replace('#^(storage/|public/)#', '', $order->payment_proof)) : null,
+                'payment_proof_url' => $order->payment_proof ? asset('storage/' . preg_replace('#^(storage/|public/)#', '', $order->payment_proof)) : null,
 
                 'items' => $order->items->map(fn($item) => [
                     'name' => $item->product_name,
@@ -78,7 +79,8 @@ class HistoryOrderController extends Controller
                     'total_amount_returned' => $activeReturn->total_amount_returned,
 
                     // --- PERBAIKAN PATH BUKTI RETUR ---
-                    'return_proof_url' => $activeReturn->return_proof ? Storage::url(preg_replace('#^(storage/|public/)#', '', $activeReturn->return_proof)) : null,
+                    // 'return_proof_url' => $activeReturn->return_proof ? Storage::url(preg_replace('#^(storage/|public/)#', '', $activeReturn->return_proof)) : null,
+                    'return_proof_url' => $activeReturn->return_proof ? asset('storage/' . preg_replace('#^(storage/|public/)#', '', $activeReturn->return_proof)) : null,
 
                     'returned_products' => $activeReturn->returnedProducts->map(function ($p) {
                         $productName = $p->product ? $p->product->name : 'Produk Telah Dihapus';

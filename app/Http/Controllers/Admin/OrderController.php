@@ -95,7 +95,8 @@ class OrderController extends Controller
                 'created_at' => $order->created_at->isoFormat('D MMMM YYYY, HH:mm'),
                 'paid_at' => $paidAtFormatted,
                 'paid_at_label' => $paidAtLabel,
-                'payment_proof' => $order->payment_proof,
+                // 'payment_proof' => $order->payment_proof,
+                'payment_proof' => $order->payment_proof ? asset('storage/' . preg_replace('#^(storage/|public/)#', '', $order->payment_proof)) : null,
                 'note' => $order->note,
                 'customer' => [
                     'name' => $order->customer->name ?? 'N/A',
@@ -114,7 +115,8 @@ class OrderController extends Controller
 
                 // Perbaikan pada bagian ini
                 'return_details' => $activeReturn ? [
-                    'return_proof' => $activeReturn->return_proof,
+                    // 'return_proof' => $activeReturn->return_proof,
+                    'return_proof' => $activeReturn->return_proof ? asset('storage/' . preg_replace('#^(storage/|public/)#', '', $activeReturn->return_proof)) : null,
                     'total_amount_returned' => $activeReturn->total_amount_returned,
                     'returned_products' => $activeReturn->returnedProducts->map(function ($p) {
                         // **PENGECEKAN AMAN**

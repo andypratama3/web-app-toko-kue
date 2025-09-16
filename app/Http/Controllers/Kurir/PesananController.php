@@ -323,7 +323,8 @@ class PesananController extends Controller
                 'created_at' => $order->created_at->isoFormat('D MMMM YYYY, HH:mm'),
                 'paid_at' => $paidAtFormatted,
                 'paid_at_label' => $paidAtLabel,
-                'payment_proof' => $order->payment_proof,
+                // 'payment_proof' => $order->payment_proof,
+                'payment_proof' => $order->payment_proof ? asset('storage/' . preg_replace('#^(storage/|public/)#', '', $order->payment_proof)) : null,
                 'picked_up_at' => $order->picked_up_at ? Carbon::parse($order->picked_up_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . ' WIB' : null,
 'delivered_at' => $order->delivered_at ? Carbon::parse($order->delivered_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . ' WIB' : null,
 'received_by_buyer_at' => $order->received_by_buyer_at ? Carbon::parse($order->received_by_buyer_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . ' WIB' : null,
@@ -356,7 +357,8 @@ class PesananController extends Controller
                 'order_return' => $activeReturn ? [
                     'id' => $activeReturn->id,
                     'status' => $activeReturn->status,
-                    'return_proof' => $activeReturn->return_proof,
+                    // 'return_proof' => $activeReturn->return_proof,
+                    'return_proof' => $activeReturn->return_proof ? asset('storage/' . preg_replace('#^(storage/|public/)#', '', $activeReturn->return_proof)) : null,
                     'total_amount_returned' => $activeReturn->total_amount_returned,
                 ] : null,
             ];
