@@ -46,7 +46,7 @@
         <table class="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-700">
             <thead class="bg-gray-100 dark:bg-gray-700">
                 <tr>
-                    <th class="w-24 px-4 py-2 text-xs font-bold text-left text-gray-700 uppercase dark:text-gray-200">Rank</th>
+                    <th class="w-24 px-4 py-2 text-xs font-bold text-center text-gray-700 uppercase dark:text-gray-200">Rank</th>
                     <th class="px-4 py-2 text-xs font-bold text-center text-gray-700 uppercase dark:text-gray-200">Nama Customer</th>
                     <th class="px-4 py-2 text-xs font-bold text-center text-gray-700 uppercase dark:text-gray-200">Total Pembelian</th>
                     <th class="px-4 py-2 text-xs font-bold text-center text-gray-700 uppercase dark:text-gray-200">Total Retur</th>
