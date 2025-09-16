@@ -84,6 +84,7 @@
                 const url = `{{ url('kurir/historys') }}/${orderId}/details`;
         const zoomWrapper = document.getElementById('showOrderModalZoomWrapper');
         const zoomImg = document.getElementById('showOrderModalZoomImg');
+        const zoomCloseBtn = document.getElementById('showOrderModalZoomCloseBtn');
 
         const showLoader = () => {
             loader.classList.remove('hidden');
@@ -141,10 +142,20 @@
             }
         });
 
-        zoomWrapper.addEventListener('click', () => {
-            zoomWrapper.classList.add('hidden');
-            zoomWrapper.classList.remove('flex');
-        });
+            // 1. Tutup saat tombol 'X' ditekan
+            zoomCloseBtn.addEventListener('click', () => {
+                zoomWrapper.classList.add('hidden');
+                zoomWrapper.classList.remove('flex');
+            });
+
+            // 2. Tutup saat area luar gambar (overlay) ditekan
+            zoomWrapper.addEventListener('click', (event) => {
+                // Hanya tutup jika yang diklik adalah wrapper-nya, bukan gambar di dalamnya
+                if (event.target === zoomWrapper) {
+                    zoomWrapper.classList.add('hidden');
+                    zoomWrapper.classList.remove('flex');
+                }
+            });
 
         function populateModal(data) {
             const formatRupiah = (number) => new Intl.NumberFormat('id-ID', {
