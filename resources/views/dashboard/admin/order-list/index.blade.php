@@ -166,12 +166,33 @@
             }));
         }
 
+        const zoomWrapper = document.getElementById('verifyModalZoomWrapper');
+    const zoomImg = document.getElementById('verifyModalZoomImg');
+    const zoomCloseBtn = document.getElementById('verifyModalZoomCloseBtn');
+
         // Fungsi untuk menampilkan gambar zoom
         function showVerifyModalZoom(imgSrc) {
             document.getElementById('verifyModalZoomImg').src = imgSrc;
             document.getElementById('verifyModalZoomWrapper').classList.remove('hidden');
             document.getElementById('verifyModalZoomWrapper').classList.add('flex');
         }
+
+        // Fungsi untuk menyembunyikan gambar zoom
+    function hideVerifyModalZoom() {
+        zoomWrapper.classList.add('hidden');
+        zoomWrapper.classList.remove('flex');
+    }
+
+    // Event listener untuk tombol close '×'
+    zoomCloseBtn.addEventListener('click', hideVerifyModalZoom);
+
+    // Event listener untuk klik di luar gambar (area overlay)
+    zoomWrapper.addEventListener('click', function(event) {
+        // Hanya tutup jika yang diklik adalah wrapper-nya, bukan gambar di dalamnya
+        if (event.target === zoomWrapper) {
+            hideVerifyModalZoom();
+        }
+    });
 
         // --- FUNGSI UTAMA MODAL ---
         let currentOrderId = null;
@@ -223,11 +244,6 @@
                     return;
                 }
             });
-
-            // Event listener zoom (TETAP SAMA)
-            const zoomWrapper = document.getElementById('verifyModalZoomWrapper');
-            if (zoomWrapper) {
-                /* ... */ }
         });
 
         // [!code block:start]
@@ -369,12 +385,6 @@
                 // Mengisi catatan (kode ini tidak berubah)
                 const orderNoteEl = document.getElementById('verifyModalOrderNote');
                 orderNoteEl.textContent = data.note || 'Tidak ada catatan dari kurir.';
-
-                // [!code block:start]
-                // HAPUS BLOK .onclick YANG MENYEBABKAN ERROR
-                // document.getElementById('btnVerifyOrder').onclick = () => verifyOrder(orderId);
-                // document.getElementById('btnRejectOrder').onclick = () => rejectOrder(orderId);
-                // [!code block:end]
 
                 loader.classList.add('hidden');
                 content.classList.remove('hidden');

@@ -756,31 +756,7 @@
 
                 dispatchToast(result.message, 'success');
 
-                // // --- PERBAIKAN UTAMA: Perbarui UI secara langsung dengan waktu lokal ---
-                // // 1. Dapatkan waktu saat ini dari perangkat pengguna (Date.now())
-                // const now = new Date();
-                // const localTimestamp = now.toLocaleDateString('id-ID', {
-                //     day: 'numeric',
-                //     month: 'long',
-                //     year: 'numeric'
-                // }) + ', ' + now.toLocaleTimeString('id-ID', {
-                //     hour: '2-digit',
-                //     minute: '2-digit'
-                // });
-
-                // // 2. Perbarui teks timestamp di UI stepper secara langsung
-                // const timeSpanId = {
-                //     'diambil': 'pickedUpAt',
-                //     'diantar': 'deliveredAt',
-                //     'diterima_pembeli': 'receivedByBuyerAt'
-                // } [newStatus];
-
-                // if (timeSpanId) {
-                //     document.getElementById(timeSpanId).textContent = localTimestamp;
-                // }
-
                 // --- PERBAIKAN UTAMA: Menggunakan Intl.DateTimeFormat untuk zona waktu spesifik ---
-
                 // 1. Dapatkan waktu saat ini
                 const now = new Date();
 

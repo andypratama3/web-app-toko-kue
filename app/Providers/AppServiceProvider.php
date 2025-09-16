@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Order;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,13 +22,32 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        \Illuminate\Support\Facades\View::composer('layouts.partials.sidenav', function ($view) {
+        View::composer('layouts.partials.sidenav', function ($view) {
+            if (!Auth::check()) {
+                return; // Keluar jika pengguna tidak login
+            }
+
+            $user = Auth::user();
             $newOrdersCount = 0;
-            if (\Illuminate\Support\Facades\Auth::check() && \Illuminate\Support\Facades\Auth::user()->region_id) {
-                $newOrdersCount = \App\Models\Order::where('region_id', \Illuminate\Support\Facades\Auth::user()->region_id)
+            $rejectedOrdersCount = 0;
+
+            // Logika untuk Admin
+            if ($user->hasRole('admin') && $user->region_id) {
+                $newOrdersCount = Order::where('region_id', $user->region_id)
                     ->where('status', 'baru')->count();
             }
-            $view->with('newOrdersCount', $newOrdersCount);
+
+            // Logika untuk Kurir
+            if ($user->hasRole('kurir')) {
+                $rejectedOrdersCount = Order::where('created_by_user_id', $user->id)
+                    ->whereNotNull('rejection_note')
+                    ->count();
+            }
+
+            // Kirim kedua variabel ke view sidenav
+            $view->with('newOrdersCount', $newOrdersCount)
+                 ->with('rejectedOrdersCount', $rejectedOrdersCount);
         });
+
     }
 }

@@ -83,6 +83,7 @@
         const content = document.getElementById('showOrderModalContent');
         const zoomWrapper = document.getElementById('showOrderModalZoomWrapper');
         const zoomImg = document.getElementById('showOrderModalZoomImg');
+        const zoomCloseBtn = document.getElementById('showOrderModalZoomCloseBtn');
 
         if (!loader || !content) {
             console.error("Modal loader or content element not found!");
@@ -145,10 +146,20 @@
             }
         });
 
-        zoomWrapper.addEventListener('click', () => {
-            zoomWrapper.classList.add('hidden');
-            zoomWrapper.classList.remove('flex');
-        });
+            // 1. Tutup saat tombol 'X' ditekan
+            zoomCloseBtn.addEventListener('click', () => {
+                zoomWrapper.classList.add('hidden');
+                zoomWrapper.classList.remove('flex');
+            });
+
+            // 2. Tutup saat area luar gambar (overlay) ditekan
+            zoomWrapper.addEventListener('click', (event) => {
+                // Hanya tutup jika yang diklik adalah wrapper-nya, bukan gambar di dalamnya
+                if (event.target === zoomWrapper) {
+                    zoomWrapper.classList.add('hidden');
+                    zoomWrapper.classList.remove('flex');
+                }
+            });
 
         function populateModal(data) {
             try {
