@@ -1,7 +1,7 @@
 @forelse ($orders as $order)
     <tr class="border-b dark:border-gray-700">
         {{-- NO --}}
-        <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">
+        <td class="px-4 py-3 font-medium text-center text-gray-900 dark:text-white">
             {{ ($orders->currentPage() - 1) * $orders->perPage() + $loop->iteration }}
         </td>
         <td class="px-4 py-2">

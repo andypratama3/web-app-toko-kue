@@ -55,7 +55,7 @@
                     <tbody>
                         @forelse ($orders as $order)
                             <tr class="text-sm font-normal text-gray-700 border-b dark:text-gray-400 dark:border-gray-700">
-                                <td class="px-4 py-2">{{ $loop->iteration }}</td>
+                                <td class="px-4 py-2 text-center">{{ $loop->iteration }}</td>
                                 <td class="px-4 py-2 font-mono">{{ $order->invoice_number }}</td>
                                 <td class="px-4 py-2">{{ $order->customer->name ?? '-' }}</td>
                                 <td class="px-4 py-2">{{ $order->createdBy->name ?? '-' }}</td>
@@ -68,7 +68,6 @@
                                             @case('diverifikasi_admin') bg-green-100 text-green-800 @break
                                             @default bg-gray-100 text-gray-800
                                         @endswitch">
-                                        {{-- {{ ucfirst(str_replace('_', ' ', $order->status)) }} --}}
                                         {{ $labelStatus($order->status) }}
                                     </span>
                                 </td>
@@ -110,7 +109,6 @@
                                 </td>
                                 <td class="px-4 py-2">
                                     {{-- Tombol ini akan membuka modal verifikasi --}}
-                                    {{-- DIUBAH: Menambahkan kondisi || $order->status == 'menunggu_verifikasi_admin' --}}
                                     @if ($order->status == 'selesai' || $order->status == 'menunggu_verifikasi_admin')
                                         <button
                                             class="px-3 py-1 text-xs font-bold text-white bg-blue-600 rounded js-open-modal-btn hover:bg-blue-700"
@@ -137,22 +135,20 @@
                             <tr>
                                 <td colspan="7" class="py-6 text-center text-gray-500">Tidak ada pesanan ditemukan.</td>
                             </tr>
-                        @endforelse {{-- <<< KESALAHAN ADA DI SINI, SEKARANG SUDAH BENAR --}}
+                        @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-    {{-- @include('dashboard.admin.order-list.verify-modal') --}}
 @endsection
-{{-- Sertakan file modal baru di sini --}}
+
 @push('flowbite-modals')
     @include('dashboard.admin.order-list.verify-modal')
     @include('dashboard.admin.order-list.delete')
     @include('dashboard.admin.order-list.note-modal')
     @include('dashboard.admin.order-list.rejection-modal')
 @endpush
-
 
 @push('page-scripts')
     <script>

@@ -14,22 +14,15 @@
         <td class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
             <div class="flex items-center space-x-2">
                 <span>{{ $customer->name }}</span>
-                {{-- @if ($customer->is_flagged)
-                    <button type="button" class="text-red-500 toggle-flag-btn"
-                        data-url="{{ route('admin.customers.toggleFlag', $customer) }}"
-                        title="Customer Bermasalah. Klik untuk menghapus tanda.">
-                        <i id="flag-icon-{{ $customer->id }}" class="fas fa-flag"></i>
-                    </button>
-                @endif --}}
 
                 <button type="button" class="toggle-flag-btn"
                     data-url="{{ route('admin.customers.toggleFlag', $customer) }}">
                     @if ($customer->is_flagged)
                         {{-- Tampilan jika customer DITANDAI (bermasalah) --}}
-                        <i class="fas fa-flag text-red-500" title="Customer Bermasalah. Klik untuk menghapus tanda."></i>
+                        <i class="text-red-500 fas fa-flag" title="Customer Bermasalah. Klik untuk menghapus tanda."></i>
                     @else
                         {{-- Tampilan jika customer NORMAL --}}
-                        <i class="fas fa-flag text-gray-400 hover:text-gray-600"
+                        <i class="text-gray-400 fas fa-flag hover:text-gray-600"
                             title="Tandai sebagai customer bermasalah."></i>
                     @endif
                 </button>

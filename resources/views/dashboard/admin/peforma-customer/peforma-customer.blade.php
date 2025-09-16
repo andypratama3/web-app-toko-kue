@@ -56,7 +56,7 @@
             <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-200">
                 @forelse($ranking as $row)
                 <tr>
-                    <td class="px-4 py-2 font-bold text-left">
+                    <td class="px-4 py-2 font-bold text-center">
                         @if($row->peringkat == 1)
                         🥇
                         @elseif($row->peringkat == 2)
