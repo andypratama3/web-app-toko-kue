@@ -146,6 +146,8 @@
             }
         });
 
+            // --- TAMBAHKAN LOGIKA BARU UNTUK MENUTUP ZOOM ---
+
             // 1. Tutup saat tombol 'X' ditekan
             zoomCloseBtn.addEventListener('click', () => {
                 zoomWrapper.classList.add('hidden');
@@ -192,7 +194,7 @@
                     returnProofContainer: document.getElementById('returnProofContainer'),
                 };
                 const orderItemTemplate = document.getElementById('orderItemTemplate');
-                
+
                 if (!orderItemTemplate) {
                     console.error('Template #orderItemTemplate not found!');
                     content.innerHTML = `<p class="py-10 text-center text-red-500">Error: Template produk tidak ditemukan.</p>`;
@@ -230,7 +232,7 @@
 
                 if (Array.isArray(data.items) && data.items.length > 0) {
                     data.items.forEach(item => {
-                        if (!item) return; 
+                        if (!item) return;
 
                         const clone = orderItemTemplate.content.cloneNode(true);
                         const key = `${item.name}-${item.variant || ''}`;
@@ -283,13 +285,13 @@
 
                     elements.initialTotalAmount.textContent = formatRupiah(totalAmount);
                     elements.latestTotalAmount.textContent = formatRupiah(finalTotal);
-                    
+
                     if (elements.totalReturned) {
                         elements.totalReturned.textContent = formatRupiah(totalAmountReturned);
                     }
                     if (data.return_details.return_proof_url) {
                         elements.returnProof.innerHTML =
-                            `<img src="${data.return_details.return_proof_url}" alt="Bukti Retur" class="w-full rounded border cursor-pointer hover:border-red-500" data-zoomable="true">`;
+                            `<img src="${data.return_details.return_proof_url}" alt="Bukti Retur" class="w-full border rounded cursor-pointer hover:border-red-500" data-zoomable="true">`;
                     } else {
                         elements.returnProof.innerHTML = '<p class="text-sm text-center text-gray-500">Tidak ada bukti retur</p>';
                     }
@@ -303,7 +305,7 @@
 
                 if (data.payment_proof_url) {
                     elements.paymentProof.innerHTML =
-                        `<img src="${data.payment_proof_url}" alt="Bukti Pembayaran" class="w-full rounded border cursor-pointer hover:border-blue-500" data-zoomable="true">`;
+                        `<img src="${data.payment_proof_url}" alt="Bukti Pembayaran" class="w-full border rounded cursor-pointer hover:border-blue-500" data-zoomable="true">`;
                 } else {
                     elements.paymentProof.innerHTML =
                         '<p class="text-sm text-center text-gray-500">Tidak ada bukti pembayaran</p>';

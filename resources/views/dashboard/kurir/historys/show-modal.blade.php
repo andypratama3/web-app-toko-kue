@@ -38,7 +38,7 @@
                     {{-- Bagian Catatan Pesanan --}}
                     <div class="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
                         <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Catatan Pesanan</label>
-                        <div class="text-center font-bold p-3 mt-1 text-sm text-gray-700 bg-yellow-100 border border-yellow-200 rounded-lg dark:bg-yellow-900/20 dark:text-white dark:border-yellow-800/50">
+                        <div class="p-3 mt-1 text-sm font-bold text-center text-gray-700 bg-yellow-100 border border-yellow-200 rounded-lg dark:bg-yellow-900/20 dark:text-white dark:border-yellow-800/50">
                             <p id="showOrderModalNotesContainer">"Tidak ada catatan."</p>
                         </div>
                     </div>
@@ -88,6 +88,10 @@
 
 {{-- Wrapper untuk zoom gambar --}}
 <div id="showOrderModalZoomWrapper" class="fixed inset-0 z-[9999] items-center justify-center hidden bg-black bg-opacity-80">
+
+    {{-- TOMBOL CLOSE BARU --}}
+    <button id="showOrderModalZoomCloseBtn" class="absolute text-5xl text-white transition-transform duration-200 ease-in-out top-5 right-8 hover:text-gray-300 hover:scale-110">&times;</button>
+
     <img id="showOrderModalZoomImg" src="" alt="Zoomed Image" class="max-w-[90%] max-h-[90%] border-4 border-white rounded shadow-lg">
 </div>
 
@@ -102,7 +106,7 @@
         <div class="flex-grow">
             <p class="font-bold text-gray-800 dark:text-white" data-role="name"></p>
             <p class="text-sm text-gray-500 dark:text-gray-400" data-role="variant"></p>
-            <div class=" text-sm text-gray-600 dark:text-gray-300">
+            <div class="text-sm text-gray-600 dark:text-gray-300">
                 <div data-role="return-info">
                     <span>Awal: <b class="text-gray-800 dark:text-gray-100" data-role="initial-qty"></b></span> |
                     <span class="text-red-600 dark:text-red-400">Retur: <b data-role="returned-qty"></b></span> |
