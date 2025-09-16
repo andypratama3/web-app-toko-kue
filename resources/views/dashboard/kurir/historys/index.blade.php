@@ -74,17 +74,25 @@
 @endpush
 
 @push('page-scripts')
-{{-- Script JavaScript tidak perlu diubah sama sekali --}}
+{{-- Script JavaScript telah diperbaiki --}}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const modalElement = document.getElementById('showOrderModal');
         if (!modalElement) return;
 
+        // ===== PERBAIKAN 1: Deklarasikan semua variabel elemen dengan benar =====
         const loader = document.getElementById('showOrderModalLoader');
-                const url = `{{ url('kurir/historys') }}/${orderId}/details`;
+        const content = document.getElementById('showOrderModalContent'); // <-- VARIABEL INI YANG HILANG
         const zoomWrapper = document.getElementById('showOrderModalZoomWrapper');
         const zoomImg = document.getElementById('showOrderModalZoomImg');
 
+        // Pastikan variabel 'content' ada sebelum melanjutkan
+        if (!loader || !content) {
+            console.error("Modal loader or content element not found!");
+            return;
+        }
+
+        // Fungsi showLoader dan hideLoader sekarang menggunakan variabel 'content' yang sudah dideklarasikan
         const showLoader = () => {
             loader.classList.remove('hidden');
             content.classList.add('hidden');
@@ -107,8 +115,9 @@
                 populateModal(data);
             } catch (error) {
                 console.error('Error fetching order details:', error);
+                // Menggunakan variabel 'content' yang sudah benar
                 content.innerHTML =
-                    `<p class="text-center text-red-500">Gagal memuat detail pesanan. Silakan coba lagi.</p>`;
+                    `<p class="py-10 text-center text-red-500">Gagal memuat detail pesanan. Silakan coba lagi.</p>`;
             } finally {
                 hideLoader();
             }
@@ -119,6 +128,7 @@
             modalElement.classList.remove('flex');
         };
 
+        // Event listener tidak perlu diubah, sudah benar
         document.body.addEventListener('click', function(event) {
             const openBtn = event.target.closest(
                 '.js-open-modal-btn[data-target-modal="showOrderModal"]');
@@ -153,6 +163,7 @@
                 minimumFractionDigits: 0
             }).format(number);
 
+            // Elemen-elemen ini tidak perlu diubah
             const elements = {
                 invoiceNumber: document.getElementById('showOrderModalInvoiceNumber'),
                 customerName: document.getElementById('showOrderModalCustomerName'),
@@ -177,11 +188,13 @@
             const orderItemTemplate = document.getElementById('orderItemTemplate');
             const returnItemTemplate = document.getElementById('returnItemTemplate');
 
+            // Reset konten modal
             elements.productDetails.innerHTML = '';
             elements.returnedProducts.innerHTML = '';
             elements.paymentProof.innerHTML = '';
             elements.returnProof.innerHTML = '';
 
+            // Populasi data utama
             elements.invoiceNumber.textContent = data.invoice_number || '-';
             elements.customerName.textContent = data.customer_name || '-';
             elements.customerPhone.textContent = data.customer_phone || '-';
@@ -198,23 +211,18 @@
             elements.createdAt.textContent = data.created_at || '-';
             elements.paidAt.textContent = data.paid_at || '-';
 
+            // Populasi item produk
             if (Array.isArray(data.items) && data.items.length > 0) {
                 data.items.forEach(item => {
                     const clone = orderItemTemplate.content.cloneNode(true);
                     clone.querySelector('[data-role="name"]').textContent = item.name;
-                    const variantEl = clone.querySelector('[data-role="variant"]');
 
+                    // ===== PERBAIKAN 2: Logika untuk varian produk dipisahkan dan diperbaiki =====
+                    const variantEl = clone.querySelector('[data-role="variant"]');
                     if (item.variant) {
-                if (data.payment_proof) {
-                    // Gunakan asset() URL dari backend jika sudah benar
-                    const imageUrl = data.payment_proof_url && data.payment_proof_url.startsWith('http')
-                        ? data.payment_proof_url
-                        : `/${data.payment_proof.replace(/^public\//, '')}`;
-                    elements.paymentProof.innerHTML =
-                        `
-                    <img src="${imageUrl}" alt="Bukti Pembayaran" class="max-w-[300px] rounded border cursor-pointer hover:border-blue-500" data-zoomable="true">`;
+                        variantEl.textContent = `Varian: ${item.variant}`;
                     } else {
-                        variantEl.remove();
+                        variantEl.remove(); // Hapus elemen jika tidak ada varian
                     }
 
                     clone.querySelector('[data-role="quantity-price"]').textContent =
@@ -225,6 +233,7 @@
                 });
             }
 
+            // Logika untuk retur (sudah benar, tidak perlu diubah)
             if (data.return_details) {
                 elements.singleTotalContainer.classList.add('hidden');
                 elements.returnedTotalContainer.classList.remove('hidden');
@@ -262,10 +271,11 @@
                 elements.returnedProductsSection.classList.add('hidden');
             }
 
+            // Logika untuk bukti pembayaran (sudah benar, tidak perlu diubah)
             if (data.payment_proof_url) {
                 elements.paymentProof.innerHTML =
-                    `
-            <img src="${data.payment_proof_url}" alt="Bukti Pembayaran" class="max-w-[300px] rounded border cursor-pointer hover:border-blue-500" data-zoomable="true">`;
+                    `<h5 class="mb-1 font-semibold text-gray-800 dark:text-white">Bukti Pembayaran:</h5>
+            <img src="${data.payment_proof_url}" alt="Bukti Pembayaran" class="max-w-[200px] rounded border cursor-pointer hover:border-blue-500" data-zoomable="true">`;
             } else {
                 elements.paymentProof.innerHTML =
                     '<p class="text-sm text-gray-500">Tidak ada bukti pembayaran</p>';
@@ -275,14 +285,15 @@
 </script>
 
 <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof initializeLiveSearch === 'function') {
-                initializeLiveSearch({
-                    searchInputId: 'live-search-input',
-                    desktopContainerId: 'history-results-container-desktop',
-                    mobileContainerId: 'history-results-container-mobile' // Tambahkan ini
-                });
-            }
-        });
-    </script>
+    // Script untuk live search tidak perlu diubah
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof initializeLiveSearch === 'function') {
+            initializeLiveSearch({
+                searchInputId: 'live-search-input',
+                desktopContainerId: 'history-results-container-desktop',
+                mobileContainerId: 'history-results-container-mobile'
+            });
+        }
+    });
+</script>
 @endpush
