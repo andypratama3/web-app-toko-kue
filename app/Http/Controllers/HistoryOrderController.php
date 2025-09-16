@@ -19,8 +19,12 @@ class HistoryOrderController extends Controller
      */
     public function details(Order $order)
     {
-        // Pastikan admin hanya bisa mengakses order di regionnya
-        if (Auth::user()->region_id !== $order->region_id) {
+        // Pastikan admin/kurir hanya bisa mengakses order yang relevan dengan mereka
+        $user = Auth::user();
+        if ($user->hasRole('admin') && $user->region_id !== $order->region_id) {
+            return response()->json(['message' => 'Akses ditolak.'], 403);
+        }
+        if ($user->hasRole('kurir') && $order->created_by_user_id !== $user->id) {
             return response()->json(['message' => 'Akses ditolak.'], 403);
         }
 
@@ -43,7 +47,7 @@ class HistoryOrderController extends Controller
             // Ambil retur aktif pertama dari koleksi yang sudah di-load
             $activeReturn = $order->returns->first();
 
-            // Format data agar mudah dikonsumsi oleh JavaScriptZ
+            // Format data agar mudah dikonsumsi oleh JavaScript
             $formattedOrder = [
                 'id' => $order->id,
                 'invoice_number' => $order->invoice_number,
@@ -53,9 +57,12 @@ class HistoryOrderController extends Controller
                 'customer_address' => $order->customer->address ?? 'N/A',
                 'payment_method' => $order->payment_method ?? '-',
                 'total_amount' => $order->total_amount ?? 0,
+                'note' => $order->note,
                 'created_at' => $order->created_at->isoFormat('D MMMM YYYY, HH:mm'),
                 'paid_at' => $paidAtFormatted,
-                'payment_proof_url' => $order->payment_proof ? Storage::url($order->payment_proof) : null,
+
+                // --- PERBAIKAN PATH BUKTI PEMBAYARAN ---
+                'payment_proof_url' => $order->payment_proof ? Storage::url(preg_replace('#^(storage/|public/)#', '', $order->payment_proof)) : null,
 
                 'items' => $order->items->map(fn($item) => [
                     'name' => $item->product_name,
@@ -69,7 +76,10 @@ class HistoryOrderController extends Controller
                 'return_details' => $activeReturn ? [
                     'status' => $activeReturn->status,
                     'total_amount_returned' => $activeReturn->total_amount_returned,
-                    'return_proof_url' => $activeReturn->return_proof ? Storage::url($activeReturn->return_proof) : null,
+
+                    // --- PERBAIKAN PATH BUKTI RETUR ---
+                    'return_proof_url' => $activeReturn->return_proof ? Storage::url(preg_replace('#^(storage/|public/)#', '', $activeReturn->return_proof)) : null,
+
                     'returned_products' => $activeReturn->returnedProducts->map(function ($p) {
                         $productName = $p->product ? $p->product->name : 'Produk Telah Dihapus';
                         $variantName = $p->variant ? $p->variant->name : null;
@@ -193,79 +203,88 @@ class HistoryOrderController extends Controller
      * MODIFIKASI: Method index untuk menangani filter
      */
     public function index(Request $request)
-{
-    $user = Auth::user();
-    $role = $user->hasRole('admin') ? 'admin' : 'kurir';
+    {
+        $user = Auth::user();
+        $role = $user->hasRole('admin') ? 'admin' : 'kurir';
 
-    $selectedMonth = $request->input('month', now()->format('m'));
-    $selectedYear = $request->input('year', now()->format('Y'));
-    $search = $request->input('search');
+        $selectedMonth = $request->input('month', now()->format('m'));
+        $selectedYear = $request->input('year', now()->format('Y'));
+        $search = $request->input('search');
 
-    $months = [
-        '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
-        '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
-        '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember',
-    ];
-    $currentYear = now()->year;
-    $years = range($currentYear, $currentYear - 5);
+        $months = [
+            '01' => 'Januari',
+            '02' => 'Februari',
+            '03' => 'Maret',
+            '04' => 'April',
+            '05' => 'Mei',
+            '06' => 'Juni',
+            '07' => 'Juli',
+            '08' => 'Agustus',
+            '09' => 'September',
+            '10' => 'Oktober',
+            '11' => 'November',
+            '12' => 'Desember',
+        ];
+        $currentYear = now()->year;
+        $years = range($currentYear, $currentYear - 5);
 
-    $ordersQuery = Order::with(['customer', 'createdBy', 'returns' => fn($q) => $q->where('status', '!=', 'ditolak')->latest()])
-        ->where('status', 'diverifikasi_admin');
-
-    if ($role === 'admin') {
-        $ordersQuery->where('region_id', $user->region_id);
-    } else { // Untuk kurir
-        $ordersQuery->where('created_by_user_id', $user->id);
-    }
-
-    $ordersQuery->whereMonth('created_at', $selectedMonth)
-                ->whereYear('created_at', $selectedYear);
-
-    $ordersQuery->when($search, function ($query, $searchTerm) {
-        $query->where(function($q) use ($searchTerm) {
-            $q->where('invoice_number', 'like', "%{$searchTerm}%")
-              ->orWhereHas('customer', function ($subQuery) use ($searchTerm) {
-                  $subQuery->where('name', 'like', "%{$searchTerm}%")
-                           ->orWhere('company_name', 'like', "%{$searchTerm}%");
-              });
-        });
-    });
-
-    $orders = $ordersQuery->latest()->paginate(10);
-
-    foreach ($orders as $order) {
-        $order->has_return = $order->returns->isNotEmpty();
-        $order->final_total = $order->has_return ? $order->total_amount - $order->returns->first()->total_amount_returned : $order->total_amount;
-        $order->payment_status = $order->paid_at
-            ? ['text' => 'Lunas', 'class' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300']
-            : ['text' => 'Belum Lunas', 'class' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'];
-    }
-
-    // [!code focus:start]
-    // MODIFIKASI: Handle request AJAX untuk live search
-    if ($request->ajax()) {
-        $response = [];
+        $ordersQuery = Order::with(['customer', 'createdBy', 'returns' => fn($q) => $q->where('status', '!=', 'ditolak')->latest()])
+            ->where('status', 'diverifikasi_admin');
 
         if ($role === 'admin') {
-            $desktopHtml = view('dashboard.admin.historys._table_rows', compact('orders'))->render();
-            $response['desktop_html'] = $desktopHtml;
-        } else { // Untuk Kurir, render keduanya
-            $desktopHtml = view('dashboard.kurir.historys._table_rows', compact('orders'))->render();
-            $mobileHtml = view('dashboard.kurir.historys._card_view', compact('orders'))->render();
-            $response['desktop_html'] = $desktopHtml;
-            $response['mobile_html'] = $mobileHtml;
+            $ordersQuery->where('region_id', $user->region_id);
+        } else { // Untuk kurir
+            $ordersQuery->where('created_by_user_id', $user->id);
         }
 
-        return response()->json($response);
+        $ordersQuery->whereMonth('created_at', $selectedMonth)
+            ->whereYear('created_at', $selectedYear);
+
+        $ordersQuery->when($search, function ($query, $searchTerm) {
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('invoice_number', 'like', "%{$searchTerm}%")
+                    ->orWhereHas('customer', function ($subQuery) use ($searchTerm) {
+                        $subQuery->where('name', 'like', "%{$searchTerm}%")
+                            ->orWhere('company_name', 'like', "%{$searchTerm}%");
+                    });
+            });
+        });
+
+        $orders = $ordersQuery->latest()->paginate(10);
+
+        foreach ($orders as $order) {
+            $order->has_return = $order->returns->isNotEmpty();
+            $order->final_total = $order->has_return ? $order->total_amount - $order->returns->first()->total_amount_returned : $order->total_amount;
+            $order->payment_status = $order->paid_at
+                ? ['text' => 'Lunas', 'class' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300']
+                : ['text' => 'Belum Lunas', 'class' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'];
+        }
+
+        // [!code focus:start]
+        // MODIFIKASI: Handle request AJAX untuk live search
+        if ($request->ajax()) {
+            $response = [];
+
+            if ($role === 'admin') {
+                $desktopHtml = view('dashboard.admin.historys._table_rows', compact('orders'))->render();
+                $response['desktop_html'] = $desktopHtml;
+            } else { // Untuk Kurir, render keduanya
+                $desktopHtml = view('dashboard.kurir.historys._table_rows', compact('orders'))->render();
+                $mobileHtml = view('dashboard.kurir.historys._card_view', compact('orders'))->render();
+                $response['desktop_html'] = $desktopHtml;
+                $response['mobile_html'] = $mobileHtml;
+            }
+
+            return response()->json($response);
+        }
+        // [!code focus:end]
+
+        $viewData = compact('orders', 'months', 'years', 'selectedMonth', 'selectedYear');
+
+        $viewName = $role === 'admin'
+            ? 'dashboard.admin.historys.index'
+            : 'dashboard.kurir.historys.index';
+
+        return view($viewName, $viewData);
     }
-    // [!code focus:end]
-
-    $viewData = compact('orders', 'months', 'years', 'selectedMonth', 'selectedYear');
-
-    $viewName = $role === 'admin'
-        ? 'dashboard.admin.historys.index'
-        : 'dashboard.kurir.historys.index';
-
-    return view($viewName, $viewData);
-}
 }
