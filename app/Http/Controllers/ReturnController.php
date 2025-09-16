@@ -167,15 +167,10 @@ class ReturnController extends Controller
                     return response()->json(['message' => 'Tidak ada pengajuan retur aktif untuk pesanan ini.'], 400);
                 }
 
-                // Ambil file yang diunggah
-                $file = $request->file('payment_proof');
-                $extension = $file->getClientOriginalExtension();
-                $safeInvoiceNumber = str_replace('/', '-', $order->invoice_number);
-                $newFileName = 'RTN-' . $safeInvoiceNumber . '.' . $extension;
-                $file->move(public_path('return_proofs'), $newFileName);
-                $path = 'return_proofs/' . $newFileName;
+                // Gunakan Storage facade untuk menyimpan file ke storage/app/public/return_proofs
+                $path = $request->file('payment_proof')->store('return_proofs', 'public');
 
-                // Simpan path file ke tabel order_returns
+                // Simpan path file yang benar ke tabel order_returns
                 $orderReturn->return_proof = $path;
                 $orderReturn->save();
 

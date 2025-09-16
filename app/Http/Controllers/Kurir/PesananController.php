@@ -42,10 +42,17 @@ class PesananController extends Controller
         ];
 
         $statusLabelMap = [
-            'baru' => 'Baru', 'dikemas' => 'Dikemas', 'diambil' => 'Diambil', 'diantar' => 'Diantar',
-            'diterima_pembeli' => 'Diterima', 'selesai' => 'Selesai', 'menunggu_retur' => 'Menunggu Retur',
-            'menunggu_verifikasi_admin' => 'Menunggu Verifikasi', 'diverifikasi_admin' => 'Valid',
-            'dikembalikan' => 'Retur', 'dibatalkan' => 'Dibatalkan',
+            'baru' => 'Baru',
+            'dikemas' => 'Dikemas',
+            'diambil' => 'Diambil',
+            'diantar' => 'Diantar',
+            'diterima_pembeli' => 'Diterima',
+            'selesai' => 'Selesai',
+            'menunggu_retur' => 'Menunggu Retur',
+            'menunggu_verifikasi_admin' => 'Menunggu Verifikasi',
+            'diverifikasi_admin' => 'Valid',
+            'dikembalikan' => 'Retur',
+            'dibatalkan' => 'Dibatalkan',
         ];
 
         if (is_null($loggedInUser->region_id)) {
@@ -86,7 +93,6 @@ class PesananController extends Controller
                         $order->show_warning = true;
                     }
                 }
-
             }
 
             if ($request->ajax()) {
@@ -140,7 +146,6 @@ class PesananController extends Controller
             return response()->json(['message' => 'Validasi gagal', 'errors' => $e->errors()], 422);
         }
 
-        // LOGIKA DARI FILE 2: Pembatasan jumlah pesanan aktif
         $customer = Customer::with('category')->find($validated['customer_id']);
         if (!$customer) {
             return response()->json(['message' => 'Customer tidak ditemukan.'], 404);
@@ -163,17 +168,13 @@ class PesananController extends Controller
                 ], 422);
             }
         }
-        // AKHIR BLOK PEMBATASAN PESANAN
 
         DB::beginTransaction();
         try {
             $paymentProofPath = null;
             if ($request->hasFile('payment_proof')) {
-                $file = $request->file('payment_proof');
-                $extension = $file->getClientOriginalExtension();
-                $fileName = 'INV-' . date('ymd-His') . '-' . uniqid() . '.' . $extension;
-                $file->move(public_path('payment_proofs'), $fileName);
-                $paymentProofPath = 'payment_proofs/' . $fileName;
+                // Simpan file ke storage/app/public/payment_proofs dan dapatkan path-nya.
+                $paymentProofPath = $request->file('payment_proof')->store('payment_proofs', 'public');
             }
 
             $loggedInUser = Auth::user();
@@ -326,8 +327,8 @@ class PesananController extends Controller
                 // 'payment_proof' => $order->payment_proof,
                 'payment_proof' => $order->payment_proof ? asset('storage/' . preg_replace('#^(storage/|public/)#', '', $order->payment_proof)) : null,
                 'picked_up_at' => $order->picked_up_at ? Carbon::parse($order->picked_up_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . ' WIB' : null,
-'delivered_at' => $order->delivered_at ? Carbon::parse($order->delivered_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . ' WIB' : null,
-'received_by_buyer_at' => $order->received_by_buyer_at ? Carbon::parse($order->received_by_buyer_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . ' WIB' : null,
+                'delivered_at' => $order->delivered_at ? Carbon::parse($order->delivered_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . ' WIB' : null,
+                'received_by_buyer_at' => $order->received_by_buyer_at ? Carbon::parse($order->received_by_buyer_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . ' WIB' : null,
                 'customer' => [
                     'company_name' => $order->customer->company_name ?? 'N/A',
                     'name' => $order->customer->name ?? 'N/A',
@@ -468,9 +469,9 @@ class PesananController extends Controller
                 'order' => [
                     'id' => $updatedOrder->id,
                     'status' => $updatedOrder->status,
-'picked_up_at' => $updatedOrder->picked_up_at ? Carbon::parse($updatedOrder->picked_up_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . ' WIB' : null,
-'delivered_at' => $updatedOrder->delivered_at ? Carbon::parse($updatedOrder->delivered_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . ' WIB' : null,
-'received_by_buyer_at' => $updatedOrder->received_by_buyer_at ? Carbon::parse($updatedOrder->received_by_buyer_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . ' WIB' : null,
+                    'picked_up_at' => $updatedOrder->picked_up_at ? Carbon::parse($updatedOrder->picked_up_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . ' WIB' : null,
+                    'delivered_at' => $updatedOrder->delivered_at ? Carbon::parse($updatedOrder->delivered_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . ' WIB' : null,
+                    'received_by_buyer_at' => $updatedOrder->received_by_buyer_at ? Carbon::parse($updatedOrder->received_by_buyer_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . ' WIB' : null,
                 ]
             ], 200);
         } catch (ValidationException $e) {
