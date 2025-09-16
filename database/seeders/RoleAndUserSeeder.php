@@ -25,9 +25,9 @@ class RoleAndUserSeeder extends Seeder
         $regionDenpasar = Region::create(['name' => 'Denpasar', 'slug' => Str::slug('Denpasar')]);
 
         // Buat Users dengan region_id
-        User::create(['name' => 'Admin Surabaya', 'email' => 'admin.surabaya@example.com', 'password' => bcrypt('password'), 'region_id' => $regionSurabaya->id])->assignRole($adminRole);
-        User::create(['name' => 'Admin Malang', 'email' => 'admin.malang@example.com', 'password' => bcrypt('password'), 'region_id' => $regionMalang->id])->assignRole($adminRole);
-        User::create(['name' => 'Admin Denpasar', 'email' => 'admin.denpasar@example.com', 'password' => bcrypt('password'), 'region_id' => $regionDenpasar->id])->assignRole($adminRole);
+        User::create(['name' => 'Admin Surabaya', 'email' => 'pandanaslisbyadm@gmail.com', 'password' => bcrypt('password'), 'region_id' => $regionSurabaya->id])->assignRole($adminRole);
+        User::create(['name' => 'Admin Malang', 'email' => 'pandanaslimalangadm@gmail.com', 'password' => bcrypt('password'), 'region_id' => $regionMalang->id])->assignRole($adminRole);
+        User::create(['name' => 'Admin Denpasar', 'email' => 'pandanaslibaliadm@hmail.com', 'password' => bcrypt('password'), 'region_id' => $regionDenpasar->id])->assignRole($adminRole);
 
         User::create(['name' => 'Kurir Surabaya', 'email' => 'kurir.surabaya@example.com', 'password' => bcrypt('password'), 'region_id' => $regionSurabaya->id])->assignRole($kurirRole);
         User::create(['name' => 'Kurir Malang', 'email' => 'kurir.malang@example.com', 'password' => bcrypt('password'), 'region_id' => $regionMalang->id])->assignRole($kurirRole);
