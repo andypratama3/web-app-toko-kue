@@ -324,9 +324,9 @@ class PesananController extends Controller
                 'paid_at' => $paidAtFormatted,
                 'paid_at_label' => $paidAtLabel,
                 'payment_proof' => $order->payment_proof,
-                'picked_up_at' => $order->picked_up_at ? Carbon::parse($order->picked_up_at)->isoFormat('D MMMM YYYY, HH:mm') : null,
-                'delivered_at' => $order->delivered_at ? Carbon::parse($order->delivered_at)->isoFormat('D MMMM YYYY, HH:mm') : null,
-                'received_by_buyer_at' => $order->received_by_buyer_at ? Carbon::parse($order->received_by_buyer_at)->isoFormat('D MMMM YYYY, HH:mm') : null,
+                'picked_up_at' => $order->picked_up_at ? Carbon::parse($order->picked_up_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') : null,
+                'delivered_at' => $order->delivered_at ? Carbon::parse($order->delivered_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') : null,
+                'received_by_buyer_at' => $order->received_by_buyer_at ? Carbon::parse($order->received_by_buyer_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') : null,
                 'customer' => [
                     'company_name' => $order->customer->company_name ?? 'N/A',
                     'name' => $order->customer->name ?? 'N/A',
@@ -466,9 +466,9 @@ class PesananController extends Controller
                 'order' => [
                     'id' => $updatedOrder->id,
                     'status' => $updatedOrder->status,
-                    'picked_up_at' => $updatedOrder->picked_up_at ? Carbon::parse($updatedOrder->picked_up_at)->isoFormat('D MMMM YYYY, HH:mm') : null,
-                    'delivered_at' => $updatedOrder->delivered_at ? Carbon::parse($updatedOrder->delivered_at)->isoFormat('D MMMM YYYY, HH:mm') : null,
-                    'received_by_buyer_at' => $updatedOrder->received_by_buyer_at ? Carbon::parse($updatedOrder->received_by_buyer_at)->isoFormat('D MMMM YYYY, HH:mm') : null,
+                    'picked_up_at' => $updatedOrder->picked_up_at ? Carbon::parse($updatedOrder->picked_up_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') : null,
+                    'delivered_at' => $updatedOrder->delivered_at ? Carbon::parse($updatedOrder->delivered_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') : null,
+                    'received_by_buyer_at' => $updatedOrder->received_by_buyer_at ? Carbon::parse($updatedOrder->received_by_buyer_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') : null,
                 ]
             ], 200);
         } catch (ValidationException $e) {
