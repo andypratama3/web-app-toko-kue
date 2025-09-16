@@ -192,7 +192,7 @@
                                     <div class="mr-2 sidebar-icon-container">
                                         {{-- Ganti ikon jika ada notifikasi --}}
                                         @if (isset($rejectedOrdersCount) && $rejectedOrdersCount > 0)
-                                            <i class="text-red-500 fas fa-exclamation-triangle"></i>
+                                            <img src="{{ asset('assets/icon/icon-notif-truck.svg') }}" alt="Notifikasi Ditolak" class="w-6 h-6" />
                                         @else
                                             <i class="text-orange-500 fas fa-truck"></i>
                                         @endif
@@ -201,12 +201,19 @@
 
                                     {{-- Badge Angka --}}
                                     @if (isset($rejectedOrdersCount) && $rejectedOrdersCount > 0)
-                                        <span title="{{ $rejectedOrdersCount }} Pesanan Ditolak"
+                                        <span id="reject-badge" title="{{ $rejectedOrdersCount }} Pesanan Ditolak"
                                             class="badge-angka group-[.sidebar-collapsed]:hidden absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-md shadow-sm cursor-pointer min-w-[28px] text-center">
                                             {{ $rejectedOrdersCount }}
                                         </span>
                                     @endif
                                 </a>
+                                                                <script>
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                        var rejectBadge = document.getElementById('reject-badge');
+                                        if (rejectBadge) {
+                                        }
+                                    });
+                                </script>
                             </li>
                             <li>
                                 <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('kurir.historys.*')) bg-blue-500/13 dark:bg-green-900 @endif" href="{{ route('kurir.historys.index') }}" data-tooltip="Order History">
