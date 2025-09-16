@@ -8,8 +8,8 @@
         <div id="statusStepperModalContent" class="hidden">
             {{-- Menampilkan Nomor Invoice dan Nama Pelanggan di atas stepper --}}
             <div class="mb-4 text-center">
-                <p class="text-sm text-gray-500 dark:text-gray-400"><span id="modalStatusInvoiceNumber" class="font-semibold text-gray-800 dark:text-gray-200"></span></p>
-                <p class="text-sm text-gray-500 dark:text-gray-400"><span id="modalStatusCustomerName" class="font-semibold text-gray-800 dark:text-gray-200"></span></p>
+                <p class="text-sm text-gray-500 dark:text-gray-400"><span id="modalStatusInvoiceNumber" class="font-semibold text-gray-800 dark:text-white"></span></p>
+                <p class="text-sm text-gray-500 dark:text-gray-400"><span id="modalStatusCustomerName" class="font-semibold text-gray-800 dark:text-white"></span></p>
             </div>
 
             <div class="md:flex md:items-center md:justify-between md:text-center md:mb-6">
@@ -24,7 +24,7 @@
                     </div>
                     {{-- Detail Teks --}}
                     <div class="ml-4 md:ml-0">
-                        <p class="mt-0 text-sm font-medium text-gray-700 md:mt-2 dark:text-gray-300">Diambil</p>
+                        <p class="mt-0 text-sm font-medium text-gray-700 md:mt-2 dark:text-white">Diambil</p>
                         <p id="pickedUpAt" class="text-xs text-gray-500 dark:text-gray-400">WIB</p>
                     </div>
                 </div>
@@ -42,7 +42,7 @@
                     </div>
                     {{-- Detail Teks --}}
                     <div class="ml-4 md:ml-0">
-                        <p class="mt-0 text-sm font-medium text-gray-700 md:mt-2 dark:text-gray-300">Diantar</p>
+                        <p class="mt-0 text-sm font-medium text-gray-700 md:mt-2 dark:text-white">Diantar</p>
                         <p id="deliveredAt" class="text-xs text-gray-500 dark:text-gray-400">WIB</p>
                     </div>
                 </div>
@@ -58,7 +58,7 @@
                     </div>
                     {{-- Detail Teks --}}
                     <div class="ml-4 md:ml-0">
-                        <p class="mt-0 text-sm font-medium text-gray-700 md:mt-2 dark:text-gray-300">Diterima Pembeli</p>
+                        <p class="mt-0 text-sm font-medium text-gray-700 md:mt-2 dark:text-white">Diterima Pembeli</p>
                         <p id="receivedByBuyerAt" class="text-xs text-gray-500 dark:text-gray-400">WIB</p>
                     </div>
                 </div>

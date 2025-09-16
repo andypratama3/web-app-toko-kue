@@ -3,192 +3,192 @@
 @section('page_title', 'Order')
 @section('content')
 
-<div class="flex-auto p-4">
-    {{-- FORM UTAMA UNTUK DATA PESANAN --}}
-    <form class="p-0 m-0" action="{{ route('kurir.orders.checkout') }}" method="POST" id="order-form">
-        @csrf {{-- Tambahkan token CSRF untuk keamanan Laravel --}}
+    <div class="flex-auto p-4">
+        {{-- FORM UTAMA UNTUK DATA PESANAN --}}
+        <form class="p-0 m-0" action="{{ route('kurir.orders.checkout') }}" method="POST" id="order-form">
+            @csrf {{-- Tambahkan token CSRF untuk keamanan Laravel --}}
 
-        <div class="flex flex-col xl:flex-row -mx-7 -mt-7 xl:-mt-9">
-            {{-- KOLOM KIRI: DETAIL PRODUK --}}
-            <div class="order-2 w-full max-w-full px-3 mt-4 mb-12 shrink-0 xl:w-7/12 xl:flex-0 xl:order-1 xl:mb-0">
-                <div
-                    class="p-3 bg-white border border-gray-200 shadow-md rounded-xl dark:bg-gray-800 dark:border-gray-700">
-                    <p class="mb-4 font-bold tracking-wide text-black uppercase text-md dark:text-white dark:opacity-60">
-                        📦 Detail Produk
-                    </p>
-                    <div class="flex justify-end mb-4">
-                        {{-- DIUBAH: Menggunakan class js-open-modal-btn dan data-target-modal --}}
-                        <button type="button" data-target-modal="produkModal"
-                            class="js-open-modal-btn bg-[#345c7c] text-white px-6 py-1 rounded hover:bg-[#2a4964] transition">
-                            + Tambah Produk
-                        </button>
-                    </div>
-
-                    <div id="cart-list" class="min-h-[200px]"></div> {{-- Tambahkan min-height agar tidak kosong --}}
-                </div>
-            </div>
-
-            {{-- KOLOM KANAN --}}
-            <div class="order-1 w-full max-w-full px-3 shrink-0 xl:w-5/12 xl:flex-0 xl:order-2 xl:mt-4 xl:mr-4">
-                {{-- Box 1 Kanan: DATA CUSTOMER --}}
-                <div class="p-3 mb-4 bg-white border border-gray-200 shadow-md rounded-xl dark:bg-gray-800 dark:border-gray-700">
-                    <div class="flex items-center justify-between">
+            <div class="flex flex-col xl:flex-row -mx-7 -mt-7 xl:-mt-9">
+                {{-- KOLOM KIRI: DETAIL PRODUK --}}
+                <div class="order-2 w-full max-w-full px-3 mt-4 mb-12 shrink-0 xl:w-7/12 xl:flex-0 xl:order-1 xl:mb-0">
+                    <div
+                        class="p-3 bg-white border border-gray-200 shadow-md rounded-xl dark:bg-gray-800 dark:border-gray-700">
                         <p class="mb-4 font-bold tracking-wide text-black uppercase text-md dark:text-white dark:opacity-60">
-                            👤 Data Customer
+                            📦 Detail Produk
                         </p>
-                        <div class="px-2 mb-4 font-semibold text-white rounded-full cursor-pointer text-md bg-greenlight hover:bg-green-600"
-                            onclick="window.history.back()">
-                            <i class="fas fa-caret-left"></i> Back
-                        </div>
-                    </div>
-
-                    <div class="relative w-full mb-4 group">
-                        <label for="search-input"
-                            class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">Nama
-                            Customer</label>
-                        <div class="relative">
-                            <button id="dropdown-button" type="button"
-                                class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-left">
-                                <span id="selected-customer">- Pilih Customer -</span>
-                                <svg class="absolute w-5 h-5 ml-2 -mr-1 -translate-y-1/2 right-3 top-1/2"
-                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
-                                    aria-hidden="true">
-                                    <path fill-rule="evenodd"
-                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                        clip-rule="evenodd" />
-                                </svg>
+                        <div class="flex justify-end mb-4">
+                            {{-- DIUBAH: Menggunakan class js-open-modal-btn dan data-target-modal --}}
+                            <button type="button" data-target-modal="produkModal"
+                                class="js-open-modal-btn bg-[#345c7c] text-white px-6 py-1 rounded hover:bg-[#2a4964] transition">
+                                + Tambah Produk
                             </button>
-                            <div id="dropdown-menu"
-                                class="absolute z-10 hidden w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg dark:bg-gray-700">
-                                <div class="p-2">
-                                    <input type="text" id="search-input"
-                                        class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none dark:bg-gray-600 dark:border-gray-500 dark:text-white"
-                                        placeholder="Cari customer...">
-                                </div>
-                                <ul id="customer-list" class="overflow-y-auto max-h-60">
-                                    @foreach ($customers as $customer)
-                                    <li>
-                                        <a href="#"
-                                            class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-white active:scale-90"
-                                            data-value="{{ $customer->id }}"
-                                            data-company-name="{{ $customer->company_name }}"
-                                            data-phone="{{ $customer->phone }}"
-                                            data-address="{{ $customer->address }}">
-                                            {{ $customer->name }}
-                                        </a>
-                                    </li>
-                                    @endforeach
-                                </ul>
-                            </div>
                         </div>
-                        <p id="company-name-display" class="hidden mt-2 text-sm text-gray-600 dark:text-gray-400"></p>
 
-                        <input type="hidden" name="customer_id" id="customer-id-input">
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="phone"
-                            class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">No.
-                            HP</label>
-                        <input type="text" name="phone" id="phone"
-                            class="mb-6 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 cursor-not-allowed"
-                            disabled>
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="address"
-                            class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">Alamat</label>
-                        <textarea id="address" name="address"
-                            class="mb-6 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 cursor-not-allowed"
-                            disabled>
-                            </textarea>
+                        <div id="cart-list" class="min-h-[200px]"></div> {{-- Tambahkan min-height agar tidak kosong --}}
                     </div>
                 </div>
 
-                {{-- Box 2 Kanan: METODE PEMBAYARAN & CATATAN --}}
-                <div
-                    class="p-3 mt-4 bg-white border border-gray-200 shadow-md rounded-xl dark:bg-gray-800 dark:border-gray-700">
-                    <p
-                        class="mb-4 font-bold tracking-wide text-black uppercase text-md dark:text-white dark:opacity-60">
-                        💳 METODE PEMBAYARAN
-                    </p>
-
-                    <div class="mb-4">
-                        <label for="payment-method-input"
-                            class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">Metode
-                            Pembayaran</label>
-                        <div class="relative inline-block w-full text-left">
-                            <button id="payment-method-button" type="button"
-                                class="inline-flex justify-between items-center w-full rounded-lg border border-gray-300 shadow-sm px-4 py-2.5 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600">
-                                <span id="selected-payment-method">-Pilih metode pembayaran -</span>
-                                <svg class="w-5 h-5 ml-2 -mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
-                                    fill="currentColor" aria-hidden="true">
-                                    <path fill-rule="evenodd"
-                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                            </button>
-                            <div id="payment-method-menu"
-                                class="absolute left-0 hidden w-full mt-1 bg-white shadow-lg rounded-xl ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-700"
-                                role="menu">
-                                <div class="py-2" role="none">
-                                    <a href="#"
-                                        class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                        data-value="cash" role="menuitem"><i class="fas fa-money-bill-wave"></i> Cash
-                                        (Tunai)</a>
-                                    <a href="#"
-                                        class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                        data-value="tf" role="menuitem"><i class="fas fa-money-check"></i> Transfer
-                                        Bank</a>
-                                    {{-- <a href="#"
-                                            class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
-                                            data-value="qr" role="menuitem"><i class="fas fa-qrcode"></i>QRIS</a> --}}
-                                </div>
-                            </div>
-                            <input type="hidden" id="payment-method-input" name="payment_method">
-                        </div>
-                    </div>
-
-                    {{-- <div id="payment-proof-upload" class="hidden mb-4">
-                            <label for="payment-proof"
-                                class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">Bukti
-                                Pembayaran</label>
-                            <input type="file" name="payment_proof" id="payment-proof" accept="image/*"
-                                class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
-                            <p class="mt-1 text-xs text-gray-500">Format: JPG, PNG. Ukuran maksimal: 2MB.</p>
-                        </div> --}}
-
-                    <div class="mb-4">
-                        <label for="note"
-                            class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">📝
-                            Catatan</label>
-                        <textarea type="text" name="note" id="note"
-                            class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"></textarea>
-                    </div>
-
-                    <div class="hidden pt-4 mt-4 border-t border-gray-200 dark:border-gray-600 xl:block">
+                {{-- KOLOM KANAN --}}
+                <div class="order-1 w-full max-w-full px-3 shrink-0 xl:w-5/12 xl:flex-0 xl:order-2 xl:mt-4 xl:mr-4">
+                    {{-- Box 1 Kanan: DATA CUSTOMER --}}
+                    <div class="p-3 mb-4 bg-white border border-gray-200 shadow-md rounded-xl dark:bg-gray-800 dark:border-gray-700">
                         <div class="flex items-center justify-between">
-                            <span class="text-base font-medium text-gray-900 dark:text-white">Total Pesanan:</span>
-                            <span class="text-xl font-bold text-gray-900 dark:text-white cart-total-display">Rp
-                                0</span>
+                            <p class="mb-4 font-bold tracking-wide text-black uppercase text-md dark:text-white dark:opacity-60">
+                                👤 Data Customer
+                            </p>
+                            <div class="px-2 mb-4 font-semibold text-white rounded-full cursor-pointer text-md bg-greenlight hover:bg-green-600"
+                                onclick="window.history.back()">
+                                <i class="fas fa-caret-left"></i> Back
+                            </div>
+                        </div>
+
+                        <div class="relative w-full mb-4 group">
+                            <label for="search-input"
+                                class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">Nama
+                                Customer</label>
+                            <div class="relative">
+                                <button id="dropdown-button" type="button"
+                                    class="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-left">
+                                    <span id="selected-customer">- Pilih Customer -</span>
+                                    <svg class="absolute w-5 h-5 ml-2 -mr-1 -translate-y-1/2 right-3 top-1/2"
+                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                                        aria-hidden="true">
+                                        <path fill-rule="evenodd"
+                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                                <div id="dropdown-menu"
+                                    class="absolute z-10 hidden w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg dark:bg-gray-700">
+                                    <div class="p-2">
+                                        <input type="text" id="search-input"
+                                            class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                                            placeholder="Cari customer...">
+                                    </div>
+                                    <ul id="customer-list" class="overflow-y-auto max-h-60">
+                                        @foreach ($customers as $customer)
+                                        <li>
+                                            <a href="#"
+                                                class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-white active:scale-90"
+                                                data-value="{{ $customer->id }}"
+                                                data-company-name="{{ $customer->company_name }}"
+                                                data-phone="{{ $customer->phone }}"
+                                                data-address="{{ $customer->address }}">
+                                                {{ $customer->name }}
+                                            </a>
+                                        </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            </div>
+                            <p id="company-name-display" class="hidden mt-2 text-sm text-gray-600 dark:text-gray-400"></p>
+
+                            <input type="hidden" name="customer_id" id="customer-id-input">
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="phone"
+                                class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">No.
+                                HP</label>
+                            <input type="text" name="phone" id="phone"
+                                class="mb-6 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 cursor-not-allowed"
+                                disabled>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="address"
+                                class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">Alamat</label>
+                            <textarea id="address" name="address"
+                                class="mb-6 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 cursor-not-allowed"
+                                disabled>
+                                </textarea>
                         </div>
                     </div>
 
-                    <div class="hidden w-full max-w-full mt-4 shrink-0 md:w-full md:flex-0 xl:block">
-                        <div class="flex justify-end">
-                            <button type="button" onclick="checkout()"
-                                class="w-full max-w-full bg-[#748c54] text-white px-6 py-2 rounded-xl hover:bg-[#5a6e40] transition shadow-md">
-                                Checkout
-                            </button>
+                    {{-- Box 2 Kanan: METODE PEMBAYARAN & CATATAN --}}
+                    <div
+                        class="p-3 mt-4 bg-white border border-gray-200 shadow-md rounded-xl dark:bg-gray-800 dark:border-gray-700">
+                        <p
+                            class="mb-4 font-bold tracking-wide text-black uppercase text-md dark:text-white dark:opacity-60">
+                            💳 METODE PEMBAYARAN
+                        </p>
+
+                        <div class="mb-4">
+                            <label for="payment-method-input"
+                                class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">Metode
+                                Pembayaran</label>
+                            <div class="relative inline-block w-full text-left">
+                                <button id="payment-method-button" type="button"
+                                    class="inline-flex justify-between items-center w-full rounded-lg border border-gray-300 shadow-sm px-4 py-2.5 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:bg-gray-600">
+                                    <span id="selected-payment-method">-Pilih metode pembayaran -</span>
+                                    <svg class="w-5 h-5 ml-2 -mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                        fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd"
+                                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                                <div id="payment-method-menu"
+                                    class="absolute left-0 hidden w-full mt-1 bg-white shadow-lg rounded-xl ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-700"
+                                    role="menu">
+                                    <div class="py-2" role="none">
+                                        <a href="#"
+                                            class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
+                                            data-value="cash" role="menuitem"><i class="fas fa-money-bill-wave"></i> Cash
+                                            (Tunai)</a>
+                                        <a href="#"
+                                            class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
+                                            data-value="tf" role="menuitem"><i class="fas fa-money-check"></i> Transfer
+                                            Bank</a>
+                                        {{-- <a href="#"
+                                                class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
+                                                data-value="qr" role="menuitem"><i class="fas fa-qrcode"></i>QRIS</a> --}}
+                                    </div>
+                                </div>
+                                <input type="hidden" id="payment-method-input" name="payment_method">
+                            </div>
+                        </div>
+
+                        {{-- <div id="payment-proof-upload" class="hidden mb-4">
+                                <label for="payment-proof"
+                                    class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">Bukti
+                                    Pembayaran</label>
+                                <input type="file" name="payment_proof" id="payment-proof" accept="image/*"
+                                    class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
+                                <p class="mt-1 text-xs text-gray-500">Format: JPG, PNG. Ukuran maksimal: 2MB.</p>
+                            </div> --}}
+
+                        <div class="mb-4">
+                            <label for="note"
+                                class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">📝
+                                Catatan</label>
+                            <textarea type="text" name="note" id="note"
+                                class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"></textarea>
+                        </div>
+
+                        <div class="hidden pt-4 mt-4 border-t border-gray-200 dark:border-gray-600 xl:block">
+                            <div class="flex items-center justify-between">
+                                <span class="text-base font-medium text-gray-900 dark:text-white">Total Pesanan:</span>
+                                <span class="text-xl font-bold text-gray-900 dark:text-white cart-total-display">Rp
+                                    0</span>
+                            </div>
+                        </div>
+
+                        <div class="hidden w-full max-w-full mt-4 shrink-0 md:w-full md:flex-0 xl:block">
+                            <div class="flex justify-end">
+                                <button type="button" onclick="checkout()"
+                                    class="w-full max-w-full bg-[#748c54] text-white px-6 py-2 rounded-xl hover:bg-[#5a6e40] transition shadow-md">
+                                    Checkout
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
+
             </div>
-
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
-
 <div
     class="fixed bottom-0 left-0 z-50 flex items-center justify-between w-full p-4 bg-white border-t border-gray-300 dark:bg-gray-800 xl:hidden">
     <p id="cart-total" class="text-lg font-bold cart-total-display dark:text-white">Total: Rp 0</p>

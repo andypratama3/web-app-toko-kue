@@ -25,19 +25,19 @@
                         </div>
                         <div>
                             <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Pelanggan</label>
-                            <p id="customerName" class="text-lg font-semibold text-gray-800 dark:text-gray-200"></p>
-                            <p id="customerCompanyName" class="text-sm text-gray-600 dark:text-gray-300"></p>
-                            <p id="customerPhone" class="text-sm text-gray-600 dark:text-gray-300"></p>
-                            <p id="customerAddress" class="text-sm text-gray-600 dark:text-gray-300"></p>
+                            <p id="customerName" class="text-lg font-semibold text-gray-800 dark:text-white"></p>
+                            <p id="customerCompanyName" class="text-sm text-gray-600 dark:text-white"></p>
+                            <p id="customerPhone" class="text-sm text-gray-600 dark:text-white"></p>
+                            <p id="customerAddress" class="text-sm text-gray-600 dark:text-white"></p>
                         </div>
                         <div>
                             <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Metode Pembayaran</label>
                             <p class="font-semibold text-gray-800 uppercase text-md dark:text-gray-200" id="paymentMethod"></p>
                         </div>
                         <div>
-                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Tanggal Penting</label>
-                            <p class="text-sm text-gray-600 dark:text-gray-300">Tgl. Pesan: <span id="orderCreatedAt" class="font-semibold"></span></p>
-                            <p class="text-sm text-gray-600 dark:text-gray-300">Tgl. Lunas: <span id="orderPaidAt" class="font-semibold"></span></p>
+                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Detail Pesanan</label>
+                            <p class="text-sm text-gray-600 dark:text-white">Tgl. Pesan: <span id="orderCreatedAt" class="font-semibold"></span></p>
+                            <p class="text-sm text-gray-600 dark:text-white">Tgl. Lunas: <span id="orderPaidAt" class="font-semibold"></span></p>
                         </div>
                     </div>
                     <div class="pt-3 mt-3 border-t border-gray-200 dark:border-gray-700 ">

@@ -165,6 +165,15 @@
     $totalCompletedOrdersInRange = array_sum($chartDataCompleted);
     $totalReturnedOrdersInRange = array_sum($chartDataReturned);
 
+    // BARU: Menghitung nilai maksimum untuk skala Y chart untuk mencegah pergeseran
+    $maxChartValue = 0;
+    if (!empty($chartData)) { $maxChartValue = max($maxChartValue, max($chartData)); }
+    if (!empty($chartDataCompleted)) { $maxChartValue = max($maxChartValue, max($chartDataCompleted)); }
+    if (!empty($chartDataReturned)) { $maxChartValue = max($maxChartValue, max($chartDataReturned)); }
+
+    // Tambahkan buffer dan atur nilai minimum untuk sumbu Y
+    $suggestedMax = $maxChartValue > 0 ? ceil($maxChartValue * 1.2) : 5;
+
     ?>
     <!-- Enhanced Dashboard Cards -->
     <div class="w-full max-w full">
@@ -323,7 +332,7 @@
                         </a>
 
                         <!-- Enhanced Customer Card -->
-                        <button type="button" id="add-customer" class="w-1/2 px-3 mb-6 js-open-modal-btn"
+                        <button type="button" id="add-customer" class="w-1/2 px-3 mb-2 js-open-modal-btn"
                             data-target-modal="create-customer-modal">
                             <div
                                 class="relative flex items-center justify-center p-4 overflow-hidden transition-all duration-300 ease-out transform border border-blue-100 shadow-xl group md:justify-start bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-700 rounded-2xl hover:shadow-2xl hover:scale-105 dark:border-slate-600">
@@ -363,7 +372,7 @@
             </div>
 
             <!-- Enhanced Notes Card -->
-            <div class="w-full max-w-full px-3 mt-0 mb-6 lg:mb-0 lg:flex-none">
+            <div class="w-full max-w-full px-3 mt-0 mb-2 lg:mb-0 lg:flex-none">
                 <div
                     class="relative flex flex-col min-w-0 overflow-hidden break-words border border-gray-100 shadow-2xl bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 rounded-3xl bg-clip-border dark:border-slate-700">
                     <div class="p-6 pb-4 mb-0 rounded-t-4">
@@ -464,8 +473,10 @@
                         </div>
                     </div>
                     <div class="flex-auto p-4 pt-0">
-                        <div>
-                            <canvas id="ordersChart" class="h-[250px] lg:h-[300px]"></canvas>
+                        <div class="overflow-x-auto">
+                            <div class="relative min-w-[700px] h-[250px] lg:h-[300px]">
+                                <canvas id="ordersChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -473,7 +484,7 @@
         </div>
 
         <!-- Enhanced Latest Orders -->
-        <div class="flex flex-wrap mt-6 -mx-3">
+        <div class="flex flex-wrap mt-3 -mx-3">
             <div class="w-full max-w-full px-3 mt-0 lg:flex-none">
                 <div class="flex flex-wrap mt-6 -mx-3">
                     <div class="w-full max-w-full px-3 mt-0 lg:flex-none">
@@ -994,6 +1005,7 @@
                         scales: {
                             y: {
                                 beginAtZero: true,
+                                max: @json($suggestedMax), // DIUBAH: Menggunakan 'max' untuk mengunci sumbu Y
                                 ticks: {
                                     color: '#6b7280',
                                     callback: function(value) {
@@ -1139,8 +1151,8 @@
             // Populate data umum
             document.getElementById('modalInvoiceNumber').textContent = order.invoice_number || 'N/A';
             document.getElementById('customerName').textContent = order.customer.name || 'N/A';
-            document.getElementById('customerPhone').textContent = order.customer.phone || 'N/A';
-            document.getElementById('customerAddress').textContent = order.customer.address || 'N/A';
+            document.getElementById('customerPhone').textContent = `☎️  ${order.customer.phone}` || 'N/A';
+            document.getElementById('customerAddress').textContent = `📍 ${order.customer.address}` || 'N/A';
             const companyNameEl = document.getElementById('customerCompanyName');
             if (order.customer.company_name && order.customer.company_name !== 'N/A') {
                 companyNameEl.textContent = `🏢 ${order.customer.company_name}`;
@@ -1152,7 +1164,7 @@
             document.getElementById('paymentMethod').textContent = order.payment_method || 'N/A';
             document.getElementById('orderCreatedAt').textContent = order.created_at || 'Tidak Tersedia';
             document.getElementById('orderPaidAt').textContent = order.paid_at ? (order.paid_at + (order.paid_at_label ||
-                '')) : 'Belum Lunas';
+                '')) : 'Belum Lunas ❌';
 
             // Populate Order Notes
             document.getElementById('orderNotesContainer').textContent = order.note || '"Tidak ada catatan."';
@@ -1910,3 +1922,4 @@
     <script src="/assets-argon-dashboard-tailwind.js?v=1.0.1" async></script>
 
 @endsection
+
