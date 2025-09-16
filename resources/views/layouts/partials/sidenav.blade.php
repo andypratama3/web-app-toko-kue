@@ -223,7 +223,8 @@
                                 </a>
                             </li> --}}
                             <li>
-                                <a class="relative sidebar-menu-item ..." href="{{ route('kurir.pesanan.index') }}">
+                                <a class="relative sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('kurir.pesanan.*')) bg-blue-500/13 dark:bg-green-900 @endif"
+                                    href="{{ route('kurir.pesanan.index') }}" data-tooltip="Order Tracking">
                                     <div class="mr-2 sidebar-icon-container">
                                         @if (isset($rejectedOrdersCount) && $rejectedOrdersCount > 0)
                                             <img src="{{ asset('assets/icon/icon-notif-truck.svg') }}"
@@ -242,7 +243,7 @@
                                     @endif
                                 </a>
                             </li>
-
+                            
                             <li>
                                 <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('kurir.historys.*')) bg-blue-500/13 dark:bg-green-900 @endif"
                                     href="{{ route('kurir.historys.index') }}" data-tooltip="Order History">
