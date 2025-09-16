@@ -32,6 +32,11 @@ class PesananController extends Controller
         $search = $request->input('search');
         $activeStatus = $request->input('status', 'semua');
 
+        // Hitung pesanan yang ditolak (memiliki rejection_note) untuk kurir yang sedang login
+        $rejectedOrdersCount = Order::where('created_by_user_id', $loggedInUser->id)
+            ->whereNotNull('rejection_note')
+            ->count();
+
         $filterableStatuses = [
             'semua' => 'Semua',
             'diambil' => 'Diambil',
@@ -52,7 +57,7 @@ class PesananController extends Controller
             Log::warning('User ' . $loggedInUser->id . ' does not have a region_id.');
             $error = 'Region Anda tidak terdaftar. Silakan hubungi administrator.';
             $orders = new LengthAwarePaginator([], 0, 10);
-            return view('dashboard.kurir.pesanan.index', compact('orders', 'error', 'statusLabelMap', 'filterableStatuses', 'activeStatus'));
+            return view('dashboard.kurir.pesanan.index', compact('orders', 'error', 'statusLabelMap', 'filterableStatuses', 'activeStatus', 'rejectedOrdersCount'));
         }
 
         try {
@@ -86,7 +91,6 @@ class PesananController extends Controller
                         $order->show_warning = true;
                     }
                 }
-
             }
 
             if ($request->ajax()) {
@@ -99,10 +103,10 @@ class PesananController extends Controller
             Log::error('Error fetching orders for courier ' . $loggedInUser->id . ': ' . $e->getMessage());
             $error = 'Gagal memuat pesanan. Terjadi kesalahan pada server.';
             $orders = new LengthAwarePaginator([], 0, 10);
-            return view('dashboard.kurir.pesanan.index', compact('orders', 'error', 'statusLabelMap', 'filterableStatuses', 'activeStatus'));
+            return view('dashboard.kurir.pesanan.index', compact('orders', 'error', 'statusLabelMap', 'filterableStatuses', 'activeStatus', 'rejectedOrdersCount'));
         }
 
-        return view('dashboard.kurir.pesanan.index', compact('orders', 'statusLabelMap', 'filterableStatuses', 'activeStatus'));
+        return view('dashboard.kurir.pesanan.index', compact('orders', 'statusLabelMap', 'filterableStatuses', 'activeStatus', 'rejectedOrdersCount'));
     }
 
 
