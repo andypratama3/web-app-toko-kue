@@ -74,25 +74,21 @@
 @endpush
 
 @push('page-scripts')
-{{-- Script JavaScript telah diperbaiki --}}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const modalElement = document.getElementById('showOrderModal');
         if (!modalElement) return;
 
-        // ===== PERBAIKAN 1: Deklarasikan semua variabel elemen dengan benar =====
         const loader = document.getElementById('showOrderModalLoader');
-        const content = document.getElementById('showOrderModalContent'); // <-- VARIABEL INI YANG HILANG
+        const content = document.getElementById('showOrderModalContent');
         const zoomWrapper = document.getElementById('showOrderModalZoomWrapper');
         const zoomImg = document.getElementById('showOrderModalZoomImg');
 
-        // Pastikan variabel 'content' ada sebelum melanjutkan
         if (!loader || !content) {
             console.error("Modal loader or content element not found!");
             return;
         }
 
-        // Fungsi showLoader dan hideLoader sekarang menggunakan variabel 'content' yang sudah dideklarasikan
         const showLoader = () => {
             loader.classList.remove('hidden');
             content.classList.add('hidden');
@@ -115,9 +111,8 @@
                 populateModal(data);
             } catch (error) {
                 console.error('Error fetching order details:', error);
-                // Menggunakan variabel 'content' yang sudah benar
                 content.innerHTML =
-                    `<p class="py-10 text-center text-red-500">Gagal memuat detail pesanan. Silakan coba lagi.</p>`;
+                    `<div class="py-10 text-center"><p class="font-semibold text-red-600">Gagal memuat detail pesanan.</p><p class="text-sm text-gray-500">Silakan coba lagi.</p></div>`;
             } finally {
                 hideLoader();
             }
@@ -128,7 +123,6 @@
             modalElement.classList.remove('flex');
         };
 
-        // Event listener tidak perlu diubah, sudah benar
         document.body.addEventListener('click', function(event) {
             const openBtn = event.target.closest(
                 '.js-open-modal-btn[data-target-modal="showOrderModal"]');
@@ -157,135 +151,160 @@
         });
 
         function populateModal(data) {
-            const formatRupiah = (number) => new Intl.NumberFormat('id-ID', {
-                style: 'currency',
-                currency: 'IDR',
-                minimumFractionDigits: 0
-            }).format(number);
+            try {
+                const formatRupiah = (number) => new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    minimumFractionDigits: 0
+                }).format(number);
 
-            // Elemen-elemen ini tidak perlu diubah
-            const elements = {
-                invoiceNumber: document.getElementById('showOrderModalInvoiceNumber'),
-                customerName: document.getElementById('showOrderModalCustomerName'),
-                customerPhone: document.getElementById('showOrderModalCustomerPhone'),
-                customerCompany: document.getElementById('showOrderModalCustomerCompany'),
-                customerAddress: document.getElementById('showOrderModalCustomerAddress'),
-                paymentMethod: document.getElementById('showOrderModalPaymentMethod'),
-                totalAmount: document.getElementById('showOrderModalTotalAmount'),
-                createdAt: document.getElementById('showOrderModalCreatedAt'),
-                paidAt: document.getElementById('showOrderModalPaidAt'),
-                productDetails: document.getElementById('showOrderModalProductDetails'),
-                returnedProductsSection: document.getElementById('showOrderModalReturnedProductsSection'),
-                returnedProducts: document.getElementById('showOrderModalReturnedProducts'),
-                paymentProof: document.getElementById('showOrderModalPaymentProof'),
-                returnProof: document.getElementById('showOrderModalReturnProof'),
-                totalReturned: document.getElementById('showOrderModalTotalReturned'),
-                singleTotalContainer: document.getElementById('singleTotalContainer'),
-                returnedTotalContainer: document.getElementById('returnedTotalContainer'),
-                initialTotalAmount: document.getElementById('initialTotalAmount'),
-                latestTotalAmount: document.getElementById('latestTotalAmount'),
-            };
-            const orderItemTemplate = document.getElementById('orderItemTemplate');
-            const returnItemTemplate = document.getElementById('returnItemTemplate');
-
-            // Reset konten modal
-            elements.productDetails.innerHTML = '';
-            elements.returnedProducts.innerHTML = '';
-            elements.paymentProof.innerHTML = '';
-            elements.returnProof.innerHTML = '';
-
-            // Populasi data utama
-            elements.invoiceNumber.textContent = data.invoice_number || '-';
-            elements.customerName.textContent = data.customer_name || '-';
-            elements.customerPhone.textContent = data.customer_phone || '-';
-            elements.customerAddress.textContent = data.customer_address || '-';
-            if (data.customer_company && data.customer_company !== 'N/A') {
-                elements.customerCompany.textContent = `🏢 ${data.customer_company}`;
-                elements.customerCompany.classList.remove('hidden');
-            } else {
-                elements.customerCompany.textContent = '';
-                elements.customerCompany.classList.add('hidden');
-            }
-            elements.paymentMethod.textContent =
-                `Metode: ${data.payment_method ? data.payment_method.charAt(0).toUpperCase() + data.payment_method.slice(1) : '-'}`;
-            elements.createdAt.textContent = data.created_at || '-';
-            elements.paidAt.textContent = data.paid_at || '-';
-
-            // Populasi item produk
-            if (Array.isArray(data.items) && data.items.length > 0) {
-                data.items.forEach(item => {
-                    const clone = orderItemTemplate.content.cloneNode(true);
-                    clone.querySelector('[data-role="name"]').textContent = item.name;
-
-                    // ===== PERBAIKAN 2: Logika untuk varian produk dipisahkan dan diperbaiki =====
-                    const variantEl = clone.querySelector('[data-role="variant"]');
-                    if (item.variant) {
-                        variantEl.textContent = `Varian: ${item.variant}`;
-                    } else {
-                        variantEl.remove(); // Hapus elemen jika tidak ada varian
-                    }
-
-                    clone.querySelector('[data-role="quantity-price"]').textContent =
-                        `Jumlah: ${item.quantity} x ${formatRupiah(item.price)}`;
-                    clone.querySelector('[data-role="subtotal"]').textContent = formatRupiah(item
-                        .subtotal);
-                    elements.productDetails.appendChild(clone);
-                });
-            }
-
-            // Logika untuk retur (sudah benar, tidak perlu diubah)
-            if (data.return_details) {
-                elements.singleTotalContainer.classList.add('hidden');
-                elements.returnedTotalContainer.classList.remove('hidden');
-                const finalTotal = data.total_amount - data.return_details.total_amount_returned;
-                elements.initialTotalAmount.textContent = formatRupiah(data.total_amount);
-                elements.latestTotalAmount.textContent = formatRupiah(finalTotal);
-                elements.returnedProductsSection.classList.remove('hidden');
-                data.return_details.returned_products.forEach(item => {
-                    const clone = returnItemTemplate.content.cloneNode(true);
-                    clone.querySelector('[data-role="name"]').textContent = item.name;
-                    const variantEl = clone.querySelector('[data-role="variant"]');
-                    if (item.variant) {
-                        variantEl.textContent = `Varian: ${item.variant}`;
-                    } else {
-                        variantEl.remove();
-                    }
-                    clone.querySelector('[data-role="quantity"]').textContent =
-                        `Jumlah Diretur: ${item.quantity}`;
-                    elements.returnedProducts.appendChild(clone);
-                });
-                if (elements.totalReturned) {
-                    elements.totalReturned.textContent = formatRupiah(data.return_details
-                        .total_amount_returned);
+                const elements = {
+                    invoiceNumber: document.getElementById('showOrderModalInvoiceNumber'),
+                    customerName: document.getElementById('showOrderModalCustomerName'),
+                    customerPhone: document.getElementById('showOrderModalCustomerPhone'),
+                    customerCompany: document.getElementById('showOrderModalCustomerCompany'),
+                    customerAddress: document.getElementById('showOrderModalCustomerAddress'),
+                    paymentMethod: document.getElementById('showOrderModalPaymentMethod'),
+                    totalAmount: document.getElementById('showOrderModalTotalAmount'),
+                    createdAt: document.getElementById('showOrderModalCreatedAt'),
+                    paidAt: document.getElementById('showOrderModalPaidAt'),
+                    notesContainer: document.getElementById('showOrderModalNotesContainer'),
+                    productDetails: document.getElementById('showOrderModalProductDetails'),
+                    paymentProof: document.getElementById('showOrderModalPaymentProof'),
+                    returnProof: document.getElementById('showOrderModalReturnProof'),
+                    totalReturned: document.getElementById('showOrderModalTotalReturned'),
+                    singleTotalContainer: document.getElementById('singleTotalContainer'),
+                    returnedTotalContainer: document.getElementById('returnedTotalContainer'),
+                    initialTotalAmount: document.getElementById('initialTotalAmount'),
+                    latestTotalAmount: document.getElementById('latestTotalAmount'),
+                    returnTotalValueContainer: document.getElementById('returnTotalValueContainer'),
+                    returnProofContainer: document.getElementById('returnProofContainer'),
+                };
+                const orderItemTemplate = document.getElementById('orderItemTemplate');
+                
+                if (!orderItemTemplate) {
+                    console.error('Template #orderItemTemplate not found!');
+                    content.innerHTML = `<p class="py-10 text-center text-red-500">Error: Template produk tidak ditemukan.</p>`;
+                    return;
                 }
-                if (data.return_details.return_proof_url) {
-                    elements.returnProof.innerHTML =
-                        `
-                <h5 class="mt-3 mb-1 font-semibold text-red-800 dark:text-red-400">Bukti Retur:</h5>
-                <img src="${data.return_details.return_proof_url}" alt="Bukti Retur" class="max-w-[200px] rounded border cursor-pointer hover:border-red-500" data-zoomable="true">`;
-                }
-            } else {
-                elements.singleTotalContainer.classList.remove('hidden');
-                elements.returnedTotalContainer.classList.add('hidden');
-                elements.totalAmount.textContent = `Total: ${formatRupiah(data.total_amount || 0)}`;
-                elements.returnedProductsSection.classList.add('hidden');
-            }
 
-            // Logika untuk bukti pembayaran (sudah benar, tidak perlu diubah)
-            if (data.payment_proof_url) {
-                elements.paymentProof.innerHTML =
-                    `<h5 class="mb-1 font-semibold text-gray-800 dark:text-white">Bukti Pembayaran:</h5>
-            <img src="${data.payment_proof_url}" alt="Bukti Pembayaran" class="max-w-[200px] rounded border cursor-pointer hover:border-blue-500" data-zoomable="true">`;
-            } else {
-                elements.paymentProof.innerHTML =
-                    '<p class="text-sm text-gray-500">Tidak ada bukti pembayaran</p>';
+                elements.productDetails.innerHTML = '';
+                elements.paymentProof.innerHTML = '';
+                elements.returnProof.innerHTML = '';
+
+                elements.invoiceNumber.textContent = data.invoice_number || '-';
+                elements.customerName.textContent = data.customer_name || '-';
+                elements.customerPhone.textContent = data.customer_phone || '-';
+                elements.customerAddress.textContent = data.customer_address || '-';
+                if (data.customer_company && data.customer_company !== 'N/A') {
+                    elements.customerCompany.textContent = `🏢 ${data.customer_company}`;
+                    elements.customerCompany.classList.remove('hidden');
+                } else {
+                    elements.customerCompany.textContent = '';
+                    elements.customerCompany.classList.add('hidden');
+                }
+                elements.paymentMethod.textContent =
+                    `${data.payment_method ? data.payment_method.charAt(0).toUpperCase() + data.payment_method.slice(1) : '-'}`;
+                elements.createdAt.textContent = data.created_at || '-';
+                elements.paidAt.textContent = data.paid_at || '-';
+                elements.notesContainer.textContent = data.note || '"Tidak ada catatan."';
+
+                const returnedItemsMap = new Map();
+                if (data.return_details && Array.isArray(data.return_details.returned_products)) {
+                    data.return_details.returned_products.forEach(item => {
+                        const key = `${item.name}-${item.variant || ''}`;
+                        returnedItemsMap.set(key, item);
+                    });
+                }
+
+                if (Array.isArray(data.items) && data.items.length > 0) {
+                    data.items.forEach(item => {
+                        if (!item) return; 
+
+                        const clone = orderItemTemplate.content.cloneNode(true);
+                        const key = `${item.name}-${item.variant || ''}`;
+                        const returnedItem = returnedItemsMap.get(key);
+
+                        const initialQty = item.quantity || 0;
+                        const price = item.price || 0;
+                        const returnedQty = returnedItem ? (returnedItem.quantity || 0) : 0;
+                        const remainingQty = initialQty - returnedQty;
+                        const finalSubtotal = remainingQty * price;
+
+                        clone.querySelector('[data-role="name"]').textContent = item.name || 'Produk tidak valid';
+
+                        const variantEl = clone.querySelector('[data-role="variant"]');
+                        if (item.variant) {
+                            variantEl.textContent = item.variant;
+                        } else {
+                            variantEl.remove();
+                        }
+
+                        const returnInfo = clone.querySelector('[data-role="return-info"]');
+                        const normalInfo = clone.querySelector('[data-role="normal-info"]');
+
+                        if (returnedQty > 0) {
+                            normalInfo.remove();
+                            returnInfo.querySelector('[data-role="initial-qty"]').textContent = initialQty;
+                            returnInfo.querySelector('[data-role="returned-qty"]').textContent = returnedQty;
+                            returnInfo.querySelector('[data-role="remaining-qty"]').textContent = remainingQty;
+                        } else {
+                            returnInfo.remove();
+                            normalInfo.querySelector('[data-role="quantity"]').textContent = initialQty;
+                        }
+
+                        clone.querySelector('[data-role="price"]').textContent = formatRupiah(price);
+                        clone.querySelector('[data-role="subtotal"]').textContent = formatRupiah(finalSubtotal);
+
+                        elements.productDetails.appendChild(clone);
+                    });
+                }
+
+                if (data.return_details) {
+                    elements.singleTotalContainer.classList.add('hidden');
+                    elements.returnedTotalContainer.classList.remove('hidden');
+                    elements.returnTotalValueContainer.classList.remove('hidden');
+                    elements.returnProofContainer.classList.remove('hidden');
+
+                    const totalAmount = data.total_amount || 0;
+                    const totalAmountReturned = data.return_details.total_amount_returned || 0;
+                    const finalTotal = totalAmount - totalAmountReturned;
+
+                    elements.initialTotalAmount.textContent = formatRupiah(totalAmount);
+                    elements.latestTotalAmount.textContent = formatRupiah(finalTotal);
+                    
+                    if (elements.totalReturned) {
+                        elements.totalReturned.textContent = formatRupiah(totalAmountReturned);
+                    }
+                    if (data.return_details.return_proof_url) {
+                        elements.returnProof.innerHTML =
+                            `<img src="${data.return_details.return_proof_url}" alt="Bukti Retur" class="w-full rounded border cursor-pointer hover:border-red-500" data-zoomable="true">`;
+                    } else {
+                        elements.returnProof.innerHTML = '<p class="text-sm text-center text-gray-500">Tidak ada bukti retur</p>';
+                    }
+                } else {
+                    elements.singleTotalContainer.classList.remove('hidden');
+                    elements.returnedTotalContainer.classList.add('hidden');
+                    elements.returnTotalValueContainer.classList.add('hidden');
+                    elements.returnProofContainer.classList.add('hidden');
+                    elements.totalAmount.textContent = `${formatRupiah(data.total_amount || 0)}`;
+                }
+
+                if (data.payment_proof_url) {
+                    elements.paymentProof.innerHTML =
+                        `<img src="${data.payment_proof_url}" alt="Bukti Pembayaran" class="w-full rounded border cursor-pointer hover:border-blue-500" data-zoomable="true">`;
+                } else {
+                    elements.paymentProof.innerHTML =
+                        '<p class="text-sm text-center text-gray-500">Tidak ada bukti pembayaran</p>';
+                }
+            } catch (e) {
+                console.error("Error populating modal content:", e);
+                content.innerHTML = `<div class="py-10 text-center"><p class="font-semibold text-red-600">Terjadi kesalahan saat memproses data.</p><p class="text-sm text-gray-500">Silakan coba lagi.</p></div>`;
             }
         }
     });
 </script>
-
 <script>
-    // Script untuk live search tidak perlu diubah
     document.addEventListener('DOMContentLoaded', function() {
         if (typeof initializeLiveSearch === 'function') {
             initializeLiveSearch({
@@ -297,3 +316,4 @@
     });
 </script>
 @endpush
+

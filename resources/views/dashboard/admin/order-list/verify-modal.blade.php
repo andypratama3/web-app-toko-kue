@@ -1,80 +1,98 @@
-<x-modal-custom id="verifyOrderModal" title="Verifikasi Rincian Pesanan" size="3xl">
+<x-modal-custom id="verifyOrderModal" title="Verifikasi Rincian Pesanan" size="4xl">
     {{-- Loader saat data dimuat --}}
-    <div id="verifyModalLoader" class="py-10 text-center">
-        <svg class="inline w-8 h-8 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101"
-            fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                fill="currentColor" />
-            <path
-                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0492C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                fill="currentFill" />
+    <div id="verifyModalLoader" class="p-8 text-center">
+        <svg class="w-8 h-8 mx-auto text-blue-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
+            viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+            </path>
         </svg>
+        <p class="mt-4 text-lg font-medium text-gray-700 dark:text-gray-300">Memuat Rincian Pesanan...</p>
     </div>
 
     {{-- Konten utama modal, awalnya disembunyikan --}}
-    <div id="verifyModalContent" class="hidden space-y-4 max-h-[70vh] overflow-y-auto pr-4">
-        {{-- Rincian Invoice & Pelanggan --}}
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-                <h4 class="mb-1 font-semibold text-gray-800 dark:text-white">🧾 Nomor Invoice</h4>
-                <p id="verifyModalInvoiceNumber" class="font-mono text-gray-700 dark:text-gray-300"></p>
-            </div>
-            <div>
-                <h4 class="mb-1 font-semibold text-gray-800 dark:text-white">👤 Pelanggan</h4>
-                <p id="verifyModalCustomerName" class="text-gray-700 dark:text-gray-300"></p>
-                <p id="verifyModalCompanyName" class="hidden text-sm text-gray-500 dark:text-gray-400"></p>
-                <p id="verifyModalCustomerPhone" class="text-sm text-gray-500 dark:text-gray-400"></p>
-                <p id="verifyModalCustomerAddress" class="text-sm text-gray-500 dark:text-gray-400"></p>
-            </div>
-        </div>
+    <div id="verifyModalContent" class="hidden max-h-[75vh] overflow-y-auto">
+        <div id="verifyModalGrid" class="grid grid-cols-1 gap-6 p-2 lg:grid-cols-3">
+            {{-- KOLOM KIRI --}}
+            <div class="space-y-6 lg:col-span-2">
+                {{-- KARTU DETAIL PESANAN --}}
+                <div class="p-5 bg-white border border-gray-200 shadow-md dark:bg-gray-800 rounded-xl dark:border-gray-700">
+                    <h3 class="mb-5 text-xl font-bold text-gray-900 dark:text-white">Detail Pesanan</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+                        <div>
+                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Nomor Invoice</label>
+                            <p id="verifyModalInvoiceNumber"
+                                class="font-mono text-lg font-semibold text-gray-800 dark:text-gray-200"></p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Pelanggan</label>
+                            <p id="verifyModalCustomerName"
+                                class="text-lg font-semibold text-gray-800 dark:text-gray-200"></p>
+                            <p id="verifyModalCompanyName" class="hidden text-sm text-gray-600 dark:text-gray-300"></p>
+                            <p id="verifyModalCustomerPhone" class="text-sm text-gray-600 dark:text-gray-300"></p>
+                            <p id="verifyModalCustomerAddress" class="text-sm text-gray-600 dark:text-gray-300"></p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Detail Pembayaran</label>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">Metode: <span
+                                    id="verifyModalPaymentMethod" class="font-semibold"></span></p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">Tgl. Pesan: <span
+                                    id="verifyModalOrderCreatedAt" class="font-semibold"></span></p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">Tgl. Lunas: <span
+                                    id="verifyModalOrderPaidAt" class="font-semibold"></span></p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Kurir Bertugas</label>
+                            <p id="verifyModalCourierName"
+                                class="font-semibold text-gray-800 text-md dark:text-gray-200"></p>
+                        </div>
+                    </div>
+                    {{-- Bagian Catatan Pesanan --}}
+                    <div class="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+                        <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Catatan dari Kurir</label>
+                        <div
+                            class="p-3 mt-1 text-sm text-gray-700 bg-yellow-100 border border-yellow-200 rounded-lg dark:bg-yellow-900/20 dark:text-yellow-200 dark:border-yellow-800/50 min-h-[50px]">
+                            <p id="verifyModalOrderNote">"Tidak ada catatan."</p>
+                        </div>
+                    </div>
+                </div>
 
-        {{-- Detail Pembayaran & Total Tagihan --}}
-        <div class="grid grid-cols-1 gap-4 pt-4 border-t sm:grid-cols-2 dark:border-gray-600">
-            <div>
-                <h4 class="mb-1 font-semibold text-gray-800 dark:text-white">💳 Detail Pembayaran</h4>
-                <p class="text-sm text-gray-700 dark:text-gray-300">Metode: <span id="verifyModalPaymentMethod"></span>
-                </p>
-                <p class="text-sm text-gray-700 dark:text-gray-300">Tanggal Pesan: <span
-                        id="verifyModalOrderCreatedAt"></span></p>
-                <p class="text-sm text-gray-700 dark:text-gray-300">Tanggal Lunas: <span
-                        id="verifyModalOrderPaidAt"></span></p>
-                <p class="text-sm text-gray-700 dark:text-gray-300">Kurir: <span id="verifyModalCourierName"
-                        class="font-semibold"></span></p>
-            </div>
-            <div>
-                <h4 class="mb-1 font-semibold text-gray-800 dark:text-white">💰 Total Tagihan</h4>
-                <p id="verifyModalTotalAmount" class="text-2xl font-bold text-blue-600 dark:text-blue-500"></p>
-            </div>
-        </div>
+                {{-- KARTU PRODUK DIPESAN & DIRETUR --}}
+                <div class="p-5 bg-white border border-gray-200 shadow-md dark:bg-gray-800 rounded-xl dark:border-gray-700">
+                    <h3 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">📦 Produk Dipesan</h3>
+                    <div id="verifyModalProductDetails" class="space-y-3"></div>
 
-        {{-- Produk Dipesan --}}
-        <div class="pt-4 border-t dark:border-gray-600">
-            <h4 class="mb-2 font-semibold text-gray-800 dark:text-white">📦 Produk Dipesan</h4>
-            <div id="verifyModalProductDetails" class="space-y-2"></div>
-        </div>
-
-        {{-- Produk Retur (jika ada) --}}
-        <div id="returnedProductsSection" class="hidden pt-4 border-t border-red-300 dark:border-red-700">
-            <h4 class="mb-2 font-semibold text-red-800 dark:text-red-400">♻️ Produk yang Diretur</h4>
-            <div id="verifyModalReturnedProducts" class="p-3 space-y-2 rounded-lg bg-red-50 dark:bg-gray-700">
-                {{-- Daftar produk retur akan diisi oleh JavaScript --}}
+                    {{-- Produk Retur (jika ada) --}}
+                    <div id="returnedProductsSection"
+                        class="hidden pt-4 mt-4 border-t border-red-300 dark:border-red-700">
+                        <h4 class="mb-2 text-lg font-semibold text-red-800 dark:text-red-400">♻️ Produk yang Diretur
+                        </h4>
+                        <div id="verifyModalReturnedProducts" class="space-y-2">
+                            {{-- Daftar produk retur akan diisi oleh JavaScript --}}
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        {{-- Catatan dari Kurir --}}
-        <div class="pt-4 border-t dark:border-gray-600">
-            <h4 class="mb-2 font-semibold text-gray-800 dark:text-white">📝 Catatan dari Kurir</h4>
-            <div id="verifyModalOrderNote" class="p-3 text-sm bg-yellow-50 rounded-lg dark:bg-gray-700 text-gray-700 dark:text-gray-300 min-h-[50px]">
-                {{-- Catatan akan diisi oleh JavaScript --}}
-            </div>
-        </div>
+            {{-- KOLOM KANAN --}}
+            <div class="space-y-6 lg:col-span-1">
+                {{-- KARTU RINCIAN TOTAL --}}
+                <div
+                    class="p-5 bg-white border border-gray-200 shadow-md dark:bg-gray-800 rounded-xl dark:border-gray-700">
+                    <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Tagihan</label>
+                    <p id="verifyModalTotalAmount" class="text-2xl font-extrabold text-blue-600 dark:text-blue-500">
+                    </p>
+                </div>
 
-        {{-- Bukti Pembayaran --}}
-        <div class="pt-4 border-t dark:border-gray-600">
-            <h4 class="mb-2 font-semibold text-gray-800 dark:text-white">✅ Bukti Pembayaran</h4>
-            <div id="verifyModalPaymentProof" class="mb-2">
-                {{-- Gambar bukti pembayaran akan diisi oleh JavaScript --}}
+                {{-- KARTU BUKTI PEMBAYARAN --}}
+                <div
+                    class="p-5 bg-white border border-gray-200 shadow-md dark:bg-gray-800 rounded-xl dark:border-gray-700">
+                    <h4 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">✅ Bukti Pembayaran</h4>
+                    <div id="verifyModalPaymentProof">
+                        {{-- Gambar bukti pembayaran akan diisi oleh JavaScript --}}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -84,11 +102,11 @@
         <div
             class="flex items-center justify-end p-4 space-x-3 border-t border-gray-200 rounded-b md:p-5 dark:border-gray-600">
             <button id="btnOpenRejectModal" type="button"
-                class="px-5 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+                class="px-5 py-2.5 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
                 Tolak
             </button>
             <button id="btnVerifyOrder" type="button"
-                class="px-5 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                class="px-5 py-2.5 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                 Verifikasi Pesanan
             </button>
         </div>
@@ -101,3 +119,4 @@
     <img id="verifyModalZoomImg" src="" alt="Bukti Pembayaran"
         class="max-w-[90%] max-h-[90%] border-4 border-white rounded shadow-lg">
 </div>
+

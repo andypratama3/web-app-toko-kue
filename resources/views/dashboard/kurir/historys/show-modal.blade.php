@@ -1,128 +1,127 @@
-<x-modal-custom id="showOrderModal" title="Detail Pesanan & Retur" size="3xl">
+<x-modal-custom id="showOrderModal" title="Rincian Pesanan" size="4xl">
     {{-- Loader saat data dimuat --}}
-    <div id="showOrderModalLoader" class="py-10 text-center">
-        {{-- SVG Loader tidak berubah --}}
-        <svg class="inline w-8 h-8 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101"
-            fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                fill="currentColor" />
-            <path
-                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5424 39.6781 93.9676 39.0409Z" />
-            ...
-        </svg>
+    <div id="showOrderModalLoader" class="p-8 text-center">
+        <svg class="w-8 h-8 mx-auto text-blue-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+        <p class="mt-4 text-lg font-medium text-gray-700 dark:text-gray-300">Memuat Detail Pesanan...</p>
     </div>
 
     {{-- Konten utama modal, awalnya disembunyikan --}}
-    <div id="showOrderModalContent" class="hidden space-y-4 max-h-[70vh] overflow-y-auto pr-4">
-        {{-- Rincian Invoice & Pelanggan --}}
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-                <h4 class="mb-1 font-semibold text-gray-800 dark:text-white">🧾 Nomor Invoice</h4>
-                <p id="showOrderModalInvoiceNumber" class="font-mono text-gray-700 dark:text-gray-300"></p>
-            </div>
-            <div>
-                <h4 class="mb-1 font-semibold text-gray-800 dark:text-white">👤 Pelanggan</h4>
-                <p id="showOrderModalCustomerName" class="font-bold text-gray-700 dark:text-gray-300"></p>
-                <p id="showOrderModalCustomerCompany" class="text-sm text-gray-500 dark:text-gray-400"></p>
-                <p id="showOrderModalCustomerAddress" class="text-sm text-gray-500 dark:text-gray-400"></p>
-                <p id="showOrderModalCustomerPhone" class="text-sm text-gray-500 dark:text-gray-400"></p>
-            </div>
-        </div>
-
-        {{-- Detail Pembayaran & Pengiriman --}}
-        <div class="grid grid-cols-1 gap-4 pt-4 border-t sm:grid-cols-2 dark:border-gray-600">
-            <div>
-                <h4 class="mb-1 font-semibold text-gray-800 dark:text-white">💰 Detail Pembayaran</h4>
-                <p id="showOrderModalPaymentMethod" class="text-sm text-gray-700 dark:text-gray-300"></p>
-
-                {{-- Kontainer untuk total tunggal (tanpa retur) --}}
-                <div id="singleTotalContainer">
-                    <p id="showOrderModalTotalAmount" class="text-sm text-gray-700 dark:text-gray-300"></p>
+    <div id="showOrderModalContent" class="hidden">
+        <div class="grid grid-cols-1 gap-6 p-1 lg:grid-cols-3">
+            {{-- KOLOM KIRI --}}
+            <div class="space-y-6 lg:col-span-2">
+                {{-- KARTU DETAIL PESANAN --}}
+                <div class="p-5 bg-white border border-gray-200 shadow-md dark:bg-gray-800 rounded-xl dark:border-gray-700">
+                    <h3 class="mb-5 text-xl font-bold text-gray-900 dark:text-white">Detail Pesanan</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+                        <div>
+                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Nomor Invoice</label>
+                            <p id="showOrderModalInvoiceNumber" class="font-mono text-lg font-semibold text-gray-800 dark:text-gray-200"></p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Pelanggan</label>
+                            <p id="showOrderModalCustomerName" class="text-lg font-semibold text-gray-800 dark:text-gray-200"></p>
+                            <p id="showOrderModalCustomerCompany" class="text-sm text-gray-600 dark:text-gray-300"></p>
+                            <p id="showOrderModalCustomerPhone" class="text-sm text-gray-600 dark:text-gray-300"></p>
+                            <p id="showOrderModalCustomerAddress" class="text-sm text-gray-600 dark:text-gray-300"></p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Metode Pembayaran</label>
+                            <p id="showOrderModalPaymentMethod" class="font-semibold text-gray-800 uppercase text-md dark:text-gray-200"></p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Tanggal Penting</label>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">Tgl. Pesan: <span id="showOrderModalCreatedAt" class="font-semibold"></span></p>
+                            <p class="text-sm text-gray-600 dark:text-gray-300">Tgl. Lunas: <span id="showOrderModalPaidAt" class="font-semibold"></span></p>
+                        </div>
+                    </div>
+                    {{-- Bagian Catatan Pesanan --}}
+                    <div class="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+                        <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Catatan Pesanan</label>
+                        <div class="text-center font-bold p-3 mt-1 text-sm text-gray-700 bg-yellow-100 border border-yellow-200 rounded-lg dark:bg-yellow-900/20 dark:text-yellow-200 dark:border-yellow-800/50">
+                            <p id="showOrderModalNotesContainer">"Tidak ada catatan."</p>
+                        </div>
+                    </div>
                 </div>
 
-                {{-- Kontainer BARU untuk total ganda (dengan retur) --}}
-                <div id="returnedTotalContainer" class="hidden mt-2">
-                    <p class="text-sm text-gray-500 line-through dark:text-gray-400">
-                        Total Awal: <span id="initialTotalAmount"></span>
-                    </p>
-                    <p class="text-sm font-bold text-green-600 dark:text-green-400">
-                        Total Terbaru: <span id="latestTotalAmount"></span>
-                    </p>
+                {{-- KARTU PRODUK DIPESAN --}}
+                <div class="p-5 bg-white border border-gray-200 shadow-md dark:bg-gray-800 rounded-xl dark:border-gray-700">
+                    <h3 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">🛒 Produk Dipesan</h3>
+                    <div id="showOrderModalProductDetails" class="space-y-3"></div>
                 </div>
             </div>
-            <div>
-                <h4 class="mb-1 font-semibold text-gray-800 dark:text-white">🚚 Detail Pengiriman</h4>
-                <p class="text-sm text-gray-700 dark:text-gray-300">Tgl. Pesan : <span
-                        id="showOrderModalCreatedAt"></span></p>
-                <p class="text-sm text-gray-700 dark:text-gray-300">Tgl. Lunas : <span id="showOrderModalPaidAt"></span>
-                </p>
-            </div>
-        </div>
 
-        {{-- Produk Dipesan --}}
-        <div class="pt-4 border-t dark:border-gray-600">
-            <h4 class="mb-2 font-semibold text-gray-800 dark:text-white">📦 Produk Dipesan</h4>
-            <div id="showOrderModalProductDetails" class="space-y-2"></div>
-        </div>
+            {{-- KOLOM KANAN --}}
+            <div class="space-y-6 lg:col-span-1">
+                {{-- KARTU RINCIAN TOTAL --}}
+                <div class="p-5 bg-white border border-gray-200 shadow-md dark:bg-gray-800 rounded-xl dark:border-gray-700">
+                    <div id="singleTotalContainer">
+                        <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Tagihan</label>
+                        <p id="showOrderModalTotalAmount" class="text-2xl font-extrabold text-blue-600 dark:text-blue-500"></p>
+                    </div>
+                    <div id="returnedTotalContainer" class="hidden">
+                        <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Tagihan</label>
+                        <p id="initialTotalAmount" class="text-sm font-bold text-gray-400 line-through dark:text-gray-500"></p>
+                        <p id="latestTotalAmount" class="text-2xl font-extrabold text-green-600 dark:text-green-500"></p>
+                    </div>
+                    <div id="returnTotalValueContainer" class="hidden pt-4 mt-4 border-t border-gray-200 dark:border-gray-600">
+                        <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Nilai Retur</label>
+                        <p id="showOrderModalTotalReturned" class="text-lg font-bold text-red-600 dark:text-red-500"></p>
+                    </div>
+                </div>
 
-        {{-- Bagian Produk Retur --}}
-        <div id="showOrderModalReturnedProductsSection" class="hidden pt-4 border-t border-red-300 dark:border-red-700">
-            <h4 class="mb-2 font-semibold text-red-800 dark:text-red-400">♻️ Produk yang Diretur</h4>
-            <div id="showOrderModalReturnedProducts" class="p-3 space-y-2 rounded-lg bg-red-50 dark:bg-gray-700"></div>
-            <div class="flex justify-end pt-2 mt-2 border-t border-red-200 dark:border-red-700">
-                <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Nilai Retur:</p>
-                    <p id="showOrderModalTotalReturned"
-                        class="font-bold text-right text-red-800 text-md dark:text-red-400"></p>
+                {{-- KARTU BUKTI PEMBAYARAN --}}
+                <div class="p-5 bg-white border border-gray-200 shadow-md dark:bg-gray-800 rounded-xl dark:border-gray-700">
+                    <h3 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">Bukti Pembayaran</h3>
+                    <div id="showOrderModalPaymentProof"></div>
+                </div>
+
+                {{-- KARTU BUKTI RETUR (Kondisional) --}}
+                <div id="returnProofContainer" class="hidden p-5 bg-white border border-gray-200 shadow-md dark:bg-gray-800 rounded-xl dark:border-gray-700">
+                    <h3 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">Bukti Retur</h3>
+                    <div id="showOrderModalReturnProof"></div>
                 </div>
             </div>
-            <div id="showOrderModalReturnProof" class="mt-3"></div>
-        </div>
-
-        {{-- Bukti Pembayaran --}}
-        <div class="pt-4 border-t dark:border-gray-600">
-            <h4 class="mb-2 font-semibold text-gray-800 dark:text-white">✅ Bukti Pembayaran</h4>
-            <div id="showOrderModalPaymentProof" class="mb-2"></div>
         </div>
     </div>
 
-    <x-slot name="footer">
-        <div
-            class="flex items-center justify-end p-4 space-x-3 border-t border-gray-200 rounded-b md:p-5 dark:border-gray-600">
-            <button type="button"
-                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded js-close-modal-btn hover:bg-gray-300">Tutup</button>
+    <!-- <x-slot name="footer">
+        <div class="flex items-center justify-end p-4 space-x-3 border-t border-gray-200 rounded-b md:p-5 dark:border-gray-600">
+            <button type="button" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg js-close-modal-btn hover:bg-gray-200 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500">Tutup</button>
         </div>
-    </x-slot>
+    </x-slot> -->
 </x-modal-custom>
 
 {{-- Wrapper untuk zoom gambar --}}
-<div id="showOrderModalZoomWrapper"
-    class="fixed inset-0 z-[9999] items-center justify-center hidden bg-black bg-opacity-80">
-    <img id="showOrderModalZoomImg" src="" alt="Bukti Pembayaran"
-        class="max-w-[90%] max-h-[90%] border-4 border-white rounded shadow-lg">
+<div id="showOrderModalZoomWrapper" class="fixed inset-0 z-[9999] items-center justify-center hidden bg-black bg-opacity-80">
+    <img id="showOrderModalZoomImg" src="" alt="Zoomed Image" class="max-w-[90%] max-h-[90%] border-4 border-white rounded shadow-lg">
 </div>
 
-{{-- TEMPLATE UNTUK ITEM PRODUK (agar tidak membuat string HTML di JS) --}}
+{{-- TEMPLATE UNTUK ITEM PRODUK (Tidak berubah) --}}
 <template id="orderItemTemplate">
-    <div class="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-700">
-        <div>
-            <p class="font-medium text-gray-800 dark:text-white" data-role="name"></p>
-            <p class="text-sm text-gray-500 dark:text-gray-400" data-role="variant"></p>
-            <p class="text-sm text-gray-500 dark:text-gray-400" data-role="quantity-price"></p>
+    <div class="flex items-start p-2 space-x-4 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+        <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 mt-1 bg-gray-200 rounded-lg dark:bg-gray-600">
+            <svg class="w-5 h-5 font-bold text-gray-500 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+            </svg>
         </div>
-        <div class="text-right">
-            <p class="font-medium text-gray-800 dark:text-white" data-role="subtotal"></p>
+        <div class="flex-grow">
+            <p class="font-bold text-gray-800 dark:text-white" data-role="name"></p>
+            <p class="text-sm text-gray-500 dark:text-gray-400" data-role="variant"></p>
+            <div class=" text-sm text-gray-600 dark:text-gray-300">
+                <div data-role="return-info">
+                    <span>Awal: <b class="text-gray-800 dark:text-gray-100" data-role="initial-qty"></b></span> |
+                    <span class="text-red-600 dark:text-red-400">Retur: <b data-role="returned-qty"></b></span> |
+                    <span class="text-green-600 dark:text-green-400">Sisa: <b data-role="remaining-qty"></b></span>
+                </div>
+                <div data-role="normal-info">
+                    Jumlah: <b class="text-gray-800 dark:text-gray-100" data-role="quantity"></b>
+                </div>
+            </div>
+            <p class="mt-1 text-sm font-medium text-gray-800 dark:text-gray-200">
+                <span data-role="price"></span> &rarr; <span data-role="subtotal" class="text-green-600"></span>
+            </p>
         </div>
     </div>
 </template>
 
-<template id="returnItemTemplate">
-    <div class="flex items-center justify-between">
-        <div>
-            <p class="font-medium text-gray-800 dark:text-white" data-role="name"></p>
-            <p class="text-sm text-gray-500 dark:text-gray-400" data-role="variant"></p>
-            <p class="text-sm text-gray-500 dark:text-gray-400" data-role="quantity"></p>
-        </div>
-    </div>
-</template>
