@@ -105,13 +105,13 @@
 </x-modal-custom>
 
 {{-- Wrapper untuk zoom gambar --}}
-<div id="showOrderModalZoomWrapper"
+<div id="showOrderModalZoomWrapper-admin"
     class="fixed inset-0 z-[9999] items-center justify-center hidden bg-black bg-opacity-80">
 
     {{-- TOMBOL CLOSE BARU --}}
-    <button id="showOrderModalZoomCloseBtn" class="absolute text-5xl text-white transition-transform duration-200 ease-in-out top-5 right-8 hover:text-gray-300 hover:scale-110">&times;</button>
+    <button class="absolute text-5xl text-white transition-transform duration-200 ease-in-out top-5 right-8 hover:text-gray-300 hover:scale-110">&times;</button>
 
-    <img id="showOrderModalZoomImg" src="" alt="Bukti Pembayaran"
+    <img id="showOrderModalZoomImg-admin" src="" alt="Bukti Pembayaran"
         class="max-w-[90%] max-h-[90%] border-4 border-white rounded shadow-lg">
 </div>
 
@@ -139,4 +139,3 @@
         </div>
     </div>
 </template>
-

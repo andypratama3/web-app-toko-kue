@@ -97,7 +97,7 @@
         const zoomImg = document.getElementById('showOrderModalZoomImg-admin');
 
         if (!loader || !content || !contentGrid || !errorContainer || !zoomWrapper || !zoomImg) {
-            console.error("Elemen modal penting (Admin) tidak ditemukan!");
+            console.error("Elemen modal penting (Admin) tidak ditemukan! Pastikan semua ID di 'show-modal.blade.php' sudah benar.");
             return;
         }
         
@@ -129,16 +129,24 @@
 
             const url = `{{ url('admin/historys') }}/${orderId}/details`;
             try {
-                showContent();
                 const response = await fetch(url);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 const data = await response.json();
+                
+                // First, hide the loader and prepare the content area
+                hideLoader();
+                // Then, show the main content grid
+                showContent();
+                // Finally, populate it with data
                 populateModal(data);
+
             } catch (error) {
                 console.error('Gagal mengambil detail pesanan (Admin):', error);
-                showError('Gagal memuat detail pesanan.', 'Silakan tutup modal dan coba lagi.');
-            } finally {
+                // Hide loader and show the error message
                 hideLoader();
+                showError('Gagal memuat detail pesanan.', 'Silakan tutup modal dan coba lagi.');
             }
         };
 
@@ -343,4 +351,3 @@
     });
 </script>
 @endpush
-
