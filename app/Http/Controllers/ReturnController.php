@@ -8,10 +8,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth; // Impor Auth
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Storage;
 
 class ReturnController extends Controller
 {
-    // ...
 
     public function requestReturn(Request $request, Order $order)
     {
@@ -158,32 +158,45 @@ class ReturnController extends Controller
         ]);
 
         try {
-            if ($request->hasFile('payment_proof')) {
-                // Cari data retur terbaru yang statusnya menunggu_konfirmasi
-                $orderReturn = $order->returns()->where('status', 'menunggu_konfirmasi')->latest()->first();
+            // [!code focus:start]
+            // Cari data retur terbaru yang statusnya menunggu_konfirmasi
+            $orderReturn = $order->returns()->where('status', 'menunggu_konfirmasi')->latest()->first();
 
-                // Jika tidak ada data retur, kirim error
-                if (!$orderReturn) {
-                    return response()->json(['message' => 'Tidak ada pengajuan retur aktif untuk pesanan ini.'], 400);
-                }
-
-                // Gunakan Storage facade untuk menyimpan file ke storage/app/public/return_proofs
-                $path = $request->file('payment_proof')->store('return_proofs', 'public');
-
-                // Simpan path file yang benar ke tabel order_returns
-                $orderReturn->return_proof = $path;
-                $orderReturn->save();
-
-                // Ubah status di tabel orders
-                $order->paid_at = now();
-                $order->status = 'menunggu_verifikasi_admin';
-                $order->save();
-
-                return response()->json([
-                    'message' => 'Bukti retur berhasil diunggah.',
-                    'order' => $order
-                ]);
+            // Jika tidak ada data retur, kirim error
+            if (!$orderReturn) {
+                return response()->json(['message' => 'Tidak ada pengajuan retur aktif untuk pesanan ini.'], 400);
             }
+
+            $file = $request->file('payment_proof');
+
+            // 1. Hapus bukti retur lama jika ada (LOGIKA REPLACE)
+            if ($orderReturn->return_proof) {
+                Storage::disk('public')->delete($orderReturn->return_proof);
+            }
+
+            // 2. Buat nama file baru berdasarkan invoice pesanan utama
+            $sanitizedInvoiceNumber = str_replace('/', '-', $order->invoice_number);
+            $fileName = 'RETURN-' . $sanitizedInvoiceNumber . '.' . $file->getClientOriginalExtension();
+            $directory = 'return_proofs';
+
+            // 3. Simpan file baru menggunakan storeAs
+            $path = $file->storeAs($directory, $fileName, 'public');
+
+            // 4. Simpan path file yang benar ke tabel order_returns
+            $orderReturn->return_proof = $path;
+            $orderReturn->save();
+            // [!code focus:end]
+
+            // Ubah status di tabel orders
+            $order->paid_at = now();
+            $order->status = 'menunggu_verifikasi_admin';
+            $order->save();
+
+            return response()->json([
+                'message' => 'Bukti retur berhasil diunggah.',
+                'order' => $order
+            ]);
+
         } catch (\Exception $e) {
             return response()->json(['message' => 'Gagal mengunggah file: ' . $e->getMessage()], 500);
         }

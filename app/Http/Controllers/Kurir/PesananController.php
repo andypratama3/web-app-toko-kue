@@ -391,23 +391,31 @@ class PesananController extends Controller
                 return response()->json(['message' => 'Bukti pembayaran hanya bisa diunggah setelah pesanan diterima oleh pembeli.'], 403);
             }
 
+            // [!code block:start]
+            $file = $request->file('payment_proof');
 
+            // 1. Hapus file lama jika ada (LOGIKA REPLACE)
+            // Ini akan menghapus file yang path-nya tercatat di database sebelumnya.
             if ($order->payment_proof) {
-                $oldPath = public_path($order->payment_proof);
-                if (file_exists($oldPath)) @unlink($oldPath);
+                Storage::disk('public')->delete($order->payment_proof);
             }
 
-            $file = $request->file('payment_proof');
-            $extension = $file->getClientOriginalExtension();
+            // 2. Buat nama file baru berdasarkan invoice
+            // Mengganti '/' dengan '-' agar aman untuk nama file.
             $sanitizedInvoiceNumber = str_replace('/', '-', $order->invoice_number);
-            $fileName = $sanitizedInvoiceNumber . '_' . uniqid() . '.' . $extension;
-            $file->move(public_path('payment_proofs'), $fileName);
-            $path = 'payment_proofs/' . $fileName;
+            $fileName = 'PAYMENT-' . $sanitizedInvoiceNumber . '.' . $file->getClientOriginalExtension();
+            $directory = 'payment_proofs';
 
+            // 3. Simpan file baru menggunakan Storage facade dengan nama yang sudah ditentukan
+            // `storeAs` akan mengembalikan path lengkap: 'payment_proofs/NAMA_FILE.jpg'
+            $path = $file->storeAs($directory, $fileName, 'public');
+
+            // 4. Update database dengan path baru
             $order->payment_proof = $path;
             $order->status = 'selesai';
             $order->paid_at = now();
             $order->save();
+            // [!code block:end]
 
             return response()->json(['message' => 'Bukti pembayaran berhasil diunggah. Pesanan selesai!'], 200);
         } catch (ValidationException $e) {
