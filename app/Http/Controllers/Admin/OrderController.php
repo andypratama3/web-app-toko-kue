@@ -64,6 +64,7 @@ class OrderController extends Controller
                 'customer',
                 'createdBy',
                 'items',
+                'returns',
                 'returns.returnedProducts.product',
                 'returns.returnedProducts.variant'
             ])
