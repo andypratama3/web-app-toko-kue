@@ -227,7 +227,7 @@
                                     href="{{ route('kurir.pesanan.index') }}" data-tooltip="Order Tracking">
                                     <div class="mr-2 sidebar-icon-container">
                                         @if (isset($rejectedOrdersCount) && $rejectedOrdersCount > 0)
-                                            <img src="{{ asset('assets/icon/icon-notif-truck-2.svg') }}"
+                                            <img src="{{ asset('assets/icon/icon-notif-truk.svg') }}"
                                                 alt="Notifikasi Ditolak" class="w-6 h-6" />
                                         @else
                                             <i class="text-green-500 fas fa-truck"></i>
