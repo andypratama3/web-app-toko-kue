@@ -39,7 +39,12 @@ class AppServiceProvider extends ServiceProvider
 
             // Logika untuk Kurir
             if ($user->hasRole('kurir')) {
+                // Perubahan: Menambahkan ->where('status', 'baru')
+                // Ini memastikan hanya pesanan yang masih menunggu verifikasi ulang
+                // (statusnya 'baru' dan ada catatan penolakan) yang dihitung.
+                // Jika admin sudah memverifikasi, status akan berubah dan tidak dihitung lagi.
                 $rejectedOrdersCount = Order::where('created_by_user_id', $user->id)
+                    ->where('status', 'baru')
                     ->whereNotNull('rejection_note')
                     ->count();
             }
