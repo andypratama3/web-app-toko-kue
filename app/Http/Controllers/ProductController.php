@@ -43,40 +43,43 @@ class ProductController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'category_id' => 'required|exists:categories,id',
-            'description' => 'required|string',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'variants' => 'required|array|min:1',
-            'variants.*.name' => 'required|string|max:255',
-            'variants.*.price' => 'required|integer|min:0',
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'category_id' => 'required|exists:categories,id',
+        'description' => 'required|string',
+        'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'variants' => 'required|array|min:1',
+        'variants.*.name' => 'required|string|max:255',
+        'variants.*.price' => 'required|integer|min:0',
+    ]);
+
+    DB::transaction(function () use ($request) {
+        // HAPUS BARIS-BARIS INI:
+        // $image = $request->file('image');
+        // $imageName = uniqid() . '_' . time() . '.' . $image->getClientOriginalExtension();
+        // $image->move(public_path('storage/products'), $imageName);
+
+        // CUKUP GUNAKAN SATU BARIS INI
+        $imagePath = $request->file('image')->store('products', 'public');
+
+        $product = Product::create([
+            'name' => $request->name,
+            'category_id' => $request->category_id,
+            'region_id' => Auth::user()->region_id,
+            'description' => $request->description,
+            'image_path' => $imagePath, // Path yang disimpan sudah benar: "products/namafile.jpg"
+            'tag' => $request->tag,
+            'is_active' => true,
         ]);
 
-        DB::transaction(function () use ($request) {
-            $image = $request->file('image');
-            $imageName = uniqid() . '_' . time() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('storage/products'), $imageName);
-            $imagePath = $request->file('image')->store('products', 'public');
+        foreach ($request->variants as $variantData) {
+            $product->variants()->create($variantData);
+        }
+    });
 
-            $product = Product::create([
-                'name' => $request->name,
-                'category_id' => $request->category_id,
-                'region_id' => Auth::user()->region_id,
-                'description' => $request->description,
-                'image_path' => $imagePath, // Simpan path yang dikembalikan oleh Storage
-                'tag' => $request->tag,
-                'is_active' => true,
-            ]);
-
-            foreach ($request->variants as $variantData) {
-                $product->variants()->create($variantData);
-            }
-        });
-
-        return redirect()->route('admin.products.index')->with('success', 'Produk berhasil ditambahkan.');
-    }
+    return redirect()->route('admin.products.index')->with('success', 'Produk berhasil ditambahkan.');
+}
 
     public function update(Request $request, Product $product)
     {
