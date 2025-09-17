@@ -230,7 +230,7 @@
                                             <img src="{{ asset('assets/icon/icon-notif-truck-2.svg') }}"
                                                 alt="Notifikasi Ditolak" class="w-6 h-6" />
                                         @else
-                                            <i class="text-orange-500 fas fa-truck"></i>
+                                            <i class="text-green-500 fas fa-truck"></i>
                                         @endif
                                     </div>
                                     <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Order

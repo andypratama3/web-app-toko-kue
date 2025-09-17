@@ -124,8 +124,8 @@
                 <!-- Dropdown menu -->
                 <div id="filter-dropdown-table" class="z-10 hidden w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
                     <!-- <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">
-                        Filter berdasarkan Status
-                    </h6> -->
+                            Filter berdasarkan Status
+                        </h6> -->
                     <ul class="space-y-2 text-sm" aria-labelledby="dropdownDefault">
                         @foreach ($allStatuses as $key => $label)
                             <li class="flex items-center">
@@ -723,8 +723,10 @@
 
                 // Cek apakah langkah sudah selesai
                 if (timestamps[step]) {
-                    iconEl.innerHTML = '<i class="text-green-600 fas fa-check-circle"></i>';
-                    iconEl.classList.add('bg-green-600', 'text-green-600', 'border-green-600');
+                    // PERBAIKAN: Ubah warna ikon menjadi putih (text-white)
+                    iconEl.innerHTML = '<i class="text-white fas fa-check-circle"></i>';
+                    // PERBAIKAN: Hapus 'text-green-600' dari div pembungkus
+                    iconEl.classList.add('bg-green-600', 'border-green-600');
                     timeSpanEl.textContent = timestamps[step];
                     if (mobileLineEl) mobileLineEl.classList.add('bg-green-600');
                     if (desktopLineEl) desktopLineEl.classList.add('bg-green-600');
@@ -895,7 +897,8 @@
                     const returnKey = `${productId}-${variantId}`;
                     const placeholderImg = 'https://placehold.co/64x64/E2E8F0/64748B?text=No+Img';
                     // const productImage = product.image_url ? `${APP_URL}/storage/${product.image_url.replace(/^public\//, '')}` : placeholderImg;
-                    const productImage = product.image_url ? `${APP_URL}${product.image_url}` : placeholderImg;
+                    // const productImage = product.image_url ? `${APP_URL}${product.image_url}` : placeholderImg;
+                    const productImage = product.image_url || placeholderImg;
 
                     // DIUBAH: Template menggunakan <input type="number">
                     const desktopRowHTML = `
