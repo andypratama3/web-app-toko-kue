@@ -60,7 +60,7 @@
         })();
     </script> --}}
 
-    <script>
+    {{-- <script>
     (function() {
         // Cek apakah tema 'dark' tersimpan di localStorage (misal: dari tombol toggle)
         if (localStorage.getItem('color-theme') === 'dark') {
@@ -73,7 +73,7 @@
             localStorage.setItem('color-theme', 'light');
         }
     })();
-</script>
+</script> --}}
 </head>
 
 <body
