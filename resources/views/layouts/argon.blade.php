@@ -33,7 +33,7 @@
     @livewireStyles
 
     <!-- IMPROVED DARKMODE SCRIPT - PREVENTS FOUC AND SYNCS WITH TOGGLE -->
-    <script>
+    {{-- <script>
         // Reset and initialize theme properly
         (function() {
             // For debugging - clear localStorage if there are conflicts
@@ -58,7 +58,22 @@
                 document.documentElement.classList.remove('dark');
             }
         })();
-    </script>
+    </script> --}}
+
+    <script>
+    (function() {
+        // Cek apakah tema 'dark' tersimpan di localStorage (misal: dari tombol toggle)
+        if (localStorage.getItem('color-theme') === 'dark') {
+            // Jika ya, terapkan class 'dark'
+            document.documentElement.classList.add('dark');
+        } else {
+            // Jika tidak (atau jika temanya 'light' atau belum diatur),
+            // pastikan class 'dark' dihapus dan set default ke 'light'.
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('color-theme', 'light');
+        }
+    })();
+</script>
 </head>
 
 <body
