@@ -133,7 +133,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="py-6 text-center text-gray-500">Tidak ada pesanan ditemukan.</td>
+                                <td colspan="8" class="py-6 text-center text-gray-500">Tidak ada pesanan ditemukan.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -163,38 +163,36 @@
         }
 
         const zoomWrapper = document.getElementById('verifyModalZoomWrapper');
-    const zoomImg = document.getElementById('verifyModalZoomImg');
-    const zoomCloseBtn = document.getElementById('verifyModalZoomCloseBtn');
+        const zoomImg = document.getElementById('verifyModalZoomImg');
+        const zoomCloseBtn = document.getElementById('verifyModalZoomCloseBtn');
 
         // Fungsi untuk menampilkan gambar zoom
         function showVerifyModalZoom(imgSrc) {
-            document.getElementById('verifyModalZoomImg').src = imgSrc;
-            document.getElementById('verifyModalZoomWrapper').classList.remove('hidden');
-            document.getElementById('verifyModalZoomWrapper').classList.add('flex');
+            zoomImg.src = imgSrc;
+            zoomWrapper.classList.remove('hidden');
+            zoomWrapper.classList.add('flex');
         }
 
         // Fungsi untuk menyembunyikan gambar zoom
-    function hideVerifyModalZoom() {
-        zoomWrapper.classList.add('hidden');
-        zoomWrapper.classList.remove('flex');
-    }
-
-    // Event listener untuk tombol close '×'
-    zoomCloseBtn.addEventListener('click', hideVerifyModalZoom);
-
-    // Event listener untuk klik di luar gambar (area overlay)
-    zoomWrapper.addEventListener('click', function(event) {
-        // Hanya tutup jika yang diklik adalah wrapper-nya, bukan gambar di dalamnya
-        if (event.target === zoomWrapper) {
-            hideVerifyModalZoom();
+        function hideVerifyModalZoom() {
+            zoomWrapper.classList.add('hidden');
+            zoomWrapper.classList.remove('flex');
         }
-    });
+
+        // Event listener untuk tombol close '×'
+        zoomCloseBtn.addEventListener('click', hideVerifyModalZoom);
+
+        // Event listener untuk klik di luar gambar (area overlay)
+        zoomWrapper.addEventListener('click', function(event) {
+            if (event.target === zoomWrapper) {
+                hideVerifyModalZoom();
+            }
+        });
 
         // --- FUNGSI UTAMA MODAL ---
         let currentOrderId = null;
 
         document.addEventListener('DOMContentLoaded', function() {
-            // Event listener untuk klik tombol (TETAP SAMA)
             document.body.addEventListener('click', function(event) {
                 const target = event.target.closest('button');
                 if (!target) return;
@@ -210,6 +208,7 @@
                         document.getElementById('fullOrderNote').textContent = noteContent ||
                             'Tidak ada catatan.';
                     }
+                    // This will handle opening all modals including the ones above
                     openModal(modalId);
                     return;
                 }
@@ -229,9 +228,16 @@
 
                 if (target.matches('#btnOpenRejectModal')) {
                     if (currentOrderId) {
+                        // Close verify modal first, then open rejection modal
                         closeModal(document.getElementById('verifyOrderModal'));
                         openModal('rejectionNoteModal');
                     }
+                    return;
+                }
+
+                // Event listener for the actual form submission button
+                if (target.matches('#btnConfirmRejection')) {
+                    submitRejectionForm();
                     return;
                 }
 
@@ -242,54 +248,55 @@
             });
         });
 
-        // [!code block:start]
-        // --- FUNGSI BARU DAN FINAL UNTUK SUBMIT FORM PENOLAKAN ---
         function submitRejectionForm() {
             const rejectionForm = document.getElementById('rejectionForm');
             const noteTextarea = document.getElementById('rejection_note');
             const noteValue = noteTextarea.value.trim();
 
-            // 1. Validasi manual di JavaScript
             if (noteValue.length < 10) {
                 dispatchToast('Alasan penolakan harus diisi minimal 10 karakter.', 'error');
-                noteTextarea.focus(); // Fokuskan ke textarea agar mudah diisi
-                return; // Hentikan fungsi
+                noteTextarea.focus();
+                return;
             }
 
-            // 2. Pastikan Order ID ada
             if (!currentOrderId) {
                 dispatchToast('Error: Order ID tidak ditemukan. Silakan coba lagi.', 'error');
                 return;
             }
 
-            // 3. Atur action form secara dinamis
             rejectionForm.action = `/admin/orders/${currentOrderId}/reject`;
-
-            // 4. Submit form secara programmatic
             rejectionForm.submit();
         }
 
-        // Mengambil data dan mengisi modal verifikasi
+        // [!code block:start]
+        // --- FUNGSI openVerifyModal YANG TELAH DIPERBAIKI ---
         async function openVerifyModal(orderId) {
             const loader = document.getElementById('verifyModalLoader');
             const content = document.getElementById('verifyModalContent');
             const modalTitle = document.querySelector('#verifyOrderModal h3');
+
+            // Elemen-elemen spesifik di modal verifikasi
             const returnedProductsSection = document.getElementById('returnedProductsSection');
             const returnedProductsList = document.getElementById('verifyModalReturnedProducts');
+            const proofTitle = document.getElementById('verifyModalProofTitle');
+            const proofImageContainer = document.getElementById('verifyModalProofImageContainer');
+            const proofImage = document.getElementById('verifyModalProofImage');
+            const noProofContainer = document.getElementById('verifyModalNoProof');
 
+            // Reset state
             loader.classList.remove('hidden');
             content.classList.add('hidden');
             modalTitle.textContent = "Verifikasi Rincian Pesanan";
             returnedProductsSection.classList.add('hidden');
+            proofImageContainer.classList.add('hidden');
+            noProofContainer.classList.add('hidden');
 
             try {
                 const response = await fetch(`/admin/orders/${orderId}/details`);
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.message || 'Gagal memuat data.');
 
-                if (!data || typeof data !== 'object') throw new Error('Data tidak valid.');
-
-                // Mengisi konten modal umum (kode ini tidak berubah)
+                // Populate data umum (Nama customer, invoice, dll)
                 document.getElementById('verifyModalInvoiceNumber').textContent = data.invoice_number || '-';
                 document.getElementById('verifyModalCustomerName').textContent = data.customer?.name || '-';
                 const companyNameEl = document.getElementById('verifyModalCompanyName');
@@ -303,84 +310,72 @@
                 document.getElementById('verifyModalCustomerAddress').textContent = data.customer?.address || '';
                 document.getElementById('verifyModalPaymentMethod').textContent = data.payment_method || '-';
                 document.getElementById('verifyModalOrderCreatedAt').textContent = data.created_at || '-';
-                document.getElementById('verifyModalOrderPaidAt').textContent = data.paid_at ?
-                    `${data.paid_at}${data.paid_at_label}` : 'Belum Lunas';
+                document.getElementById('verifyModalOrderPaidAt').textContent = data.paid_at ? `${data.paid_at}${data.paid_at_label || ''}` : 'Belum Lunas';
                 document.getElementById('verifyModalCourierName').textContent = data.kurir_name || '-';
+                document.getElementById('verifyModalOrderNote').textContent = data.note || 'Tidak ada catatan dari kurir.';
 
-                // Mengisi rincian produk pesanan (kode ini tidak berubah)
+                // Populate produk yang dipesan
                 const productDetailsDiv = document.getElementById('verifyModalProductDetails');
                 productDetailsDiv.innerHTML = '';
                 if (Array.isArray(data.items) && data.items.length > 0) {
                     data.items.forEach(item => {
                         const productItem = document.createElement('div');
-                        productItem.className = 'p-2 border rounded-lg dark:border-gray-700';
-                        productItem.innerHTML =
-                            `<p class="font-semibold text-gray-900 dark:text-white">${item.name} ${item.variant_name ? `(${item.variant_name})` : ''}</p><p class="text-sm text-gray-700 dark:text-gray-300">Jumlah: ${item.quantity} x Rp ${new Intl.NumberFormat('id-ID').format(item.price)}</p>`;
+                        productItem.className = 'p-2 border rounded-lg dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50';
+                        productItem.innerHTML = `<p class="font-semibold text-gray-900 dark:text-white">${item.name} ${item.variant_name ? `(${item.variant_name})` : ''}</p><p class="text-sm text-gray-700 dark:text-gray-300">Jumlah: ${item.quantity} x Rp ${new Intl.NumberFormat('id-ID').format(item.price)}</p>`;
                         productDetailsDiv.appendChild(productItem);
                     });
                 } else {
                     productDetailsDiv.innerHTML = '<p>Tidak ada produk.</p>';
                 }
 
-                // Logika untuk menampilkan bukti bayar atau retur (kode ini tidak berubah)
-                const paymentProofContainer = document.getElementById('verifyModalPaymentProof').parentElement;
-                const paymentProofDiv = document.getElementById('verifyModalPaymentProof');
-                const proofTitle = paymentProofContainer.querySelector('h4');
+                // Logika utama untuk menampilkan Total dan Bukti (Pembayaran vs Retur)
+                let proofUrl = null;
 
                 if (data.return_details) {
-                    // Tampilan retur
+                    // --- TAMPILAN JIKA ADA RETUR ---
                     modalTitle.textContent = "Verifikasi Pesanan dengan Retur";
                     proofTitle.textContent = "✅ Bukti Retur";
-                    if (data.return_details.return_proof) {
-                        // Gunakan asset() URL dari backend jika sudah benar
-                        const imageUrl = data.return_details.return_proof.startsWith('http')
-                            ? data.return_details.return_proof
-                            : `/${data.return_details.return_proof.replace(/^public\//, '')}`;
-                        paymentProofDiv.innerHTML =
-                            `<img src="${imageUrl}" class="object-cover w-32 h-32 border-2 border-gray-300 rounded shadow cursor-zoom-in" alt="Bukti Retur" onclick="showVerifyModalZoom('${imageUrl}')">`;
-                    } else {
-                        paymentProofDiv.innerHTML = '<span class="text-red-500">Bukti retur belum diupload.</span>';
-                    }
+                    proofUrl = data.return_details.return_proof;
+
                     const originalTotal = data.total_amount || 0;
                     const returnedAmount = data.return_details.total_amount_returned || 0;
                     const newTotal = originalTotal - returnedAmount;
+
                     document.getElementById('verifyModalTotalAmount').innerHTML =
                         `<span class="block text-sm font-normal text-gray-500 line-through">Rp ${Number(originalTotal).toLocaleString('id-ID')}</span>` +
                         `<span class="block text-green-600 dark:text-green-500">Rp ${Number(newTotal).toLocaleString('id-ID')} (Setelah Retur)</span>`;
+
+                    // Tampilkan detail produk retur
                     returnedProductsSection.classList.remove('hidden');
                     returnedProductsList.innerHTML = '';
-                    if (Array.isArray(data.return_details.returned_products) && data.return_details.returned_products
-                        .length > 0) {
+                    if (Array.isArray(data.return_details.returned_products) && data.return_details.returned_products.length > 0) {
                         data.return_details.returned_products.forEach(item => {
                             const returnedItem = document.createElement('div');
                             returnedItem.className = 'text-sm';
-                            returnedItem.innerHTML =
-                                `<p class="font-semibold text-gray-800 dark:text-gray-200">${item.name} ${item.variant_name ? `(${item.variant_name})` : ''}</p><p class="text-gray-600 dark:text-gray-400">Jumlah Diretur: ${item.quantity} x Rp ${new Intl.NumberFormat('id-ID').format(item.price)}</p>`;
+                            returnedItem.innerHTML = `<p class="font-semibold text-gray-800 dark:text-gray-200">${item.name} ${item.variant_name ? `(${item.variant_name})` : ''}</p><p class="text-gray-600 dark:text-gray-400">Jumlah Diretur: ${item.quantity} x Rp ${new Intl.NumberFormat('id-ID').format(item.price)}</p>`;
                             returnedProductsList.appendChild(returnedItem);
                         });
                     } else {
                         returnedProductsList.innerHTML = '<p>Tidak ada detail produk retur.</p>';
                     }
+
                 } else {
-                    // Tampilan normal
+                    // --- TAMPILAN NORMAL (TANPA RETUR) ---
+                    modalTitle.textContent = "Verifikasi Rincian Pesanan";
                     proofTitle.textContent = "✅ Bukti Pembayaran";
-                    document.getElementById('verifyModalTotalAmount').textContent = 'Rp ' + (data.total_amount ? Number(
-                        data.total_amount).toLocaleString('id-ID') : '0');
-                    if (data.payment_proof) {
-                        // Gunakan asset() URL dari backend jika sudah benar
-                        const imageUrl = data.payment_proof.startsWith('http')
-                            ? data.payment_proof
-                            : `/${data.payment_proof.replace(/^public\//, '')}`;
-                        paymentProofDiv.innerHTML =
-                            `<img src="${imageUrl}" class="object-cover w-32 h-32 border-2 border-gray-300 rounded shadow cursor-zoom-in" alt="Bukti Pembayaran" onclick="showVerifyModalZoom('${imageUrl}')">`;
-                    } else {
-                        paymentProofDiv.innerHTML = '<span class="text-red-500">Belum diupload oleh kurir</span>';
-                    }
+                    proofUrl = data.payment_proof;
+                    document.getElementById('verifyModalTotalAmount').innerHTML = `Rp ${data.total_amount ? Number(data.total_amount).toLocaleString('id-ID') : '0'}`;
                 }
 
-                // Mengisi catatan (kode ini tidak berubah)
-                const orderNoteEl = document.getElementById('verifyModalOrderNote');
-                orderNoteEl.textContent = data.note || 'Tidak ada catatan dari kurir.';
+                // Tampilkan gambar jika URL ada, jika tidak, tampilkan pesan "Tidak ada bukti"
+                if (proofUrl) {
+                    proofImage.src = proofUrl; // Langsung gunakan URL dari backend
+                    proofImage.alt = data.return_details ? 'Bukti Retur' : 'Bukti Pembayaran';
+                    proofImageContainer.classList.remove('hidden');
+                    proofImage.onclick = () => showVerifyModalZoom(proofUrl);
+                } else {
+                    noProofContainer.classList.remove('hidden');
+                }
 
                 loader.classList.add('hidden');
                 content.classList.remove('hidden');
@@ -391,6 +386,7 @@
                 content.classList.add('hidden');
             }
         }
+        // [!code block:end]
 
         // Fungsi untuk mengirim request verifikasi
         async function verifyOrder(orderId) {
@@ -416,36 +412,12 @@
             }
         }
 
-        // Fungsi untuk mengirim request penolakan
-        async function rejectOrder(orderId) {
-            const modalElement = document.getElementById('verifyOrderModal');
-            try {
-                const response = await fetch(`/admin/orders/${orderId}/reject`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
-                            'content'),
-                        'Content-Type': 'application/json'
-                    }
-                });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.message || 'Terjadi kesalahan');
-
-                closeModal(modalElement);
-                dispatchToast('Verifikasi pesanan ditolak.', 'success');
-                setTimeout(() => window.location.reload(), 1500);
-
-            } catch (error) {
-                dispatchToast(`Gagal menolak: ${error.message}`, 'error');
-            }
-        }
-
-        // --- FUNGSI BARU UNTUK MENGHAPUS PESANAN ---
+        // Fungsi untuk menghapus pesanan
         async function deleteOrder(orderId) {
             const modalElement = document.getElementById('deleteConfirmModal');
             try {
                 const response = await fetch(`/admin/orders/${orderId}`, {
-                    method: 'DELETE', // Menggunakan method DELETE
+                    method: 'DELETE',
                     headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
                             'content'),

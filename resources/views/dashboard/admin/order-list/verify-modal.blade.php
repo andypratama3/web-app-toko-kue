@@ -3,7 +3,8 @@
     <div id="verifyModalLoader" class="p-8 text-center">
         <svg class="w-8 h-8 mx-auto text-blue-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
             viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+            </circle>
             <path class="opacity-75" fill="currentColor"
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
             </path>
@@ -17,7 +18,8 @@
             {{-- KOLOM KIRI --}}
             <div class="space-y-6 lg:col-span-2">
                 {{-- KARTU DETAIL PESANAN --}}
-                <div class="p-5 bg-white border border-gray-200 shadow-md dark:bg-gray-800 rounded-xl dark:border-gray-700">
+                <div
+                    class="p-5 bg-white border border-gray-200 shadow-md dark:bg-gray-800 rounded-xl dark:border-gray-700">
                     <h3 class="mb-5 text-xl font-bold text-gray-900 dark:text-white">Detail Pesanan</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
                         <div>
@@ -34,7 +36,8 @@
                             <p id="verifyModalCustomerAddress" class="text-sm text-gray-600 dark:text-gray-300"></p>
                         </div>
                         <div>
-                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Detail Pembayaran</label>
+                            <label class="text-sm font-medium text-gray-500 dark:text-gray-400">Detail
+                                Pembayaran</label>
                             <p class="text-sm text-gray-600 dark:text-gray-300">Metode: <span
                                     id="verifyModalPaymentMethod" class="font-semibold"></span></p>
                             <p class="text-sm text-gray-600 dark:text-gray-300">Tgl. Pesan: <span
@@ -59,7 +62,8 @@
                 </div>
 
                 {{-- KARTU PRODUK DIPESAN & DIRETUR --}}
-                <div class="p-5 bg-white border border-gray-200 shadow-md dark:bg-gray-800 rounded-xl dark:border-gray-700">
+                <div
+                    class="p-5 bg-white border border-gray-200 shadow-md dark:bg-gray-800 rounded-xl dark:border-gray-700">
                     <h3 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">📦 Produk Dipesan</h3>
                     <div id="verifyModalProductDetails" class="space-y-3"></div>
 
@@ -86,11 +90,29 @@
                 </div>
 
                 {{-- KARTU BUKTI PEMBAYARAN --}}
-                <div
+                {{-- <div
                     class="p-5 bg-white border border-gray-200 shadow-md dark:bg-gray-800 rounded-xl dark:border-gray-700">
                     <h4 class="mb-4 text-xl font-bold text-gray-900 dark:text-white">✅ Bukti Pembayaran</h4>
                     <div id="verifyModalPaymentProof">
-                        {{-- Gambar bukti pembayaran akan diisi oleh JavaScript --}}
+
+                    </div>
+                </div> --}}
+                <div
+                    class="p-5 bg-white border border-gray-200 shadow-md dark:bg-gray-800 rounded-xl dark:border-gray-700">
+                    <h4 id="verifyModalProofTitle" class="mb-4 text-xl font-bold text-gray-900 dark:text-white">Bukti
+                        Unggahan</h4>
+
+                    <div id="verifyModalProofContainer">
+                        <div id="verifyModalProofImageContainer" class="hidden text-center">
+                            <img id="verifyModalProofImage" src="" alt="Bukti Unggahan"
+                                class="object-cover w-full h-auto mx-auto border-2 border-gray-200 rounded-lg shadow-md cursor-pointer dark:border-gray-600 max-h-48">
+                            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">Klik gambar untuk memperbesar.</p>
+                        </div>
+                        <div id="verifyModalNoProof"
+                            class="hidden p-4 text-center bg-gray-100 rounded-lg dark:bg-gray-700">
+                            <p class="text-sm font-medium text-gray-600 dark:text-gray-300">Tidak ada bukti yang
+                                diunggah.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -118,9 +140,9 @@
     class="fixed inset-0 z-[9999] items-center justify-center hidden bg-black bg-opacity-80">
 
     {{-- TOMBOL CLOSE BARU --}}
-    <button id="verifyModalZoomCloseBtn" class="absolute text-5xl text-white transition-transform duration-200 ease-in-out top-5 right-8 hover:text-gray-300 hover:scale-110">&times;</button>
+    <button id="verifyModalZoomCloseBtn"
+        class="absolute text-5xl text-white transition-transform duration-200 ease-in-out top-5 right-8 hover:text-gray-300 hover:scale-110">&times;</button>
 
     <img id="verifyModalZoomImg" src="" alt="Bukti Pembayaran"
         class="max-w-[90%] max-h-[90%] border-4 border-white rounded shadow-lg">
 </div>
-

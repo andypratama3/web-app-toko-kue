@@ -124,8 +124,8 @@
                 <!-- Dropdown menu -->
                 <div id="filter-dropdown-table" class="z-10 hidden w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
                     <!-- <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">
-                    Filter berdasarkan Status
-                </h6> -->
+                        Filter berdasarkan Status
+                    </h6> -->
                     <ul class="space-y-2 text-sm" aria-labelledby="dropdownDefault">
                         @foreach ($allStatuses as $key => $label)
                             <li class="flex items-center">
@@ -430,38 +430,38 @@
 
                     // SVG icon similar to the one in the image
                     const iconHTML = `
-                    <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 mt-1 bg-gray-200 rounded-lg dark:bg-gray-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                        </svg>
-                    </div>
-                `;
+            <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 mt-1 bg-gray-200 rounded-lg dark:bg-gray-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+            </div>
+        `;
 
                     let quantityLine =
                         `<p class="text-sm text-gray-600 dark:text-gray-300">Jumlah: ${initialQty}</p>`;
                     if (returnedQty > 0) {
                         quantityLine = `
-                        <p class="text-sm text-gray-600 dark:text-gray-300">
-                            Awal: <span class="font-medium text-gray-800 dark:text-gray-200">${initialQty}</span> |
-                            Retur: <span class="font-medium text-red-500">${returnedQty}</span> |
-                            Sisa: <span class="font-medium text-green-600">${remainingQty}</span>
-                        </p>
-                    `;
+                <p class="text-sm text-gray-600 dark:text-gray-300">
+                    Awal: <span class="font-medium text-gray-800 dark:text-gray-200">${initialQty}</span> |
+                    Retur: <span class="font-medium text-red-500">${returnedQty}</span> |
+                    Sisa: <span class="font-medium text-green-600">${remainingQty}</span>
+                </p>
+            `;
                     }
 
                     const priceLine = `
-                    <p class="mt-1 text-sm font-medium text-gray-800 dark:text-gray-200">
-                        Rp ${new Intl.NumberFormat('id-ID').format(price)} &rarr; Rp ${new Intl.NumberFormat('id-ID').format(newSubtotal)}
-                    </p>
-                `;
+            <p class="mt-1 text-sm font-medium text-gray-800 dark:text-gray-200">
+                Rp ${new Intl.NumberFormat('id-ID').format(price)} &rarr; Rp ${new Intl.NumberFormat('id-ID').format(newSubtotal)}
+            </p>
+        `;
 
                     const detailsHTML = `
-                    <div class="flex-grow">
-                        <p class="font-bold text-gray-900 dark:text-white">${product.name} ${product.variant_name ? `(${product.variant_name})` : ''}</p>
-                        ${quantityLine}
-                        ${priceLine}
-                    </div>
-                `;
+            <div class="flex-grow">
+                <p class="font-bold text-gray-900 dark:text-white">${product.name} ${product.variant_name ? `(${product.variant_name})` : ''}</p>
+                ${quantityLine}
+                ${priceLine}
+            </div>
+        `;
 
                     productItem.innerHTML = iconHTML + detailsHTML;
                     productDetailsDiv.appendChild(productItem);
@@ -471,41 +471,56 @@
                     '<p class="text-center text-gray-500 dark:text-gray-400">Tidak ada produk dalam pesanan ini.</p>';
             }
 
-            // Logika Proof Upload
+            // --- LOGIKA BUKTI UNGGAHAN YANG DIPERBAIKI ---
             const paymentUploadForm = document.getElementById('paymentUploadForm');
             const paymentProofUploaded = document.getElementById('paymentProofUploaded');
             const paymentUploadBlocker = document.getElementById('paymentUploadBlocker');
+            const proofImage = document.getElementById('proofImage');
+            const proofUploadedTitle = document.getElementById('proofUploadedTitle');
             const compressLink = document.getElementById('compress-link');
+            const paymentProofTitle = document.getElementById('paymentProofTitle');
+
+            // Sembunyikan semua elemen terkait bukti unggahan terlebih dahulu
             paymentUploadForm.classList.add('hidden');
             paymentProofUploaded.classList.add('hidden');
             paymentUploadBlocker.classList.add('hidden');
             compressLink.classList.add('hidden');
 
+            // Helper untuk mendapatkan URL gambar yang benar
             const getImageUrl = (path) => {
                 if (!path) return '';
                 if (path.startsWith('http')) return path;
                 if (path.startsWith('storage/')) return `${APP_URL}/${path}`;
                 return `${APP_URL}/storage/${path.replace(/^public\//, '')}`;
             };
-            let proofPath = order.payment_proof || (order.order_return ? order.order_return.return_proof : null);
 
-            if (proofPath) {
-                document.getElementById('proofImage').src = getImageUrl(proofPath);
-                document.getElementById('proofUploadedTitle').textContent = order.payment_proof ? 'Bukti Pembayaran' :
-                    'Bukti Retur';
+            // Logika 1: Jika ini adalah pesanan dengan retur, TAMPILKAN BUKTI RETUR
+            // (Asumsi backend konsisten mengirim 'return_details')
+            if (order.return_details && order.return_details.return_proof) {
+                proofUploadedTitle.textContent = 'Bukti Retur';
+                proofImage.src = getImageUrl(order.return_details.return_proof);
                 paymentProofUploaded.classList.remove('hidden');
+
+                // Logika 2: Jika BUKAN retur, tapi punya bukti bayar, TAMPILKAN BUKTI BAYAR
+            } else if (order.payment_proof) {
+                proofUploadedTitle.textContent = 'Bukti Pembayaran';
+                proofImage.src = getImageUrl(order.payment_proof);
+                paymentProofUploaded.classList.remove('hidden');
+
+                // Logika 3: Jika status memungkinkan untuk upload (belum ada bukti)
             } else if (order.status === 'diterima_pembeli' || order.status === 'menunggu_retur') {
-                paymentUploadForm.classList.remove('hidden');
-                compressLink.classList.remove('hidden');
                 const isReturn = order.status === 'menunggu_retur';
-                document.getElementById('paymentProofTitle').textContent = isReturn ? 'Unggah Bukti Retur' :
-                    'Unggah Bukti Pembayaran';
+                paymentProofTitle.textContent = isReturn ? 'Unggah Bukti Retur' : 'Unggah Bukti Pembayaran';
                 document.getElementById('uploadButtonText').textContent = isReturn ? 'Unggah Bukti Retur' :
                     'Unggah Bukti Pembayaran';
                 paymentUploadForm.onsubmit = (e) => {
                     e.preventDefault();
                     handleProofUpload(order.id, order.status);
                 };
+                paymentUploadForm.classList.remove('hidden');
+                compressLink.classList.remove('hidden');
+
+                // Logika 4: Jika status tidak memungkinkan upload
             } else {
                 paymentUploadBlocker.classList.remove('hidden');
             }

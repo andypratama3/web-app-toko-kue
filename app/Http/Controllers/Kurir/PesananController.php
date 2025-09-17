@@ -355,10 +355,16 @@ class PesananController extends Controller
                         'returned_quantity' => $returnedQuantity,
                     ];
                 })->toArray(),
-                'order_return' => $activeReturn ? [
+                // 'order_return' => $activeReturn ? [
+                //     'id' => $activeReturn->id,
+                //     'status' => $activeReturn->status,
+                //     // 'return_proof' => $activeReturn->return_proof,
+                //     'return_proof' => $activeReturn->return_proof ? asset('storage/' . preg_replace('#^(storage/|public/)#', '', $activeReturn->return_proof)) : null,
+                //     'total_amount_returned' => $activeReturn->total_amount_returned,
+                // ] : null,
+                'return_details' => $activeReturn ? [ // [!code ++]
                     'id' => $activeReturn->id,
                     'status' => $activeReturn->status,
-                    // 'return_proof' => $activeReturn->return_proof,
                     'return_proof' => $activeReturn->return_proof ? asset('storage/' . preg_replace('#^(storage/|public/)#', '', $activeReturn->return_proof)) : null,
                     'total_amount_returned' => $activeReturn->total_amount_returned,
                 ] : null,
