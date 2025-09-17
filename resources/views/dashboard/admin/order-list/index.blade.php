@@ -42,7 +42,7 @@
                     <thead class="align-bottom">
                         <tr
                             class="text-xs font-bold text-left text-gray-500 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                            <th class="px-4 py-3">No</th>
+                            <th class="px-4 py-3 text-center">No</th>
                             <th class="px-4 py-3">Invoice</th>
                             <th class="px-4 py-3">Customer</th>
                             <th class="px-4 py-3">Kurir</th>
