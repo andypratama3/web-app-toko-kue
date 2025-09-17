@@ -24,7 +24,8 @@
                             <div>
                                 <label class="block mb-2 text-sm font-medium">Gambar Produk</label>
                                 <div class="flex items-center space-x-4">
-                                    <img src="{{ asset($product->image_path) }}" class="object-cover w-20 h-20 rounded-lg" alt="{{ $product->name }}">
+                                    <img src="{{ Storage::url($product->image_path) }}" class="object-cover w-20 h-20 rounded-lg" alt="{{ $product->name }}">
+                                    {{-- <img src="{{ asset($product->image_path) }}" class="object-cover w-20 h-20 rounded-lg" alt="{{ $product->name }}"> --}}
                                     <input type="file" name="image" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50">
                                 </div>
                                 <p class="mt-1 text-xs text-gray-500">Kosongkan jika tidak ingin mengganti gambar.</p>
