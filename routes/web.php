@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\KurirDashboardController;
@@ -61,8 +62,8 @@ Route::middleware([
 
     //---------- RUTE ADMIN ----------//
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
-    Route::get('peforma-kurir/export/pdf', [\App\Http\Controllers\Admin\PeformaKurirController::class, 'exportPdf'])->name('peforma-kurir.export.pdf');
-    Route::get('peforma-customer/export/pdf', [\App\Http\Controllers\Admin\PeformaCustomerController::class, 'exportPdf'])->name('peforma-customer.export.pdf');
+        Route::get('peforma-kurir/export/pdf', [\App\Http\Controllers\Admin\PeformaKurirController::class, 'exportPdf'])->name('peforma-kurir.export.pdf');
+        Route::get('peforma-customer/export/pdf', [\App\Http\Controllers\Admin\PeformaCustomerController::class, 'exportPdf'])->name('peforma-customer.export.pdf');
         Route::get('dashboard/{region}', [AdminDashboardController::class, 'index'])->name('dashboard');
 
         // Profil Admin
@@ -153,7 +154,8 @@ Route::middleware([
                 ->map(fn($p) => [
                     'id' => $p->id,
                     'name' => $p->name,
-                    'image' => $p->image_path ? asset($p->image_path) : null,
+                    // PERBAIKAN: Gunakan Storage::url() untuk menghasilkan URL yang benar
+                    'image' => $p->image_path ? Storage::url($p->image_path) : null,
                     'variants' => $p->variants->map(fn($v) => ['id' => $v->id, 'name' => $v->name, 'price' => $v->price]),
                 ]);
         })->name('produk.json');

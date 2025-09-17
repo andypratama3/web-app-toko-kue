@@ -58,14 +58,14 @@ class ProductController extends Controller
             $image = $request->file('image');
             $imageName = uniqid() . '_' . time() . '.' . $image->getClientOriginalExtension();
             $image->move(public_path('storage/products'), $imageName);
-            $imagePath = 'storage/products/' . $imageName;
+            $imagePath = $request->file('image')->store('products', 'public');
 
             $product = Product::create([
                 'name' => $request->name,
                 'category_id' => $request->category_id,
                 'region_id' => Auth::user()->region_id,
                 'description' => $request->description,
-                'image_path' => $imagePath,
+                'image_path' => $imagePath, // Simpan path yang dikembalikan oleh Storage
                 'tag' => $request->tag,
                 'is_active' => true,
             ]);
@@ -99,14 +99,12 @@ class ProductController extends Controller
             $productData['is_active'] = $request->has('is_active');
 
             if ($request->hasFile('image')) {
+                // PERBAIKAN: Hapus gambar lama dengan Storage
                 if ($product->image_path) {
-                    $oldPath = public_path($product->image_path);
-                    if (file_exists($oldPath)) @unlink($oldPath);
+                    Storage::disk('public')->delete($product->image_path);
                 }
-                $image = $request->file('image');
-                $imageName = uniqid() . '_' . time() . '.' . $image->getClientOriginalExtension();
-                $image->move(public_path('storage/products'), $imageName);
-                $productData['image_path'] = 'storage/products/' . $imageName;
+                // PERBAIKAN: Simpan gambar baru dengan Storage
+                $productData['image_path'] = $request->file('image')->store('products', 'public');
             }
             $product->update($productData);
 
@@ -158,7 +156,10 @@ class ProductController extends Controller
 
         try {
             DB::transaction(function () use ($product) {
-                if ($product->image_path) Storage::delete(str_replace('/storage', 'public', $product->image_path));
+                // PERBAIKAN: Hapus file dari storage dengan cara yang benar
+                if ($product->image_path) {
+                    Storage::disk('public')->delete($product->image_path);
+                }
                 $product->delete();
             });
         } catch (QueryException $e) {
