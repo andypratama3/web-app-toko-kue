@@ -1,34 +1,26 @@
 <script>
-  // SCRIPT FOR SYNCHRONIZING THEME TOGGLES (FIXED)
+  // Sinkronisasi toggle light/dark mode di navbar dan sidebar
   document.addEventListener('DOMContentLoaded', function() {
     var navToggle = document.getElementById('theme-toggle-checkbox-navbar');
     var sideToggle = document.getElementById('theme-toggle-checkbox-sidebar');
-
-    // Ensure both toggles exist before proceeding.
     if (!navToggle || !sideToggle) return;
-
-    function setBothToggles(isDark) {
-      navToggle.checked = isDark;
-      sideToggle.checked = isDark;
-      // The main visual change is handled here.
-      document.documentElement.classList.toggle('dark', isDark);
+    function setBoth(val) {
+      navToggle.checked = val;
+      sideToggle.checked = val;
+      document.documentElement.classList.toggle('dark', val);
     }
-
-    // This function is called when either toggle is clicked.
-    function handleToggleChange(event) {
-        const isDark = event.target.checked;
-        setBothToggles(isDark);
-        // THE FIX: Consistently save the choice to 'color-theme'.
-        localStorage.setItem('color-theme', isDark ? 'dark' : 'light');
-    }
-
-    navToggle.addEventListener('change', handleToggleChange);
-    sideToggle.addEventListener('change', handleToggleChange);
-
-    // Initialize the toggle states from the single source of truth.
-    // THE FIX: Consistently read the choice from 'color-theme'.
-    var savedTheme = localStorage.getItem('color-theme');
-    setBothToggles(savedTheme === 'dark');
+    navToggle.addEventListener('change', function() { setBoth(navToggle.checked); });
+    sideToggle.addEventListener('change', function() { setBoth(sideToggle.checked); });
+    // Inisialisasi dari localStorage jika ada
+    var saved = localStorage.getItem('theme');
+    if(saved === 'dark') setBoth(true);
+    else setBoth(false);
+    // Simpan ke localStorage
+    [navToggle, sideToggle].forEach(function(toggle) {
+      toggle.addEventListener('change', function() {
+        localStorage.setItem('theme', toggle.checked ? 'dark' : 'light');
+      });
+    });
   });
 </script>
 {{-- FIXED: Fixed navbar with proper alignment between breadcrumb and profile --}}
