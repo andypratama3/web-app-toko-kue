@@ -435,6 +435,61 @@ class PesananController extends Controller
     }
 
     /**
+     * Mengunggah bukti pengembalian (retur).
+     */
+    public function uploadReturnProof(Request $request, $id)
+    {
+        if (!Auth::check()) {
+            return response()->json(['message' => 'Tidak terautentikasi'], 401);
+        }
+
+        try {
+            $request->validate(['return_proof' => 'required|image|mimes:jpeg,png,jpg|max:2048']);
+
+            $order = Order::where('id', $id)->where('created_by_user_id', Auth::id())->firstOrFail();
+
+            // Cari permintaan retur yang aktif untuk pesanan ini
+            $orderReturn = $order->returns()->where('status', 'menunggu_konfirmasi')->latest()->firstOrFail();
+
+            // [!code block:start]
+            $file = $request->file('return_proof');
+
+            // 1. Hapus file retur lama jika ada
+            if ($orderReturn->return_proof) {
+                Storage::disk('public')->delete($orderReturn->return_proof);
+            }
+
+            // 2. Buat nama file baru yang unik dengan timestamp
+            $sanitizedInvoiceNumber = str_replace('/', '-', $order->invoice_number);
+            $timestamp = time(); // Tambahkan timestamp saat ini
+            $extension = $file->getClientOriginalExtension();
+            $fileName = 'RETURN-' . $sanitizedInvoiceNumber . '_' . $timestamp . '.' . $extension;
+            $directory = 'return_proofs';
+
+            // 3. Simpan file baru menggunakan nama yang sudah unik
+            $path = $file->storeAs($directory, $fileName, 'public');
+
+            // 4. Update database dengan path baru
+            $orderReturn->return_proof = $path;
+            $orderReturn->save();
+
+            // Ubah status pesanan utama
+            $order->status = 'menunggu_verifikasi_admin';
+            $order->save();
+            // [!code block:end]
+
+            return response()->json(['message' => 'Bukti retur berhasil diunggah. Menunggu verifikasi admin.'], 200);
+        } catch (ValidationException $e) {
+            return response()->json(['message' => 'Validasi gagal.', 'errors' => $e->errors()], 422);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['message' => 'Pesanan atau permintaan retur tidak ditemukan.'], 404);
+        } catch (\Exception $e) {
+            Log::error('Error uploading return proof for order ID ' . $id . ': ' . $e->getMessage());
+            return response()->json(['message' => 'Terjadi kesalahan internal.'], 500);
+        }
+    }
+
+    /**
      * Mengubah status pesanan (diambil, diantar, diterima).
      */
     public function updateOrderStatus(Request $request, $id)
