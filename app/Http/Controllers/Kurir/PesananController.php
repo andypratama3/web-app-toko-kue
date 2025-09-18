@@ -401,20 +401,19 @@ class PesananController extends Controller
             // [!code block:start]
             $file = $request->file('payment_proof');
 
-            // 1. Hapus file lama jika ada (LOGIKA REPLACE)
-            // Ini akan menghapus file yang path-nya tercatat di database sebelumnya.
+            // 1. Hapus file lama jika ada
             if ($order->payment_proof) {
                 Storage::disk('public')->delete($order->payment_proof);
             }
 
-            // 2. Buat nama file baru berdasarkan invoice
-            // Mengganti '/' dengan '-' agar aman untuk nama file.
+            // 2. Buat nama file baru yang unik dengan timestamp
             $sanitizedInvoiceNumber = str_replace('/', '-', $order->invoice_number);
-            $fileName = 'PAYMENT-' . $sanitizedInvoiceNumber . '.' . $file->getClientOriginalExtension();
+            $timestamp = time(); // Tambahkan timestamp saat ini
+            $extension = $file->getClientOriginalExtension();
+            $fileName = 'PAYMENT-' . $sanitizedInvoiceNumber . '_' . $timestamp . '.' . $extension; // Gabungkan
             $directory = 'payment_proofs';
 
-            // 3. Simpan file baru menggunakan Storage facade dengan nama yang sudah ditentukan
-            // `storeAs` akan mengembalikan path lengkap: 'payment_proofs/NAMA_FILE.jpg'
+            // 3. Simpan file baru menggunakan nama yang sudah unik
             $path = $file->storeAs($directory, $fileName, 'public');
 
             // 4. Update database dengan path baru
