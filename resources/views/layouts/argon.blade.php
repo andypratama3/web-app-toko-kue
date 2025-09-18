@@ -10,7 +10,7 @@
     {{-- Vite build assets --}}
     @vite(['resources/css/app.css', 'resources/css/argon-dashboard-tailwind.css', 'resources/js/app.js', 'resources/js/custom.js', 'resources/js/argon-dashboard-tailwind.js', 'resources/js/sidenav-burger.js', 'resources/js/navbar-scroll-fix.js', 'resources/js/dark-mode-toggle.js', 'resources/js/live-search.js', 'resources/js/custom-modal.js'])
 
-     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
 
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
     <!-- Font Awesome CDN -->
@@ -34,31 +34,25 @@
 
     <!-- IMPROVED DARKMODE SCRIPT - PREVENTS FOUC AND SYNCS WITH TOGGLE -->
     <script>
-        // Reset and initialize theme properly
-        (function() {
-            // For debugging - clear localStorage if there are conflicts
-            // Uncomment the next line if you want to reset theme to light mode
-            // localStorage.removeItem('color-theme');
+    // Skrip Tema yang Sudah Diperbaiki:
+    // - Tidak lagi memeriksa preferensi sistem ('prefers-color-scheme').
+    // - Selalu default ke 'light' jika belum ada pilihan tersimpan.
+    // - Menggunakan 'color-theme' sebagai satu-satunya key yang valid.
+    (function() {
+        const savedTheme = localStorage.getItem('color-theme');
 
-            const savedTheme = localStorage.getItem('color-theme');
-            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-            let isDark;
-            if (savedTheme) {
-                isDark = savedTheme === 'dark';
-            } else {
-                // Default to light mode if no preference is saved
-                isDark = false; // Changed from systemPrefersDark to false for default light mode
-                localStorage.setItem('color-theme', 'light');
-            }
-
-            if (isDark) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-        })();
-    </script>
+        // Jika ada tema yang tersimpan, gunakan itu.
+        if (savedTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
+        // Jika tidak ada tema tersimpan (kunjungan pertama), default ke 'light'.
+        else {
+            document.documentElement.classList.remove('dark');
+            // Simpan 'light' sebagai default untuk sesi berikutnya.
+            localStorage.setItem('color-theme', 'light');
+        }
+    })();
+</script>
 </head>
 
 <body

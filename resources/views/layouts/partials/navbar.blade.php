@@ -1,26 +1,39 @@
 <script>
-  // Sinkronisasi toggle light/dark mode di navbar dan sidebar
+  // Sinkronisasi toggle light/dark mode di navbar dan sidebar (SUDAH DIPERBAIKI)
   document.addEventListener('DOMContentLoaded', function() {
     var navToggle = document.getElementById('theme-toggle-checkbox-navbar');
     var sideToggle = document.getElementById('theme-toggle-checkbox-sidebar');
+
     if (!navToggle || !sideToggle) return;
-    function setBoth(val) {
-      navToggle.checked = val;
-      sideToggle.checked = val;
-      document.documentElement.classList.toggle('dark', val);
+
+    function setBoth(isDark) {
+      navToggle.checked = isDark;
+      sideToggle.checked = isDark;
+      // Perubahan visual utama (menambah/menghapus kelas 'dark')
+      document.documentElement.classList.toggle('dark', isDark);
     }
-    navToggle.addEventListener('change', function() { setBoth(navToggle.checked); });
-    sideToggle.addEventListener('change', function() { setBoth(sideToggle.checked); });
-    // Inisialisasi dari localStorage jika ada
-    var saved = localStorage.getItem('theme');
-    if(saved === 'dark') setBoth(true);
-    else setBoth(false);
-    // Simpan ke localStorage
-    [navToggle, sideToggle].forEach(function(toggle) {
-      toggle.addEventListener('change', function() {
-        localStorage.setItem('theme', toggle.checked ? 'dark' : 'light');
-      });
+
+    // Sinkronisasi event listener
+    navToggle.addEventListener('change', function() {
+        setBoth(this.checked);
+        // PERBAIKAN: Gunakan 'color-theme' sebagai key
+        localStorage.setItem('color-theme', this.checked ? 'dark' : 'light');
     });
+
+    sideToggle.addEventListener('change', function() {
+        setBoth(this.checked);
+        // PERBAIKAN: Gunakan 'color-theme' sebagai key
+        localStorage.setItem('color-theme', this.checked ? 'dark' : 'light');
+    });
+
+    // Inisialisasi state toggle berdasarkan localStorage saat halaman dimuat
+    // PERBAIKAN: Baca dari 'color-theme'
+    var savedTheme = localStorage.getItem('color-theme');
+    if (savedTheme === 'dark') {
+      setBoth(true);
+    } else {
+      setBoth(false);
+    }
   });
 </script>
 {{-- FIXED: Fixed navbar with proper alignment between breadcrumb and profile --}}
