@@ -477,18 +477,17 @@ class PesananController extends Controller
 
             $order->update($updateData);
 
-            $updatedOrder = Order::find($id); // Re-fetch untuk data terbaru
+            // [!code block:start]
+            // PERBAIKAN: Panggil metode getOrderDetails untuk mendapatkan data lengkap.
+            // Metode getData(true) akan mengubah response JSON menjadi array.
+            $fullOrderDetails = $this->getOrderDetails($id)->getData(true);
 
             return response()->json([
                 'message' => 'Status pesanan berhasil diperbarui.',
-                'order' => [
-                    'id' => $updatedOrder->id,
-                    'status' => $updatedOrder->status,
-                    'picked_up_at' => $updatedOrder->picked_up_at ? Carbon::parse($updatedOrder->picked_up_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . ' WIB' : null,
-                    'delivered_at' => $updatedOrder->delivered_at ? Carbon::parse($updatedOrder->delivered_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . ' WIB' : null,
-                    'received_by_buyer_at' => $updatedOrder->received_by_buyer_at ? Carbon::parse($updatedOrder->received_by_buyer_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . ' WIB' : null,
-                ]
+                'order' => $fullOrderDetails // Mengembalikan objek pesanan yang lengkap
             ], 200);
+            // [!code block:end]
+
         } catch (ValidationException $e) {
             return response()->json(['message' => 'Validasi gagal.', 'errors' => $e->errors()], 422);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
