@@ -175,15 +175,12 @@
     $suggestedMax = $maxChartValue > 0 ? ceil($maxChartValue * 1.2) : 5;
 
     ?>
-    <!-- Enhanced Dashboard Cards -->
     <div class="w-full max-w full">
         <div class="flex flex-wrap gap-6 -mx-3">
             <div class="w-full max-w-full px-3 space-y-4 lg:flex-nome">
-                <!-- Enhanced Achievement Card -->
                 <div class="mb-6">
                     <div
                         class="relative flex flex-col flex-none max-w-full gap-4 p-6 px-6 py-6 overflow-hidden border shadow-2xl rounded-3xl xl:gap-0 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-slate-800 dark:via-slate-700 dark:to-slate-800 border-amber-100 dark:border-slate-600">
-                        <!-- Background Pattern -->
                         <div class="absolute top-0 right-0 w-32 h-32 opacity-10">
                             <div
                                 class="w-full h-full transform rotate-45 translate-x-8 -translate-y-8 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500">
@@ -199,15 +196,12 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <!-- Greeting Container -->
                                     <div class="flex items-baseline gap-2">
                                         <div class="text-2xl font-bold text-transparent bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text dark:from-white dark:to-gray-300"
                                             id="ucapan">
-                                            <!-- Greeting text will be injected by JS -->
-                                        </div>
+                                            </div>
                                         <div id="greeting-emoji" class="text-2xl">
-                                            <!-- Emoji will be injected by JS -->
-                                        </div>
+                                            </div>
                                     </div>
                                     <div class="text-sm font-medium text-gray-600 dark:text-gray-400">Your Achievement Today
                                     </div>
@@ -215,9 +209,7 @@
                             </div>
                         </div>
 
-                        <!-- Stats Grid -->
                         <div class="relative z-10 grid grid-cols-2 gap-4 md:grid-cols-4">
-                            <!-- Total Pesanan Card -->
                             <div
                                 class="p-3 border shadow-lg bg-white/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl border-white/20 dark:border-slate-600/20">
                                 <div class="flex items-center space-x-3">
@@ -236,7 +228,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Jumlah Customer Card -->
                             <div
                                 class="p-3 border shadow-lg bg-white/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl border-white/20 dark:border-slate-600/20">
                                 <div class="flex items-center space-x-3">
@@ -255,7 +246,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Selesai Card -->
                             <div
                                 class="p-3 border shadow-lg bg-white/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl border-white/20 dark:border-slate-600/20">
                                 <div class="flex items-center space-x-3">
@@ -274,7 +264,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Kartu Return -->
                             <div
                                 class="p-3 border shadow-lg bg-white/60 dark:bg-slate-700/60 backdrop-blur-sm rounded-2xl border-white/20 dark:border-slate-600/20">
                                 <div class="flex items-center space-x-3">
@@ -296,14 +285,11 @@
                     </div>
                 </div>
 
-                <!-- Enhanced Action Cards -->
                 <div class="grid gap-4">
                     <div class="flex flex-wrap -mx-3">
-                        <!-- Enhanced Pesanan Card -->
                         <a href="{{ route('kurir.pesanan.create') }}" class="w-1/2 px-3">
                             <div
                                 class="relative flex items-center justify-center p-4 overflow-hidden transition-all duration-300 ease-out transform border border-green-100 shadow-xl group md:justify-start bg-gradient-to-br from-green-50 to-emerald-50 dark:from-slate-800 dark:to-slate-700 rounded-2xl hover:shadow-2xl hover:scale-105 dark:border-slate-600">
-                                <!-- Background Animation -->
                                 <div
                                     class="absolute inset-0 transition-opacity duration-300 opacity-0 bg-gradient-to-br from-green-400/10 to-emerald-500/10 group-hover:opacity-100">
                                 </div>
@@ -327,12 +313,10 @@
                             </div>
                         </a>
 
-                        <!-- Enhanced Customer Card -->
                         <button type="button" id="add-customer" class="w-1/2 px-3 mb-2 js-open-modal-btn"
                             data-target-modal="create-customer-modal">
                             <div
                                 class="relative flex items-center justify-center p-4 overflow-hidden transition-all duration-300 ease-out transform border border-blue-100 shadow-xl group md:justify-start bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-700 rounded-2xl hover:shadow-2xl hover:scale-105 dark:border-slate-600">
-                                <!-- Background Animation -->
                                 <div
                                     class="absolute inset-0 transition-opacity duration-300 opacity-0 bg-gradient-to-br from-blue-400/10 to-indigo-500/10 group-hover:opacity-100">
                                 </div>
@@ -359,7 +343,6 @@
                 </div>
             </div>
 
-            <!-- Enhanced Notes Card -->
             <div class="w-full max-w-full px-3 mt-0 mb-2 lg:mb-0 lg:flex-none">
                 <div
                     class="relative flex flex-col min-w-0 overflow-hidden break-words border border-gray-100 shadow-2xl bg-gradient-to-br from-white to-gray-50 dark:from-slate-800 dark:to-slate-900 rounded-3xl bg-clip-border dark:border-slate-700">
@@ -399,7 +382,6 @@
                 </div>
             </div>
 
-            <!-- Redesigned Orders Chart -->
             <div class="w-full max-w-full px-3 mt-0 lg:flex-none">
                 <div
                     class="relative overflow-hidden bg-white border border-gray-100 shadow-2xl rounded-3xl dark:bg-slate-800 dark:border-slate-700">
@@ -471,7 +453,6 @@
             </div>
         </div>
 
-        <!-- Enhanced Latest Orders -->
         <div class="flex flex-wrap mt-3 -mx-3">
             <div class="w-full max-w-full px-3 mt-0 lg:flex-none">
                 <div class="flex flex-wrap mt-6 -mx-3">
@@ -494,7 +475,6 @@
                                 </div>
                             </div>
                             <div class="flex-auto px-0 pt-0 pb-2">
-                                <!-- Desktop Table View -->
                                 <div class="hidden p-0 overflow-x-auto md:block">
                                     <table class="items-center w-full mb-0 align-top border-collapse text-slate-500">
                                         <thead class="align-bottom">
@@ -688,7 +668,6 @@
                                     </table>
                                 </div>
 
-                                <!-- Mobile Card View -->
                                 <div class="px-2 py-2 space-y-3 md:hidden">
                                     @forelse($latestOrders as $loop => $order)
                                         @php
@@ -778,9 +757,7 @@
                                                     </button>
                                                 </div>
 
-                                                <!-- Right side: Actions -->
                                                 <div class="flex flex-col items-end flex-shrink-0 space-y-2">
-                                                    <!-- Status Badge -->
                                                     @php
                                                         $status = $order->status ?? 'dikemas';
                                                         $statusText = $statusLabelMap[$status] ?? ucfirst(str_replace('_', ' ', $status));
@@ -852,8 +829,6 @@
     </div>
     </div>
     </div>
-    <!-- end cards -->
-
     @push('flowbite-modals')
         @if (isset($customerCategories))
             @include('dashboard.kurir.customers.create', ['customerCategories' => $customerCategories])
@@ -866,7 +841,6 @@
         @include('dashboard.kurir.pesanan.return-modal')
     @endpush
 
-    <!-- Enhanced Scripts -->
     <script>
         // DITAMBAHKAN: Variabel global untuk menyimpan instance chart dan status order
         let ordersChartInstance = null;
@@ -1370,10 +1344,10 @@
                 const result = await response.json();
                 if (!response.ok) throw new Error(result.message);
                 dispatchToast(result.message, 'success');
-                
+
                 // DIUBAH: Panggil fungsi update counter
                 updateDashboardCounters(status, nextStatus);
-                
+
                 fetchOrderDetails(orderId);
                 updateTableRowStatus(orderId, nextStatus);
             } catch (error) {
@@ -1456,6 +1430,8 @@
             document.getElementById('statusStepperModalContent').classList.remove('hidden');
         }
 
+        // [!code block:start]
+        // --- FUNGSI YANG DIPERBAIKI ---
         function updateStepperUI(order) {
             const steps = ['diambil', 'diantar', 'diterima_pembeli'];
             const timestamps = {
@@ -1474,28 +1450,37 @@
                 diterima_pembeli: 'receivedByBuyerAt'
             };
 
+            // Loop tunggal untuk mengatur setiap langkah
             steps.forEach(step => {
                 const iconEl = document.getElementById(`step-${step}-icon`);
                 const timeSpanEl = document.getElementById(timeSpans[step]);
                 const mobileLineEl = document.getElementById(`line-${step}-mobile`);
                 const desktopLineEl = document.getElementById(step === 'diambil' ? 'line-diantar' : `line-${step}`);
 
+                // Reset semua kelas warna dinamis
                 iconEl.classList.remove('bg-green-600', 'text-green-600', 'border-green-600');
                 if (mobileLineEl) mobileLineEl.classList.remove('bg-green-600');
                 if (desktopLineEl) desktopLineEl.classList.remove('bg-green-600');
 
+                // Cek apakah langkah sudah selesai (ada timestamp)
                 if (timestamps[step]) {
-                    iconEl.innerHTML = '<i class="text-green-600 fas fa-check-circle"></i>';
-                    iconEl.classList.add('bg-green-600', 'text-green-600', 'border-green-600');
+                    // 1. Ganti ikon dengan centang putih
+                    iconEl.innerHTML = '<i class="text-white fas fa-check-circle"></i>';
+                    // 2. Tambahkan kelas background dan border hijau pada container ikon
+                    iconEl.classList.add('bg-green-600', 'border-green-600');
+                    // 3. Tampilkan timestamp
                     timeSpanEl.textContent = timestamps[step];
+                    // 4. Ubah warna garis menjadi hijau
                     if (mobileLineEl) mobileLineEl.classList.add('bg-green-600');
                     if (desktopLineEl) desktopLineEl.classList.add('bg-green-600');
                 } else {
-                    iconEl.innerHTML = `<i class="fas ${icons[step]} text-green-600"></i>`;
-                    timeSpanEl.textContent = '';
+                    // Jika langkah belum selesai, kembalikan ke ikon aslinya
+                    iconEl.innerHTML = `<i class="fas ${icons[step]}"></i>`;
+                    timeSpanEl.textContent = '...'; // Atau kosongkan: ''
                 }
             });
         }
+        // [!code block:end]
 
         async function handleStatusUpdate() {
             const updateButton = document.getElementById('updateStatusButton');
@@ -1528,12 +1513,16 @@
                 dispatchToast(result.message, 'success');
 
                 const oldStatus = currentOrderForUpdate ? currentOrderForUpdate.status : null;
-                
+
                 // DIUBAH: Panggil fungsi update counter
                 updateDashboardCounters(oldStatus, result.order.status);
-                
-                updateTableRowStatus(orderId, result.order.status);
+
+                // Muat ulang data modal dengan data terbaru dari server
+                // Ini akan memanggil `updateStepperUI` yang sudah diperbaiki
                 populateStatusStepperModal(result.order);
+
+                // Perbarui juga status di tabel/kartu pada halaman utama
+                updateTableRowStatus(orderId, result.order.status);
 
             } catch (error) {
                 console.error('Error updating order status:', error);
@@ -1550,7 +1539,7 @@
 
             const statusText = STATUS_LABEL_MAP[newStatus] || (newStatus.charAt(0).toUpperCase() + newStatus.slice(1)
                 .replace(/_/g, ' '));
-            
+
             let newClasses = 'bg-gray-100 text-gray-800';
             switch (newStatus) {
                 case 'diambil': newClasses = 'bg-blue-100 text-blue-800'; break;
@@ -1565,7 +1554,7 @@
             const colorClassesToRemove = [
                 'bg-blue-100', 'text-blue-800', 'bg-yellow-100', 'text-yellow-800',
                 'bg-purple-100', 'text-purple-800', 'bg-green-100', 'text-green-800',
-                'bg-red-100', 'text-red-800', 'bg-orange-100', 'text-orange-800', 
+                'bg-red-100', 'text-red-800', 'bg-orange-100', 'text-orange-800',
                 'dark:bg-orange-900', 'dark:text-orange-300', 'bg-gray-100', 'text-gray-800'
             ];
 
@@ -1718,4 +1707,3 @@
     <script src="/assets-argon-dashboard-tailwind.js?v=1.0.1" async></script>
 
 @endsection
-
