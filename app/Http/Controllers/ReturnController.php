@@ -158,7 +158,6 @@ class ReturnController extends Controller
         ]);
 
         try {
-            // [!code focus:start]
             // Cari data retur terbaru yang statusnya menunggu_konfirmasi
             $orderReturn = $order->returns()->where('status', 'menunggu_konfirmasi')->latest()->first();
 
@@ -174,10 +173,14 @@ class ReturnController extends Controller
                 Storage::disk('public')->delete($orderReturn->return_proof);
             }
 
-            // 2. Buat nama file baru berdasarkan invoice pesanan utama
+            // [!code block:start]
+            // 2. Buat nama file baru yang unik dengan timestamp
             $sanitizedInvoiceNumber = str_replace('/', '-', $order->invoice_number);
-            $fileName = 'RETURN-' . $sanitizedInvoiceNumber . '.' . $file->getClientOriginalExtension();
+            $timestamp = time(); // Tambahkan timestamp saat ini
+            $extension = $file->getClientOriginalExtension();
+            $fileName = 'RETURN-' . $sanitizedInvoiceNumber . '_' . $timestamp . '.' . $extension; // Gabungkan
             $directory = 'return_proofs';
+            // [!code block:end]
 
             // 3. Simpan file baru menggunakan storeAs
             $path = $file->storeAs($directory, $fileName, 'public');
@@ -185,7 +188,6 @@ class ReturnController extends Controller
             // 4. Simpan path file yang benar ke tabel order_returns
             $orderReturn->return_proof = $path;
             $orderReturn->save();
-            // [!code focus:end]
 
             // Ubah status di tabel orders
             $order->paid_at = now();
@@ -196,7 +198,6 @@ class ReturnController extends Controller
                 'message' => 'Bukti retur berhasil diunggah.',
                 'order' => $order
             ]);
-
         } catch (\Exception $e) {
             return response()->json(['message' => 'Gagal mengunggah file: ' . $e->getMessage()], 500);
         }
