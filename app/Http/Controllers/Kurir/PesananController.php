@@ -237,52 +237,7 @@ class PesananController extends Controller
             return response()->json(['message' => 'Gagal menyimpan pesanan. Terjadi kesalahan internal.'], 500);
         }
     }
-
-    /**
-     * Menampilkan daftar pesanan yang dibuat oleh kurir.
-     */
-    // public function showFilteredOrders()
-    // {
-    //     if (!Auth::check()) {
-    //         return redirect('/login')->with('error', 'Anda harus login untuk melihat pesanan.');
-    //     }
-
-    //     $loggedInUser = Auth::user();
-    //     $orders = collect();
-    //     $error = null;
-
-    //     if (is_null($loggedInUser->region_id)) {
-    //         Log::warning('User ' . $loggedInUser->id . ' does not have a region_id.');
-    //         $error = 'Region Anda tidak terdaftar. Silakan hubungi administrator.';
-    //         return view('dashboard.kurir.pesanan.index', compact('orders', 'error'));
-    //     }
-
-    //     try {
-    //         $orders = Order::where('created_by_user_id', $loggedInUser->id)
-    //             ->where('status', '!=', 'diverifikasi_admin') // Filter dari File 2
-    //             ->with('customer')
-    //             ->latest()
-    //             ->get();
-
-    //         // Logika Peringatan dari File 1
-    //         foreach ($orders as $order) {
-    //             $order->show_warning = false;
-    //             if (is_null($order->payment_proof)) {
-    //                 $daysSinceCreation = Carbon::parse($order->created_at)->diffInDays(now());
-    //                 if ($daysSinceCreation >= 5) {
-    //                     $order->show_warning = true;
-    //                 }
-    //             }
-    //         }
-    //     } catch (\Exception $e) {
-    //         Log::error('Error fetching orders for courier ' . $loggedInUser->id . ': ' . $e->getMessage());
-    //         $error = 'Gagal memuat pesanan. Terjadi kesalahan pada server.';
-    //         return view('dashboard.kurir.pesanan.index', compact('orders', 'error'));
-    //     }
-
-    //     return view('dashboard.kurir.pesanan.index', compact('orders'));
-    // }
-
+    // [!code block:start]
     /**
      * Mengambil detail pesanan berdasarkan ID.
      */
@@ -293,7 +248,13 @@ class PesananController extends Controller
         }
 
         try {
-            $order = Order::with(['customer', 'items.product'])
+            // PERBAIKAN 1: Tambahkan withTrashed() untuk mengambil data customer yang soft-deleted
+            $order = Order::with([
+                'customer' => function ($query) {
+                    $query->withTrashed();
+                },
+                'items.product'
+            ])
                 ->where('id', $id)
                 ->where('created_by_user_id', Auth::id())
                 ->firstOrFail();
@@ -324,16 +285,16 @@ class PesananController extends Controller
                 'created_at' => $order->created_at->isoFormat('D MMMM YYYY, HH:mm'),
                 'paid_at' => $paidAtFormatted,
                 'paid_at_label' => $paidAtLabel,
-                // 'payment_proof' => $order->payment_proof,
                 'payment_proof' => $order->payment_proof ? asset('storage/' . preg_replace('#^(storage/|public/)#', '', $order->payment_proof)) : null,
                 'picked_up_at' => $order->picked_up_at ? Carbon::parse($order->picked_up_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . ' WIB' : null,
                 'delivered_at' => $order->delivered_at ? Carbon::parse($order->delivered_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . ' WIB' : null,
                 'received_by_buyer_at' => $order->received_by_buyer_at ? Carbon::parse($order->received_by_buyer_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . ' WIB' : null,
+                // PERBAIKAN 2: Gunakan optional() helper untuk keamanan jika customer benar-benar tidak ada
                 'customer' => [
-                    'company_name' => $order->customer->company_name ?? 'N/A',
-                    'name' => $order->customer->name ?? 'N/A',
-                    'phone' => $order->customer->phone ?? 'N/A',
-                    'address' => $order->customer->address ?? 'N/A',
+                    'company_name' => optional($order->customer)->company_name ?? 'N/A',
+                    'name' => optional($order->customer)->name ?? 'Pelanggan Dihapus',
+                    'phone' => optional($order->customer)->phone ?? 'N/A',
+                    'address' => optional($order->customer)->address ?? 'N/A',
                 ],
                 'products' => $order->items->map(function ($item) {
                     $returnedQuantity = DB::table('order_returns')
@@ -351,19 +312,11 @@ class PesananController extends Controller
                         'variant_name' => $item->variant_name,
                         'quantity' => $item->quantity,
                         'price' => $item->price,
-                        // 'image_url' => $item->product->image_path ?? null,
                         'image_url' => $item->product->image_path ? Storage::url($item->product->image_path) : null,
                         'returned_quantity' => $returnedQuantity,
                     ];
                 })->toArray(),
-                // 'order_return' => $activeReturn ? [
-                //     'id' => $activeReturn->id,
-                //     'status' => $activeReturn->status,
-                //     // 'return_proof' => $activeReturn->return_proof,
-                //     'return_proof' => $activeReturn->return_proof ? asset('storage/' . preg_replace('#^(storage/|public/)#', '', $activeReturn->return_proof)) : null,
-                //     'total_amount_returned' => $activeReturn->total_amount_returned,
-                // ] : null,
-                'return_details' => $activeReturn ? [ // [!code ++]
+                'return_details' => $activeReturn ? [
                     'id' => $activeReturn->id,
                     'status' => $activeReturn->status,
                     'return_proof' => $activeReturn->return_proof ? asset('storage/' . preg_replace('#^(storage/|public/)#', '', $activeReturn->return_proof)) : null,
@@ -375,11 +328,11 @@ class PesananController extends Controller
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['message' => 'Pesanan tidak ditemukan.'], 404);
         } catch (\Exception $e) {
-            Log::error('Error fetching order details for order ID ' . $id . ': ' . $e->getMessage());
+            Log::error('Error fetching order details for order ID ' . $id . ': ' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
             return response()->json(['message' => 'Terjadi kesalahan internal.'], 500);
         }
     }
-
+    // [!code block:end]
     /**
      * Mengunggah bukti pembayaran.
      */
