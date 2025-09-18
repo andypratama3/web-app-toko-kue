@@ -34,22 +34,22 @@
 
     <!-- IMPROVED DARKMODE SCRIPT - PREVENTS FOUC AND SYNCS WITH TOGGLE -->
     <script>
-    // Skrip Tema yang Sudah Diperbaiki:
-    // - Tidak lagi memeriksa preferensi sistem ('prefers-color-scheme').
-    // - Selalu default ke 'light' jika belum ada pilihan tersimpan.
-    // - Menggunakan 'color-theme' sebagai satu-satunya key yang valid.
+    // THEME SCRIPT (FIXED)
+    // This script no longer checks for system preferences ('prefers-color-scheme').
+    // It will always default to 'light' mode if no theme is saved.
+    // It consistently uses 'color-theme' as the single source of truth.
     (function() {
         const savedTheme = localStorage.getItem('color-theme');
 
-        // Jika ada tema yang tersimpan, gunakan itu.
         if (savedTheme === 'dark') {
             document.documentElement.classList.add('dark');
-        }
-        // Jika tidak ada tema tersimpan (kunjungan pertama), default ke 'light'.
-        else {
+        } else {
+            // This block runs if the theme is 'light' OR if no theme is saved yet.
             document.documentElement.classList.remove('dark');
-            // Simpan 'light' sebagai default untuk sesi berikutnya.
-            localStorage.setItem('color-theme', 'light');
+            if (!savedTheme) {
+                // If it's the very first visit, set 'light' as the default.
+                localStorage.setItem('color-theme', 'light');
+            }
         }
     })();
 </script>

@@ -1,39 +1,34 @@
 <script>
-  // Sinkronisasi toggle light/dark mode di navbar dan sidebar (SUDAH DIPERBAIKI)
+  // SCRIPT FOR SYNCHRONIZING THEME TOGGLES (FIXED)
   document.addEventListener('DOMContentLoaded', function() {
     var navToggle = document.getElementById('theme-toggle-checkbox-navbar');
     var sideToggle = document.getElementById('theme-toggle-checkbox-sidebar');
 
+    // Ensure both toggles exist before proceeding.
     if (!navToggle || !sideToggle) return;
 
-    function setBoth(isDark) {
+    function setBothToggles(isDark) {
       navToggle.checked = isDark;
       sideToggle.checked = isDark;
-      // Perubahan visual utama (menambah/menghapus kelas 'dark')
+      // The main visual change is handled here.
       document.documentElement.classList.toggle('dark', isDark);
     }
 
-    // Sinkronisasi event listener
-    navToggle.addEventListener('change', function() {
-        setBoth(this.checked);
-        // PERBAIKAN: Gunakan 'color-theme' sebagai key
-        localStorage.setItem('color-theme', this.checked ? 'dark' : 'light');
-    });
-
-    sideToggle.addEventListener('change', function() {
-        setBoth(this.checked);
-        // PERBAIKAN: Gunakan 'color-theme' sebagai key
-        localStorage.setItem('color-theme', this.checked ? 'dark' : 'light');
-    });
-
-    // Inisialisasi state toggle berdasarkan localStorage saat halaman dimuat
-    // PERBAIKAN: Baca dari 'color-theme'
-    var savedTheme = localStorage.getItem('color-theme');
-    if (savedTheme === 'dark') {
-      setBoth(true);
-    } else {
-      setBoth(false);
+    // This function is called when either toggle is clicked.
+    function handleToggleChange(event) {
+        const isDark = event.target.checked;
+        setBothToggles(isDark);
+        // THE FIX: Consistently save the choice to 'color-theme'.
+        localStorage.setItem('color-theme', isDark ? 'dark' : 'light');
     }
+
+    navToggle.addEventListener('change', handleToggleChange);
+    sideToggle.addEventListener('change', handleToggleChange);
+
+    // Initialize the toggle states from the single source of truth.
+    // THE FIX: Consistently read the choice from 'color-theme'.
+    var savedTheme = localStorage.getItem('color-theme');
+    setBothToggles(savedTheme === 'dark');
   });
 </script>
 {{-- FIXED: Fixed navbar with proper alignment between breadcrumb and profile --}}
