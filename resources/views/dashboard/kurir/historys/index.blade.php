@@ -207,8 +207,8 @@
 
                 elements.invoiceNumber.textContent = data.invoice_number || '-';
                 elements.customerName.textContent = data.customer_name || '-';
-                elements.customerPhone.textContent = data.customer_phone || '-';
-                elements.customerAddress.textContent = data.customer_address || '-';
+                elements.customerPhone.textContent = `☎️  ${data.customer_phone}` || '-';
+                elements.customerAddress.textContent = `📍 ${data.customer_address}` || '-';
                 if (data.customer_company && data.customer_company !== 'N/A') {
                     elements.customerCompany.textContent = `🏢 ${data.customer_company}`;
                     elements.customerCompany.classList.remove('hidden');

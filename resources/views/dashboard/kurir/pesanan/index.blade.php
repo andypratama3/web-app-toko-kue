@@ -306,11 +306,11 @@
             // Populate data umum
             document.getElementById('modalInvoiceNumber').textContent = order.invoice_number || 'N/A';
             document.getElementById('customerName').textContent = order.customer.name || 'N/A';
-            document.getElementById('customerPhone').textContent = order.customer.phone || 'N/A';
-            document.getElementById('customerAddress').textContent = order.customer.address || 'N/A';
+            document.getElementById('customerPhone').textContent = `☎️  ${order.customer.phone}` || 'N/A';
+            document.getElementById('customerAddress').textContent = `📍 ${order.customer.address}` || 'N/A';
             const companyNameEl = document.getElementById('customerCompanyName');
             if (order.customer.company_name && order.customer.company_name !== 'N/A') {
-                companyNameEl.textContent = `${order.customer.company_name}`;
+                companyNameEl.textContent = `🏢 ${order.customer.company_name}`;
                 companyNameEl.classList.remove('hidden');
             } else {
                 companyNameEl.textContent = '';

@@ -334,10 +334,7 @@
                             datasets: [{
                                     label: 'Total Pesanan',
                                     data: @json($chartDataTotal),
-                                    borderColor: '#3b82f6', // Biru
-                                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                    fill: true,
-                                    tension: 0.4,
+                                    
                                 },
                                 {
                                     label: 'Diverifikasi',

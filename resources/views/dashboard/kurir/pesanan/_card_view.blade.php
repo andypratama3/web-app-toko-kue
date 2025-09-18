@@ -25,39 +25,45 @@ return $statusLabelMap[$status] ?? ucwords(str_replace('_', ' ', $status));
     </div>
 
     <div class="pl-2">
-        <div class="flex items-start justify-between mb-1">
-            <div>
-                <p class="text-sm font-semibold text-black truncate dark:text-white">
+        {{-- [MODIFIED] Mengembalikan layout ke side-by-side dan memastikan teks bisa wrap --}}
+        <div class="flex items-start justify-between gap-2">
+            {{-- Sisi Kiri: Invoice & Catatan Penolakan --}}
+            <div class="flex-grow min-w-0">
+                <p class="text-sm font-semibold text-black dark:text-white break-words">
                     {{ $order->invoice_number ?? 'N/A' }}
                     @if ($order->show_warning)
                     <span title="Pembayaran melewati 5 hari" class="text-xs">⚠️</span>
                     @endif
                 </p>
-                {{-- [!code block:start] --}}
+
                 @if ($order->rejection_note)
                     <div class="flex items-center gap-1 mt-1 text-xs text-red-600 dark:text-red-400" title="{{ $order->rejection_note }}">
                         <i class="fas fa-exclamation-triangle"></i>
                         <span>Verifikasi Ditolak</span>
                     </div>
                 @endif
-                {{-- [!code block:end] --}}
             </div>
-            <span class="status-badge flex-shrink-0 px-2 py-0.5 text-xs font-semibold rounded-full whitespace-nowrap ml-2
-                    @switch($order->status ?? 'baru')
-                        @case('diambil') bg-blue-100 text-blue-800 @break
-                        @case('diantar') bg-yellow-100 text-yellow-800 @break
-                        @case('diterima_pembeli') bg-purple-100 text-purple-800 @break
-                        @case('menunggu_retur') bg-red-100 text-red-800 @break
-                        @case('menunggu_verifikasi_admin') bg-orange-100 text-orange-800 @break
-                        @case('selesai') bg-green-100 text-green-800 @break
-                        @default bg-gray-100 text-gray-800
-                    @endswitch
-                    ">
-                {{ $labelStatus($order->status) }}
-            </span>
+            
+            {{-- Sisi Kanan: Status Badge --}}
+            <div class="flex-shrink-0 text-right">
+                <span class="status-badge inline-block px-2 py-0.5 text-xs font-semibold rounded-full
+                        @switch($order->status ?? 'baru')
+                            @case('diambil') bg-blue-100 text-blue-800 @break
+                            @case('diantar') bg-yellow-100 text-yellow-800 @break
+                            @case('diterima_pembeli') bg-purple-100 text-purple-800 @break
+                            @case('menunggu_retur') bg-red-100 text-red-800 @break
+                            @case('menunggu_verifikasi_admin') bg-orange-100 text-orange-800 @break
+                            @case('selesai') bg-green-100 text-green-800 @break
+                            @default bg-gray-100 text-gray-800
+                        @endswitch
+                        ">
+                    {{ $labelStatus($order->status) }}
+                </span>
+            </div>
         </div>
 
-        <div class="flex items-start justify-between mt-1">
+        {{-- [MODIFIED] Menambahkan margin atas untuk memisahkan dari header --}}
+        <div class="flex items-start justify-between mt-2">
             {{-- SISI KIRI: DATA CUSTOMER --}}
             <div class="pr-4">
                 <p class="text-md font-bold text-gray-800 dark:text-gray-200 mb-1">
@@ -97,3 +103,4 @@ return $statusLabelMap[$status] ?? ucwords(str_replace('_', ' ', $status));
     Tidak ada pesanan yang cocok dengan pencarian Anda.
 </div>
 @endforelse
+
