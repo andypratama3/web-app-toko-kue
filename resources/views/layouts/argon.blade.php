@@ -34,25 +34,31 @@
 
     <!-- IMPROVED DARKMODE SCRIPT - PREVENTS FOUC AND SYNCS WITH TOGGLE -->
     <script>
-    // THEME SCRIPT (FIXED)
-    // This script no longer checks for system preferences ('prefers-color-scheme').
-    // It will always default to 'light' mode if no theme is saved.
-    // It consistently uses 'color-theme' as the single source of truth.
-    (function() {
-        const savedTheme = localStorage.getItem('color-theme');
+        // Reset and initialize theme properly
+        (function() {
+            // For debugging - clear localStorage if there are conflicts
+            // Uncomment the next line if you want to reset theme to light mode
+            // localStorage.removeItem('color-theme');
 
-        if (savedTheme === 'dark') {
-            document.documentElement.classList.add('dark');
-        } else {
-            // This block runs if the theme is 'light' OR if no theme is saved yet.
-            document.documentElement.classList.remove('dark');
-            if (!savedTheme) {
-                // If it's the very first visit, set 'light' as the default.
+            const savedTheme = localStorage.getItem('color-theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            let isDark;
+            if (savedTheme) {
+                isDark = savedTheme === 'dark';
+            } else {
+                // Default to light mode if no preference is saved
+                isDark = false; // Changed from systemPrefersDark to false for default light mode
                 localStorage.setItem('color-theme', 'light');
             }
-        }
-    })();
-</script>
+
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
 </head>
 
 <body
