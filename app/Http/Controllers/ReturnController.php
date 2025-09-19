@@ -9,9 +9,36 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth; // Impor Auth
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon; // [!code ++]
 
 class ReturnController extends Controller
 {
+    // [!code block:start]
+    // --- Helper Functions for Timezone ---
+    private function getUserTimezone()
+    {
+        $user = Auth::user();
+        if (!$user || is_null($user->region_id)) {
+            return config('app.timezone', 'UTC');
+        }
+
+        switch ($user->region_id) {
+            case 3: // Denpasar
+                return 'Asia/Makassar'; // WITA
+            case 1: // Surabaya
+            case 2: // Malang
+                return 'Asia/Jakarta'; // WIB
+            default:
+                return config('app.timezone', 'UTC');
+        }
+    }
+
+    private function nowInUserTimezone()
+    {
+        return Carbon::now($this->getUserTimezone());
+    }
+    // [!code block:end]
+
 
     public function requestReturn(Request $request, Order $order)
     {
@@ -173,14 +200,12 @@ class ReturnController extends Controller
                 Storage::disk('public')->delete($orderReturn->return_proof);
             }
 
-            // [!code block:start]
             // 2. Buat nama file baru yang unik dengan timestamp
             $sanitizedInvoiceNumber = str_replace('/', '-', $order->invoice_number);
             $timestamp = time(); // Tambahkan timestamp saat ini
             $extension = $file->getClientOriginalExtension();
             $fileName = 'RETURN-' . $sanitizedInvoiceNumber . '_' . $timestamp . '.' . $extension; // Gabungkan
             $directory = 'return_proofs';
-            // [!code block:end]
 
             // 3. Simpan file baru menggunakan storeAs
             $path = $file->storeAs($directory, $fileName, 'public');
@@ -190,7 +215,10 @@ class ReturnController extends Controller
             $orderReturn->save();
 
             // Ubah status di tabel orders
-            $order->paid_at = now();
+            // [!code block:start]
+            // PERBAIKAN: Menggunakan helper untuk mendapatkan waktu regional
+            $order->paid_at = $this->nowInUserTimezone();
+            // [!code block:end]
             $order->status = 'menunggu_verifikasi_admin';
             $order->save();
 

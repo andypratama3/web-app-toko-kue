@@ -977,6 +977,33 @@
             }));
         }
 
+        // [!code block:start]
+        /**
+         * Membuka modal image viewer untuk menampilkan gambar dalam ukuran penuh.
+         * @param {string} src - URL sumber gambar yang akan ditampilkan.
+         */
+        function openImageViewer(src) {
+            const imageViewer = document.getElementById('imageViewerModal');
+            const fullSizeImage = document.getElementById('fullSizeImage');
+            if (imageViewer && fullSizeImage) {
+                fullSizeImage.src = src;
+                imageViewer.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden'); // Mencegah scroll di belakang modal
+            }
+        }
+
+        /**
+         * Menutup modal image viewer.
+         */
+        function closeImageViewer() {
+            const imageViewer = document.getElementById('imageViewerModal');
+            if (imageViewer) {
+                imageViewer.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden'); // Mengembalikan kemampuan scroll
+            }
+        }
+        // [!code block:end]
+
         // DITAMBAHKAN: Fungsi baru untuk memperbarui statistik di dashboard secara client-side
         function updateDashboardCounters(oldStatus, newStatus) {
             if (oldStatus === newStatus) return; // Tidak ada perubahan, tidak perlu update
@@ -1101,13 +1128,13 @@
 
 
         function populateOrderDetailsModal(order) {
-            // Populate data umum
+             // Populate data umum
             document.getElementById('modalInvoiceNumber').textContent = order.invoice_number || 'N/A';
-            document.getElementById('customerName').textContent = order.customer?.name || 'Pelanggan Dihapus';
-            document.getElementById('customerPhone').textContent = `☎️  ${order.customer?.phone || 'N/A'}`;
-            document.getElementById('customerAddress').textContent = `📍 ${order.customer?.address || 'N/A'}`;
+            document.getElementById('customerName').textContent = order.customer.name || 'N/A';
+            document.getElementById('customerPhone').textContent = `☎️  ${order.customer.phone}` || 'N/A';
+            document.getElementById('customerAddress').textContent = `📍 ${order.customer.address}` || 'N/A';
             const companyNameEl = document.getElementById('customerCompanyName');
-            if (order.customer?.company_name && order.customer.company_name !== 'N/A') {
+            if (order.customer.company_name && order.customer.company_name !== 'N/A') {
                 companyNameEl.textContent = `🏢 ${order.customer.company_name}`;
                 companyNameEl.classList.remove('hidden');
             } else {
@@ -1116,9 +1143,7 @@
             }
             document.getElementById('paymentMethod').textContent = order.payment_method || 'N/A';
             document.getElementById('orderCreatedAt').textContent = order.created_at || 'Tidak Tersedia';
-            document.getElementById('orderPaidAt').textContent = order.paid_at ? (order.paid_at + (order.paid_at_label ||
-                '')) : 'Belum Lunas ❌';
-
+            document.getElementById('orderPaidAt').textContent = order.paid_at ? (order.paid_at + (order.paid_at_label || '')) : 'Belum Lunas ❌';
             // Populate Order Notes
             document.getElementById('orderNotesContainer').textContent = order.note || '"Tidak ada catatan."';
 
@@ -1132,7 +1157,6 @@
                 rejectionContainer.classList.add('hidden');
             }
 
-            // Logika untuk menampilkan ikon di modal rincian
             const statusSection = document.getElementById('modalOrderStatusSection');
             const statusBadge = document.getElementById('modalOrderStatusBadge');
             const statusIcon = document.getElementById('modalOrderStatusIcon');
@@ -1161,7 +1185,6 @@
                         badgeColorClasses = 'bg-orange-100 text-orange-800';
                         break;
                     case 'selesai':
-                    case 'diverifikasi_admin': // Tambahkan case untuk diverifikasi admin
                         badgeColorClasses = 'bg-green-100 text-green-800';
                         break;
                 }
@@ -1169,7 +1192,7 @@
                 const baseClasses = 'flex-shrink-0 px-3 py-1 text-sm font-semibold rounded-full whitespace-nowrap';
                 statusBadge.className = `${baseClasses} ${badgeColorClasses}`;
                 // icon success
-                if ((order.status === 'selesai' || order.status === 'diverifikasi_admin') && statusIcon) {
+                if (order.status === 'selesai' && statusIcon) {
                     statusIcon.innerHTML =
                         `<svg class="w-8 h-8" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#10b981" stroke-width="1.5" fill="#d1fae5"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" stroke="#10b981" stroke-width="2"/></svg>`;
                     statusIcon.classList.remove('hidden');
@@ -1230,38 +1253,38 @@
 
                     // SVG icon similar to the one in the image
                     const iconHTML = `
-                    <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 mt-1 bg-gray-200 rounded-lg dark:bg-gray-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                        </svg>
-                    </div>
-                `;
+                <div class="flex items-center justify-center flex-shrink-0 w-8 h-8 mt-1 bg-gray-200 rounded-lg dark:bg-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                </div>
+            `;
 
                     let quantityLine =
                         `<p class="text-sm text-gray-600 dark:text-gray-300">Jumlah: ${initialQty}</p>`;
                     if (returnedQty > 0) {
                         quantityLine = `
-                        <p class="text-sm text-gray-600 dark:text-gray-300">
-                            Awal: <span class="font-medium text-gray-800 dark:text-gray-200">${initialQty}</span> |
-                            Retur: <span class="font-medium text-red-500">${returnedQty}</span> |
-                            Sisa: <span class="font-medium text-green-600">${remainingQty}</span>
-                        </p>
-                    `;
+                    <p class="text-sm text-gray-600 dark:text-gray-300">
+                        Awal: <span class="font-medium text-gray-800 dark:text-gray-200">${initialQty}</span> |
+                        Retur: <span class="font-medium text-red-500">${returnedQty}</span> |
+                        Sisa: <span class="font-medium text-green-600">${remainingQty}</span>
+                    </p>
+                `;
                     }
 
                     const priceLine = `
-                    <p class="mt-1 text-sm font-medium text-gray-800 dark:text-gray-200">
-                        Rp ${new Intl.NumberFormat('id-ID').format(price)} &rarr; Rp ${new Intl.NumberFormat('id-ID').format(newSubtotal)}
-                    </p>
-                `;
+                <p class="mt-1 text-sm font-medium text-gray-800 dark:text-gray-200">
+                    Rp ${new Intl.NumberFormat('id-ID').format(price)} &rarr; Rp ${new Intl.NumberFormat('id-ID').format(newSubtotal)}
+                </p>
+            `;
 
                     const detailsHTML = `
-                    <div class="flex-grow">
-                        <p class="font-bold text-gray-900 dark:text-white">${product.name} ${product.variant_name ? `(${product.variant_name})` : ''}</p>
-                        ${quantityLine}
-                        ${priceLine}
-                    </div>
-                `;
+                <div class="flex-grow">
+                    <p class="font-bold text-gray-900 dark:text-white">${product.name} ${product.variant_name ? `(${product.variant_name})` : ''}</p>
+                    ${quantityLine}
+                    ${priceLine}
+                </div>
+            `;
 
                     productItem.innerHTML = iconHTML + detailsHTML;
                     productDetailsDiv.appendChild(productItem);
@@ -1271,40 +1294,73 @@
                     '<p class="text-center text-gray-500 dark:text-gray-400">Tidak ada produk dalam pesanan ini.</p>';
             }
 
-            // Logika Proof Upload
+            // --- LOGIKA BUKTI UNGGAHAN YANG DIPERBAIKI ---
             const paymentUploadForm = document.getElementById('paymentUploadForm');
             const paymentProofUploaded = document.getElementById('paymentProofUploaded');
             const paymentUploadBlocker = document.getElementById('paymentUploadBlocker');
+            const proofImage = document.getElementById('proofImage');
+            const proofUploadedTitle = document.getElementById('proofUploadedTitle');
             const compressLink = document.getElementById('compress-link');
+            const paymentProofTitle = document.getElementById('paymentProofTitle');
+
+            // Sembunyikan semua elemen terkait bukti unggahan terlebih dahulu
             paymentUploadForm.classList.add('hidden');
             paymentProofUploaded.classList.add('hidden');
             paymentUploadBlocker.classList.add('hidden');
             compressLink.classList.add('hidden');
 
-            const getImageUrl = (path) => path ? `${APP_URL}/storage/${path.replace(/^public\//, '')}` : '';
-            let proofPath = order.payment_proof || (order.order_return ? order.order_return.return_proof : null);
+            // Helper untuk mendapatkan URL gambar yang benar
+            const getImageUrl = (path) => {
+                if (!path) return '';
+                if (path.startsWith('http')) return path;
+                if (path.startsWith('storage/')) return `${APP_URL}/${path}`;
+                return `${APP_URL}/storage/${path.replace(/^public\//, '')}`;
+            };
 
-            if (proofPath) {
-                document.getElementById('proofImage').src = getImageUrl(proofPath);
-                document.getElementById('proofUploadedTitle').textContent = order.payment_proof ? 'Bukti Pembayaran' :
-                    'Bukti Retur';
+            // Logika 1: Jika ini adalah pesanan dengan retur, TAMPILKAN BUKTI RETUR
+            // (Asumsi backend konsisten mengirim 'return_details')
+            if (order.return_details && order.return_details.return_proof) {
+                proofUploadedTitle.textContent = 'Bukti Retur';
+                proofImage.src = getImageUrl(order.return_details.return_proof);
                 paymentProofUploaded.classList.remove('hidden');
+
+                // Logika 2: Jika BUKAN retur, tapi punya bukti bayar, TAMPILKAN BUKTI BAYAR
+            } else if (order.payment_proof) {
+                proofUploadedTitle.textContent = 'Bukti Pembayaran';
+                proofImage.src = getImageUrl(order.payment_proof);
+                paymentProofUploaded.classList.remove('hidden');
+
+                // Logika 3: Jika status memungkinkan untuk upload (belum ada bukti)
             } else if (order.status === 'diterima_pembeli' || order.status === 'menunggu_retur') {
-                paymentUploadForm.classList.remove('hidden');
-                compressLink.classList.remove('hidden');
                 const isReturn = order.status === 'menunggu_retur';
-                document.getElementById('paymentProofTitle').textContent = isReturn ? 'Unggah Bukti Retur' :
-                    'Unggah Bukti Pembayaran';
+                paymentProofTitle.textContent = isReturn ? 'Unggah Bukti Retur' : 'Unggah Bukti Pembayaran';
                 document.getElementById('uploadButtonText').textContent = isReturn ? 'Unggah Bukti Retur' :
                     'Unggah Bukti Pembayaran';
                 paymentUploadForm.onsubmit = (e) => {
                     e.preventDefault();
                     handleProofUpload(order.id, order.status);
                 };
+                paymentUploadForm.classList.remove('hidden');
+                compressLink.classList.remove('hidden');
+
+                // Logika 4: Jika status tidak memungkinkan upload
             } else {
                 paymentUploadBlocker.classList.remove('hidden');
             }
 
+            // --- Logika untuk Menampilkan Waktu Retur ---
+            const returnTimestampContainer = document.getElementById('returnTimestampContainer');
+            const returnCreatedAtEl = document.getElementById('returnCreatedAt');
+
+            // Cek apakah ada data retur dan timestamp-nya
+            if (order.order_return && order.order_return.created_at) {
+                // Tentukan label zona waktu berdasarkan data dari server
+                const timezoneLabel = order.timezone === 'Asia/Makassar' ? 'WITA' : 'WIB';
+                returnCreatedAtEl.textContent = `${order.order_return.created_at} ${timezoneLabel}`;
+                returnTimestampContainer.classList.remove('hidden');
+            } else {
+                returnTimestampContainer.classList.add('hidden');
+            }
             // Tombol Retur
             const returnRequestButtonContainer = document.getElementById('returnRequestButtonContainer');
             if (order.status === 'diterima_pembeli') {
@@ -1394,7 +1450,7 @@
             };
 
             document.getElementById('modalStatusInvoiceNumber').textContent = order.invoice_number || 'N/A';
-            document.getElementById('modalStatusCustomerName').textContent = order.customer?.name || 'Pelanggan Dihapus';
+            document.getElementById('modalStatusCustomerName').textContent = order.customer.name || 'Pelanggan Tidak Dikenal';
 
             updateStepperUI(order);
 
@@ -1402,6 +1458,9 @@
             const updateButtonText = document.getElementById('updateStatusButtonText');
             const currentStatus = order.status || 'baru';
             const currentStatusInfo = statusMap[currentStatus];
+
+            // Menyimpan timezone ke tombol untuk digunakan nanti
+            updateButton.setAttribute('data-order-timezone', order.timezone || 'Asia/Jakarta');
 
             if (currentStatusInfo) {
                 updateButtonText.textContent = currentStatusInfo.buttonText;
@@ -1430,8 +1489,7 @@
             document.getElementById('statusStepperModalContent').classList.remove('hidden');
         }
 
-        // [!code block:start]
-        // --- FUNGSI YANG DIPERBAIKI ---
+        // Fungsi pembantu untuk memperbarui UI Stepper secara spesifik
         function updateStepperUI(order) {
             const steps = ['diambil', 'diantar', 'diterima_pembeli'];
             const timestamps = {
@@ -1450,6 +1508,10 @@
                 diterima_pembeli: 'receivedByBuyerAt'
             };
 
+            // Menentukan label zona waktu berdasarkan data dari server
+            const timezone = order.timezone || 'Asia/Jakarta';
+            const tzAbbr = timezone === 'Asia/Makassar' ? 'WITA' : 'WIB';
+
             // Loop tunggal untuk mengatur setiap langkah
             steps.forEach(step => {
                 const iconEl = document.getElementById(`step-${step}-icon`);
@@ -1457,35 +1519,32 @@
                 const mobileLineEl = document.getElementById(`line-${step}-mobile`);
                 const desktopLineEl = document.getElementById(step === 'diambil' ? 'line-diantar' : `line-${step}`);
 
-                // Reset semua kelas warna dinamis
+                // Reset warna
                 iconEl.classList.remove('bg-green-600', 'text-green-600', 'border-green-600');
                 if (mobileLineEl) mobileLineEl.classList.remove('bg-green-600');
                 if (desktopLineEl) desktopLineEl.classList.remove('bg-green-600');
 
-                // Cek apakah langkah sudah selesai (ada timestamp)
+                // Cek apakah langkah sudah selesai
                 if (timestamps[step]) {
-                    // 1. Ganti ikon dengan centang putih
-                    iconEl.innerHTML = '<i class="text-white fas fa-check-circle"></i>';
-                    // 2. Tambahkan kelas background dan border hijau pada container ikon
+                    iconEl.innerHTML = '<i class="text-green-600 fas fa-check-circle"></i>';
                     iconEl.classList.add('bg-green-600', 'border-green-600');
-                    // 3. Tampilkan timestamp
-                    timeSpanEl.textContent = timestamps[step];
-                    // 4. Ubah warna garis menjadi hijau
+                    timeSpanEl.textContent = `${timestamps[step]}  ${tzAbbr}`; // <-- GANTI DI SINI
                     if (mobileLineEl) mobileLineEl.classList.add('bg-green-600');
                     if (desktopLineEl) desktopLineEl.classList.add('bg-green-600');
                 } else {
-                    // Jika langkah belum selesai, kembalikan ke ikon aslinya
-                    iconEl.innerHTML = `<i class="fas ${icons[step]}"></i>`;
-                    timeSpanEl.textContent = '...'; // Atau kosongkan: ''
+                    iconEl.innerHTML = `<i class="fas ${icons[step]} text-green-600"></i>`;
+                    timeSpanEl.textContent = tzAbbr; // Tampilkan hanya label jika belum ada waktu
                 }
             });
         }
-        // [!code block:end]
 
         async function handleStatusUpdate() {
             const updateButton = document.getElementById('updateStatusButton');
             const orderId = updateButton.getAttribute('data-order-id');
             const newStatus = updateButton.getAttribute('data-next-status');
+            // [!code --]
+            // Mengambil timezone dari atribut data yang disimpan sebelumnya
+            const timezone = updateButton.getAttribute('data-order-timezone')
 
             if (!orderId || !newStatus) {
                 dispatchToast('Error: Status atau Order ID tidak ditemukan.', 'error');
@@ -1503,8 +1562,14 @@
             try {
                 const response = await fetch(`/kurir/pesanan/${orderId}/update-status`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': getCsrfToken() },
-                    body: JSON.stringify({ new_status: newStatus })
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': getCsrfToken()
+                    },
+                    body: JSON.stringify({
+                        new_status: newStatus
+                    })
                 });
 
                 const result = await response.json();
@@ -1512,16 +1577,36 @@
 
                 dispatchToast(result.message, 'success');
 
-                const oldStatus = currentOrderForUpdate ? currentOrderForUpdate.status : null;
+                // [!code block:start]
+                // --- LOGIKA WAKTU DENGAN ZONA WAKTU DINAMIS ---
+                const now = new Date();
+                const formatter = new Intl.DateTimeFormat('id-ID', {
+                    timeZone: timezone, // Menggunakan timezone dari server
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                });
+                const localizedTimestamp = formatter.format(now);
+                // [!code block:end]
 
-                // DIUBAH: Panggil fungsi update counter
-                updateDashboardCounters(oldStatus, result.order.status);
+                const timeSpanId = {
+                    'diambil': 'pickedUpAt',
+                    'diantar': 'deliveredAt',
+                    'diterima_pembeli': 'receivedByBuyerAt'
+                } [newStatus];
 
-                // Muat ulang data modal dengan data terbaru dari server
-                // Ini akan memanggil `updateStepperUI` yang sudah diperbaiki
-                populateStatusStepperModal(result.order);
+                if (timeSpanId) {
+                    // [!code ++]
+                    // Menampilkan waktu yang sudah dilokalisasi
+                    document.getElementById(timeSpanId).textContent = localizedTimestamp;
+                }
 
-                // Perbarui juga status di tabel/kartu pada halaman utama
+                // Muat ulang konten modal untuk mendapatkan data server terbaru
+                openStatusStepperModal(orderId);
+
+                // Perbarui status pada baris tabel di halaman utama
                 updateTableRowStatus(orderId, result.order.status);
 
             } catch (error) {

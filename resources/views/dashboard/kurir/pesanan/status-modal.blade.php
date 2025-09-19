@@ -25,7 +25,7 @@
                     {{-- Detail Teks --}}
                     <div class="ml-4 md:ml-0">
                         <p class="mt-0 text-sm font-medium text-gray-700 md:mt-2 dark:text-white">Diambil</p>
-                        <p id="pickedUpAt" class="text-xs text-gray-500 dark:text-gray-400">WIB</p>
+                        <p id="pickedUpAt" class="text-xs text-gray-500 dark:text-gray-400"></p>
                     </div>
                 </div>
 
@@ -43,7 +43,7 @@
                     {{-- Detail Teks --}}
                     <div class="ml-4 md:ml-0">
                         <p class="mt-0 text-sm font-medium text-gray-700 md:mt-2 dark:text-white">Diantar</p>
-                        <p id="deliveredAt" class="text-xs text-gray-500 dark:text-gray-400">WIB</p>
+                        <p id="deliveredAt" class="text-xs text-gray-500 dark:text-gray-400"></p>
                     </div>
                 </div>
 
@@ -59,7 +59,7 @@
                     {{-- Detail Teks --}}
                     <div class="ml-4 md:ml-0">
                         <p class="mt-0 text-sm font-medium text-gray-700 md:mt-2 dark:text-white">Diterima Pembeli</p>
-                        <p id="receivedByBuyerAt" class="text-xs text-gray-500 dark:text-gray-400">WIB</p>
+                        <p id="receivedByBuyerAt" class="text-xs text-gray-500 dark:text-gray-400"></p>
                     </div>
                 </div>
             </div>

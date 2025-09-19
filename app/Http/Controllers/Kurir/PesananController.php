@@ -1,5 +1,4 @@
 <?php
-// file: app/Http/Controllers/Kurir/PesananController.php
 
 namespace App\Http\Controllers\Kurir;
 
@@ -7,24 +6,70 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\OrderReturn;
+use App\Models\OrderReturnProduct;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
-use App\Models\Product;
-use App\Models\ProductVariant;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Pagination\Paginator;
 
+/**
+ * Controller PesananController menangani semua logika bisnis yang terkait dengan
+ * pesanan untuk peran Kurir, termasuk pembuatan, pelacakan, pembaruan status,
+ * dan proses retur.
+ */
 class PesananController extends Controller
 {
+    // --- Helper Functions for Timezone ---
+
     /**
-     * INI UNTUK FITUR SEARCH DI ORDER TRACKING YA
-     * Menampilkan daftar pesanan dengan fungsionalitas pencarian.
-     * Metode ini menangani pemuatan halaman awal dan permintaan pencarian AJAX.
+     * Mendapatkan zona waktu pengguna berdasarkan ID region mereka.
+     * Ini memastikan bahwa semua timestamp yang ditampilkan atau disimpan
+     * sesuai dengan lokasi geografis kurir.
+     *
+     * @return string Nama zona waktu (misal: 'Asia/Jakarta' atau 'Asia/Makassar').
+     */
+    private function getUserTimezone(): string
+    {
+        $user = Auth::user();
+        // Fallback ke timezone default jika user tidak memiliki region_id
+        if (!$user || is_null($user->region_id)) {
+            return config('app.timezone', 'UTC');
+        }
+
+        switch ($user->region_id) {
+            case 3: // Denpasar
+                return 'Asia/Makassar'; // WITA
+            case 1: // Surabaya
+            case 2: // Malang
+                return 'Asia/Jakarta'; // WIB
+            default:
+                return config('app.timezone', 'UTC');
+        }
+    }
+
+    /**
+     * Mendapatkan objek Carbon dengan waktu saat ini sesuai zona waktu pengguna.
+     *
+     * @return \Carbon\Carbon
+     */
+    private function nowInUserTimezone(): Carbon
+    {
+        return Carbon::now($this->getUserTimezone());
+    }
+
+    // --- End of Helper Functions ---
+
+    /**
+     * Menampilkan halaman daftar pesanan (Order Tracking) dengan fitur pencarian dan filter status.
+     * Fungsi ini menangani permintaan GET awal dan permintaan AJAX untuk pencarian.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\View\View|\Illuminate\Http\JsonResponse
      */
     public function index(Request $request)
     {
@@ -32,6 +77,7 @@ class PesananController extends Controller
         $search = $request->input('search');
         $activeStatus = $request->input('status', 'semua');
 
+        // Daftar status untuk tab filter di halaman
         $filterableStatuses = [
             'semua' => 'Semua',
             'diambil' => 'Diambil',
@@ -41,6 +87,7 @@ class PesananController extends Controller
             'menunggu_retur' => 'Retur',
         ];
 
+        // Pemetaan nama status dari database ke label yang lebih ramah pengguna
         $statusLabelMap = [
             'baru' => 'Baru',
             'dikemas' => 'Dikemas',
@@ -55,6 +102,7 @@ class PesananController extends Controller
             'dibatalkan' => 'Dibatalkan',
         ];
 
+        // Validasi jika kurir tidak memiliki region
         if (is_null($loggedInUser->region_id)) {
             Log::warning('User ' . $loggedInUser->id . ' does not have a region_id.');
             $error = 'Region Anda tidak terdaftar. Silakan hubungi administrator.';
@@ -63,38 +111,41 @@ class PesananController extends Controller
         }
 
         try {
+            // Query dasar untuk mengambil pesanan milik kurir yang login
             $ordersQuery = Order::where('created_by_user_id', $loggedInUser->id)
                 ->where('status', '!=', 'diverifikasi_admin')
                 ->with('customer');
 
-            // Terapkan filter status dari tab
-            $ordersQuery->when($activeStatus !== 'semua', function ($query) use ($activeStatus) {
-                return $query->where('status', $activeStatus);
-            });
+            // Terapkan filter status jika bukan 'semua'
+            if ($activeStatus !== 'semua') {
+                $ordersQuery->where('status', $activeStatus);
+            }
 
             // Terapkan filter pencarian pada nomor invoice atau nama pelanggan
-            $ordersQuery->when($search, function ($query, $searchTerm) {
-                $query->where(function ($q) use ($searchTerm) {
-                    $q->where('invoice_number', 'like', "%{$searchTerm}%")
-                        ->orWhereHas('customer', function ($subQuery) use ($searchTerm) {
-                            $subQuery->where('name', 'like', "%{$searchTerm}%");
+            if ($search) {
+                $ordersQuery->where(function ($q) use ($search) {
+                    $q->where('invoice_number', 'like', "%{$search}%")
+                        ->orWhereHas('customer', function ($subQuery) use ($search) {
+                            $subQuery->where('name', 'like', "%{$search}%");
                         });
                 });
-            });
+            }
 
             $orders = $ordersQuery->latest()->paginate(10);
+            $currentTime = $this->nowInUserTimezone();
 
-            // Logika untuk menampilkan peringatan pembayaran > 5 hari
+            // Tambahkan flag 'show_warning' jika pesanan belum lunas > 5 hari
             foreach ($orders as $order) {
                 $order->show_warning = false;
                 if (is_null($order->payment_proof)) {
-                    $daysSinceCreation = Carbon::parse($order->created_at)->diffInDays(now());
+                    $daysSinceCreation = $order->created_at->diffInDays($currentTime);
                     if ($daysSinceCreation >= 5) {
                         $order->show_warning = true;
                     }
                 }
             }
 
+            // Jika permintaan adalah AJAX, kembalikan response JSON berisi HTML
             if ($request->ajax()) {
                 $viewData = compact('orders', 'statusLabelMap');
                 $desktopHtml = view('dashboard.kurir.pesanan._table_rows', $viewData)->render();
@@ -111,16 +162,18 @@ class PesananController extends Controller
         return view('dashboard.kurir.pesanan.index', compact('orders', 'statusLabelMap', 'filterableStatuses', 'activeStatus'));
     }
 
-
     /**
-     * Menampilkan halaman pembuatan pesanan baru.
+     * Menampilkan halaman formulir untuk membuat pesanan baru.
+     *
+     * @return \Illuminate\View\View
      */
     public function create()
     {
         $user = Auth::user();
+        // Mengambil daftar customer yang berada di region yang sama dengan kurir
         $customers = Customer::select('id', 'company_name', 'name', 'address', 'phone', 'note')
             ->where('region_id', $user->region_id)
-            ->where('added_by_user_id', $user->id) // Filter tambahan
+            ->where('added_by_user_id', $user->id)
             ->latest()
             ->get();
 
@@ -128,11 +181,15 @@ class PesananController extends Controller
     }
 
     /**
-     * Memproses dan menyimpan pesanan baru.
+     * Memproses dan menyimpan data pesanan baru yang dikirim dari formulir checkout.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
      */
     public function checkout(Request $request)
     {
         try {
+            // Validasi input dari request
             $validated = $request->validate([
                 'customer_id' => 'required|exists:customers,id',
                 'phone' => 'required|string|max:20',
@@ -151,6 +208,7 @@ class PesananController extends Controller
             return response()->json(['message' => 'Customer tidak ditemukan.'], 404);
         }
 
+        // Cek batas maksimal pesanan aktif berdasarkan kategori customer
         $categoryName = strtolower($customer->category->name ?? '');
         $maxOrder = 0;
         if ($categoryName === 'reseller') $maxOrder = 7;
@@ -163,27 +221,28 @@ class PesananController extends Controller
                 ->count();
 
             if ($activeOrderCount >= $maxOrder) {
-                return response()->json([
-                    'message' => "Batas maksimal pesanan aktif untuk customer kategori $categoryName adalah $maxOrder. Pesanan sebelumnya harus diverifikasi admin terlebih dahulu."
-                ], 422);
+                $message = "Batas maksimal pesanan aktif untuk customer kategori {$categoryName} adalah {$maxOrder}. Pesanan sebelumnya harus diverifikasi admin terlebih dahulu.";
+                return response()->json(['message' => $message], 422);
             }
         }
 
+        // Memulai transaksi database untuk memastikan integritas data
         DB::beginTransaction();
         try {
             $paymentProofPath = null;
             if ($request->hasFile('payment_proof')) {
-                // Simpan file ke storage/app/public/payment_proofs dan dapatkan path-nya.
                 $paymentProofPath = $request->file('payment_proof')->store('payment_proofs', 'public');
             }
 
             $loggedInUser = Auth::user();
+            $currentTime = $this->nowInUserTimezone();
 
-            $order = Order::create([
+            // Buat instance Order baru
+            $order = new Order([
                 'customer_id' => $validated['customer_id'],
                 'phone' => $validated['phone'],
                 'address' => $validated['address'],
-                'total_amount' => 0,
+                'total_amount' => 0, // Akan di-update setelah item ditambahkan
                 'payment_method' => $validated['payment_method'],
                 'payment_proof' => $paymentProofPath,
                 'note' => $validated['note'],
@@ -191,17 +250,23 @@ class PesananController extends Controller
                 'region_id' => $loggedInUser->region_id,
             ]);
 
-            $orderCountToday = Order::whereDate('created_at', now())->count();
+            // Set timestamp secara eksplisit sesuai zona waktu kurir
+            $order->created_at = $currentTime;
+            $order->updated_at = $currentTime;
+            $order->save();
+
+            // Generate nomor invoice unik
+            $orderCountToday = Order::whereDate('created_at', $currentTime->toDateString())->count();
             $dailySequenceNumber = str_pad($orderCountToday, 3, '0', STR_PAD_LEFT);
-            $tanggal = now()->format('dmy');
+            $tanggal = $currentTime->format('dmy');
             $formattedRegionId = str_pad($loggedInUser->region_id, 2, '0', STR_PAD_LEFT);
             $formattedKurirId = str_pad($loggedInUser->id, 3, '0', STR_PAD_LEFT);
             $formattedCustomerId = str_pad($validated['customer_id'], 3, '0', STR_PAD_LEFT);
             $invoiceNumber = "INV/{$tanggal}/{$formattedRegionId}/{$formattedKurirId}/{$formattedCustomerId}/{$dailySequenceNumber}";
 
             $order->invoice_number = $invoiceNumber;
-            $order->save();
 
+            // Proses produk/item yang dipesan
             $products = json_decode($validated['products'], true);
             $totalAmount = 0;
             $orderItems = [];
@@ -221,8 +286,10 @@ class PesananController extends Controller
                 ]);
             }
 
+            // Simpan semua item pesanan dan update total_amount
             $order->items()->saveMany($orderItems);
-            $order->update(['total_amount' => $totalAmount]);
+            $order->total_amount = $totalAmount;
+            $order->save();
 
             DB::commit();
 
@@ -239,52 +306,10 @@ class PesananController extends Controller
     }
 
     /**
-     * Menampilkan daftar pesanan yang dibuat oleh kurir.
-     */
-    // public function showFilteredOrders()
-    // {
-    //     if (!Auth::check()) {
-    //         return redirect('/login')->with('error', 'Anda harus login untuk melihat pesanan.');
-    //     }
-
-    //     $loggedInUser = Auth::user();
-    //     $orders = collect();
-    //     $error = null;
-
-    //     if (is_null($loggedInUser->region_id)) {
-    //         Log::warning('User ' . $loggedInUser->id . ' does not have a region_id.');
-    //         $error = 'Region Anda tidak terdaftar. Silakan hubungi administrator.';
-    //         return view('dashboard.kurir.pesanan.index', compact('orders', 'error'));
-    //     }
-
-    //     try {
-    //         $orders = Order::where('created_by_user_id', $loggedInUser->id)
-    //             ->where('status', '!=', 'diverifikasi_admin') // Filter dari File 2
-    //             ->with('customer')
-    //             ->latest()
-    //             ->get();
-
-    //         // Logika Peringatan dari File 1
-    //         foreach ($orders as $order) {
-    //             $order->show_warning = false;
-    //             if (is_null($order->payment_proof)) {
-    //                 $daysSinceCreation = Carbon::parse($order->created_at)->diffInDays(now());
-    //                 if ($daysSinceCreation >= 5) {
-    //                     $order->show_warning = true;
-    //                 }
-    //             }
-    //         }
-    //     } catch (\Exception $e) {
-    //         Log::error('Error fetching orders for courier ' . $loggedInUser->id . ': ' . $e->getMessage());
-    //         $error = 'Gagal memuat pesanan. Terjadi kesalahan pada server.';
-    //         return view('dashboard.kurir.pesanan.index', compact('orders', 'error'));
-    //     }
-
-    //     return view('dashboard.kurir.pesanan.index', compact('orders'));
-    // }
-
-    /**
-     * Mengambil detail pesanan berdasarkan ID.
+     * Mengambil dan menampilkan detail lengkap dari sebuah pesanan.
+     *
+     * @param  int  $id ID Pesanan
+     * @return \Illuminate\Http\JsonResponse
      */
     public function getOrderDetails($id)
     {
@@ -293,26 +318,32 @@ class PesananController extends Controller
         }
 
         try {
+            // Ambil data pesanan beserta relasi customer dan items
             $order = Order::with(['customer', 'items.product'])
                 ->where('id', $id)
                 ->where('created_by_user_id', Auth::id())
                 ->firstOrFail();
 
+            $timezone = $this->getUserTimezone();
             $paidAtLabel = '';
             $paidAtFormatted = null;
 
+            // Format tanggal pelunasan dan hitung label (Harian/Mingguan)
             if ($order->paid_at) {
-                $createdAt = Carbon::parse($order->created_at)->startOfDay();
-                $paidAt = Carbon::parse($order->paid_at)->startOfDay();
-                $diffInDays = $createdAt->diffInDays($paidAt);
+                $createdAtLocal = $order->created_at->copy()->setTimezone($timezone)->startOfDay();
+                $paidAtLocal = $order->paid_at->copy()->setTimezone($timezone)->startOfDay();
+                $diffInDays = $createdAtLocal->diffInDays($paidAtLocal);
 
                 if ($diffInDays == 1) $paidAtLabel = ' (Harian)';
                 elseif ($diffInDays >= 2 && $diffInDays <= 7) $paidAtLabel = ' (Mingguan)';
-                $paidAtFormatted = Carbon::parse($order->paid_at)->isoFormat('D MMMM YYYY, HH:mm');
+
+                $paidAtFormatted = $order->paid_at->isoFormat('D MMMM YYYY, HH:mm');
             }
 
+            // Cek apakah ada proses retur yang aktif untuk pesanan ini
             $activeReturn = $order->returns()->where('status', '!=', 'ditolak')->latest()->first();
 
+            // Siapkan data pesanan yang akan dikirim sebagai response JSON
             $formattedOrder = [
                 'id' => $order->id,
                 'invoice_number' => $order->invoice_number,
@@ -324,11 +355,11 @@ class PesananController extends Controller
                 'created_at' => $order->created_at->isoFormat('D MMMM YYYY, HH:mm'),
                 'paid_at' => $paidAtFormatted,
                 'paid_at_label' => $paidAtLabel,
-                // 'payment_proof' => $order->payment_proof,
-                'payment_proof' => $order->payment_proof ? asset('storage/' . preg_replace('#^(storage/|public/)#', '', $order->payment_proof)) : null,
-                'picked_up_at' => $order->picked_up_at ? Carbon::parse($order->picked_up_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . ' WIB' : null,
-                'delivered_at' => $order->delivered_at ? Carbon::parse($order->delivered_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . ' WIB' : null,
-                'received_by_buyer_at' => $order->received_by_buyer_at ? Carbon::parse($order->received_by_buyer_at)->setTimezone('Asia/Jakarta')->isoFormat('D MMMM YYYY, HH:mm') . ' WIB' : null,
+                'payment_proof' => $order->payment_proof,
+                'picked_up_at' => $order->picked_up_at ? $order->picked_up_at->isoFormat('D MMMM YYYY, HH:mm') : null,
+                'delivered_at' => $order->delivered_at ? $order->delivered_at->isoFormat('D MMMM YYYY, HH:mm') : null,
+                'received_by_buyer_at' => $order->received_by_buyer_at ? $order->received_by_buyer_at->isoFormat('D MMMM YYYY, HH:mm') : null,
+                'timezone' => $timezone,
                 'customer' => [
                     'company_name' => $order->customer->company_name ?? 'N/A',
                     'name' => $order->customer->name ?? 'N/A',
@@ -336,6 +367,7 @@ class PesananController extends Controller
                     'address' => $order->customer->address ?? 'N/A',
                 ],
                 'products' => $order->items->map(function ($item) {
+                    // Hitung jumlah produk yang sudah diretur
                     $returnedQuantity = DB::table('order_returns')
                         ->join('order_return_products', 'order_returns.id', '=', 'order_return_products.order_return_id')
                         ->where('order_returns.order_id', $item->order_id)
@@ -351,23 +383,16 @@ class PesananController extends Controller
                         'variant_name' => $item->variant_name,
                         'quantity' => $item->quantity,
                         'price' => $item->price,
-                        // 'image_url' => $item->product->image_path ?? null,
-                        'image_url' => $item->product->image_path ? Storage::url($item->product->image_path) : null,
+                        'image_url' => $item->product->image_path ?? null,
                         'returned_quantity' => $returnedQuantity,
                     ];
                 })->toArray(),
-                // 'order_return' => $activeReturn ? [
-                //     'id' => $activeReturn->id,
-                //     'status' => $activeReturn->status,
-                //     // 'return_proof' => $activeReturn->return_proof,
-                //     'return_proof' => $activeReturn->return_proof ? asset('storage/' . preg_replace('#^(storage/|public/)#', '', $activeReturn->return_proof)) : null,
-                //     'total_amount_returned' => $activeReturn->total_amount_returned,
-                // ] : null,
-                'return_details' => $activeReturn ? [ // [!code ++]
+                'order_return' => $activeReturn ? [
                     'id' => $activeReturn->id,
                     'status' => $activeReturn->status,
-                    'return_proof' => $activeReturn->return_proof ? asset('storage/' . preg_replace('#^(storage/|public/)#', '', $activeReturn->return_proof)) : null,
+                    'return_proof' => $activeReturn->return_proof,
                     'total_amount_returned' => $activeReturn->total_amount_returned,
+                    'created_at' => $activeReturn->created_at->setTimezone($timezone)->isoFormat('D MMMM YYYY, HH:mm'),
                 ] : null,
             ];
 
@@ -381,7 +406,103 @@ class PesananController extends Controller
     }
 
     /**
-     * Mengunggah bukti pembayaran.
+     * Memproses pengajuan pengembalian barang (retur) untuk sebuah pesanan.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id ID Pesanan
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function requestReturn(Request $request, $id)
+    {
+        if (!Auth::check()) {
+            return response()->json(['message' => 'Tidak terautentikasi'], 401);
+        }
+
+        DB::beginTransaction();
+        try {
+            $validated = $request->validate([
+                'return_quantities' => 'required|array|min:1',
+                'return_quantities.*' => 'required|integer|min:1',
+            ]);
+
+            $order = Order::with('items')->where('id', $id)
+                ->where('created_by_user_id', Auth::id())
+                ->firstOrFail();
+
+            // Retur hanya bisa diajukan jika status pesanan 'diterima_pembeli'
+            if ($order->status !== 'diterima_pembeli') {
+                return response()->json(['message' => 'Pengajuan retur hanya bisa dilakukan jika status pesanan "Diterima Pembeli".'], 400);
+            }
+
+            $currentTime = $this->nowInUserTimezone();
+
+            // Buat record OrderReturn baru
+            $orderReturn = new OrderReturn();
+            $orderReturn->order_id = $order->id;
+            $orderReturn->status = 'menunggu_verifikasi_admin';
+            $orderReturn->created_at = $currentTime;
+            $orderReturn->updated_at = $currentTime;
+            $orderReturn->save();
+
+            $totalReturnValue = 0;
+            // Loop melalui setiap produk yang ingin diretur
+            foreach ($validated['return_quantities'] as $key => $returnQty) {
+                list($productId, $variantId) = explode('-', $key);
+                $variantId = ($variantId == 0) ? null : $variantId;
+
+                $orderItem = $order->items()
+                    ->where('product_id', $productId)
+                    ->where('variant_id', $variantId)
+                    ->first();
+
+                if (!$orderItem || $returnQty > $orderItem->quantity) {
+                    throw new \Exception("Kuantitas retur tidak valid untuk produk: " . ($orderItem->product_name ?? 'N/A'));
+                }
+
+                $subtotalReturn = $returnQty * $orderItem->price;
+                $totalReturnValue += $subtotalReturn;
+
+                // Buat record untuk setiap produk yang diretur
+                OrderReturnProduct::create([
+                    'order_return_id' => $orderReturn->id,
+                    'product_id' => $productId,
+                    'product_variant_id' => $variantId,
+                    'quantity' => $returnQty,
+                    'price' => $orderItem->price,
+                    'subtotal' => $subtotalReturn,
+                ]);
+            }
+
+            // Update total nilai retur dan status pesanan utama
+            $orderReturn->total_amount_returned = $totalReturnValue;
+            $orderReturn->save();
+
+            $order->status = 'menunggu_retur';
+            $order->updated_at = $currentTime;
+            $order->save();
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Permintaan retur berhasil diajukan.',
+                'order' => ['status' => 'menunggu_retur']
+            ], 200);
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Data tidak valid.', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error processing return request for order ID ' . $id . ': ' . $e->getMessage());
+            return response()->json(['message' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Mengunggah bukti pembayaran untuk sebuah pesanan.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id ID Pesanan
+     * @return \Illuminate\Http\JsonResponse
      */
     public function uploadPaymentProof(Request $request, $id)
     {
@@ -394,34 +515,27 @@ class PesananController extends Controller
 
             $order = Order::where('id', $id)->where('created_by_user_id', Auth::id())->firstOrFail();
 
+            // Pembayaran hanya bisa diunggah setelah pesanan diterima
             if (!in_array($order->status, ['diterima_pembeli', 'selesai'])) {
                 return response()->json(['message' => 'Bukti pembayaran hanya bisa diunggah setelah pesanan diterima oleh pembeli.'], 403);
             }
 
-            // [!code block:start]
-            $file = $request->file('payment_proof');
-
-            // 1. Hapus file lama jika ada
+            // Hapus bukti pembayaran lama jika ada
             if ($order->payment_proof) {
                 Storage::disk('public')->delete($order->payment_proof);
             }
 
-            // 2. Buat nama file baru yang unik dengan timestamp
+            // Simpan file baru dengan nama berdasarkan nomor invoice
+            $file = $request->file('payment_proof');
             $sanitizedInvoiceNumber = str_replace('/', '-', $order->invoice_number);
-            $timestamp = time(); // Tambahkan timestamp saat ini
-            $extension = $file->getClientOriginalExtension();
-            $fileName = 'PAYMENT-' . $sanitizedInvoiceNumber . '_' . $timestamp . '.' . $extension; // Gabungkan
-            $directory = 'payment_proofs';
+            $fileName = $sanitizedInvoiceNumber . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('payment_proofs', $fileName, 'public');
 
-            // 3. Simpan file baru menggunakan nama yang sudah unik
-            $path = $file->storeAs($directory, $fileName, 'public');
-
-            // 4. Update database dengan path baru
+            // Update status pesanan menjadi 'selesai' dan catat waktu pembayaran
             $order->payment_proof = $path;
             $order->status = 'selesai';
-            $order->paid_at = now();
+            $order->paid_at = $this->nowInUserTimezone();
             $order->save();
-            // [!code block:end]
 
             return response()->json(['message' => 'Bukti pembayaran berhasil diunggah. Pesanan selesai!'], 200);
         } catch (ValidationException $e) {
@@ -435,7 +549,11 @@ class PesananController extends Controller
     }
 
     /**
-     * Mengubah status pesanan (diambil, diantar, diterima).
+     * Memperbarui status pengiriman pesanan (diambil, diantar, diterima).
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id ID Pesanan
+     * @return \Illuminate\Http\JsonResponse
      */
     public function updateOrderStatus(Request $request, $id)
     {
@@ -449,44 +567,50 @@ class PesananController extends Controller
             $order = Order::where('id', $id)->where('created_by_user_id', Auth::id())->firstOrFail();
             $newStatus = $validated['new_status'];
             $updateData = ['status' => $newStatus];
+            $currentTime = $this->nowInUserTimezone();
 
+            // Logika untuk mencatat timestamp setiap perubahan status
             switch ($newStatus) {
                 case 'diambil':
+                    // Mencegah status diubah mundur
                     if (in_array($order->status, ['diantar', 'diterima_pembeli', 'selesai'])) {
                         return response()->json(['message' => 'Status tidak dapat diubah kembali ke "Diambil".'], 400);
                     }
-                    if (is_null($order->picked_up_at)) $updateData['picked_up_at'] = now();
+                    if (is_null($order->picked_up_at)) $updateData['picked_up_at'] = $currentTime;
                     break;
                 case 'diantar':
                     if (in_array($order->status, ['diterima_pembeli', 'selesai'])) {
                         return response()->json(['message' => 'Status tidak dapat diubah kembali ke "Diantar".'], 400);
                     }
-                    if (is_null($order->picked_up_at)) $updateData['picked_up_at'] = now();
-                    if (is_null($order->delivered_at)) $updateData['delivered_at'] = now();
+                    if (is_null($order->picked_up_at)) $updateData['picked_up_at'] = $currentTime;
+                    if (is_null($order->delivered_at)) $updateData['delivered_at'] = $currentTime;
                     break;
                 case 'diterima_pembeli':
                     if ($order->status === 'selesai') {
                         return response()->json(['message' => 'Status sudah "Selesai".'], 400);
                     }
-                    if (is_null($order->picked_up_at)) $updateData['picked_up_at'] = now();
-                    if (is_null($order->delivered_at)) $updateData['delivered_at'] = now();
-                    if (is_null($order->received_by_buyer_at)) $updateData['received_by_buyer_at'] = now();
+                    if (is_null($order->picked_up_at)) $updateData['picked_up_at'] = $currentTime;
+                    if (is_null($order->delivered_at)) $updateData['delivered_at'] = $currentTime;
+                    if (is_null($order->received_by_buyer_at)) $updateData['received_by_buyer_at'] = $currentTime;
                     break;
             }
 
+            $updateData['updated_at'] = $currentTime;
             $order->update($updateData);
 
-            // [!code block:start]
-            // PERBAIKAN: Panggil metode getOrderDetails untuk mendapatkan data lengkap.
-            // Metode getData(true) akan mengubah response JSON menjadi array.
-            $fullOrderDetails = $this->getOrderDetails($id)->getData(true);
+            // Ambil ulang data terbaru untuk dikirim kembali ke frontend
+            $updatedOrder = Order::find($id);
 
             return response()->json([
                 'message' => 'Status pesanan berhasil diperbarui.',
-                'order' => $fullOrderDetails // Mengembalikan objek pesanan yang lengkap
+                'order' => [
+                    'id' => $updatedOrder->id,
+                    'status' => $updatedOrder->status,
+                    'picked_up_at' => $updatedOrder->picked_up_at ? $updatedOrder->picked_up_at->isoFormat('D MMMM YYYY, HH:mm') : null,
+                    'delivered_at' => $updatedOrder->delivered_at ? $updatedOrder->delivered_at->isoFormat('D MMMM YYYY, HH:mm') : null,
+                    'received_by_buyer_at' => $updatedOrder->received_by_buyer_at ? $updatedOrder->received_by_buyer_at->isoFormat('D MMMM YYYY, HH:mm') : null,
+                ]
             ], 200);
-            // [!code block:end]
-
         } catch (ValidationException $e) {
             return response()->json(['message' => 'Validasi gagal.', 'errors' => $e->errors()], 422);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
@@ -498,44 +622,27 @@ class PesananController extends Controller
     }
 
     /**
-     * Mengambil item dari pesanan terakhir customer.
-     * LOGIKA DARI FILE 2: Fitur baru yang penting.
+     * Mengambil item dari pesanan terakhir seorang customer.
+     * Berguna untuk fitur 'pesan ulang' (re-order).
+     *
+     * @param  int  $id ID Customer
+     * @return \Illuminate\Http\JsonResponse
      */
     public function getLastOrder($id)
     {
-        // Ambil pesanan terakhir beserta itemnya
-        $lastOrder = Order::with('items')->where('customer_id', $id)->latest()->first();
+        // Cari pesanan terakhir berdasarkan customer ID
+        $lastOrder = Order::where('customer_id', $id)->latest()->first();
 
-        // Jika tidak ada pesanan sebelumnya, kembalikan array kosong
         if (!$lastOrder) {
             return response()->json(['items' => []]);
         }
 
-        // Siapkan array kosong untuk menampung item yang valid
-        $activeCartItems = [];
+        // Muat relasi items dari pesanan tersebut
+        $lastOrder->load('items');
 
-        // Lakukan iterasi pada setiap item di pesanan terakhir
-        foreach ($lastOrder->items as $item) {
-            // 1. Cek Produk Utama
-            $product = Product::find($item->product_id);
-
-            // Lewati item ini jika produknya sudah dihapus atau tidak aktif
-            if (!$product || !$product->is_active) {
-                continue;
-            }
-
-            // 2. Cek Varian Produk (jika ada)
-            if ($item->variant_id) {
-                $variant = ProductVariant::find($item->variant_id);
-
-                // Lewati item ini jika variannya sudah dihapus atau tidak aktif
-                if (!$variant || !$variant->is_active) {
-                    continue;
-                }
-            }
-
-            // 3. Jika semua pengecekan lolos, tambahkan item ke keranjang baru
-            $activeCartItems[] = [
+        // Format data item untuk dimasukkan ke keranjang (cart)
+        $cartItems = $lastOrder->items->map(function ($item) {
+            return [
                 'product_id'   => $item->product_id,
                 'product_name' => $item->product_name,
                 'variant_id'   => $item->variant_id,
@@ -543,9 +650,8 @@ class PesananController extends Controller
                 'price'        => $item->price,
                 'qty'          => $item->quantity,
             ];
-        }
+        });
 
-        // Kembalikan hanya item yang aktif
-        return response()->json(['items' => $activeCartItems]);
+        return response()->json(['items' => $cartItems]);
     }
 }

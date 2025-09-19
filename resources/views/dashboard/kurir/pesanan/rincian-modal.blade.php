@@ -9,13 +9,11 @@
         <div class="grid grid-cols-1 gap-6 p-1 lg:grid-cols-3">
             <div class="space-y-6 lg:col-span-2">
                 <div class="p-5 bg-white border border-gray-200 shadow-md dark:bg-gray-800 rounded-xl dark:border-gray-700">
-                    {{-- [!code block:start] --}}
                     {{-- Blok Alasan Penolakan (Awalnya disembunyikan) --}}
                     <div id="rejectionNoteContainer" class="hidden p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
                         <h4 class="font-bold dark:text-white "><i class="fas fa-times-circle"></i> Verifikasi Ditolak Admin</h4>
                         <p id="rejectionNoteText" class="mt-1"></p>
                     </div>
-                    {{-- [!code block:end] --}}
 
                     <h3 class="mb-5 text-xl font-bold text-gray-900 dark:text-white">Detail Pesanan</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
@@ -66,6 +64,12 @@
                         <div id="modalOrderStatusSection" class="flex items-center">
                             <span id="modalOrderStatusBadge" class="px-4 py-1.5 text-sm font-bold rounded-full w-full text-center"></span>
                         </div>
+                        {{-- [!code block:start] --}}
+                        <!-- PERBAIKAN: Ditambahkan class `hidden` agar tidak tampil secara default -->
+                        <div id="returnTimestampContainer" class="hidden pt-3 mt-3 border-t border-gray-200 dark:border-gray-700">
+                            <p class="text-sm text-gray-600 dark:text-white">Tgl. Pengajuan Retur: <span id="returnCreatedAt" class="font-semibold"></span></p>
+                        </div>
+                        {{-- [!code block:end] --}}
                     </div>
                     <div id="totalAmountSection" class="pt-4 border-t border-gray-200 dark:border-gray-700">
                         <div id="singleTotalAmountContainer">

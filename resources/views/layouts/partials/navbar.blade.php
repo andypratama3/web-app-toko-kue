@@ -118,13 +118,21 @@
               <div class="px-4 py-3 text-sm text-gray-700 border-b border-gray-200">
                 @php
                   use Illuminate\Support\Facades\DB;
-                  $user = Auth::user();
-                  $lastSession = DB::table('sessions')
-                    ->where('user_id', Auth::id())
-                    ->orderByDesc('last_activity')
-                    ->first();
-                  $lastLogin = $lastSession ? \Carbon\Carbon::createFromTimestamp($lastSession->last_activity)->setTimezone('Asia/Jakarta')->format('d M Y, H:i:s') : 'Tidak tersedia';
-                @endphp
+                  $user = Auth::user();                 
+                 // PERBAIKAN: Mengambil waktu saat ini sesuai timezone region pengguna
+                  $timezone = 'Asia/Jakarta'; // Default WIB
+                  $tzAbbr = 'WIB';
+
+                  if ($user && $user->region) {
+                      $regionName = strtolower($user->region->name);
+                      if (in_array($regionName, ['denpasar', 'bali', 'makassar'])) {
+                          $timezone = 'Asia/Makassar';
+                          $tzAbbr = 'WITA';
+                      }
+                  }
+                  $lastLogin = \Carbon\Carbon::now($timezone)->isoFormat('D MMMM YYYY, HH:mm') . ' ' . $tzAbbr;
+                  // [!code block:end]
+                  @endphp
                 <div class="mb-2">
                   <span class="font-semibold text-gray-900">{{ $user->name ?? 'User' }}</span>
                   <span class="block mt-1 text-xs text-gray-500">📍 Region: {{ $user->region->name ?? 'Tidak ada region' }}</span>
@@ -132,7 +140,7 @@
                 </div>
                 <div class="pt-2 border-t border-gray-100">
                   <span class="text-sm font-semibold text-gray-900">👨🏻‍💻 Last Activity:</span>
-                  <span class="block mt-1 text-sm font-medium text-gray-700">{{ $lastLogin }}</span>
+                  <span class="block mt-1 text-sm text-gray-700">{{ $lastLogin }}</span>
                 </div>
               </div>
               @php
