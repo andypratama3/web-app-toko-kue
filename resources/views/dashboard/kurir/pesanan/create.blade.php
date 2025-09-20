@@ -429,11 +429,11 @@
                 const productHtml = `
                 <div class="flex items-start justify-between text-sm">
                     <div class="flex-grow">
-                        <p class="font-semibold text-gray-800 dark:text-gray-200">${item.product_name}</p>
-                        ${item.variant_name ? `<p class="text-xs text-gray-500">${item.variant_name}</p>` : ''}
+                        <p class="font-semibold text-md text-gray-800 dark:text-gray-200">${item.product_name}</p>
+                        ${item.variant_name ? `<p class="text-xs text-gray-500"> ▸ ${item.variant_name}</p>` : ''}
                         <p class="text-xs text-gray-600 dark:text-gray-400">${item.qty} x Rp ${item.price.toLocaleString('id-ID')}</p>
                     </div>
-                    <p class="font-semibold text-gray-800 dark:text-gray-200">Rp ${subtotal.toLocaleString('id-ID')}</p>
+                    <p class="font-semibold text-md text-gray-800 dark:text-gray-200">Rp ${subtotal.toLocaleString('id-ID')}</p>
                 </div>`;
                 productListDiv.innerHTML += productHtml;
             });
@@ -575,7 +575,10 @@
                         <div class="flex flex-row items-center gap-3 p-3 border rounded bg-gray-50">
                             ${imageUrl ? `<img src="${imageUrl}" alt="${p.name}" class="object-cover w-16 h-16 mr-2 border rounded" />` : ''}
                             <div class="flex-1">
-                                <div class="font-semibold">${p.name} <span class="text-xs text-gray-500">${v.name ? ' - ' + v.name : ''}</span></div>
+                                <div class="font-semibold">
+                                    <span class="text-md font-bold text-gray-800">${p.name}</span>
+                                    ${v.name ? `<div class="text-xs text-gray-600 mb-1"> ▸ ${v.name} </div>` : ''}
+                                </div>
                                 <div class="font-bold text-green-700">Rp ${v.price.toLocaleString()}</div>
                             </div>
                             ${sudahDipilih ?

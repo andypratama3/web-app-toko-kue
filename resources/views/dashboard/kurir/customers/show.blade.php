@@ -1,16 +1,14 @@
 @props(['customer'])
 
-<x-modal-custom id="show-customer-modal-{{ $customer->id }}" title="Detail Customer" size="4xl">
+<x-modal-custom id="show-customer-modal-{{ $customer->id }}" title="Detail Customer" size="3xl">
     {{-- Hapus padding default agar konten bisa menempel ke tepi modal --}}
     <div class="p-0">
         <div class="flex flex-col overflow-hidden">
-
             {{-- Area konten yang bisa di-scroll --}}
             <!-- <div class="overflow-y-auto max-h-[70vh] sm:max-h-[80vh]"> -->
                 <div class="flex flex-col md:flex-row">
-
                     {{-- Kolom Kiri - Informasi Utama (Desain Baru) --}}
-                    <div class="w-full p-6 text-gray-800 md:w-2/3 dark:text-gray-200">
+                    <div class="w-full px-6 text-gray-800 md:w-2/3 dark:text-gray-200 mb-4">
                         {{-- Bagian Atas: Avatar, Nama, Perusahaan --}}
                         <div class="flex items-center gap-5 mb-8">
                             {{-- Avatar Icon --}}
@@ -35,7 +33,7 @@
                                 </div>
                                 <div class="flex-1">
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Nomor Telepon</dt>
-                                    <dd class="mt-1 font-semibold text-gray-900 dark:text-white">{{ $customer->phone ? '+' . $customer->phone : '-' }}</dd>
+                                    <dd class="mt-0.5 font-semibold text-gray-900 dark:text-white">{{ $customer->phone ? '+' . $customer->phone : '-' }}</dd>
                                 </div>
                             </div>
 
@@ -46,19 +44,19 @@
                                 </div>
                                 <div class="flex-1">
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Alamat Lengkap</dt>
-                                    <dd class="mt-1 text-gray-900 dark:text-white">{{ $customer->address ?? '-' }}</dd>
+                                    <dd class="mt-0.5 text-gray-900 dark:text-white">{{ $customer->address ?? '-' }}</dd>
                                 </div>
                             </div>
 
                             {{-- Patokan Tempat --}}
                              @if($customer->landmark)
-                            <div class="flex items-start gap-4">
+                            <div class="flex items-start gap-4 mb-1">
                                 <div class="flex-shrink-0 mt-1 text-indigo-600 dark:text-indigo-400">
                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6H8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path></svg>
                                 </div>
                                 <div class="flex-1">
                                     <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Patokan Tempat</dt>
-                                    <dd class="mt-1 text-gray-900 dark:text-white">{{ $customer->landmark }}</dd>
+                                    <dd class="mt-0.5 text-gray-900 dark:text-white">{{ $customer->landmark }}</dd>
                                 </div>
                             </div>
                             @endif
@@ -66,19 +64,26 @@
 
                         {{-- Catatan --}}
                         @if($customer->note)
-                        <div class="pt-6 mt-6 border-t border-gray-200 dark:border-gray-700">
-                            <h4 class="mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">Catatan</h4>
-                            <div class="prose-sm prose text-gray-900 max-w-none dark:text-gray-300">
-                                {!! nl2br(e($customer->note)) !!}
+                        <div class="pt-2 mt-2 border-t border-gray-200 dark:border-gray-700 ">
+                            <label class="mb-1 font-medium text-gray-900 text-md dark:text-gray-400">Catatan </label>
+                            <div id="orderNotesContainer" class="p-2 font-semibold text-center text-gray-800 bg-yellow-100 rounded-lg dark:bg-yellow-900/20 dark:text-gray-50">
+                            {!! nl2br(e($customer->note)) !!}
                             </div>
                         </div>
                         @endif
                     </div>
 
                     {{-- Kolom Kanan - Informasi Tambahan --}}
-                    <div class="w-full p-6 border-t border-gray-200 md:w-1/3 bg-gray-50 dark:bg-gray-800 md:border-t-0 md:border-l dark:border-gray-700">
-                        <h3 class="mb-4 text-lg font-semibold text-gray-800 dark:text-white">Informasi Lainnya</h3>
-                        <dl class="space-y-2">
+                    <div class="w-full px-6 border-t border-gray-200 md:w-1/3 bg-gray-50 dark:bg-gray-800 md:border-t-0 md:border-l dark:border-gray-700">
+                        <h3 class="flex items-center mb-4 mt-2 text-lg font-semibold text-gray-800 dark:text-white">
+                            {{-- SVG Ikon Informasi (Outline) --}}
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                            Informasi Lainnya
+                        </h3><dl class="space-y-2">
                             <div>
                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Status</dt>
                                 <dd class="mt-1">
@@ -111,7 +116,7 @@
                             </div>
                             <div>
                                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Tanggal Bergabung</dt>
-                                <dd class="mt-1 text-sm font-semibold text-gray-900 dark:text-white">{{ $customer->created_at->format('d F Y, H:i') }}</dd>
+                                <dd class="mt-1 mb-2 text-sm font-semibold text-gray-900 dark:text-white">{{ $customer->created_at->format('d F Y, H:i') }}</dd>
                             </div>
                         </dl>
                     </div>
