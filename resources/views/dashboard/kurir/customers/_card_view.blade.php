@@ -9,23 +9,35 @@
             {{-- DIUBAH: Padding pb-3 mb-3 menjadi pb-2 mb-2 --}}
             <div class="flex items-start justify-between pb-1 mb-2 border-b dark:border-gray-700">
                 <div class="flex-1 min-w-0">
-                    {{-- Judul Utama (Nama Toko atau Nama Pelanggan) --}}
+                    {{-- Judul Utama (Nama Pelanggan) --}}
                     <div class="flex items-center">
-                        {{-- DIUBAH: Ikon diberi warna biru --}}
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-blue-500 dark:text-blue-400"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-                        <h4 class="text-lg font-bold text-gray-900 truncate dark:text-white" title="{{ $customer->company_name ?? $customer->name }}">
-                            {{ $customer->company_name ?? $customer->name }}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="mr-2 text-blue-500 dark:text-blue-400">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                            <path d="M3 6h18" />
+                            <path d="M16 10a4 4 0 0 1-8 0" />
+                        </svg>
+                        {{-- DIUBAH: Selalu menampilkan nama pelanggan --}}
+                        <h4 class="text-lg font-bold text-gray-900 tracking-wider truncate dark:text-white"
+                            title="{{ $customer->name }}">
+                            {{ $customer->name }}
                         </h4>
                     </div>
 
-                    {{-- Subjudul (Nama Pelanggan jika Nama Toko ada) --}}
+                    {{-- Subjudul (Nama Toko jika ada) --}}
                     @if ($customer->company_name)
-                    <p class="flex items-center font-semibold text-sm text-gray-500 dark:text-gray-400">
-                        {{ $customer->name }}
-                        @if ($customer->is_flagged)
-                            <svg xmlns="http://www.w.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="ml-2 text-red-500"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1v12Z"/></svg>
-                        @endif
-                    </p>
+                        <p class="flex items-center font-semibold text-sm text-gray-500 dark:text-gray-400">
+                            {{-- DIUBAH: Menampilkan nama toko --}}
+                            {{ $customer->company_name }}
+
+                            @if ($customer->is_flagged)
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                    fill="currentColor" class="ml-2 text-red-500">
+                                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1v12Z" />
+                                </svg>
+                            @endif
+                        </p>
                     @endif
                 </div>
 
