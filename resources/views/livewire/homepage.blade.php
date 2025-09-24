@@ -287,7 +287,7 @@
               <li class="text-justify">
                 <span class="font-semibold text-[#8BA870]">Tanggung jawab produk:</span> Menjaga kualitas mulai dari pemilihan bahan, proses produksi, hingga pengemasan dan pengiriman ke konsumen.
               </li>
-              <li>
+              <li class="text-justify">
                 <span class="font-semibold text-[#8BA870]">Pelayanan prima:</span> Memberikan pengalaman terbaik bagi pelanggan melalui produk berkualitas, pelayanan ramah, dan kemasan eksklusif.
               </li>
             </ul>
