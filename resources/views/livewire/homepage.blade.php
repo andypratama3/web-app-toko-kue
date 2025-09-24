@@ -619,11 +619,11 @@
             <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Mix Mini</h3>
             <div x-data="{ open: false }">
               <p class="text-gray-600 text-sm text-justify mb-3" :class="open ? '' : 'line-clamp-2'">
-                Kue MIX mini ( Kemasan Mika) <br>
-                Berisi : <br>
-                Kue ijo 3 pcs, <br>
-                Kue Ongol-ongol 4 pcs dan <br>
-                Kue Pulut Srikaya 2 pcs <br>
+                Kue MIX mini ( Kemasan Mika)
+                Berisi :
+                Kue ijo 3 pcs,
+                Kue Ongol-ongol 4 pcs dan
+                Kue Pulut Srikaya 2 pcs
                 Kue ini cocok untuk dijadikan sebagai oleh-oleh atau sebagai cemilan ringan
               </p>
               <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
