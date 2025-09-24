@@ -368,7 +368,7 @@
           <div class="p-5">
             <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Ijo</h3>
             <div x-data="{ open: false }">
-              <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
+              <p class="text-gray-600 text-sm text-justify mb-3" :class="open ? '' : 'line-clamp-2'">
                 Kue ijo adalah kue tradisional terbuat dari tepung tapioka dengan warna hijaunya asli khas harum daun pandan segar. Teksturnya super kenyal dan lembut, wangi dengan  taburan kelapa. Menambah cita rasa gurih dan sedikit manis yang menjadikan kue Ijo cocok dinikmati pada suasana apapun.
               </p>
               <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
@@ -418,7 +418,7 @@
           <div class="p-5">
             <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Lumpur Surga</h3>
             <div x-data="{ open: false }">
-              <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
+              <p class="text-gray-600 text-sm text-justify mb-3" :class="open ? '' : 'line-clamp-2'">
                 Kue yang memiliki dua lapisan yaitu lapisan bawah bewarna hijau yang dihasilkan dari air pandan asli dan lapisan atas mirip dengan vla yang terbuat dari santan. Kue yang memiliki tekstur lembut dan lumer dimulut sangat nikmat jika disantap dalam keadaan dingin. Memiliki Cita rasa manis dari kue nya dan gurih asin dari vla nya berpadu menghasilkan rasa nikmat yang nyaman ketika masuk dimulut.
               </p>
               <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
@@ -438,10 +438,10 @@
           x-data="{
           open: false,
           prices: [
-            { label: 'Isi 10 Kemasan Mika', value: 10000 },
-            { label: 'Isi 30 Kemasan Thinwall', value: 35000 }
+            { label: 'Isi 10 Pcs (Kemasan Mika)', value: 10000 },
+            { label: 'Isi 30 Pcs (Kemasan Thinwall)', value: 35000 }
           ],
-          selectedPrice: { label: 'Isi 10 Kemasan Mika', value: 10000 }
+          selectedPrice: { label: 'Isi 10 Pcs (Kemasan Mika)', value: 10000 }
         }"
           :class="open ? 'z-30' : 'z-0'">
           <div class="relative overflow-hidden rounded-t-2xl">
@@ -456,7 +456,7 @@
           <div class="p-5">
             <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Ongol Ongol</h3>
             <div x-data="{ open: false }">
-              <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
+              <p class="text-gray-600 text-sm text-justify mb-3" :class="open ? '' : 'line-clamp-2'">
                 Kue Ongol kami terbuat dari tepung tapioka yang ditambahkan gula merah jawa dan sedikit tambahan air pandan asli membuat warna kue ini bewarna coklat cantik. Kue yang memiliki tekstur kenyal dan legit dan terasa manis dimulut. Kue Ongol yang memiliki wangi khas gula jawa merah sangat cocok dipadukan dengan parutan kelapa segar yang akan memadukan antara gurih dan manis pada kue ini.
               </p>
               <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
@@ -499,10 +499,10 @@
           x-data="{
           open: false,
           prices: [
-            { label: 'Isi 5 Kemasan Mika', value: 17500 },
-            { label: 'Isi 10 Kemasan Thinwall', value: 35500 }
+            { label: 'Isi 5 Pcs (Kemasan Mika)', value: 17500 },
+            { label: 'Isi 10 Pcs (Kemasan Thinwall)', value: 35500 }
           ],
-          selectedPrice: { label: 'Isi 5 Kemasan Mika', value: 17500 }
+          selectedPrice: { label: 'Isi 5 Pcs (Kemasan Mika)', value: 17500 }
         }"
           :class="open ? 'z-30' : 'z-0'">
           <div class="relative overflow-hidden rounded-t-2xl">
@@ -516,7 +516,7 @@
           <div class="p-5">
             <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Pulut Srikaya</h3>
             <div x-data="{ open: false }">
-              <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
+              <p class="text-gray-600 text-sm text-justify mb-3" :class="open ? '' : 'line-clamp-2'">
                 Kue Pulut yang dibuat dari beras ketan utuh yang akan menciptakan tekstur punel dan sedikit legit. Perpaduan warna Putih dari beras ketan dan Ungu alami dari bunga lawing (butterfly pea tea) menambah keindahan visual pada kue ini. Kue Pulut ini dilengkapi dengan saus srikaya yang membuat perpaduan antara manis dan sedikit gurih dari saus dan gurih dari kue pulut itu sendiri menjadikan perpaduan rasa yang lengkap dan lezat.
               </p>
               <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
@@ -565,7 +565,7 @@
           <div class="p-5">
             <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Ubi Nanas</h3>
             <div x-data="{ open: false }">
-              <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
+              <p class="text-gray-600 text-sm text-justify mb-3" :class="open ? '' : 'line-clamp-2'">
                 Kue yang terbuat dari perpaduan ubi singkong yang memiliki rasa netral dan tekstur padat dan buah nanas yang memiliki rasa manis, segar dan masam dipadukan. Kue ini memiliki tekrstur sedikit chewy dan padat hampir seperti kue talam pada umumnya. Kue ini memiliki rasa manis dan sedikit rasa segar dari buah nanas dan rasa gurih dari bahan bahan kue. Terbuat dari bahan alami sehingga aman dikonsumsi dan sehat. Kue ubi nanas berisi 4 potong kue.
               </p>
               <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
@@ -591,7 +591,7 @@
           <div class="p-5">
             <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Selai Srikaya</h3>
             <div x-data="{ open: false }">
-              <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
+              <p class="text-gray-600 text-sm text-justify mb-3" :class="open ? '' : 'line-clamp-2'">
                 Selai yang terbuat dari perpaduan santan kelapa, telur, air pandan dan gula merah jawa menghasilkan rasa yang gurih dan manis pada selai ini. Selai yang memiliki tekstur kental dan memiliki warna oren pekat dihasilkan dari telur dan gula merah. Selai ini cocok dipadukan dengan kue yang memiliki cita rasa netral maupun gurih untuk menambahkan cita rasa manis pada rasa kue tersebut. Kemasan Botol 160ml yang praktis dan mudah dibawa kemana saja.
               </p>
               <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
@@ -618,12 +618,12 @@
           <div class="p-5">
             <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Mix Mini</h3>
             <div x-data="{ open: false }">
-              <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
-                Kue MIX mini ( Kemasan Mika)
-                Berisi :
-                Kue ijo 3 pcs,
-                Kue Ongol-ongol 4 pcs dan
-                Kue Pulut Srikaya 2 pcs
+              <p class="text-gray-600 text-sm text-justify mb-3" :class="open ? '' : 'line-clamp-2'">
+                Kue MIX mini ( Kemasan Mika) <br>
+                Berisi : <br>
+                Kue ijo 3 pcs, <br>
+                Kue Ongol-ongol 4 pcs dan <br>
+                Kue Pulut Srikaya 2 pcs <br>
                 Kue ini cocok untuk dijadikan sebagai oleh-oleh atau sebagai cemilan ringan
               </p>
               <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
@@ -650,7 +650,7 @@
           <div class="p-5">
             <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Mix (Kue Ijo & Kue Pulut)</h3>
             <div x-data="{ open: false }">
-              <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
+              <p class="text-gray-600 text-sm text-justify mb-3" :class="open ? '' : 'line-clamp-2'">
                 Kue MIX (Kemasan Thinwall) Berisi : Kue ijo 4 pcs, Kue Pulut Srikaya 5 pcs
               </p>
               <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
@@ -691,7 +691,7 @@
           </div>
           <div class="p-5">
             <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Hampers A (Anggun)</h3>
-            <p class="text-gray-600 text-sm mb-3">Berisi: Kue Ijo (12 pcs), Kue Ongol-ongol (30 pcs), Kue Pulut Srikaya (10 pcs), Lumpur Surga (4 cup @100ml).</p>
+            <p class="text-gray-600 text-sm text-justify mb-3">Berisi: Kue Ijo (12 pcs), Kue Ongol-ongol (30 pcs), Kue Pulut Srikaya (10 pcs), Lumpur Surga (4 cup @100ml).</p>
             <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Rp 160.000</span>
             </div>
@@ -705,7 +705,7 @@
           </div>
           <div class="p-5">
             <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Hampers B (Bagus)</h3>
-            <p class="text-gray-600 text-sm mb-3">Berisi: Kue Ijo (12 pcs), Kue Ongol-ongol (30 pcs), Kue Pulut Srikaya (10 pcs).</p>
+            <p class="text-gray-600 text-sm text-justify mb-3">Berisi: Kue Ijo (12 pcs), Kue Ongol-ongol (30 pcs), Kue Pulut Srikaya (10 pcs).</p>
             <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Rp 115.000</span>
             </div>
@@ -719,7 +719,7 @@
           </div>
           <div class="p-5">
             <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Hampers C (Cantik)</h3>
-            <p class="text-gray-600 text-sm mb-3 line-clamp-2">BELUM ADA DATA</p>
+            <p class="text-gray-600 text-sm mb-3 text-justify line-clamp-2">BELUM ADA DATA</p>
             <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Rp BELUM ADA DATA</span>
             </div>
@@ -753,7 +753,7 @@
           </div>
           <div class="p-5">
             <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Tumpeng Mini Mix</h3>
-            <p class="text-gray-600 text-sm mb-3 ">Berisi: Kue Ijo (25 pcs), Kue Pulut (20 pcs), Kue Ongol-ongol (50 pcs), Lumpur Surga (6 cup). Tumpeng mini mix ini cocok untuk syukuran, ulang tahun, atau acara spesial lainnya.</p>
+            <p class="text-gray-600 text-sm text-justify mb-3 ">Berisi: Kue Ijo (25 pcs), Kue Pulut (20 pcs), Kue Ongol-ongol (50 pcs), Lumpur Surga (6 cup). Tumpeng mini mix ini cocok untuk syukuran, ulang tahun, atau acara spesial lainnya.</p>
             <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Rp 250.000</span>
             </div>
@@ -767,7 +767,7 @@
           </div>
           <div class="p-5">
             <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Tumpeng Besar Mix</h3>
-            <p class="text-gray-600 text-sm mb-3">Berisi: Kue Ijo (50 pcs), Kue Pulut (40 pcs), Kue Ongol-ongol (100 pcs), Lumpur Surga (12 cup). Tumpeng besar mix untuk acara keluarga, kantor, arisan, atau perayaan penting lainnya.</p>
+            <p class="text-gray-600 text-sm text-justify mb-3">Berisi: Kue Ijo (50 pcs), Kue Pulut (40 pcs), Kue Ongol-ongol (100 pcs), Lumpur Surga (12 cup). Tumpeng besar mix untuk acara keluarga, kantor, arisan, atau perayaan penting lainnya.</p>
             <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Rp 500.000</span>
             </div>
