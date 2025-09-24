@@ -244,8 +244,8 @@
           <h2 class="text-3xl md:text-4xl font-bold text-[#2C3E50] mb-6" x-show="tab === 'tentang'">Kue Pandan Asli</h2>
           <div x-show="tab === 'tentang'" x-transition:enter="transition ease-out duration-800" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-400" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
             <div x-data="{ open: false }">
-              <p class="text-gray-600 leading-relaxed mb-8">
-                <span x-show="!open" class="text-justify">
+              <p class="text-gray-600 text-justify leading-relaxed mb-8">
+                <span x-show="!open">
                   Kue Pandan Asli, kami adalah perusahaan kuliner yang berfokus pada produksi dan pengembangan kue tradisional berbahan alami tanpa campuran pengawet dan pewarna. Kami berfokus pada bahan bahan alami mulai dari pewarna kami menggunakan 100% pandan pada seluruh produk kami. Kami berkomitmen menghadirkan kue tradisional dengan bahan baku premium, alami dan kekinian.<br>
                   <button @click="open = true" class="inline-flex items-center gap-2 bg-[#8BA870] text-white px-4 py-1.5 rounded-full font-semibold shadow hover:bg-[#7a965e] transition mt-8 group">
                     <svg class="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
