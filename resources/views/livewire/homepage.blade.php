@@ -349,11 +349,11 @@
           x-data="{
           open: false,
           prices: [
-            { label: 'Isi 3 Kemasan Mika', value: 9000 },
-            { label: 'Isi 5 Kemasan Mika', value: 15000 },
-            { label: 'Isi 12 Kemasan Thinwall', value: 36000 }
+            { label: 'Isi 3 Pcs (Kemasan Mika)', value: 9000 },
+            { label: 'Isi 5 Pcs (Kemasan Mika)', value: 15000 },
+            { label: 'Isi 12 Pcs (Kemasan Thinwall)', value: 36000 }
           ],
-          selectedPrice: { label: 'Isi 3 Kemasan Mika', value: 9000 }
+          selectedPrice: { label: 'Isi 3 Pcs (Kemasan Mika)', value: 9000 }
         }"
           :class="open ? 'z-30' : 'z-0'">
           <div class="relative overflow-hidden rounded-t-2xl">
@@ -369,7 +369,7 @@
             <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Ijo</h3>
             <div x-data="{ open: false }">
               <p class="text-gray-600 text-sm mb-3" :class="open ? '' : 'line-clamp-2'">
-                Kue Ijo terbuat dari tepung beras yang telah diayak lalu dicampur dengan campuran santan kelapa fresh dan air pandan asli. Kue ini memiliki tekstur yang kenyal dan lembut bersamaan ketika dikunyah didalam mulut. Dibalut taburan dengan kelapa parut segar menambah cita rasa gurih dan manis yang menjadikan kue Ijo cocok dinikmati pada suasana apapun.
+                Kue ijo adalah kue tradisional terbuat dari tepung tapioka dengan warna hijaunya asli khas harum daun pandan segar. Teksturnya super kenyal dan lembut, wangi dengan  taburan kelapa. Menambah cita rasa gurih dan sedikit manis yang menjadikan kue Ijo cocok dinikmati pada suasana apapun.
               </p>
               <button @click="open = !open" class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
                 <span x-show="!open">Selengkapnya</span>
