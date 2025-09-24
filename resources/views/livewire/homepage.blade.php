@@ -271,20 +271,20 @@
           <div x-show="tab === 'visi'" x-transition:enter="transition ease-out duration-800" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-400" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
             <h2 class="text-3xl md:text-4xl font-bold text-[#2C3E50] mb-6">Visi Kami</h2>
             <div class="text-gray-600 leading-relaxed mb-8">
-              <p class="mb-4">Menjadi pelopor dalam pelestarian dan pengembangan kue tradisional Indonesia berbahan alami, dengan menghadirkan produk yang tidak hanya lezat dan sehat, tetapi juga dikemas secara modern dan menarik.</p>
-              <p>Kami ingin membawa warisan kuliner nusantara ke generasi masa kini dan mendatang, sehingga kue tradisional tetap relevan, dicintai, dan menjadi kebanggaan bangsa.</p>
+              <p class="mb-4 text-justify">Menjadi pelopor dalam pelestarian dan pengembangan kue tradisional Indonesia berbahan alami, dengan menghadirkan produk yang tidak hanya lezat dan sehat, tetapi juga dikemas secara modern dan menarik.</p>
+              <p class="text-justify">Kami ingin membawa warisan kuliner nusantara ke generasi masa kini dan mendatang, sehingga kue tradisional tetap relevan, dicintai, dan menjadi kebanggaan bangsa.</p>
             </div>
           </div>
           <div x-show="tab === 'misi'" x-transition:enter="transition ease-out duration-800" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-400" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
             <h2 class="text-3xl md:text-4xl font-bold text-[#2C3E50] mb-6">Misi Kami</h2>
             <ul class="text-gray-600 leading-relaxed mb-8 list-disc pl-6 space-y-2">
-              <li>
+              <li class="text-justify">
                 <span class="font-semibold text-[#8BA870]">Mengutamakan bahan alami:</span> Seluruh produk dibuat dari bahan baku alami, tanpa pengawet dan pewarna buatan, demi kesehatan dan kualitas terbaik.
               </li>
-              <li>
+              <li class="text-justify">
                 <span class="font-semibold text-[#8BA870]">Inovasi berkelanjutan:</span> Terus mengembangkan varian kue tradisional dengan sentuhan modern, baik dari segi rasa maupun tampilan.
               </li>
-              <li>
+              <li class="text-justify">
                 <span class="font-semibold text-[#8BA870]">Tanggung jawab produk:</span> Menjaga kualitas mulai dari pemilihan bahan, proses produksi, hingga pengemasan dan pengiriman ke konsumen.
               </li>
               <li>
