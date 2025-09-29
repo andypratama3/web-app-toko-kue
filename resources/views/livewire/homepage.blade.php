@@ -607,9 +607,13 @@
                 <span x-show="open">Tutup</span>
               </button>
             </div>
-            <div class="flex items-center justify-between">
+            <div>
+                    <span class="text-xs text-gray-500">Isi 4 Pcs (Kemasan Mika)</span>
+                    <span class="block font-bold text-lg text-[#8BA870]">Rp 10.000</span>
+                  </div>
+            {{-- <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Isi 4 Pcs (Kemasan Mika) = Rp 10.000</span>
-            </div>
+            </div> --}}
           </div>
         </div>
 
@@ -633,9 +637,13 @@
                 <span x-show="open">Tutup</span>
               </button>
             </div>
-            <div class="flex items-center justify-between">
+                        <div>
+                    <span class="text-xs text-gray-500">Isi 160 ml (Kemasan Botol Kaca)</span>
+                    <span class="block font-bold text-lg text-[#8BA870]">Rp 60.000</span>
+                  </div>
+            {{-- <div class="flex items-center justify-between">
               <span class="text-[#8BA870] font-bold text-lg">Isi 160 ml (Kemasan Botol Kaca) = Rp 60.000</span>
-            </div>
+            </div> --}}
           </div>
         </div>
 
