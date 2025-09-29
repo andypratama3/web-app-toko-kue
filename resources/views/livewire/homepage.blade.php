@@ -711,9 +711,13 @@
                                 <span x-show="open">Tutup</span>
                             </button>
                         </div>
-                        <div class="flex items-center justify-between w-full px-3 py-2 text-left border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8BA870]">
-                            <span class="text-xs text-gray-500">Isi 4 Pcs (Kemasan Mika)</span>
-                            <span class="block font-bold text-lg text-[#8BA870]">Rp 10.000</span>
+                        <div class="flex items-center justify-between mt-4">
+                            <div class="relative w-full">
+                                <div>
+                                    <span class="text-xs text-gray-500">Isi 4 Pcs (Kemasan Mika)</span>
+                                    <span class="block font-bold text-lg text-[#8BA870]">Rp 10.000</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
