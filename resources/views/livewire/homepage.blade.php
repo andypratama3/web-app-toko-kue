@@ -748,9 +748,13 @@
                                 <span x-show="open">Tutup</span>
                             </button>
                         </div>
-                        <div>
-                            <span class="text-xs text-gray-500">Isi 160 ml (Kemasan Botol Kaca)</span>
-                            <span class="block font-bold text-lg text-[#8BA870]">Rp 60.000</span>
+                        <div class="flex items-center justify-between mt-4">
+                            <div class="relative w-full">
+                                <div>
+                                    <span class="text-xs text-gray-500">Isi 160 ml (Kemasan Botol Kaca)</span>
+                                    <span class="block font-bold text-lg text-[#8BA870]">Rp 60.000</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
