@@ -773,7 +773,7 @@
                         <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Koci Ketan Hitam</h3>
                         <div x-data="{ open: false }">
                             <p class="mb-3 text-sm text-justify text-gray-600" :class="open ? '' : 'line-clamp-2'">
-                                Lorem Ipsum.
+                                Kue Koci Ketan Hitam Adalah Kue yang terbuat dari ketan hitam pilihan yang telah dihaluskan. Dengan isian kelapa parut dan gula merah. Berbentuk segitiga kerucut.
                             </p>
                             <button @click="open = !open"
                                 class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
@@ -1817,7 +1817,6 @@
                             </a>
                         </div>
                     </div>
-
 
                     <div class="w-full">
                         <a id="outlet-directions" href="https://maps.app.goo.gl/FBLH5zD3sq1wBYit8" target="_blank"

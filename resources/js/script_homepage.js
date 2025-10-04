@@ -230,8 +230,7 @@ const outlets = {
             window.assetUrls?.outletImages?.surabaya ||
             "/assets/homepage/b1.jpg",
         title: "Pusat Surabaya",
-        address:
-            "Jl. Lebak Jaya II, RT.005/RW.04, Gading, Kec. Tambaksari, Surabaya, Jawa Timur 60134",
+        address: "Jl. Lebak Jaya II, RT.005/RW.04, Gading, Kec. Tambaksari, Surabaya, Jawa Timur 60134",
         hours: "Buka Setiap Hari, 06.00 - 23.00",
         contact: "Telp: 082144834303",
         wa: "082144834303",
@@ -248,8 +247,7 @@ const outlets = {
         img:
             window.assetUrls?.outletImages?.malang || "/assets/homepage/b2.jpg",
         title: "Outlet Malang",
-        address:
-            "Jl. Graha Pelita Asri, Pandanwangi, Kec. Blimbing, Kota Malang, Jawa Timur 65124",
+        address: "Jl. Graha Pelita Asri, Pandanwangi, Kec. Blimbing, Kota Malang, Jawa Timur 65124",
         hours: "Buka Setiap Hari, 06.00 - 23.00",
         contact: "Telp: 082131338971",
         wa: "082131338971", // pilih Malang -> direct ke WA Malang
@@ -267,8 +265,7 @@ const outlets = {
             window.assetUrls?.outletImages?.denpasar ||
             "/assets/homepage/b3.jpg",
         title: "Outlet Denpasar",
-        address:
-            "Gg. Ikan Arwana, Sesetan, Denpasar Selatan, Kota Denpasar, Bali 80224",
+        address: "Gg. Ikan Arwana, Sesetan, Denpasar Selatan, Kota Denpasar, Bali 80224",
         hours: "Buka Setiap Hari, 06.00 - 23.00",
         contact: "Telp: 082338901223",
         wa: "082338901223", // tidak ada WA? nanti auto nonaktif
