@@ -744,7 +744,7 @@ $allStatuses = [
             if (timestamps[step]) {
                 iconEl.innerHTML = '<i class="text-green-600 fas fa-check-circle"></i>';
                 iconEl.classList.add('bg-green-600', 'border-green-600');
-                timeSpanEl.textContent = `${timestamps[step]}  ${tzAbbr}`; // <-- GANTI DI SINI
+                timeSpanEl.textContent = `${timestamps[step]}  ${tzAbbr}`;
                 if (mobileLineEl) mobileLineEl.classList.add('bg-green-600');
                 if (desktopLineEl) desktopLineEl.classList.add('bg-green-600');
             } else {
@@ -758,7 +758,6 @@ $allStatuses = [
         const updateButton = document.getElementById('updateStatusButton');
         const orderId = updateButton.getAttribute('data-order-id');
         const newStatus = updateButton.getAttribute('data-next-status');
-        // [!code --]
         // Mengambil timezone dari atribut data yang disimpan sebelumnya
         const timezone = updateButton.getAttribute('data-order-timezone')
 

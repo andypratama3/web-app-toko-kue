@@ -489,74 +489,6 @@
                     data-aos="zoom-in" x-data="{
                         open: false,
                         prices: [
-                            { label: 'Cup @ 100 ml', value: 6000 },
-                            { label: 'Cup @ 200 ml', value: 12000 }
-                        ],
-                        selectedPrice: { label: 'Cup @ 100 ml', value: 6000 }
-                    }" :class="open ? 'z-30' : 'z-0'">
-                    <div class="relative overflow-hidden rounded-t-2xl">
-                        <img src="{{ asset('assets/homepage/product/kue-lumpur-surga.jpg') }}" alt="Kue Ijo"
-                            loading="lazy"
-                            class="object-cover w-full h-48 transition-transform duration-300 hover:scale-105 cursor-zoom-in zoomable">
-                        <div
-                            class="absolute px-2 py-1 text-xs font-medium text-white bg-orange-500 rounded-full top-3 right-3">
-                            Ala Carte
-                        </div>
-                    </div>
-                    <div class="p-5">
-                        <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Lumpur Surga</h3>
-                        <div x-data="{ open: false }">
-                            <p class="mb-3 text-sm text-justify text-gray-600" :class="open ? '' : 'line-clamp-2'">
-                                Kue yang memiliki dua lapisan yaitu lapisan bawah bewarna hijau yang dihasilkan dari air
-                                pandan asli dan lapisan atas mirip dengan vla yang terbuat dari santan. Kue yang
-                                memiliki tekstur lembut dan lumer dimulut sangat nikmat jika disantap dalam keadaan
-                                dingin. Memiliki Cita rasa manis dari kue nya dan gurih asin dari vla nya berpadu
-                                menghasilkan rasa nikmat yang nyaman ketika masuk dimulut.
-                            </p>
-                            <button @click="open = !open"
-                                class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
-                                <span x-show="!open">Selengkapnya</span>
-                                <span x-show="open">Tutup</span>
-                            </button>
-                        </div>
-                        <div class="flex items-center justify-between mt-4">
-                            <div class="relative w-full">
-                                <button @click="open = !open"
-                                    class="flex items-center justify-between w-full px-3 py-2 text-left border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8BA870]">
-                                    <div>
-                                        <span class="text-xs text-gray-500" x-text="selectedPrice.label"></span>
-                                        <span class="block font-bold text-lg text-[#8BA870]">Rp <span
-                                                x-text="selectedPrice.value.toLocaleString('id-ID')"></span></span>
-                                    </div>
-                                    <svg class="w-4 h-4 text-gray-500 transition-transform duration-200"
-                                        :class="{ 'rotate-180': open }" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 9l-7 7-7-7"></path>
-                                    </svg>
-                                </button>
-                                <div x-show="open" @click.away="open = false" x-transition
-                                    class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
-                                    <ul>
-                                        <template x-for="price in prices" :key="price.label">
-                                            <li @click="selectedPrice = price; open = false"
-                                                class="p-3 cursor-pointer hover:bg-gray-100">
-                                                <span class="font-semibold text-gray-800" x-text="price.label"></span>
-                                                <span class="block text-sm text-[#8BA870]">Rp <span
-                                                        x-text="price.value.toLocaleString('id-ID')"></span></span>
-                                            </li>
-                                        </template>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="relative transition-all duration-300 bg-white shadow-lg rounded-2xl hover:shadow-xl hover:-translate-y-1"
-                    data-aos="zoom-in" x-data="{
-                        open: false,
-                        prices: [
                             { label: 'Isi 10 Pcs (Kemasan Mika)', value: 10000 },
                             { label: 'Isi 30 Pcs (Kemasan Thinwall)', value: 40000 }
                         ],
@@ -691,6 +623,111 @@
                 <div class="overflow-hidden transition-all duration-300 bg-white shadow-lg rounded-2xl hover:shadow-xl hover:-translate-y-1"
                     data-aos="zoom-in">
                     <div class="relative overflow-hidden rounded-t-2xl">
+                        <img src="{{ asset('assets/homepage/product/selai-srikaya.jpg') }}" alt="Selai Srikaya"
+                            class="object-cover w-full h-48 transition-transform duration-300 hover:scale-105 cursor-zoom-in zoomable">
+                        <div
+                            class="absolute px-2 py-1 text-xs font-medium text-white bg-orange-500 rounded-full top-3 right-3">
+                            Ala Carte
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Selai Srikaya</h3>
+                        <div x-data="{ open: false }">
+                            <p class="mb-3 text-sm text-justify text-gray-600" :class="open ? '' : 'line-clamp-2'">
+                                Selai yang terbuat dari perpaduan santan kelapa, telur, air pandan yang menghasilkan
+                                rasa yang gurih dan manis pada selai ini. Selai yang memiliki tekstur kental dan
+                                memiliki warna oren pekat dihasilkan dari telur. Selai itu cocok dipadukan dengan kue
+                                yang memiliki cita rasa netral maupun gurih untuk menambahkan cita rasa manis pada rasa
+                                kue tersebut.
+                            </p>
+                            <button @click="open = !open"
+                                class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
+                                <span x-show="!open">Selengkapnya</span>
+                                <span x-show="open">Tutup</span>
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <div class="relative w-full">
+                                <div>
+                                    <span class="text-xs text-gray-500">Isi 160 ml (Kemasan Botol Kaca)</span>
+                                    <span class="block font-bold text-lg text-[#8BA870]">Rp 60.000</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative transition-all duration-300 bg-white shadow-lg rounded-2xl hover:shadow-xl hover:-translate-y-1"
+                    data-aos="zoom-in" x-data="{
+                        open: false,
+                        prices: [
+                            { label: 'Cup @ 100 ml', value: 6000 },
+                            { label: 'Cup @ 200 ml', value: 12000 }
+                        ],
+                        selectedPrice: { label: 'Cup @ 100 ml', value: 6000 }
+                    }" :class="open ? 'z-30' : 'z-0'">
+                    <div class="relative overflow-hidden rounded-t-2xl">
+                        <img src="{{ asset('assets/homepage/product/kue-lumpur-surga.jpg') }}" alt="Kue Lumpur Surga"
+                            loading="lazy"
+                            class="object-cover w-full h-48 transition-transform duration-300 hover:scale-105 cursor-zoom-in zoomable">
+                        <div
+                            class="absolute px-2 py-1 text-xs font-medium text-white bg-orange-500 rounded-full top-3 right-3">
+                            Ala Carte
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Lumpur Surga</h3>
+                        <div x-data="{ open: false }">
+                            <p class="mb-3 text-sm text-justify text-gray-600" :class="open ? '' : 'line-clamp-2'">
+                                Kue yang memiliki dua lapisan yaitu lapisan bawah bewarna hijau yang dihasilkan dari air
+                                pandan asli dan lapisan atas mirip dengan vla yang terbuat dari santan. Kue yang
+                                memiliki tekstur lembut dan lumer dimulut sangat nikmat jika disantap dalam keadaan
+                                dingin. Memiliki Cita rasa manis dari kue nya dan gurih asin dari vla nya berpadu
+                                menghasilkan rasa nikmat yang nyaman ketika masuk dimulut.
+                            </p>
+                            <button @click="open = !open"
+                                class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
+                                <span x-show="!open">Selengkapnya</span>
+                                <span x-show="open">Tutup</span>
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <div class="relative w-full">
+                                <button @click="open = !open"
+                                    class="flex items-center justify-between w-full px-3 py-2 text-left border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8BA870]">
+                                    <div>
+                                        <span class="text-xs text-gray-500" x-text="selectedPrice.label"></span>
+                                        <span class="block font-bold text-lg text-[#8BA870]">Rp <span
+                                                x-text="selectedPrice.value.toLocaleString('id-ID')"></span></span>
+                                    </div>
+                                    <svg class="w-4 h-4 text-gray-500 transition-transform duration-200"
+                                        :class="{ 'rotate-180': open }" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+                                <div x-show="open" @click.away="open = false" x-transition
+                                    class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
+                                    <ul>
+                                        <template x-for="price in prices" :key="price.label">
+                                            <li @click="selectedPrice = price; open = false"
+                                                class="p-3 cursor-pointer hover:bg-gray-100">
+                                                <span class="font-semibold text-gray-800" x-text="price.label"></span>
+                                                <span class="block text-sm text-[#8BA870]">Rp <span
+                                                        x-text="price.value.toLocaleString('id-ID')"></span></span>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-hidden transition-all duration-300 bg-white shadow-lg rounded-2xl hover:shadow-xl hover:-translate-y-1"
+                    data-aos="zoom-in">
+                    <div class="relative overflow-hidden rounded-t-2xl">
                         <img src="{{ asset('assets/homepage/product/kue-ubi-nanas.jpeg') }}" alt="Kue Ubi Nanas"
                             class="object-cover w-full h-48 transition-transform duration-300 hover:scale-105 cursor-zoom-in zoomable">
                         <div
@@ -725,7 +762,7 @@
                 <div class="overflow-hidden transition-all duration-300 bg-white shadow-lg rounded-2xl hover:shadow-xl hover:-translate-y-1"
                     data-aos="zoom-in">
                     <div class="relative overflow-hidden rounded-t-2xl">
-                        <img src="{{ asset('assets/homepage/product/selai-srikaya.jpg') }}" alt="Selai Srikaya"
+                        <img src="{{ asset('assets/homepage/product/kue-koci-ketan-hitam.jpg') }}" alt="Kue Koci Ketan Hitam"
                             class="object-cover w-full h-48 transition-transform duration-300 hover:scale-105 cursor-zoom-in zoomable">
                         <div
                             class="absolute px-2 py-1 text-xs font-medium text-white bg-orange-500 rounded-full top-3 right-3">
@@ -733,14 +770,10 @@
                         </div>
                     </div>
                     <div class="p-5">
-                        <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Selai Srikaya</h3>
+                        <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Koci Ketan Hitam</h3>
                         <div x-data="{ open: false }">
                             <p class="mb-3 text-sm text-justify text-gray-600" :class="open ? '' : 'line-clamp-2'">
-                                Selai yang terbuat dari perpaduan santan kelapa, telur, air pandan yang menghasilkan
-                                rasa yang gurih dan manis pada selai ini. Selai yang memiliki tekstur kental dan
-                                memiliki warna oren pekat dihasilkan dari telur. Selai itu cocok dipadukan dengan kue
-                                yang memiliki cita rasa netral maupun gurih untuk menambahkan cita rasa manis pada rasa
-                                kue tersebut.
+                                Lorem Ipsum.
                             </p>
                             <button @click="open = !open"
                                 class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
@@ -751,8 +784,8 @@
                         <div class="flex items-center justify-between mt-4">
                             <div class="relative w-full">
                                 <div>
-                                    <span class="text-xs text-gray-500">Isi 160 ml (Kemasan Botol Kaca)</span>
-                                    <span class="block font-bold text-lg text-[#8BA870]">Rp 60.000</span>
+                                    <span class="text-xs text-gray-500">Isi 6 Pcs (Kemasan Thinwall)</span>
+                                    <span class="block font-bold text-lg text-[#8BA870]">Rp 40.000</span>
                                 </div>
                             </div>
                         </div>
@@ -788,7 +821,7 @@
                             </button>
                         </div>
                         <div class="flex items-center justify-between">
-                            <span class="text-[#8BA870] font-bold text-lg">Rp 20.000</span>
+                            <span class="text-[#8BA870] font-bold text-lg">Rp 25.000</span>
                         </div>
                     </div>
                 </div>
@@ -817,7 +850,7 @@
                             </button>
                         </div>
                         <div class="flex items-center justify-between">
-                            <span class="text-[#8BA870] font-bold text-lg">Rp 35.000</span>
+                            <span class="text-[#8BA870] font-bold text-lg">Rp 40.000</span>
                         </div>
                     </div>
                 </div>
@@ -879,7 +912,7 @@
                         <p class="mb-3 text-sm text-justify text-gray-600">Berisi: Kue Ijo (12 pcs), Kue Ongol-ongol
                             (30 pcs), Kue Pulut Srikaya (10 pcs).</p>
                         <div class="flex items-center justify-between">
-                            <span class="text-[#8BA870] font-bold text-lg">Rp 115.000</span>
+                            <span class="text-[#8BA870] font-bold text-lg">Rp 130.000</span>
                         </div>
                     </div>
                 </div>
@@ -896,9 +929,9 @@
                     </div>
                     <div class="p-5">
                         <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Hampers C (Cantik)</h3>
-                        <p class="mb-3 text-sm text-justify text-gray-600 line-clamp-2">BELUM ADA DATA</p>
+                        <p class="mb-3 text-sm text-justify text-gray-600 line-clamp-2">Kue Ijo (5 pcs), Kue Ongol-ongol (12 pcs), Kue Pulut Srikaya (4 pcs), Kue Ubi Nanas (8 pcs).</p>
                         <div class="flex items-center justify-between">
-                            <span class="text-[#8BA870] font-bold text-lg">Rp BELUM ADA DATA</span>
+                            <span class="text-[#8BA870] font-bold text-lg">Rp 65.000</span>
                         </div>
                     </div>
                 </div>
@@ -1743,7 +1776,7 @@
                     <img id="outlet-img" loading="lazy" src="{{ asset('assets/homepage/b1.jpg') }}"
                         alt="Outlet Surabaya" class="object-cover w-full mb-2 shadow h-36 rounded-xl">
                     <h3 id="outlet-title" class="text-2xl font-bold text-[#2C3E50] mb-1">Pusat Surabaya</h3>
-                    <p id="outlet-address" class="mb-1 text-gray-700">Jalan Lebak Jaya II no. 26A Gading,
+                    <p id="outlet-address" class="mb-1 text-gray-700">Jalan Lebak Jaya II Gading,
                         Tambaksari, Surabaya, Jawa Timur 60134 (Rumah pagar hitam)</p>
 
                     <!-- Jam Buka -->
@@ -1811,7 +1844,7 @@
                         pengawet dan pewarna.</p>
                 </div>
                 <div class="grid grid-cols-2 gap-8 sm:gap-6 sm:grid-cols-3">
-                    <div>
+                    {{-- <div>
                         <h2 class="mb-6 text-sm font-semibold uppercase">Social Media</h2>
                         <ul class="font-medium text-gray-400">
                             <li class="mb-4">
@@ -1827,7 +1860,7 @@
                                     class="hover:underline">Facebook</a>
                             </li>
                         </ul>
-                    </div>
+                    </div> --}}
                     <div>
                         <h2 class="mb-6 text-sm font-semibold uppercase">Useful Link</h2>
                         <ul class="font-medium text-gray-400">
