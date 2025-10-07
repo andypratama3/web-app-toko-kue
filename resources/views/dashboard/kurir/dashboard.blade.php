@@ -37,7 +37,10 @@
     // --- Statistik Harian (Diperbarui dengan filter kurir) ---
     $totalOrdersToday = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereDate('created_at', $today)->count();
     $totalCustomersInRegion = App\Models\Customer::where('added_by_user_id', $loggedInCourierId)->count();
-    $completedOrdersToday = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereDate('updated_at', $today)->whereIn('status', ['selesai', 'diverifikasi_admin'])->count();
+    $completedOrdersToday = App\Models\Order::where('created_by_user_id', $loggedInCourierId)
+        ->whereDate('updated_at', $today)
+        ->whereIn('status', ['selesai', 'diverifikasi_admin'])
+        ->count();
     $receivedByBuyerToday = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereDate('received_by_buyer_at', $today)->where('status', 'diterima_pembeli')->count();
 
     // Menghitung retur berdasarkan pesanan yang dibuat oleh kurir
@@ -83,7 +86,10 @@
                 $chartLabels[] = $date->format('d');
 
                 $chartData[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereDate('created_at', $date)->count();
-                $chartDataCompleted[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereDate('updated_at', $date)->whereIn('status', ['selesai', 'diverifikasi_admin'])->count();
+                $chartDataCompleted[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)
+                    ->whereDate('updated_at', $date)
+                    ->whereIn('status', ['selesai', 'diverifikasi_admin'])
+                    ->count();
                 $chartDataReturned[] = App\Models\OrderReturn::whereHas('order', function ($query) use ($loggedInCourierId) {
                     $query->where('created_by_user_id', $loggedInCourierId);
                 })
@@ -129,7 +135,11 @@
                 $chartLabels[] = $date->isoFormat('MMM');
 
                 $chartData[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereYear('created_at', $currentYear)->whereMonth('created_at', $month)->count();
-                $chartDataCompleted[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereYear('updated_at', $currentYear)->whereMonth('updated_at', $month)->whereIn('status', ['selesai', 'diverifikasi_admin'])->count();
+                $chartDataCompleted[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)
+                    ->whereYear('updated_at', $currentYear)
+                    ->whereMonth('updated_at', $month)
+                    ->whereIn('status', ['selesai', 'diverifikasi_admin'])
+                    ->count();
                 $chartDataReturned[] = App\Models\OrderReturn::whereHas('order', function ($query) use ($loggedInCourierId) {
                     $query->where('created_by_user_id', $loggedInCourierId);
                 })
@@ -149,7 +159,10 @@
                 $chartLabels[] = $date->format('d');
 
                 $chartData[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereDate('created_at', $date)->count();
-                $chartDataCompleted[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)->whereDate('updated_at', $date)->whereIn('status', ['selesai', 'diverifikasi_admin'])->count();
+                $chartDataCompleted[] = App\Models\Order::where('created_by_user_id', $loggedInCourierId)
+                    ->whereDate('updated_at', $date)
+                    ->whereIn('status', ['selesai', 'diverifikasi_admin'])
+                    ->count();
                 $chartDataReturned[] = App\Models\OrderReturn::whereHas('order', function ($query) use ($loggedInCourierId) {
                     $query->where('created_by_user_id', $loggedInCourierId);
                 })
@@ -167,9 +180,15 @@
 
     // BARU: Menghitung nilai maksimum untuk skala Y chart untuk mencegah pergeseran
     $maxChartValue = 0;
-    if (!empty($chartData)) { $maxChartValue = max($maxChartValue, max($chartData)); }
-    if (!empty($chartDataCompleted)) { $maxChartValue = max($maxChartValue, max($chartDataCompleted)); }
-    if (!empty($chartDataReturned)) { $maxChartValue = max($maxChartValue, max($chartDataReturned)); }
+    if (!empty($chartData)) {
+        $maxChartValue = max($maxChartValue, max($chartData));
+    }
+    if (!empty($chartDataCompleted)) {
+        $maxChartValue = max($maxChartValue, max($chartDataCompleted));
+    }
+    if (!empty($chartDataReturned)) {
+        $maxChartValue = max($maxChartValue, max($chartDataReturned));
+    }
 
     // Tambahkan buffer dan atur nilai minimum untuk sumbu Y
     $suggestedMax = $maxChartValue > 0 ? ceil($maxChartValue * 1.2) : 5;
@@ -199,9 +218,9 @@
                                     <div class="flex items-baseline gap-2">
                                         <div class="text-2xl font-bold text-transparent bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text dark:from-white dark:to-gray-300"
                                             id="ucapan">
-                                            </div>
+                                        </div>
                                         <div id="greeting-emoji" class="text-2xl">
-                                            </div>
+                                        </div>
                                     </div>
                                     <div class="text-sm font-medium text-gray-600 dark:text-gray-400">Your Achievement Today
                                     </div>
@@ -222,7 +241,8 @@
                                     <div class="flex-1 min-w-0">
                                         <p class="text-xs text-gray-500 truncate dark:text-gray-400">Total Hari Ini</p>
                                         {{-- DITAMBAHKAN: ID untuk pembaruan JS --}}
-                                        <p class="text-xl font-bold text-gray-800 truncate dark:text-white" id="total-orders-today-count">
+                                        <p class="text-xl font-bold text-gray-800 truncate dark:text-white"
+                                            id="total-orders-today-count">
                                             {{ $totalOrdersToday }}
                                         </p>
                                     </div>
@@ -240,7 +260,8 @@
                                     <div class="flex-1 min-w-0">
                                         <p class="text-xs text-gray-500 truncate dark:text-gray-400">Customer</p>
                                         {{-- DITAMBAHKAN: ID untuk pembaruan JS --}}
-                                        <p class="text-xl font-bold text-gray-800 truncate dark:text-white" id="total-customers-count">
+                                        <p class="text-xl font-bold text-gray-800 truncate dark:text-white"
+                                            id="total-customers-count">
                                             {{ $totalCustomersInRegion }}
                                         </p>
                                     </div>
@@ -258,7 +279,8 @@
                                     <div class="flex-1 min-w-0">
                                         <p class="text-xs text-gray-500 truncate dark:text-gray-400">Selesai</p>
                                         {{-- DITAMBAHKAN: ID untuk pembaruan JS --}}
-                                        <p class="text-xl font-bold text-gray-800 truncate dark:text-white" id="completed-orders-count">
+                                        <p class="text-xl font-bold text-gray-800 truncate dark:text-white"
+                                            id="completed-orders-count">
                                             {{ $completedOrdersToday }}
                                         </p>
                                     </div>
@@ -276,7 +298,8 @@
                                     <div class="flex-1 min-w-0">
                                         <p class="text-xs text-gray-500 truncate dark:text-gray-400">Return</p>
                                         {{-- DITAMBAHKAN: ID untuk pembaruan JS --}}
-                                        <p class="text-xl font-bold text-gray-800 truncate dark:text-white" id="total-returned-today-count">
+                                        <p class="text-xl font-bold text-gray-800 truncate dark:text-white"
+                                            id="total-returned-today-count">
                                             {{ $totalReturnedOrdersToday }}</p>
                                     </div>
                                 </div>
@@ -403,19 +426,22 @@
                                     <span class="w-3 h-3 mr-2 bg-blue-500 rounded-full"></span>
                                     <span class="mr-1 text-sm font-medium text-gray-600 dark:text-gray-300">Total </span>
                                     {{-- DITAMBAHKAN: ID untuk pembaruan JS --}}
-                                    <span class="text-sm font-bold text-gray-800 dark:text-white" id="chart-total-orders">{{ $totalOrdersInRange }}</span>
+                                    <span class="text-sm font-bold text-gray-800 dark:text-white"
+                                        id="chart-total-orders">{{ $totalOrdersInRange }}</span>
                                 </div>
                                 <div class="flex items-center">
                                     <span class="w-3 h-3 mr-2 bg-green-500 rounded-full"></span>
                                     <span class="mr-1 text-sm font-medium text-gray-600 dark:text-gray-300">Selesai </span>
                                     {{-- DITAMBAHKAN: ID untuk pembaruan JS --}}
-                                    <span class="text-sm font-bold text-gray-800 dark:text-white" id="chart-total-completed">{{ $totalCompletedOrdersInRange }}</span>
+                                    <span class="text-sm font-bold text-gray-800 dark:text-white"
+                                        id="chart-total-completed">{{ $totalCompletedOrdersInRange }}</span>
                                 </div>
                                 <div class="flex items-center">
                                     <span class="w-3 h-3 mr-2 bg-red-500 rounded-full"></span>
                                     <span class="mr-1 text-sm font-medium text-gray-600 dark:text-gray-300">Return </span>
                                     {{-- DITAMBAHKAN: ID untuk pembaruan JS --}}
-                                    <span class="text-sm font-bold text-gray-800 dark:text-white" id="chart-total-returned">{{ $totalReturnedOrdersInRange }}</span>
+                                    <span class="text-sm font-bold text-gray-800 dark:text-white"
+                                        id="chart-total-returned">{{ $totalReturnedOrdersInRange }}</span>
                                 </div>
                                 <div class="relative">
                                     <button id="chartFilterButton" type="button"
@@ -464,7 +490,8 @@
                                     <h5 class="mb-1 text-xl font-bold text-gray-800 dark:text-white">🎯 Latest Orders
                                     </h5>
                                     <a href="{{ route('kurir.pesanan.index') }}" title="Lihat Pesanan">
-                                        <div class="p-2 transition-all duration-300 rounded-lg bg-gradient-to-br from-purple-400 to-pink-500 hover:from-purple-500 hover:to-pink-600">
+                                        <div
+                                            class="p-2 transition-all duration-300 rounded-lg bg-gradient-to-br from-purple-400 to-pink-500 hover:from-purple-500 hover:to-pink-600">
                                             <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -514,14 +541,25 @@
                                                     $latestTotal = $order->total_amount;
                                                     $showReturnedView = false;
 
-                                                    if ($order->status === 'menunggu_retur' || $order->status === 'menunggu_verifikasi_admin' ) {
+                                                    if (
+                                                        $order->status === 'menunggu_retur' ||
+                                                        $order->status === 'menunggu_verifikasi_admin'
+                                                    ) {
                                                         $showReturnedView = true;
-                                                        $orderReturn = OrderReturn::where('order_id', $order->id)->first();
+                                                        $orderReturn = OrderReturn::where(
+                                                            'order_id',
+                                                            $order->id,
+                                                        )->first();
                                                         if ($orderReturn) {
-                                                            $returnProducts = OrderReturnProduct::where('order_return_id', $orderReturn->id)->get();
+                                                            $returnProducts = OrderReturnProduct::where(
+                                                                'order_return_id',
+                                                                $orderReturn->id,
+                                                            )->get();
                                                             $totalReturnValue = 0;
                                                             foreach ($returnProducts as $returnItem) {
-                                                                $totalReturnValue += ($returnItem->quantity ?? 0) * ($returnItem->price ?? 0);
+                                                                $totalReturnValue +=
+                                                                    ($returnItem->quantity ?? 0) *
+                                                                    ($returnItem->price ?? 0);
                                                             }
                                                             $latestTotal = $initialTotal - $totalReturnValue;
                                                         } else {
@@ -534,10 +572,16 @@
                                                             $initialQty = $item->quantity ?? 0;
                                                             $returnedQty = $item->returned_quantity ?? 0;
                                                             $price = $item->price ?? 0;
-                                                            $calculatedLatestTotal += ($initialQty - $returnedQty) * $price;
-                                                            if ($returnedQty > 0) $hasReturnedItems = true;
+                                                            $calculatedLatestTotal +=
+                                                                ($initialQty - $returnedQty) * $price;
+                                                            if ($returnedQty > 0) {
+                                                                $hasReturnedItems = true;
+                                                            }
                                                         }
-                                                        if ($hasReturnedItems && $calculatedLatestTotal < $initialTotal) {
+                                                        if (
+                                                            $hasReturnedItems &&
+                                                            $calculatedLatestTotal < $initialTotal
+                                                        ) {
                                                             $latestTotal = $calculatedLatestTotal;
                                                             $showReturnedView = true;
                                                         }
@@ -558,12 +602,13 @@
                                                         class="p-4 align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
                                                         <span
                                                             class="text-sm font-semibold text-gray-800 dark:text-white">{{ $shortInvoice }}</span>
-                                                            @if ($order->rejection_note)
-                                                                <div class="flex items-center gap-1 mt-1 text-xs text-red-600 dark:text-red-400" title="{{ $order->rejection_note }}">
-                                                                    <i class="fas fa-exclamation-triangle"></i>
-                                                                    <span>Verifikasi Ditolak</span>
-                                                                </div>
-                                                            @endif
+                                                        @if ($order->rejection_note)
+                                                            <div class="flex items-center gap-1 mt-1 text-xs text-red-600 dark:text-red-400"
+                                                                title="{{ $order->rejection_note }}">
+                                                                <i class="fas fa-exclamation-triangle"></i>
+                                                                <span>Verifikasi Ditolak</span>
+                                                            </div>
+                                                        @endif
                                                     </td>
                                                     <td
                                                         class="p-4 align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
@@ -587,20 +632,26 @@
                                                             {{ Str::limit($order->address ?? 'Alamat tidak ada', 25) }}
                                                         </p>
                                                     </td>
-                                                    <td class="p-4 align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
-                                                        <button type="button" class="w-full text-left transition-colors js-open-modal-btn hover:opacity-80"
-                                                            data-target-modal="orderDetailsModal" onclick="fetchOrderDetails({{ $order->id }})">
+                                                    <td
+                                                        class="p-4 align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
+                                                        <button type="button"
+                                                            class="w-full text-left transition-colors js-open-modal-btn hover:opacity-80"
+                                                            data-target-modal="orderDetailsModal"
+                                                            onclick="fetchOrderDetails({{ $order->id }})">
                                                             @if ($showReturnedView)
                                                                 <div>
-                                                                    <p class="text-sm font-bold text-gray-400 line-through dark:text-gray-500">
+                                                                    <p
+                                                                        class="text-sm font-bold text-gray-400 line-through dark:text-gray-500">
                                                                         Rp {{ number_format($initialTotal, 0, ',', '.') }}
                                                                     </p>
-                                                                    <p class="text-lg font-extrabold text-green-600 dark:text-green-500">
+                                                                    <p
+                                                                        class="text-lg font-extrabold text-green-600 dark:text-green-500">
                                                                         Rp {{ number_format($latestTotal, 0, ',', '.') }}
                                                                     </p>
                                                                 </div>
                                                             @else
-                                                                <p class="text-lg font-extrabold text-blue-600 dark:text-blue-400">
+                                                                <p
+                                                                    class="text-lg font-extrabold text-blue-600 dark:text-blue-400">
                                                                     Rp
                                                                     {{ number_format($order->total_amount, 0, ',', '.') }}
                                                                 </p>
@@ -611,7 +662,9 @@
                                                         class="p-4 text-sm leading-normal text-center align-middle bg-transparent border-b dark:border-slate-600 whitespace-nowrap">
                                                         @php
                                                             $status = $order->status ?? 'dikemas';
-                                                            $statusText = $statusLabelMap[$status] ?? ucfirst(str_replace('_', ' ', $status));
+                                                            $statusText =
+                                                                $statusLabelMap[$status] ??
+                                                                ucfirst(str_replace('_', ' ', $status));
                                                             $statusClass = '';
                                                             switch ($status) {
                                                                 case 'diambil':
@@ -680,14 +733,21 @@
                                             $latestTotal = $order->total_amount;
                                             $showReturnedView = false;
 
-                                            if ($order->status === 'menunggu_retur' || $order->status === 'menunggu_verifikasi_admin') {
+                                            if (
+                                                $order->status === 'menunggu_retur' ||
+                                                $order->status === 'menunggu_verifikasi_admin'
+                                            ) {
                                                 $showReturnedView = true;
                                                 $orderReturn = OrderReturn::where('order_id', $order->id)->first();
                                                 if ($orderReturn) {
-                                                    $returnProducts = OrderReturnProduct::where('order_return_id', $orderReturn->id)->get();
+                                                    $returnProducts = OrderReturnProduct::where(
+                                                        'order_return_id',
+                                                        $orderReturn->id,
+                                                    )->get();
                                                     $totalReturnValue = 0;
                                                     foreach ($returnProducts as $returnItem) {
-                                                        $totalReturnValue += ($returnItem->quantity ?? 0) * ($returnItem->price ?? 0);
+                                                        $totalReturnValue +=
+                                                            ($returnItem->quantity ?? 0) * ($returnItem->price ?? 0);
                                                     }
                                                     $latestTotal = $initialTotal - $totalReturnValue;
                                                 } else {
@@ -701,7 +761,9 @@
                                                     $returnedQty = $item->returned_quantity ?? 0;
                                                     $price = $item->price ?? 0;
                                                     $calculatedLatestTotal += ($initialQty - $returnedQty) * $price;
-                                                    if ($returnedQty > 0) $hasReturnedItems = true;
+                                                    if ($returnedQty > 0) {
+                                                        $hasReturnedItems = true;
+                                                    }
                                                 }
                                                 if ($hasReturnedItems && $calculatedLatestTotal < $initialTotal) {
                                                     $latestTotal = $calculatedLatestTotal;
@@ -732,7 +794,8 @@
                                                         </h6>
                                                     </div>
                                                     @if ($order->rejection_note)
-                                                        <div class="flex items-center gap-1 mt-0.5 text-xs text-red-600 dark:text-red-400" title="{{ $order->rejection_note }}">
+                                                        <div class="flex items-center gap-1 mt-0.5 text-xs text-red-600 dark:text-red-400"
+                                                            title="{{ $order->rejection_note }}">
                                                             <i class="fas fa-exclamation-triangle"></i>
                                                             <span>Verifikasi Ditolak</span>
                                                         </div>
@@ -747,7 +810,8 @@
                                                             <span class="inline-flex items-center gap-1">
                                                                 <del class="mr-1 text-xs text-gray-500">Rp
                                                                     {{ number_format($initialTotal, 0, ',', '.') }}</del>
-                                                                <span class="font-bold text-green-600 dark:text-green-500">Rp
+                                                                <span
+                                                                    class="font-bold text-green-600 dark:text-green-500">Rp
                                                                     {{ number_format($latestTotal, 0, ',', '.') }}</span>
                                                             </span>
                                                         @else
@@ -760,7 +824,9 @@
                                                 <div class="flex flex-col items-end flex-shrink-0 space-y-2">
                                                     @php
                                                         $status = $order->status ?? 'dikemas';
-                                                        $statusText = $statusLabelMap[$status] ?? ucfirst(str_replace('_', ' ', $status));
+                                                        $statusText =
+                                                            $statusLabelMap[$status] ??
+                                                            ucfirst(str_replace('_', ' ', $status));
                                                         $statusClass = '';
                                                         switch ($status) {
                                                             case 'diambil':
@@ -1024,10 +1090,10 @@
 
             // 2. Update Kartu "Return"
             if (!wasReturned && isNowReturned) {
-                 const countEl = document.getElementById('total-returned-today-count');
-                 if (countEl) {
+                const countEl = document.getElementById('total-returned-today-count');
+                if (countEl) {
                     countEl.textContent = parseInt(countEl.textContent, 10) + 1;
-                 }
+                }
             }
 
 
@@ -1069,7 +1135,7 @@
             if (returnModal) {
                 returnModal.addEventListener('click', function(event) {
                     const button = event.target.closest(
-                    'button'); // Cari elemen tombol yang paling dekat diklik
+                        'button'); // Cari elemen tombol yang paling dekat diklik
                     if (!button) return; // Jika yang diklik bukan tombol, abaikan
 
                     // Cari baris atau kartu produk terdekat dari tombol yang diklik
@@ -1128,7 +1194,7 @@
 
 
         function populateOrderDetailsModal(order) {
-             // Populate data umum
+            // Populate data umum
             document.getElementById('modalInvoiceNumber').textContent = order.invoice_number || 'N/A';
             document.getElementById('customerName').textContent = order.customer.name || 'N/A';
             document.getElementById('customerPhone').textContent = `☎️  ${order.customer.phone}` || 'N/A';
@@ -1143,7 +1209,8 @@
             }
             document.getElementById('paymentMethod').textContent = order.payment_method || 'N/A';
             document.getElementById('orderCreatedAt').textContent = order.created_at || 'Tidak Tersedia';
-            document.getElementById('orderPaidAt').textContent = order.paid_at ? (order.paid_at + (order.paid_at_label || '')) : 'Belum Lunas ❌';
+            document.getElementById('orderPaidAt').textContent = order.paid_at ? (order.paid_at + (order.paid_at_label ||
+                '')) : 'Belum Lunas ❌';
             // Populate Order Notes
             document.getElementById('orderNotesContainer').textContent = order.note || '"Tidak ada catatan."';
 
@@ -1438,19 +1505,56 @@
             currentOrderForUpdate = order;
 
             const statusMap = {
-                'baru': { label: 'Baru', nextStatus: 'diambil', buttonText: 'Ubah Status ke Diambil' },
-                'dikemas': { label: 'Dikemas', nextStatus: 'diambil', buttonText: 'Ubah Status ke Diambil' },
-                'diambil': { label: 'Diambil', nextStatus: 'diantar', buttonText: 'Ubah Status ke Diantar' },
-                'diantar': { label: 'Diantar', nextStatus: 'diterima_pembeli', buttonText: 'Ubah Status ke Diterima Pembeli' },
-                'diterima_pembeli': { label: 'Diterima Pembeli', nextStatus: null, buttonText: 'Menunggu Bukti Pembayaran' },
-                'menunggu_retur': { label: 'Menunggu Retur', nextStatus: null, buttonText: 'Menunggu Proses Retur' },
-                'menunggu_verifikasi_admin': { label: 'Menunggu Verifikasi Admin', nextStatus: null, buttonText: 'Menunggu Verifikasi Admin' },
-                'selesai': { label: 'Selesai (Lunas)', nextStatus: null, buttonText: 'Pesanan Selesai' },
-                'diverifikasi_admin': { label: 'Telah Diverifikasi Admin', nextStatus: null, buttonText: 'Telah Diverifikasi Admin' }
+                'baru': {
+                    label: 'Baru',
+                    nextStatus: 'diambil',
+                    buttonText: 'Ubah Status ke Diambil'
+                },
+                'dikemas': {
+                    label: 'Dikemas',
+                    nextStatus: 'diambil',
+                    buttonText: 'Ubah Status ke Diambil'
+                },
+                'diambil': {
+                    label: 'Diambil',
+                    nextStatus: 'diantar',
+                    buttonText: 'Ubah Status ke Diantar'
+                },
+                'diantar': {
+                    label: 'Diantar',
+                    nextStatus: 'diterima_pembeli',
+                    buttonText: 'Ubah Status ke Diterima Pembeli'
+                },
+                'diterima_pembeli': {
+                    label: 'Diterima Pembeli',
+                    nextStatus: null,
+                    buttonText: 'Menunggu Bukti Pembayaran'
+                },
+                'menunggu_retur': {
+                    label: 'Menunggu Retur',
+                    nextStatus: null,
+                    buttonText: 'Menunggu Proses Retur'
+                },
+                'menunggu_verifikasi_admin': {
+                    label: 'Menunggu Verifikasi Admin',
+                    nextStatus: null,
+                    buttonText: 'Menunggu Verifikasi Admin'
+                },
+                'selesai': {
+                    label: 'Selesai (Lunas)',
+                    nextStatus: null,
+                    buttonText: 'Pesanan Selesai'
+                },
+                'diverifikasi_admin': {
+                    label: 'Telah Diverifikasi Admin',
+                    nextStatus: null,
+                    buttonText: 'Telah Diverifikasi Admin'
+                }
             };
 
             document.getElementById('modalStatusInvoiceNumber').textContent = order.invoice_number || 'N/A';
-            document.getElementById('modalStatusCustomerName').textContent = order.customer.name || 'Pelanggan Tidak Dikenal';
+            document.getElementById('modalStatusCustomerName').textContent = order.customer.name ||
+                'Pelanggan Tidak Dikenal';
 
             updateStepperUI(order);
 
@@ -1465,7 +1569,9 @@
             if (currentStatusInfo) {
                 updateButtonText.textContent = currentStatusInfo.buttonText;
 
-                if (!currentStatusInfo.nextStatus || ['selesai', 'diverifikasi_admin', 'menunggu_verifikasi_admin', 'menunggu_retur'].includes(currentStatus)) {
+                if (!currentStatusInfo.nextStatus || ['selesai', 'diverifikasi_admin', 'menunggu_verifikasi_admin',
+                        'menunggu_retur'
+                    ].includes(currentStatus)) {
                     updateButton.disabled = true;
                     updateButton.classList.add('opacity-50', 'cursor-not-allowed');
                     if (currentStatus === 'diverifikasi_admin') {
@@ -1526,9 +1632,10 @@
 
                 // Cek apakah langkah sudah selesai
                 if (timestamps[step]) {
-                    iconEl.innerHTML = '<i class="text-green-600 fas fa-check-circle"></i>';
+                    iconEl.innerHTML =
+                    '<i class="text-white dark:text-green-600 fas fa-check-circle"></i>'; // [!code ++]
                     iconEl.classList.add('bg-green-600', 'border-green-600');
-                    timeSpanEl.textContent = `${timestamps[step]}  ${tzAbbr}`; // <-- GANTI DI SINI
+                    timeSpanEl.textContent = `${timestamps[step]}  ${tzAbbr}`;
                     if (mobileLineEl) mobileLineEl.classList.add('bg-green-600');
                     if (desktopLineEl) desktopLineEl.classList.add('bg-green-600');
                 } else {
@@ -1627,13 +1734,25 @@
 
             let newClasses = 'bg-gray-100 text-gray-800';
             switch (newStatus) {
-                case 'diambil': newClasses = 'bg-blue-100 text-blue-800'; break;
-                case 'diantar': newClasses = 'bg-yellow-100 text-yellow-800'; break;
-                case 'diterima_pembeli': newClasses = 'bg-purple-100 text-purple-800'; break;
-                case 'menunggu_retur': newClasses = 'bg-red-100 text-red-800'; break;
-                case 'menunggu_verifikasi_admin': newClasses = 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300'; break;
+                case 'diambil':
+                    newClasses = 'bg-blue-100 text-blue-800';
+                    break;
+                case 'diantar':
+                    newClasses = 'bg-yellow-100 text-yellow-800';
+                    break;
+                case 'diterima_pembeli':
+                    newClasses = 'bg-purple-100 text-purple-800';
+                    break;
+                case 'menunggu_retur':
+                    newClasses = 'bg-red-100 text-red-800';
+                    break;
+                case 'menunggu_verifikasi_admin':
+                    newClasses = 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
+                    break;
                 case 'selesai':
-                case 'diverifikasi_admin': newClasses = 'bg-green-100 text-green-800'; break;
+                case 'diverifikasi_admin':
+                    newClasses = 'bg-green-100 text-green-800';
+                    break;
             }
 
             const colorClassesToRemove = [
@@ -1648,7 +1767,9 @@
                 if (statusSpan) {
                     statusSpan.textContent = statusText;
                     statusSpan.classList.remove(...colorClassesToRemove);
-                    newClasses.split(' ').forEach(cls => { if (cls) statusSpan.classList.add(cls); });
+                    newClasses.split(' ').forEach(cls => {
+                        if (cls) statusSpan.classList.add(cls);
+                    });
                 }
             });
         }
@@ -1667,7 +1788,8 @@
             mobileContainer.innerHTML = '';
 
             if (!order.products || order.products.length === 0) {
-                const noProductHTML = '<p class="py-4 text-center text-gray-500 dark:text-gray-400">Tidak ada produk dalam pesanan ini untuk diretur.</p>';
+                const noProductHTML =
+                    '<p class="py-4 text-center text-gray-500 dark:text-gray-400">Tidak ada produk dalam pesanan ini untuk diretur.</p>';
                 desktopContainer.innerHTML = `<tr><td colspan="4">${noProductHTML}</td></tr>`;
                 mobileContainer.innerHTML = noProductHTML;
                 returnModalLoader.classList.add('hidden');
@@ -1677,12 +1799,15 @@
 
             order.products.forEach((product, index) => {
                 const productId = product.product_id || product.id;
-                const variantId = product.variant_id !== undefined && product.variant_id !== null ? product.variant_id : 0;
+                const variantId = product.variant_id !== undefined && product.variant_id !== null ? product
+                    .variant_id : 0;
                 const returnKey = `${productId}-${variantId}`;
                 const productImage = product.image_url || 'https://placehold.co/64x64/E2E8F0/64748B?text=No+Img';
 
-                const desktopRowHTML = `<tr data-return-key="${returnKey}"><td class="px-4 py-4 whitespace-nowrap"><div class="text-sm text-gray-900 dark:text-white">${index + 1}</div></td><td class="px-2 py-4"><div class="flex items-center"><div class="flex-shrink-0 w-16 h-16"><img class="object-cover w-16 h-16 rounded-md" src="${productImage}" alt="${product.name}"></div><div class="ml-4"><div class="text-sm font-medium text-gray-900 dark:text-white">${product.name}</div>${product.variant_name ? `<div class="text-xs text-gray-400 dark:text-gray-500">${product.variant_name}</div>` : ''}<div class="text-sm text-gray-500 dark:text-gray-400">Jumlah Awal: ${product.quantity}</div></div></div></td><td class="py-4 whitespace-nowrap"><div class="flex items-center justify-center gap-2"><button type="button" class="px-2 text-black transition rounded quantity-minus hover:bg-gray-300 dark:text-white dark:hover:bg-gray-700 hover:scale-110 active:scale-90">–</button><span data-name="return_qty[${returnKey}]" data-max="${product.quantity}" class="px-2 text-black bg-gray-200 rounded quantity-input dark:text-white dark:bg-gray-700">0</span><button type="button" class="px-2 text-black transition rounded quantity-plus hover:bg-gray-300 dark:text-white dark:hover:bg-gray-700 hover:scale-110 active:scale-90">+</button></div></td><td class="px-4 py-4 text-sm font-medium text-center whitespace-nowrap"><button type="button" class="text-red-600 remove-product hover:text-red-900 dark:hover:text-red-500 hover:scale-110 active:scale-90" title="Setel kuantitas ke 0">🗑</button></td></tr>`;
-                const mobileCardHTML = `<div class="flex items-start gap-4 px-4 py-2 mx-0 border-b border-gray-200 dark:border-gray-700" data-return-key="${returnKey}"><div class="flex-shrink-0 w-24 h-24"><img class="object-cover w-24 h-24 rounded-md" src="${productImage}" alt="${product.name}"></div><div class="flex flex-col flex-1"><div class="flex items-center justify-between mb-1"><p class="font-bold text-black dark:text-white">${product.name}</p><button type="button" class="text-red-600 remove-product text-md hover:text-red-900 dark:hover:text-red-500 hover:scale-110 active:scale-90" title="Setel kuantitas ke 0">🗑</button></div>${product.variant_name ? `<p class="mb-1 text-xs text-gray-500 dark:text-gray-400">${product.variant_name}</p>` : ''}<p class="text-sm text-gray-600 dark:text-gray-300">Jumlah Awal: ${product.quantity}</p><div class="flex items-center justify-between mt-3"><div class="flex items-center gap-2"><button type="button" class="px-2 text-black rounded quantity-minus dark:text-white hover:scale-110 active:scale-90">–</button><span data-name="return_qty[${returnKey}]" data-max="${product.quantity}" class="px-2 text-black bg-gray-200 rounded quantity-input dark:text-white dark:bg-gray-700">0</span><button type="button" class="px-2 text-black rounded quantity-plus dark:text-white hover:scale-110 active:scale-90">+</button></div></div></div></div>`;
+                const desktopRowHTML =
+                    `<tr data-return-key="${returnKey}"><td class="px-4 py-4 whitespace-nowrap"><div class="text-sm text-gray-900 dark:text-white">${index + 1}</div></td><td class="px-2 py-4"><div class="flex items-center"><div class="flex-shrink-0 w-16 h-16"><img class="object-cover w-16 h-16 rounded-md" src="${productImage}" alt="${product.name}"></div><div class="ml-4"><div class="text-sm font-medium text-gray-900 dark:text-white">${product.name}</div>${product.variant_name ? `<div class="text-xs text-gray-400 dark:text-gray-500">${product.variant_name}</div>` : ''}<div class="text-sm text-gray-500 dark:text-gray-400">Jumlah Awal: ${product.quantity}</div></div></div></td><td class="py-4 whitespace-nowrap"><div class="flex items-center justify-center gap-2"><button type="button" class="px-2 text-black transition rounded quantity-minus hover:bg-gray-300 dark:text-white dark:hover:bg-gray-700 hover:scale-110 active:scale-90">–</button><span data-name="return_qty[${returnKey}]" data-max="${product.quantity}" class="px-2 text-black bg-gray-200 rounded quantity-input dark:text-white dark:bg-gray-700">0</span><button type="button" class="px-2 text-black transition rounded quantity-plus hover:bg-gray-300 dark:text-white dark:hover:bg-gray-700 hover:scale-110 active:scale-90">+</button></div></td><td class="px-4 py-4 text-sm font-medium text-center whitespace-nowrap"><button type="button" class="text-red-600 remove-product hover:text-red-900 dark:hover:text-red-500 hover:scale-110 active:scale-90" title="Setel kuantitas ke 0">🗑</button></td></tr>`;
+                const mobileCardHTML =
+                    `<div class="flex items-start gap-4 px-4 py-2 mx-0 border-b border-gray-200 dark:border-gray-700" data-return-key="${returnKey}"><div class="flex-shrink-0 w-24 h-24"><img class="object-cover w-24 h-24 rounded-md" src="${productImage}" alt="${product.name}"></div><div class="flex flex-col flex-1"><div class="flex items-center justify-between mb-1"><p class="font-bold text-black dark:text-white">${product.name}</p><button type="button" class="text-red-600 remove-product text-md hover:text-red-900 dark:hover:text-red-500 hover:scale-110 active:scale-90" title="Setel kuantitas ke 0">🗑</button></div>${product.variant_name ? `<p class="mb-1 text-xs text-gray-500 dark:text-gray-400">${product.variant_name}</p>` : ''}<p class="text-sm text-gray-600 dark:text-gray-300">Jumlah Awal: ${product.quantity}</p><div class="flex items-center justify-between mt-3"><div class="flex items-center gap-2"><button type="button" class="px-2 text-black rounded quantity-minus dark:text-white hover:scale-110 active:scale-90">–</button><span data-name="return_qty[${returnKey}]" data-max="${product.quantity}" class="px-2 text-black bg-gray-200 rounded quantity-input dark:text-white dark:bg-gray-700">0</span><button type="button" class="px-2 text-black rounded quantity-plus dark:text-white hover:scale-110 active:scale-90">+</button></div></div></div></div>`;
 
                 desktopContainer.insertAdjacentHTML('beforeend', desktopRowHTML);
                 mobileContainer.insertAdjacentHTML('beforeend', mobileCardHTML);
@@ -1730,8 +1855,14 @@
             try {
                 const response = await fetch(`/kurir/pesanan/${orderId}/request-return`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': getCsrfToken() },
-                    body: JSON.stringify({ return_quantities: returnQuantities })
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': getCsrfToken()
+                    },
+                    body: JSON.stringify({
+                        return_quantities: returnQuantities
+                    })
                 });
 
                 const result = await response.json();
@@ -1743,7 +1874,9 @@
                 dispatchToast(result.message, 'success');
 
                 const returnModal = document.getElementById('returnProductModal');
-                if(typeof closeModal === 'function') { closeModal(returnModal); }
+                if (typeof closeModal === 'function') {
+                    closeModal(returnModal);
+                }
 
                 // DIUBAH: Panggil fungsi update counter
                 const oldStatus = 'diterima_pembeli'; // Asumsi retur hanya bisa dari status ini
