@@ -1843,24 +1843,31 @@
                         </a>
                     </div> --}}
 
-                    <div class="grid w-full grid-cols-3 gap-3 mt-4 text-center text-gray-600">
-                        <a id="social-instagram" href="#" target="_blank"
-                            class="flex flex-col items-center justify-center p-3 transition-all duration-200 border border-gray-300 rounded-lg shadow-sm hover:shadow-md hover:border-pink-500 hover:text-pink-500 hover:-translate-y-1">
-                            <i class="mb-1 text-2xl fab fa-instagram"></i>
-                            <span id="social-instagram-text" class="w-full text-xs font-medium truncate">-</span>
-                        </a>
+                    <div class="w-full mt-2 text-gray-600">
+                        <h4 class="mb-3 text-base font-medium text-gray-800">Social Media :</h4>
 
-                        <a id="social-tiktok" href="#" target="_blank"
-                            class="flex flex-col items-center justify-center p-3 transition-all duration-200 border border-gray-300 rounded-lg shadow-sm hover:shadow-md hover:border-gray-800 hover:text-gray-800 hover:-translate-y-1">
-                            <i class="mb-1 text-2xl fab fa-tiktok"></i>
-                            <span id="social-tiktok-text" class="w-full text-xs font-medium truncate">-</span>
-                        </a>
+                        <div class="flex flex-row justify-center gap-3 text-center md:justify-start">
 
-                        <a id="social-facebook" href="#" target="_blank"
-                            class="flex flex-col items-center justify-center p-3 transition-all duration-200 border border-gray-300 rounded-lg shadow-sm hover:shadow-md hover:border-blue-600 hover:text-blue-600 hover:-translate-y-1">
-                            <i class="mb-1 text-2xl fab fa-facebook"></i>
-                            <span id="social-facebook-text" class="w-full text-xs font-medium truncate">-</span>
-                        </a>
+                            <a id="social-instagram" href="#" target="_blank"
+                                class="flex flex-col items-center justify-center w-24 gap-1 p-2 transition-all duration-200 border border-gray-200 rounded-lg shadow-sm hover:shadow-md hover:border-gray-300 hover:text-pink-500 hover:-translate-y-1">
+                                <i class="text-2xl fab fa-instagram"></i>
+                                <span id="social-instagram-text"
+                                    class="w-full text-xs font-medium truncate">-</span>
+                            </a>
+
+                            <a id="social-tiktok" href="#" target="_blank"
+                                class="flex flex-col items-center justify-center w-24 gap-1 p-2 transition-all duration-200 border border-gray-200 rounded-lg shadow-sm hover:shadow-md hover:border-gray-300 hover:text-black hover:-translate-y-1">
+                                <i class="text-2xl fab fa-tiktok"></i>
+                                <span id="social-tiktok-text" class="w-full text-xs font-medium truncate">-</span>
+                            </a>
+
+                            <a id="social-facebook" href="#" target="_blank"
+                                class="flex flex-col items-center justify-center w-24 gap-1 p-2 transition-all duration-200 border border-gray-200 rounded-lg shadow-sm hover:shadow-md hover:border-gray-300 hover:text-blue-600 hover:-translate-y-1">
+                                <i class="text-2xl fab fa-facebook"></i>
+                                <span id="social-facebook-text" class="w-full text-xs font-medium truncate">-</span>
+                            </a>
+
+                        </div>
                     </div>
 
                     <div class="w-full">
