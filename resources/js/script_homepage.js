@@ -230,7 +230,8 @@ const outlets = {
             window.assetUrls?.outletImages?.surabaya ||
             "/assets/homepage/b1.jpg",
         title: "Pusat Surabaya",
-        address: "Jl. Lebak Jaya II, RT.005/RW.04, Gading, Kec. Tambaksari, Surabaya, Jawa Timur 60134",
+        address:
+            "Jl. Lebak Jaya II, RT.005/RW.04, Gading, Kec. Tambaksari, Surabaya, Jawa Timur 60134",
         hours: "Buka Setiap Hari, 06.00 - 23.00",
         contact: "Telp: 082144834303",
         wa: "082144834303",
@@ -247,7 +248,8 @@ const outlets = {
         img:
             window.assetUrls?.outletImages?.malang || "/assets/homepage/b2.jpg",
         title: "Outlet Malang",
-        address: "Jl. Graha Pelita Asri, Pandanwangi, Kec. Blimbing, Kota Malang, Jawa Timur 65124",
+        address:
+            "Jl. Graha Pelita Asri, Pandanwangi, Kec. Blimbing, Kota Malang, Jawa Timur 65124",
         hours: "Buka Setiap Hari, 06.00 - 23.00",
         contact: "Telp: 082131338971",
         wa: "082131338971", // pilih Malang -> direct ke WA Malang
@@ -265,7 +267,8 @@ const outlets = {
             window.assetUrls?.outletImages?.denpasar ||
             "/assets/homepage/b3.jpg",
         title: "Outlet Denpasar",
-        address: "Gg. Ikan Arwana, Sesetan, Denpasar Selatan, Kota Denpasar, Bali 80224",
+        address:
+            "Gg. Ikan Arwana, Sesetan, Denpasar Selatan, Kota Denpasar, Bali 80224",
         hours: "Buka Setiap Hari, 06.00 - 23.00",
         contact: "Telp: 082338901223",
         wa: "082338901223", // tidak ada WA? nanti auto nonaktif
@@ -360,18 +363,46 @@ function setOutlet(key) {
         if (dirA) setHrefOrDisable(dirA, o.directions);
 
         // Sosial media (anchor id: social-tiktok/instagram/facebook)
-        setHrefOrDisable(
-            document.getElementById("social-tiktok"),
-            o.social?.tiktok || "#"
-        );
-        setHrefOrDisable(
-            document.getElementById("social-instagram"),
-            o.social?.instagram || "#"
-        );
-        setHrefOrDisable(
-            document.getElementById("social-facebook"),
-            o.social?.facebook || "#"
-        );
+        // setHrefOrDisable(
+        //     document.getElementById("social-instagram"),
+        //     o.social?.instagram || "#"
+        // );
+        // setHrefOrDisable(
+        //     document.getElementById("social-tiktok"),
+        //     o.social?.tiktok || "#"
+        // );
+        // setHrefOrDisable(
+        //     document.getElementById("social-facebook"),
+        //     o.social?.facebook || "#"
+        // );
+
+        // Helper untuk mengambil username dari URL social media
+        function getSocialHandle(url) {
+            if (!url || url === "#") return "-";
+            try {
+                const path = new URL(url).pathname.split("/").filter(Boolean);
+                if (url.includes("tiktok.com/@")) {
+                    return path.find((p) => p.startsWith("@")) || "-";
+                }
+                return path[path.length - 1] || "-";
+            } catch (e) {
+                return "-";
+            }
+        }
+
+        // Update Social Media Links and Text
+        function updateSocial(platform, url) {
+            const linkEl = document.getElementById(`social-${platform}`);
+            const textEl = document.getElementById(`social-${platform}-text`);
+            setHrefOrDisable(linkEl, url);
+            if (textEl) {
+                textEl.textContent = getSocialHandle(url);
+            }
+        }
+
+        updateSocial("instagram", o.social?.instagram || "#");
+        updateSocial("tiktok", o.social?.tiktok || "#");
+        updateSocial("facebook", o.social?.facebook || "#");
 
         // Fade in
         outletContent.style.opacity = "1";

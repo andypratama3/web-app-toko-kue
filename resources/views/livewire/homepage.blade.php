@@ -762,7 +762,8 @@
                 <div class="overflow-hidden transition-all duration-300 bg-white shadow-lg rounded-2xl hover:shadow-xl hover:-translate-y-1"
                     data-aos="zoom-in">
                     <div class="relative overflow-hidden rounded-t-2xl">
-                        <img src="{{ asset('assets/homepage/product/kue-koci-ketan-hitam.jpg') }}" alt="Kue Koci Ketan Hitam"
+                        <img src="{{ asset('assets/homepage/product/kue-koci-ketan-hitam.jpg') }}"
+                            alt="Kue Koci Ketan Hitam"
                             class="object-cover w-full h-48 transition-transform duration-300 hover:scale-105 cursor-zoom-in zoomable">
                         <div
                             class="absolute px-2 py-1 text-xs font-medium text-white bg-orange-500 rounded-full top-3 right-3">
@@ -773,7 +774,8 @@
                         <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Kue Koci Ketan Hitam</h3>
                         <div x-data="{ open: false }">
                             <p class="mb-3 text-sm text-justify text-gray-600" :class="open ? '' : 'line-clamp-2'">
-                                Kue Koci Ketan Hitam Adalah Kue yang terbuat dari ketan hitam pilihan yang telah dihaluskan. Dengan isian kelapa parut dan gula merah. Berbentuk segitiga kerucut.
+                                Kue Koci Ketan Hitam Adalah Kue yang terbuat dari ketan hitam pilihan yang telah
+                                dihaluskan. Dengan isian kelapa parut dan gula merah. Berbentuk segitiga kerucut.
                             </p>
                             <button @click="open = !open"
                                 class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
@@ -929,7 +931,8 @@
                     </div>
                     <div class="p-5">
                         <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Hampers C (Cantik)</h3>
-                        <p class="mb-3 text-sm text-justify text-gray-600 line-clamp-2">Kue Ijo (5 pcs), Kue Ongol-ongol (12 pcs), Kue Pulut Srikaya (4 pcs), Kue Ubi Nanas (8 pcs).</p>
+                        <p class="mb-3 text-sm text-justify text-gray-600 line-clamp-2">Kue Ijo (5 pcs), Kue
+                            Ongol-ongol (12 pcs), Kue Pulut Srikaya (4 pcs), Kue Ubi Nanas (8 pcs).</p>
                         <div class="flex items-center justify-between">
                             <span class="text-[#8BA870] font-bold text-lg">Rp 65.000</span>
                         </div>
@@ -1800,22 +1803,44 @@
                     </a>
 
                     <!-- Sosial Media -->
-                    <div class="flex items-center gap-4 text-gray-600">
+                    {{-- <div class="flex items-center gap-4 text-gray-600">
                         <span class="text-base font-medium">Social Media :</span>
                         <div class="flex items-center gap-4 text-base">
-                            <a id="social-tiktok" href="#" target="_blank"
-                                class="transition hover:text-black" aria-label="TikTok">
-                                <i class="fab fa-tiktok"></i>
-                            </a>
                             <a id="social-instagram" href="#" target="_blank"
                                 class="transition hover:text-pink-500" aria-label="Instagram">
                                 <i class="fab fa-instagram"></i>
+                            </a>
+                            <a id="social-tiktok" href="#" target="_blank"
+                                class="transition hover:text-black" aria-label="TikTok">
+                                <i class="fab fa-tiktok"></i>
                             </a>
                             <a id="social-facebook" href="#" target="_blank"
                                 class="transition hover:text-blue-600" aria-label="Facebook">
                                 <i class="fab fa-facebook"></i>
                             </a>
                         </div>
+                    </div> --}}
+
+                    <div class="flex flex-col w-full gap-3 mt-2 text-gray-600">
+                        <h4 class="text-base font-medium text-gray-800">Social Media :</h4>
+
+                        <a id="social-instagram" href="#" target="_blank"
+                            class="flex items-center gap-3 transition-colors duration-200 hover:text-pink-500">
+                            <i class="w-6 text-xl text-center fab fa-instagram"></i>
+                            <span id="social-instagram-text" class="text-sm font-medium">-</span>
+                        </a>
+
+                        <a id="social-tiktok" href="#" target="_blank"
+                            class="flex items-center gap-3 transition-colors duration-200 hover:text-black">
+                            <i class="w-6 text-xl text-center fab fa-tiktok"></i>
+                            <span id="social-tiktok-text" class="text-sm font-medium">-</span>
+                        </a>
+
+                        <a id="social-facebook" href="#" target="_blank"
+                            class="flex items-center gap-3 transition-colors duration-200 hover:text-blue-600">
+                            <i class="w-6 text-xl text-center fab fa-facebook"></i>
+                            <span id="social-facebook-text" class="text-sm font-medium">-</span>
+                        </a>
                     </div>
 
                     <div class="w-full">
