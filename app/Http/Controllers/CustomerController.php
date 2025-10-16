@@ -1,11 +1,16 @@
 <?php
 
 namespace App\Http\Controllers;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\CustomerCategory;
 use App\Models\User;
+use App\Models\Order;
+use App\Models\OrderReturn;
+use App\Models\OrderReturnProduct;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -19,6 +24,86 @@ class CustomerController extends Controller
         return '62' . preg_replace('/^(0|\+?62)/', '', preg_replace('/[^\d]/', '', $phone));
     }
 
+        // Download rekap order customer (PDF)
+        public function downloadRekap(Request $request, Customer $customer)
+        {
+            $user = Auth::user();
+            if (!$user->hasRole('admin') || $customer->region_id !== $user->region_id) {
+                abort(403, 'AKSES DITOLAK');
+            }
+
+            // Ambil rentang tanggal
+            $daterange = $request->input('daterange');
+            if (!$daterange) {
+                return back()->with('error', 'Rentang tanggal harus diisi.');
+            }
+            [$start, $end] = array_map('trim', explode(' - ', $daterange));
+            $startDate = date('Y-m-d 00:00:00', strtotime($start));
+            $endDate = date('Y-m-d 23:59:59', strtotime($end));
+
+            // Ambil order customer pada rentang tanggal
+            $orders = Order::where('customer_id', $customer->id)
+                ->where('status', 'diverifikasi_admin')
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->with(['items.product', 'items.variant'])
+                ->get();
+
+            // Ambil retur pada rentang tanggal
+            $orderIds = $orders->pluck('id')->toArray();
+            $returns = OrderReturn::whereIn('order_id', $orderIds)
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->with(['returnedProducts.product', 'returnedProducts.variant'])
+                ->get();
+
+            // Rekap jumlah produk dipesan
+            $produkDipesan = [];
+            foreach ($orders as $order) {
+                foreach ($order->items as $item) {
+                    $key = $item->product_id . '-' . ($item->variant_id ?? '');
+                    if (!isset($produkDipesan[$key])) {
+                        $produkDipesan[$key] = [
+                            'product_name' => $item->product->name ?? $item->product_name,
+                            'variant_name' => $item->variant->name ?? $item->variant_name ?? null,
+                            'dipesan' => 0,
+                            'retur' => 0,
+                        ];
+                    }
+                    $produkDipesan[$key]['dipesan'] += $item->quantity;
+                }
+            }
+
+            // Rekap jumlah produk retur
+            foreach ($returns as $retur) {
+                foreach ($retur->returnedProducts as $returItem) {
+                    $key = $returItem->product_id . '-' . ($returItem->product_variant_id ?? '');
+                    if (!isset($produkDipesan[$key])) {
+                        $produkDipesan[$key] = [
+                            'product_name' => $returItem->product->name ?? '-',
+                            'variant_name' => $returItem->variant->name ?? null,
+                            'dipesan' => 0,
+                            'retur' => 0,
+                        ];
+                    }
+                    $produkDipesan[$key]['retur'] += $returItem->quantity;
+                }
+            }
+
+            // Hitung selisih
+            foreach ($produkDipesan as &$row) {
+                $row['selisih'] = $row['dipesan'] - $row['retur'];
+            }
+            unset($row);
+
+            // Generate PDF
+            $pdf = Pdf::loadView('dashboard.admin.customers.rekap_pdf', [
+                'customer' => $customer,
+                'produkDipesan' => $produkDipesan,
+                'start' => $start,
+                'end' => $end,
+            ]);
+            $filename = 'Rekap_Order_' . $customer->name . '_' . $start . '_to_' . $end . '.pdf';
+            return $pdf->download($filename);
+        }
     public function index(Request $request)
     {
         $user = Auth::user();

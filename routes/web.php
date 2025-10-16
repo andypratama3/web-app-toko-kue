@@ -84,6 +84,9 @@ Route::middleware([
         Route::post('customers/{customer}/flag', [CustomerController::class, 'toggleFlag'])->name('customers.toggleFlag');
         Route::resource('customers', CustomerController::class);
 
+    // Route untuk download rekap order customer (PDF)
+    Route::get('customers/{customer}/rekap/download', [CustomerController::class, 'downloadRekap'])->name('customers.rekap.download');
+
         // Manajemen Pesanan untuk Admin
         Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
         Route::get('orders/{id}/details', [AdminOrderController::class, 'details']);

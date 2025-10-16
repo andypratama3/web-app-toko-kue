@@ -86,6 +86,14 @@
                                 <span>Note</span>
                             </button>
                         </li>
+                        {{-- Tombol Rekap --}}
+                        <li>
+                            <button type="button" data-target-modal="rekap-customer-modal-{{ $customer->id }}"
+                                class="flex items-center w-full px-4 py-2 text-left js-open-modal-btn hover:bg-gray-100 dark:hover:bg-gray-600">
+                                <span class="inline-block w-6 mr-2 text-center"><i class="fas fa-file-download"></i></span>
+                                <span>Rekap</span>
+                            </button>
+                        </li>
                     </ul>
                     <div class="py-1">
                         {{-- Tombol Delete --}}
