@@ -42,54 +42,77 @@ class CustomerController extends Controller
             $endDate = date('Y-m-d 23:59:59', strtotime($end));
 
             // Ambil order customer pada rentang tanggal
+
             $orders = Order::where('customer_id', $customer->id)
                 ->where('status', 'diverifikasi_admin')
                 ->whereBetween('created_at', [$startDate, $endDate])
-                ->with(['items.product', 'items.variant'])
+                ->with(['items.product', 'items.variant', 'returns.returnedProducts.product', 'returns.returnedProducts.variant'])
                 ->get();
 
-            // Ambil retur pada rentang tanggal
-            $orderIds = $orders->pluck('id')->toArray();
-            $returns = OrderReturn::whereIn('order_id', $orderIds)
-                ->whereBetween('created_at', [$startDate, $endDate])
-                ->with(['returnedProducts.product', 'returnedProducts.variant'])
-                ->get();
 
-            // Rekap jumlah produk dipesan
-            $produkDipesan = [];
+            // Susun data rekap per order
+            $rekapPerOrder = [];
+            $produkTotal = [];
             foreach ($orders as $order) {
+                $produkDipesan = [];
+                // Dipesan
                 foreach ($order->items as $item) {
                     $key = $item->product_id . '-' . ($item->variant_id ?? '');
-                    if (!isset($produkDipesan[$key])) {
-                        $produkDipesan[$key] = [
-                            'product_name' => $item->product->name ?? $item->product_name,
-                            'variant_name' => $item->variant->name ?? $item->variant_name ?? null,
+                    $produkDipesan[$key] = [
+                        'product_name' => $item->product->name ?? $item->product_name,
+                        'variant_name' => $item->variant->name ?? $item->variant_name ?? null,
+                        'dipesan' => $item->quantity,
+                        'retur' => 0,
+                    ];
+                    // Akumulasi total
+                    if (!isset($produkTotal[$key])) {
+                        $produkTotal[$key] = [
+                            'product_name' => $produkDipesan[$key]['product_name'],
+                            'variant_name' => $produkDipesan[$key]['variant_name'],
                             'dipesan' => 0,
                             'retur' => 0,
                         ];
                     }
-                    $produkDipesan[$key]['dipesan'] += $item->quantity;
+                    $produkTotal[$key]['dipesan'] += $item->quantity;
                 }
-            }
-
-            // Rekap jumlah produk retur
-            foreach ($returns as $retur) {
-                foreach ($retur->returnedProducts as $returItem) {
-                    $key = $returItem->product_id . '-' . ($returItem->product_variant_id ?? '');
-                    if (!isset($produkDipesan[$key])) {
-                        $produkDipesan[$key] = [
-                            'product_name' => $returItem->product->name ?? '-',
-                            'variant_name' => $returItem->variant->name ?? null,
-                            'dipesan' => 0,
-                            'retur' => 0,
-                        ];
+                // Retur (ambil dari returns yang status != 'ditolak')
+                foreach ($order->returns as $retur) {
+                    if ($retur->status === 'ditolak') continue;
+                    foreach ($retur->returnedProducts as $returItem) {
+                        $key = $returItem->product_id . '-' . ($returItem->product_variant_id ?? '');
+                        if (!isset($produkDipesan[$key])) {
+                            $produkDipesan[$key] = [
+                                'product_name' => $returItem->product->name ?? '-',
+                                'variant_name' => $returItem->variant->name ?? null,
+                                'dipesan' => 0,
+                                'retur' => 0,
+                            ];
+                        }
+                        $produkDipesan[$key]['retur'] += $returItem->quantity;
+                        // Akumulasi total
+                        if (!isset($produkTotal[$key])) {
+                            $produkTotal[$key] = [
+                                'product_name' => $produkDipesan[$key]['product_name'],
+                                'variant_name' => $produkDipesan[$key]['variant_name'],
+                                'dipesan' => 0,
+                                'retur' => 0,
+                            ];
+                        }
+                        $produkTotal[$key]['retur'] += $returItem->quantity;
                     }
-                    $produkDipesan[$key]['retur'] += $returItem->quantity;
                 }
+                // Hitung selisih per order
+                foreach ($produkDipesan as &$row) {
+                    $row['selisih'] = $row['dipesan'] - $row['retur'];
+                }
+                unset($row);
+                $rekapPerOrder[] = [
+                    'order' => $order,
+                    'produk' => $produkDipesan,
+                ];
             }
-
-            // Hitung selisih
-            foreach ($produkDipesan as &$row) {
+            // Hitung selisih total
+            foreach ($produkTotal as &$row) {
                 $row['selisih'] = $row['dipesan'] - $row['retur'];
             }
             unset($row);
@@ -97,7 +120,8 @@ class CustomerController extends Controller
             // Generate PDF
             $pdf = Pdf::loadView('dashboard.admin.customers.rekap_pdf', [
                 'customer' => $customer,
-                'produkDipesan' => $produkDipesan,
+                'produkTotal' => $produkTotal,
+                'rekapPerOrder' => $rekapPerOrder,
                 'start' => $start,
                 'end' => $end,
             ]);
