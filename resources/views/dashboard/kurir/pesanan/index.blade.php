@@ -124,8 +124,8 @@
                 <!-- Dropdown menu -->
                 <div id="filter-dropdown-table" class="z-10 hidden w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
                     <!-- <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">
-                                Filter berdasarkan Status
-                            </h6> -->
+                                    Filter berdasarkan Status
+                                </h6> -->
                     <ul class="space-y-2 text-sm" aria-labelledby="dropdownDefault">
                         @foreach ($allStatuses as $key => $label)
                             <li class="flex items-center">
@@ -910,25 +910,25 @@
                     const productId = product.product_id || product.id;
                     const variantId = product.variant_id ?? 0;
                     const returnKey = `${productId}-${variantId}`;
-                    // ... di dalam fungsi openReturnProductModal
                     const placeholderImg = 'https://placehold.co/64x64/E2E8F0/64748B?text=No+Img';
-                    let productImage = placeholderImg;
+                    let productImage = placeholderImg; // Set placeholder sebagai default
 
                     if (product.image_url) {
-                        const storagePath = '/storage/';
-                        // Cari indeks dari '/storage/' di dalam URL yang dikirim backend
-                        const pathIndex = product.image_url.indexOf(storagePath);
-
-                        if (pathIndex !== -1) {
-                             // Ambil hanya path-nya saja, e.g., "/storage/products/img.jpg"
-                            productImage = product.image_url.substring(pathIndex);
+                        if (product.image_url.startsWith('http')) {
+                            // KASUS 1: URL sudah benar (misal: https://.../storage/...)
+                            productImage = product.image_url;
+                        } else if (product.image_url.startsWith('/storage/')) {
+                            // KASUS 2: URL adalah path relatif yang benar
+                            productImage = product.image_url;
+                        } else if (product.image_url.startsWith('products/')) {
+                            // KASUS 3: URL adalah path rusak ('products/...')
+                            // Kita perbaiki manual
+                            productImage = `/storage/${product.image_url}`;
                         } else {
-                             // Fallback jika /storage/ tidak ditemukan
+                            // Fallback jika ada format lain
                             productImage = product.image_url;
                         }
                     }
-                    // const productImage = product.image_url ? `${APP_URL}${product.image_url}` : placeholderImg;
-                    // const productImage = product.image_url || placeholderImg;
 
                     // DIUBAH: Template menggunakan <input type="number">
                     const desktopRowHTML = `
