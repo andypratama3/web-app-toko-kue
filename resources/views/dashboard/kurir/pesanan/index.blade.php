@@ -910,13 +910,21 @@
                     const productId = product.product_id || product.id;
                     const variantId = product.variant_id ?? 0;
                     const returnKey = `${productId}-${variantId}`;
+                    // ... di dalam fungsi openReturnProductModal
                     const placeholderImg = 'https://placehold.co/64x64/E2E8F0/64748B?text=No+Img';
                     let productImage = placeholderImg;
+
                     if (product.image_url) {
-                        if (product.image_url.startsWith('http')) {
-                            productImage = product.image_url;
+                        const storagePath = '/storage/';
+                        // Cari indeks dari '/storage/' di dalam URL yang dikirim backend
+                        const pathIndex = product.image_url.indexOf(storagePath);
+
+                        if (pathIndex !== -1) {
+                             // Ambil hanya path-nya saja, e.g., "/storage/products/img.jpg"
+                            productImage = product.image_url.substring(pathIndex);
                         } else {
-                            productImage = `${location.origin}${product.image_url}`;
+                             // Fallback jika /storage/ tidak ditemukan
+                            productImage = product.image_url;
                         }
                     }
                     // const productImage = product.image_url ? `${APP_URL}${product.image_url}` : placeholderImg;
