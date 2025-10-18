@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Storage;
+
 use App\Models\Order;
 use App\Models\OrderReturn;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth; // Impor Auth
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Storage;
+
 use Carbon\Carbon; // [!code ++]
 
 class ReturnController extends Controller
@@ -67,7 +69,7 @@ class ReturnController extends Controller
             ]);
 
             // DIUBAH: Menggunakan relasi `items()` yang benar dan membuat key
-            $orderItems = $order->items()->get()->keyBy(function ($item) {
+                $orderItems = $order->items()->with('product')->get()->keyBy(function ($item) {
                 return $item->product_id . '-' . ($item->variant_id ?? 0);
             });
 
@@ -166,7 +168,7 @@ class ReturnController extends Controller
                     'variant_name' => $item->variant_name,
                     'quantity' => $item->quantity,
                     'price' => $item->price,
-                    'image_url' => $item->product->image_path ?? null,
+                        'image_url' => $item->product && $item->product->image_path ? Storage::url($item->product->image_path) : null,
                     'returned_quantity' => $returnedQuantity,
                 ];
             }),

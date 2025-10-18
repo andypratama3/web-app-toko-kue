@@ -793,7 +793,6 @@
 
                 dispatchToast(result.message, 'success');
 
-                // [!code block:start]
                 // --- LOGIKA WAKTU DENGAN ZONA WAKTU DINAMIS ---
                 const now = new Date();
                 const formatter = new Intl.DateTimeFormat('id-ID', {
@@ -912,7 +911,14 @@
                     const variantId = product.variant_id ?? 0;
                     const returnKey = `${productId}-${variantId}`;
                     const placeholderImg = 'https://placehold.co/64x64/E2E8F0/64748B?text=No+Img';
-                    const productImage = product.image_url ? `${APP_URL}/storage/${product.image_url.replace(/^public\//, '')}` : placeholderImg;
+                    let productImage = placeholderImg;
+                    if (product.image_url) {
+                        if (product.image_url.startsWith('http')) {
+                            productImage = product.image_url;
+                        } else {
+                            productImage = `${location.origin}${product.image_url}`;
+                        }
+                    }
                     // const productImage = product.image_url ? `${APP_URL}${product.image_url}` : placeholderImg;
                     // const productImage = product.image_url || placeholderImg;
 
