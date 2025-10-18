@@ -912,9 +912,9 @@
                     const variantId = product.variant_id ?? 0;
                     const returnKey = `${productId}-${variantId}`;
                     const placeholderImg = 'https://placehold.co/64x64/E2E8F0/64748B?text=No+Img';
-                    // const productImage = product.image_url ? `${APP_URL}/storage/${product.image_url.replace(/^public\//, '')}` : placeholderImg;
+                    const productImage = product.image_url ? `${APP_URL}/storage/${product.image_url.replace(/^public\//, '')}` : placeholderImg;
                     // const productImage = product.image_url ? `${APP_URL}${product.image_url}` : placeholderImg;
-                    const productImage = product.image_url || placeholderImg;
+                    // const productImage = product.image_url || placeholderImg;
 
                     // DIUBAH: Template menggunakan <input type="number">
                     const desktopRowHTML = `
@@ -939,7 +939,7 @@
                                            value="0"
                                            min="0"
                                            max="${product.quantity}"
-                                           class="quantity-input w-5 px-1 py-0 text-center text-black bg-transparent rounded dark:text-white dark:bg-transparent
+                                           class="quantity-input w-12 px-1 py-0 text-center text-black bg-transparent rounded dark:text-white dark:bg-transparent
                                            [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0">
                                     <button type="button" class="px-2 text-black transition rounded quantity-plus hover:bg-gray-300 dark:text-white dark:hover:bg-gray-700 hover:scale-110 active:scale-90">+</button>
                                 </div>
@@ -967,7 +967,7 @@
                                            value="0"
                                            min="0"
                                            max="${product.quantity}"
-                                           class="quantity-input w-5 px-1 py-0 text-center text-black bg-transparent rounded dark:text-white dark:bg-transparent
+                                           class="quantity-input w-12 px-1 py-0 text-center text-black bg-transparent rounded dark:text-white dark:bg-transparent
                                            [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0">
                                         <button type="button" class="px-2 text-black rounded quantity-plus dark:text-white hover:scale-110 active:scale-90">+</button>
                                     </div>

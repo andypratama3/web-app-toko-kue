@@ -55,7 +55,7 @@
         <div style="margin-top:20px;">Tidak ada order pada rentang tanggal ini.</div>
     @endforelse
 
-    <h3 style="margin-top:20px;">Rekap Total Keseluruhan Order</h3>
+    <h3 style="margin-top:20px;">Rekap Total Keseluruhan Order {{ $start }} s/d {{ $end }}</h3>
     <table style="margin-bottom: 10px;">
         <thead>
             <tr>
