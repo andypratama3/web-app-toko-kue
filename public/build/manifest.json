@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-B_9IL97M.css",
+    "file": "assets/app-CkDs0tDS.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -10,12 +10,12 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-ei2HlUGj.js",
+    "file": "assets/app-CVrfyA4P.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "css": [
-      "assets/app-B_9IL97M.css"
+      "assets/app-CkDs0tDS.css"
     ]
   },
   "resources/js/argon-dashboard-tailwind.js": {
@@ -25,7 +25,7 @@
     "isEntry": true
   },
   "resources/js/bootstrap.js": {
-    "file": "assets/bootstrap-DNxiirP_.js",
+    "file": "assets/bootstrap-Bj43h_rG.js",
     "name": "bootstrap",
     "src": "resources/js/bootstrap.js",
     "isEntry": true
@@ -73,7 +73,7 @@
     "isEntry": true
   },
   "resources/js/live-search.js": {
-    "file": "assets/live-search-DV0lVILE.js",
+    "file": "assets/live-search-DyDW_O20.js",
     "name": "live-search",
     "src": "resources/js/live-search.js",
     "isEntry": true
