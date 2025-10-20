@@ -62,20 +62,23 @@
     </div>
 @endsection
 
+
 @push('flowbite-modals')
-    {{-- Memuat semua modal yang diperlukan --}}
+    {{-- Modal create tetap di luar container agar selalu tersedia --}}
     @if(isset($customerCategories))
         @include('dashboard.kurir.customers.create', ['customerCategories' => $customerCategories])
     @else
         @include('dashboard.kurir.customers.create', ['customerCategories' => []])
     @endif
-
-    @foreach ($customers as $customer)
-        @include('dashboard.kurir.customers.show', ['customer' => $customer])
-        @include('dashboard.kurir.customers.edit', ['customer' => $customer, 'customerCategories' => $customerCategories])
-        @include('dashboard.kurir.customers.note', ['customer' => $customer])
-        @include('dashboard.kurir.customers.delete', ['customer' => $customer])
-    @endforeach
+    {{-- Container untuk modal customer hasil search --}}
+    <div id="customer-modals-container">
+        @foreach ($customers as $customer)
+            @include('dashboard.kurir.customers.show', ['customer' => $customer])
+            @include('dashboard.kurir.customers.edit', ['customer' => $customer, 'customerCategories' => $customerCategories])
+            @include('dashboard.kurir.customers.note', ['customer' => $customer])
+            @include('dashboard.kurir.customers.delete', ['customer' => $customer])
+        @endforeach
+    </div>
 @endpush
 
 @push('page-scripts')

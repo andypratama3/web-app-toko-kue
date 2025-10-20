@@ -55,6 +55,9 @@
             {{ $customers->withQueryString()->links() }}
         </nav>
     </div>
+
+    {{-- Container untuk modals hasil live search --}}
+    <div id="customer-modals-container"></div>
 @endsection
 
 @push('flowbite-modals')

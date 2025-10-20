@@ -58,11 +58,17 @@ window.initializeLiveSearch = function (options) {
 
             const data = await response.json();
 
+
             if (desktopContainer && data.desktop_html) {
                 desktopContainer.innerHTML = data.desktop_html;
             }
             if (mobileContainer && data.mobile_html) {
                 mobileContainer.innerHTML = data.mobile_html;
+            }
+            // Update modal customer jika ada
+            const modalsContainer = document.getElementById('customer-modals-container');
+            if (modalsContainer && data.modals_html) {
+                modalsContainer.innerHTML = data.modals_html;
             }
 
             // Perbarui URL di browser tanpa me-reload halaman
