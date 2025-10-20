@@ -429,11 +429,11 @@
                 const productHtml = `
                 <div class="flex items-start justify-between text-sm">
                     <div class="flex-grow">
-                        <p class="font-semibold text-md text-gray-800 dark:text-gray-200">${item.product_name}</p>
+                        <p class="font-semibold text-gray-800 text-md dark:text-gray-200">${item.product_name}</p>
                         ${item.variant_name ? `<p class="text-xs text-gray-500"> ▸ ${item.variant_name}</p>` : ''}
                         <p class="text-xs text-gray-600 dark:text-gray-400">${item.qty} x Rp ${item.price.toLocaleString('id-ID')}</p>
                     </div>
-                    <p class="font-semibold text-md text-gray-800 dark:text-gray-200">Rp ${subtotal.toLocaleString('id-ID')}</p>
+                    <p class="font-semibold text-gray-800 text-md dark:text-gray-200">Rp ${subtotal.toLocaleString('id-ID')}</p>
                 </div>`;
                 productListDiv.innerHTML += productHtml;
             });
@@ -576,8 +576,8 @@
                             ${imageUrl ? `<img src="${imageUrl}" alt="${p.name}" class="object-cover w-16 h-16 mr-2 border rounded" />` : ''}
                             <div class="flex-1">
                                 <div class="font-semibold">
-                                    <span class="text-md font-bold text-gray-800">${p.name}</span>
-                                    ${v.name ? `<div class="text-xs text-gray-600 mb-1"> ▸ ${v.name} </div>` : ''}
+                                    <span class="font-bold text-gray-800 text-md">${p.name}</span>
+                                    ${v.name ? `<div class="mb-1 text-xs text-gray-600"> ▸ ${v.name} </div>` : ''}
                                 </div>
                                 <div class="font-bold text-green-700">Rp ${v.price.toLocaleString()}</div>
                             </div>
@@ -660,6 +660,18 @@
             renderCart();
         }
 
+        function setQtyCart(idx, newQty) {
+            // Validasi input: pastikan angka dan minimal 1
+            let qty = parseInt(newQty, 10);
+            if (isNaN(qty) || qty < 1) {
+                qty = 1;
+            }
+            cart[idx].qty = qty;
+
+            // Panggil renderCart() agar total dan subtotal ikut ter-update
+            renderCart();
+        }
+
         function hapusProdukCart(idx) {
             const itemToRemove = cart[idx];
             cart.splice(idx, 1);
@@ -681,9 +693,24 @@
                 // Desktop Table
                 const desktopTableContainer = document.createElement('div');
                 desktopTableContainer.className = 'overflow-x-auto hidden md:block';
+
+                // --- PERUBAHAN DIMULAI DI SINI ---
+
                 let tableHTML =
-                    `<table class="min-w-full text-sm text-left text-gray-500 dark:text-gray-400"><thead class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400"><tr><th scope="col" class="px-4 py-3">Produk</th><th scope="col" class="px-4 py-3">Varian</th><th scope="col" class="px-2 py-3">Harga</th><th scope="col" class="px-2 py-3">Qty</th><th scope="col" class="px-2 py-3">Subtotal</th><th scope="col" class="px-2 py-3">Aksi</th></tr></thead><tbody>`;
+                    `<table class="min-w-full text-sm text-left text-gray-500 table-fixed dark:text-gray-400">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
+                            <tr>
+                                <th scope="col" class="w-1/3 px-4 py-3">Produk</th>
+                                <th scope="col" class="w-1/6 px-4 py-3">Varian</th>
+                                <th scope="col" class="w-1/6 px-2 py-3">Harga</th>
+                                <th scope="col" class="w-1/12 px-2 py-3">Qty</th>
+                                <th scope="col" class="w-1/6 px-2 py-3">Subtotal</th>
+                                <th scope="col" class="w-1/12 px-2 py-3">Aksi</th>
+                            </tr>
+                        </thead>
+                    <tbody>`;
                 let mobileCardsHTML = `<div class="md:hidden">`;
+
                 cart.forEach((item, idx) => {
                     const subtotal = item.qty * item.price;
                     total += subtotal;
@@ -691,28 +718,58 @@
                     const imageUrl = productData ? (productData.image || productData.foto ||
                             'https://placehold.co/64x64/E2E8F0/64748B?text=No+Img') :
                         'https://placehold.co/64x64/E2E8F0/64748B?text=No+Img';
-                    // Desktop row
+
+                    // --- PERUBAHAN 1 (UNTUK DESKTOP TABLE) ---
                     tableHTML +=
                         `<tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                            <td class="flex items-center gap-2 px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white"><img src="${imageUrl}" alt="${item.product_name}" class="object-cover w-10 h-10 border rounded" />
-                                ${item.product_name}</td>
-                            <td class="px-2 py-2">${item.variant_name ? item.variant_name : '-'}</td>
-                            <td class="px-2 py-2">Rp ${item.price.toLocaleString('id-ID')}</td>
-                            <td class="px-2 py-2">
+                            <td class="px-4 py-2 font-medium text-gray-900 break-words dark:text-white">
+                                <div class="flex items-center gap-2">
+                                    <img src="${imageUrl}" alt="${item.product_name}" class="flex-shrink-0 object-cover w-10 h-10 border rounded" />
+                                    <span>${item.product_name}</span>
+                                </div>
+                            </td>
+                            <td class="px-2 py-2 break-words">${item.variant_name ? item.variant_name : '-'}</td>
+                            <td class="px-2 py-2 whitespace-nowrap">Rp ${item.price.toLocaleString('id-ID')}</td>
+                            <td class="px-2 py-2 whitespace-nowrap">
                                 <div class="flex items-center gap-1">
                                     <button type="button" class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300" onclick="ubahQtyCart(${idx}, -1)">-</button>
-                                    <span class="mx-2">${item.qty}</span>
+
+                                    <input type="number" min="1" value="${item.qty}"
+                                           onchange="setQtyCart(${idx}, this.value)"
+                                           class="w-12 py-1 text-center text-sm border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none">
+
                                     <button type="button" class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300" onclick="ubahQtyCart(${idx}, 1)">+</button>
                                 </div>
                             </td>
-                            <td class="px-2 py-2 font-semibold">Rp ${subtotal.toLocaleString('id-ID')}</td>
-                            <td class="px-2 py-2"><button type="button" class="px-2 py-1 text-xs text-white bg-red-500 rounded hover:bg-red-600" onclick="hapusProdukCart(${idx})">
+                            <td class="px-2 py-2 font-semibold whitespace-nowrap">Rp ${subtotal.toLocaleString('id-ID')}</td>
+                            <td class="px-2 py-2 whitespace-nowrap"><button type="button" class="px-2 py-1 text-xs text-white bg-red-500 rounded hover:bg-red-600" onclick="hapusProdukCart(${idx})">
                                 <i class="fas fa-trash"></i> Hapus</button>
                             </td>
                         </tr>`;
-                    // Mobile card
+
+                    // --- PERUBAHAN 2 (UNTUK MOBILE CARD) ---
                     mobileCardsHTML +=
-                        `<div class="flex items-center gap-3 p-3 mb-2 bg-white border rounded shadow-sm dark:bg-gray-800 dark:border-gray-700"><img src="${imageUrl}" alt="${item.product_name}" class="object-cover w-12 h-12 border rounded" /><div class="flex-1"><div class="font-semibold text-gray-900 dark:text-white">${item.product_name}</div>${item.variant_name ? `<div class="text-xs text-gray-500">${item.variant_name}</div>` : ''}<div class="text-xs text-gray-600 dark:text-gray-400">Harga: Rp ${item.price.toLocaleString('id-ID')}</div><div class="flex items-center gap-1 mt-1"><button type="button" class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300" onclick="ubahQtyCart(${idx}, -1)">-</button><span class="mx-2">${item.qty}</span><button type="button" class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300" onclick="ubahQtyCart(${idx}, 1)">+</button></div><div class="mt-1 font-semibold">Subtotal: Rp ${subtotal.toLocaleString('id-ID')}</div></div><button type="button" class="px-2 py-1 text-xs text-white bg-red-500 rounded hover:bg-red-600" onclick="hapusProdukCart(${idx})"><i class="fas fa-trash"></i></button></div>`;
+                        `<div class="flex items-center gap-3 p-3 mb-2 bg-white border rounded shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                            <img src="${imageUrl}" alt="${item.product_name}" class="object-cover w-12 h-12 border rounded" />
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-900 dark:text-white">${item.product_name}</div>
+                                ${item.variant_name ? `<div class="text-xs text-gray-500">${item.variant_name}</div>` : ''}
+                                <div class="text-xs text-gray-600 dark:text-gray-400">Harga: Rp ${item.price.toLocaleString('id-ID')}</div>
+                                <div class="flex items-center gap-1 mt-1">
+                                    <button type="button" class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300" onclick="ubahQtyCart(${idx}, -1)">-</button>
+
+                                    <input type="number" min="1" value="${item.qty}"
+                                           onchange="setQtyCart(${idx}, this.value)"
+                                           class="w-12 py-1 text-center text-sm border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none">
+
+                                    <button type="button" class="px-2 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300" onclick="ubahQtyCart(${idx}, 1)">+</button>
+                                </div>
+                                <div class="mt-1 font-semibold">Subtotal: Rp ${subtotal.toLocaleString('id-ID')}</div>
+                            </div>
+                            <button type="button" class="px-2 py-1 text-xs text-white bg-red-500 rounded hover:bg-red-600" onclick="hapusProdukCart(${idx})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>`;
                 });
                 tableHTML += `</tbody></table>`;
                 mobileCardsHTML += `</div>`;
