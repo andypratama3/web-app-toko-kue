@@ -37,8 +37,17 @@ class CourierController extends Controller
         $couriers = $couriersQuery->latest()->paginate(10);
 
         if ($request->ajax()) {
-            $desktopHtml = view('dashboard.admin.couriers._table_rows', compact('couriers'))->render();
-            return response()->json(['desktop_html' => $desktopHtml]);
+            // $desktopHtml = view('dashboard.admin.couriers._table_rows', compact('couriers'))->render();
+            // return response()->json(['desktop_html' => $desktopHtml]);
+
+            // prepare data for the partial views
+            $viewData = compact('couriers');
+
+            $desktopHtml = view('dashboard.admin.couriers._table_rows', $viewData)->render();
+            $modalsHtml = view('dashboard.admin.couriers._modals', $viewData)->render();
+            $response = ['desktop_html' => $desktopHtml, 'modals_html' => $modalsHtml];
+
+            return response()->json($response);
         }
 
         return view('dashboard.admin.couriers.index', compact('couriers'));

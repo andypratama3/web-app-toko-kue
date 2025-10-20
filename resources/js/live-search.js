@@ -65,8 +65,12 @@ window.initializeLiveSearch = function (options) {
             if (mobileContainer && data.mobile_html) {
                 mobileContainer.innerHTML = data.mobile_html;
             }
-            // Update modal customer jika ada
-            const modalsContainer = document.getElementById('customer-modals-container');
+            // Update modal customer/kurir jika ada
+            // Untuk halaman kurir, gunakan id 'courier-modals-container'
+            let modalsContainer = document.getElementById('customer-modals-container');
+            if (!modalsContainer) {
+                modalsContainer = document.getElementById('courier-modals-container');
+            }
             if (modalsContainer && data.modals_html) {
                 modalsContainer.innerHTML = data.modals_html;
             }
