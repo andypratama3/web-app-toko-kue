@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-CkDs0tDS.css",
+    "file": "assets/app-C5ZRmCX3.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -10,12 +10,12 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-CVrfyA4P.js",
+    "file": "assets/app-DFYlWd5-.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "css": [
-      "assets/app-CkDs0tDS.css"
+      "assets/app-C5ZRmCX3.css"
     ]
   },
   "resources/js/argon-dashboard-tailwind.js": {
@@ -43,7 +43,7 @@
     "isEntry": true
   },
   "resources/js/custom-modal.js": {
-    "file": "assets/custom-modal-7sAhjUvZ.js",
+    "file": "assets/custom-modal-Csgs9VrG.js",
     "name": "custom-modal",
     "src": "resources/js/custom-modal.js",
     "isEntry": true

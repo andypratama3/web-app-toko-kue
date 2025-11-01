@@ -4,7 +4,7 @@
 
 @section('content')
     {{-- Container utama --}}
-    <div class="relative overflow-hidden min-h-[715px] bg-white shadow-md dark:bg-gray-800 sm:rounded-lg">
+    <div class="relative min-h-[715px] bg-white shadow-md dark:bg-gray-800 sm:rounded-lg">
         {{-- Header: Search dan Tombol Tambah --}}
         <div class="flex flex-col p-4 space-y-3 md:flex-row md:items-center md:justify-between md:space-y-0 md:space-x-4">
             <div class="w-full md:w-1/2">
@@ -31,7 +31,7 @@
             </div>
         </div>
         {{-- Tabel --}}
-        <div class="overflow-x-auto min-h-[580px]">
+        <div class="overflow-x-auto overflow-y-visible min-h-[580px]">
             <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
