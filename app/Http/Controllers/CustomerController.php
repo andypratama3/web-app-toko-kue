@@ -129,7 +129,7 @@ class CustomerController extends Controller
         $filename = 'Rekap_Order_' . $customer->name . '_' . $start . '_to_' . $end . '.pdf';
         return $pdf->download($filename);
     }
-    
+
     public function index(Request $request)
     {
         $user = Auth::user();
@@ -161,12 +161,32 @@ class CustomerController extends Controller
             $couriers = User::role('kurir')->where('region_id', $user->region_id)->get();
         }
 
+        // if ($request->ajax()) {
+        //     $viewPath = $user->hasRole('admin') ? 'dashboard.admin.customers.' : 'dashboard.kurir.customers.';
+        //     $viewData = compact('customers', 'customerCategories');
+
+        //     $desktopHtml = view($viewPath . '_table_rows', $viewData)->render();
+        //     $modalsHtml = view('dashboard.kurir.customers._modals', $viewData)->render();
+        //     $response = ['desktop_html' => $desktopHtml, 'modals_html' => $modalsHtml];
+
+        //     if (!$user->hasRole('admin')) {
+        //         $response['mobile_html'] = view($viewPath . '_card_view', $viewData)->render();
+        //     }
+        //     return response()->json($response);
+        // }
+
         if ($request->ajax()) {
             $viewPath = $user->hasRole('admin') ? 'dashboard.admin.customers.' : 'dashboard.kurir.customers.';
-            $viewData = compact('customers', 'customerCategories');
+
+            // PERBAIKAN 1: Tambahkan $couriers ke $viewData
+            $viewData = compact('customers', 'customerCategories', 'couriers');
 
             $desktopHtml = view($viewPath . '_table_rows', $viewData)->render();
-            $modalsHtml = view('dashboard.kurir.customers._modals', $viewData)->render();
+
+            // PERBAIKAN 2: Tentukan path modal secara dinamis berdasarkan role
+            $modalViewPath = $user->hasRole('admin') ? 'dashboard.admin.customers._modals' : 'dashboard.kurir.customers._modals';
+            $modalsHtml = view($modalViewPath, $viewData)->render();
+
             $response = ['desktop_html' => $desktopHtml, 'modals_html' => $modalsHtml];
 
             if (!$user->hasRole('admin')) {
