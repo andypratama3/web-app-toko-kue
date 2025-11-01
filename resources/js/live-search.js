@@ -71,8 +71,44 @@ window.initializeLiveSearch = function (options) {
             if (!modalsContainer) {
                 modalsContainer = document.getElementById('courier-modals-container');
             }
+            // if (modalsContainer && data.modals_html) {
+            //     modalsContainer.innerHTML = data.modals_html;
+            // }
+
             if (modalsContainer && data.modals_html) {
+                // 1. Suntikkan HTML modal baru
                 modalsContainer.innerHTML = data.modals_html;
+
+                // 2. TEMUKAN SEMUA input daterange DI DALAM MODAL BARU
+                const newDateRangePickers = modalsContainer.querySelectorAll('input[name="daterange"]');
+
+                // 3. INISIALISASI SETIAP input daterange SATU PER SATU
+                // (Ini adalah logika yang disalin dari rekap.blade.php)
+                newDateRangePickers.forEach(pickerElement => {
+                    const $picker = $(pickerElement); // Ubah ke objek jQuery
+
+                    $picker.daterangepicker({
+                        locale: {
+                            format: 'YYYY-MM-DD',
+                            separator: ' - ',
+                            applyLabel: 'Pilih',
+                            cancelLabel: 'Batal',
+                            daysOfWeek: ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'],
+                            monthNames: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'],
+                            firstDay: 1
+                        },
+                        opens: 'center',
+                        autoUpdateInput: false
+                    });
+
+                    $picker.on('apply.daterangepicker', function(ev, picker) {
+                        $(this).val(picker.startDate.format('YYYY-MM-DD') + ' - ' + picker.endDate.format('YYYY-MM-DD'));
+                    });
+
+                    $picker.on('cancel.daterangepicker', function(ev, picker) {
+                        $(this).val('');
+                    });
+                });
             }
 
             // Perbarui URL di browser tanpa me-reload halaman
