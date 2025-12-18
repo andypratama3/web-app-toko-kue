@@ -244,12 +244,12 @@ const outlets = {
         },
     },
     malang: {
-        map: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3951.4563986431112!2d112.6579965!3d-7.951697299999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd629afaf867ba3%3A0x9aa041e45fac81a8!2sJl.%20Graha%20Pelita%20Asri%20No.b29%2C%20Pandanwangi%2C%20Kec.%20Blimbing%2C%20Kota%20Malang%2C%20Jawa%20Timur%2065124!5e0!3m2!1sid!2sid!4v1753156426758!5m2!1sid!2sid",
+        map: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1474.2871613935379!2d112.61826423631473!3d-7.991349604326536!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7882a7ed5dfbbb%3A0x268a0601debbb206!2sJl.%20Pelatuk%20No.16%2C%20Sukun%2C%20Kec.%20Sukun%2C%20Kota%20Malang%2C%20Jawa%20Timur%2065147!5e0!3m2!1sen!2sid!4v1765946881452!5m2!1sen!2sid",
         img:
             window.assetUrls?.outletImages?.malang || "/assets/homepage/b2.jpg",
         title: "Outlet Malang",
         address:
-            "Jl. Graha Pelita Asri, Pandanwangi, Kec. Blimbing, Kota Malang, Jawa Timur 65124",
+            "Jl. Pelatuk No. 16 Sukun, Kota Malang, Jawa Timur 65147",
         hours: "Buka Setiap Hari, 06.00 - 23.00",
         contact: "Telp: 082131338971",
         wa: "082131338971", // pilih Malang -> direct ke WA Malang
