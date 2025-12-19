@@ -254,7 +254,7 @@ const outlets = {
         contact: "Telp: 082131338971",
         wa: "082131338971", // pilih Malang -> direct ke WA Malang
         email: "pandanaslimalangadm@gmail.com",
-        directions: "https://maps.app.goo.gl/fyw33cyHhwBuAyQE8",
+        directions: "https://maps.app.goo.gl/UhTpwAjYUuMyZfYQA",
         social: {
             instagram: "https://www.instagram.com/pandanaslimalang",
             tiktok: "https://www.tiktok.com/@pandanasli_malang",
