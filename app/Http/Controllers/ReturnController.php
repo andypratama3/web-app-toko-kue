@@ -47,6 +47,7 @@ class ReturnController extends Controller
         $validated = $request->validate([
             'return_quantities' => 'required|array|min:1',
             'return_quantities.*' => 'required|integer|min:1',
+            'reason' => 'required|string|min:10',
         ]);
 
         if ($order->status !== 'diterima_pembeli') {
@@ -66,6 +67,7 @@ class ReturnController extends Controller
                 'status' => 'menunggu_konfirmasi',
                 'courier_id' => $kurir->id,
                 'region_id' => $kurir->region_id, // Asumsi relasi `region_id` ada di model User
+                'reason' => $validated['reason'],
             ]);
 
             // DIUBAH: Menggunakan relasi `items()` yang benar dan membuat key

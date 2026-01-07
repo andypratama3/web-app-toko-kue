@@ -124,8 +124,8 @@
                 <!-- Dropdown menu -->
                 <div id="filter-dropdown-table" class="z-10 hidden w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
                     <!-- <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">
-                                        Filter berdasarkan Status
-                                    </h6> -->
+                                            Filter berdasarkan Status
+                                        </h6> -->
                     <ul class="space-y-2 text-sm" aria-labelledby="dropdownDefault">
                         @foreach ($allStatuses as $key => $label)
                             <li class="flex items-center">
@@ -1042,6 +1042,8 @@
             buttonSpinner.classList.remove('hidden');
 
             const returnQuantities = {};
+            const reason = document.getElementById('return_reason').value;
+
             let hasValidReturn = false;
 
             // Menyesuaikan: Mengambil data dari <input> dan atribut data-name
@@ -1062,6 +1064,7 @@
                 return;
             }
 
+
             try {
                 const response = await fetch(`/kurir/pesanan/${orderId}/request-return`, {
                     method: 'POST',
@@ -1071,7 +1074,8 @@
                         'X-CSRF-TOKEN': getCsrfToken()
                     },
                     body: JSON.stringify({
-                        return_quantities: returnQuantities
+                        return_quantities: returnQuantities,
+                        reason : reason
                     })
                 });
 
