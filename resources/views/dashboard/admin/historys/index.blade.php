@@ -30,38 +30,57 @@
                     </form>
                 </div>
                 <form method="GET" class="flex flex-row flex-wrap items-center gap-2">
-                    <div class="relative">
-                        <select name="month"
-                            class="px-4 py-1 pr-8 text-sm border rounded appearance-none focus:ring focus:ring-blue-200">
-                            @foreach ($months as $num => $name)
-                                <option value="{{ $num }}" @if ($selectedMonth == $num) selected @endif>
-                                    {{ $name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="relative">
-                        <select name="courier"
-                            class="px-4 py-1 pr-8 text-sm border rounded appearance-none focus:ring focus:ring-blue-200">
-                            <option value="">
-                                Cari Berdasarkan kurir
-                            </option>
-                            @foreach ($couriers as $courier)
-                                <option value="{{ $courier['id'] }}" @if ($selectedCourier == $courier['id']) selected @endif>
-                                    {{ $courier['name'] }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="relative">
-                        <select name="year"
-                            class="px-4 py-1 pr-8 text-sm border rounded appearance-none focus:ring focus:ring-blue-200">
-                            @foreach ($years as $year)
-                                <option value="{{ $year }}" @if ($selectedYear == $year) selected @endif>
-                                    {{ $year }}
-                                </option>
-                            @endforeach
-                        </select>
+                    <div class="relative inline-block text-left">
+                        <button onclick="toggleDropdown()" type="button"
+                            class="px-3 py-1 text-sm font-semibold text-white bg-blue-600 rounded hover:bg-blue-700 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                class="bi bi-filter" viewBox="0 0 16 16">
+                                <path
+                                    d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5m-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5" />
+                            </svg>
+                            Filter
+                            
+                        </button>
+
+                        <div id="dropdown"
+                            class="hidden absolute right-0 mt-2 min-w-44 rounded-md bg-white shadow-lg p-2 space-y-2">
+                            <div class="relative">
+                                <select name="month"
+                                    class="px-4 py-1 pr-8 text-sm border rounded appearance-none focus:ring focus:ring-blue-200">
+                                    @foreach ($months as $num => $name)
+                                        <option value="{{ $num }}"
+                                            @if ($selectedMonth == $num) selected @endif>
+                                            {{ $name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="relative">
+                                <select name="courier"
+                                    class="px-4 py-1 pr-8 text-sm border rounded appearance-none focus:ring focus:ring-blue-200">
+                                    <option value="">
+                                        Cari Berdasarkan kurir
+                                    </option>
+                                    @foreach ($couriers as $courier)
+                                        <option value="{{ $courier['id'] }}"
+                                            @if ($selectedCourier == $courier['id']) selected @endif>
+                                            {{ $courier['name'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="relative">
+                                <select name="year"
+                                    class="px-4 py-1 pr-8 text-sm border rounded appearance-none focus:ring focus:ring-blue-200">
+                                    @foreach ($years as $year)
+                                        <option value="{{ $year }}"
+                                            @if ($selectedYear == $year) selected @endif>
+                                            {{ $year }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     <button type="submit"
                         class="px-3 py-1 text-sm font-semibold text-white bg-blue-600 rounded hover:bg-blue-700">Lihat</button>
@@ -109,6 +128,10 @@
 
 @push('page-scripts')
     <script>
+        function toggleDropdown() {
+            document.getElementById("dropdown").classList.toggle("hidden");
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const modalElement = document.getElementById('showOrderModal');
             if (!modalElement) return;

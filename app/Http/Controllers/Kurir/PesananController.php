@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\Drivers\Gd\Encoders\JpegEncoder;
+use Intervention\Image\ImageManager;
 
 /**
  * Controller PesananController menangani semua logika bisnis yang terkait dengan
@@ -511,40 +514,68 @@ class PesananController extends Controller
         }
 
         try {
-            $request->validate(['payment_proof' => 'required|image|mimes:jpeg,png,jpg|max:2048']);
+            $request->validate([
+                'payment_proof' => 'required|image|mimes:jpeg,png,jpg|max:2048'
+            ]);
 
-            $order = Order::where('id', $id)->where('created_by_user_id', Auth::id())->firstOrFail();
+            $order = Order::where('id', $id)
+                ->where('created_by_user_id', Auth::id())
+                ->firstOrFail();
 
-            // Pembayaran hanya bisa diunggah setelah pesanan diterima
             if (!in_array($order->status, ['diterima_pembeli', 'selesai'])) {
-                return response()->json(['message' => 'Bukti pembayaran hanya bisa diunggah setelah pesanan diterima oleh pembeli.'], 403);
+                return response()->json([
+                    'message' => 'Bukti pembayaran hanya bisa diunggah setelah pesanan diterima oleh pembeli.'
+                ], 403);
             }
 
-            // Hapus bukti pembayaran lama jika ada
+            // Hapus file lama
             if ($order->payment_proof) {
                 Storage::disk('public')->delete($order->payment_proof);
             }
 
-            // Simpan file baru dengan nama berdasarkan nomor invoice
             $file = $request->file('payment_proof');
+
             $sanitizedInvoiceNumber = str_replace('/', '-', $order->invoice_number);
-            $fileName = $sanitizedInvoiceNumber . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('payment_proofs', $fileName, 'public');
 
-            // Update status pesanan menjadi 'selesai' dan catat waktu pembayaran
-            $order->payment_proof = $path;
-            $order->status = 'selesai';
-            $order->paid_at = $this->nowInUserTimezone();
-            $order->save();
+            // 🔧 SET KUALITAS GAMBAR (30–80 biasanya ideal)
+            $quality = 60;
 
-            return response()->json(['message' => 'Bukti pembayaran berhasil diunggah. Pesanan selesai!'], 200);
+            // Paksa output JPG agar konsisten & ringan
+            $fileName = $sanitizedInvoiceNumber . '.jpg';
+            $path = 'payment_proofs/' . $fileName;
+
+            $manager = new ImageManager(new Driver());
+
+            $image = $manager
+                ->read($file)
+                ->encode(new JpegEncoder(quality: $quality));
+
+            // ✅ SIMPAN FILE
+            Storage::disk('public')->put($path, $image);
+
+            // Update DB
+            $order->update([
+                'payment_proof' => $path,
+                'status' => 'selesai',
+                'paid_at' => $this->nowInUserTimezone(),
+            ]);
+
+            return response()->json([
+                'message' => 'Bukti pembayaran berhasil diunggah & dikompres.'
+            ], 200);
+
         } catch (ValidationException $e) {
-            return response()->json(['message' => 'Validasi gagal.', 'errors' => $e->errors()], 422);
+            return response()->json([
+                'message' => 'Validasi gagal.',
+                'errors' => $e->errors()
+            ], 422);
+
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['message' => 'Pesanan tidak ditemukan.'], 404);
+
         } catch (\Exception $e) {
-            Log::error('Error uploading payment proof for order ID ' . $id . ': ' . $e->getMessage());
-            return response()->json(['message' => 'Terjadi kesalahan internal.'], 500);
+            Log::error('Upload payment proof error: ' . $e->getMessage());
+            return response()->json(['message' => $e->getMessage()], 500);
         }
     }
 

@@ -503,6 +503,7 @@
                 // Logika 2: Jika BUKAN retur, tapi punya bukti bayar, TAMPILKAN BUKTI BAYAR
             } else if (order.payment_proof) {
                 proofUploadedTitle.textContent = 'Bukti Pembayaran';
+                console.log(getImageUrl(order.payment_proof))
                 proofImage.src = getImageUrl(order.payment_proof);
                 paymentProofUploaded.classList.remove('hidden');
 
