@@ -1,22 +1,24 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use Carbon\Carbon;
+use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
-use App\Http\Controllers\AdminDashboardController;
-use App\Http\Controllers\KurirDashboardController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
+use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\Admin\CourierController;
-use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\HistoryOrderController;
+use App\Http\Controllers\Admin\CourierController;
+use App\Http\Controllers\Kurir\PesananController;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\KurirDashboardController;
 use App\Http\Controllers\Admin\PeformaKurirController;
 use App\Http\Controllers\Admin\PeformaCustomerController;
-use App\Http\Controllers\Kurir\PesananController;
-use App\Http\Controllers\ReturnController;
-use App\Models\Product;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,7 +27,24 @@ use App\Models\Product;
 */
 
 // Rute Halaman Depan (Homepage)
-Route::get('/', fn() => view('livewire.homepage'));
+Route::get('/', function (Request $request) {
+    $ip = $request->ip();
+    $today = Carbon::today();
+
+    $exists = DB::table('visit_logs')
+        ->where('ip_address', $ip)
+        ->whereDate('created_at', $today)
+        ->exists();
+
+    if (!$exists) {
+        DB::table('visit_logs')->insert([
+            'ip_address' => $ip
+        ]);
+    }
+
+    // $total = DB::table('visit_logs')->count();
+    return view('livewire.homepage');
+});
 
 // Rute Logout manual
 Route::post('/logout', function (Request $request) {
