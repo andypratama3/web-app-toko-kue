@@ -12,6 +12,7 @@ use App\Models\Customer;
 use App\Models\Region;
 use App\Models\OrderReturn;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class AdminDashboardController extends Controller
 {
@@ -22,6 +23,88 @@ class AdminDashboardController extends Controller
         if (!$admin->hasRole('admin')) {
             abort(403, 'AKSES DITOLAK');
         }
+
+        // ===== TRACK VISITOR =====
+        $visitFilter = $request->input('visit_filter', 'last_7_days');
+        
+        $visitChartLabels = [];
+        $visitChartData = [];
+        $visitDateRangeText = '';
+
+        switch ($visitFilter) {
+
+            case 'daily':
+                $daysInMonth = Carbon::now()->daysInMonth;
+                for ($day = 1; $day <= $daysInMonth; $day++) {
+                    $date = Carbon::createFromDate(now()->year, now()->month, $day);
+
+                    $visitChartLabels[] = $date->format('d');
+                    $visitChartData[] = DB::table('visit_logs')
+                        ->whereDate('created_at', $date)
+                        ->count();
+                }
+
+                $visitDateRangeText = Carbon::now()->isoFormat('MMMM YYYY');
+                break;
+
+            case 'weekly':
+                $startDate = Carbon::now()->startOfMonth();
+                $endDate = Carbon::now()->endOfMonth();
+                $week = 1;
+
+                while ($startDate->lte($endDate)) {
+                    $weekEnd = $startDate->copy()->endOfWeek(Carbon::SATURDAY);
+                    if ($weekEnd->gt($endDate)) {
+                        $weekEnd = $endDate;
+                    }
+
+                    $visitChartLabels[] = 'Minggu ' . $week;
+                    $visitChartData[] = DB::table('visit_logs')
+                        ->whereBetween('created_at', [$startDate, $weekEnd])
+                        ->count();
+
+                    $startDate = $weekEnd->addDay();
+                    $week++;
+                }
+
+                $visitDateRangeText = Carbon::now()->isoFormat('MMMM YYYY');
+                break;
+
+            case 'monthly':
+                for ($month = 1; $month <= 12; $month++) {
+                    $date = Carbon::createFromDate(now()->year, $month, 1);
+
+                    $visitChartLabels[] = $date->isoFormat('MMM');
+                    $visitChartData[] = DB::table('visit_logs')
+                        ->whereYear('created_at', now()->year)
+                        ->whereMonth('created_at', $month)
+                        ->count();
+                }
+
+                $visitDateRangeText = now()->year;
+                break;
+
+            case 'last_7_days':
+            default:
+                for ($i = 6; $i >= 0; $i--) {
+                    $date = Carbon::today()->subDays($i);
+
+                    $visitChartLabels[] = $date->format('d M');
+                    $visitChartData[] = DB::table('visit_logs')
+                        ->whereDate('created_at', $date)
+                        ->count();
+                }
+
+                $start = Carbon::today()->subDays(6);
+                $end = Carbon::today();
+                $visitDateRangeText = $start->isoFormat('D MMM') . ' - ' . $end->isoFormat('D MMM');
+                break;
+        }
+
+        $totalVisitsInRange = array_sum($visitChartData);
+
+        // ===== TRACK VISITOR =====
+
 
         $regionModel = Region::where('slug', $region)->firstOrFail();
         $regionId = $regionModel->id;
@@ -189,10 +272,19 @@ class AdminDashboardController extends Controller
             'chartDataTotal',
             'chartDataVerified',
             'chartDataVerifiedWithReturn',
+
+            // PENJUALAN
             'dateRangeText',
             'totalOrdersInRange',
             'totalVerifiedInRange',
-            'totalVerifiedWithReturnInRange'
+            'totalVerifiedWithReturnInRange',
+
+            // VISIT
+            'visitFilter',
+            'visitChartLabels',
+            'visitChartData',
+            'visitDateRangeText',
+            'totalVisitsInRange',
         ));
     }
 

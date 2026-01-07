@@ -248,6 +248,74 @@
             </div>
         </div>
 
+        {{-- visitor chart --}}
+        <div
+            class="relative overflow-hidden bg-white border border-gray-100 shadow-2xl rounded-3xl dark:bg-slate-800 dark:border-slate-700">
+            <div class="p-6">
+                <div class="flex flex-wrap items-center justify-between gap-4 mb-2">
+                    <div class="flex flex-col">
+                        <h6 class="flex items-center gap-2 text-lg font-bold text-gray-800 dark:text-white">
+                            <i class="text-purple-500 fas fa-users"></i>
+                            <span>Grafik Kunjungan</span>
+                        </h6>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            📆 {{ $visitDateRangeText }}
+                        </p>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center">
+                            <span class="w-3 h-3 mr-2 bg-purple-500 rounded-full"></span>
+                            <span class="mr-1 text-sm font-medium text-gray-600 dark:text-gray-300">
+                                Total
+                            </span>
+                            <span class="text-sm font-bold text-gray-800 dark:text-white">
+                                {{ $totalVisitsInRange }}
+                            </span>
+                        </div>
+
+                        {{-- Filter --}}
+                        <div class="relative">
+                            <button id="visitChartFilterButton" type="button"
+                                class="text-gray-500 js-dropdown-toggle hover:text-gray-700 dark:text-gray-400 dark:hover:text-white focus:outline-none"
+                                data-target-dropdown="visitChartFilterDropdown">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+
+                            <div id="visitChartFilterDropdown"
+                                class="absolute right-0 z-20 hidden w-40 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-slate-700 js-dropdown-menu dark:border-slate-600">
+                                <a href="{{ route('admin.dashboard', ['region' => Auth::user()->region->slug, 'visit_filter' => 'last_7_days']) }}"
+                                    class="block px-4 py-2 text-sm font-semibold rounded-t-lg
+                            {{ $visitFilter === 'last_7_days' ? 'bg-purple-100 text-purple-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-purple-50 dark:hover:bg-slate-600' }}">
+                                    7 Hari
+                                </a>
+                                <a href="{{ route('admin.dashboard', ['region' => Auth::user()->region->slug, 'visit_filter' => 'daily']) }}"
+                                    class="block px-4 py-2 text-sm font-semibold
+                            {{ $visitFilter === 'daily' ? 'bg-purple-100 text-purple-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-purple-50 dark:hover:bg-slate-600' }}">
+                                    Harian
+                                </a>
+                                <a href="{{ route('admin.dashboard', ['region' => Auth::user()->region->slug, 'visit_filter' => 'weekly']) }}"
+                                    class="block px-4 py-2 text-sm font-semibold
+                            {{ $visitFilter === 'weekly' ? 'bg-purple-100 text-purple-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-purple-50 dark:hover:bg-slate-600' }}">
+                                    Mingguan
+                                </a>
+                                <a href="{{ route('admin.dashboard', ['region' => Auth::user()->region->slug, 'visit_filter' => 'monthly']) }}"
+                                    class="block px-4 py-2 text-sm font-semibold rounded-b-lg
+                            {{ $visitFilter === 'monthly' ? 'bg-purple-100 text-purple-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-purple-50 dark:hover:bg-slate-600' }}">
+                                    Bulanan
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex-auto p-4 pt-0">
+                    <canvas id="visitChart" class="h-[250px] lg:h-[300px]"></canvas>
+                </div>
+            </div>
+        </div>
+        {{-- visitor chart --}}
+
         <div
             class="relative flex flex-col overflow-hidden bg-white border border-gray-100 shadow-2xl rounded-3xl dark:bg-slate-800 dark:border-slate-700">
             <div class="p-6">
@@ -319,71 +387,103 @@
 
     </div>
 
-    @endsection
+@endsection
 
-    @push('page-scripts')
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                var ctx = document.getElementById('adminOrdersChart');
-                if (ctx && window.Chart) {
-                    new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: @json($chartLabels),
-                            datasets: [{
-                                    label: 'Total Pesanan',
-                                    data: @json($chartDataTotal),
-                                    borderColor: '#3b82f6', // Biru
-                                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                    fill: true,
-                                    tension: 0.4,
-                                },
-                                {
-                                    label: 'Diverifikasi',
-                                    data: @json($chartDataVerified),
-                                    borderColor: '#22c55e', // Hijau
-                                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                                    fill: true,
-                                    tension: 0.4,
-                                },
-                                {
-                                    label: 'Retur',
-                                    data: @json($chartDataVerifiedWithReturn),
-                                    borderColor: '#f97316', // Oranye
-                                    backgroundColor: 'rgba(249, 115, 22, 0.1)',
-                                    fill: true,
-                                    tension: 0.4,
-                                }
-                            ]
+@push('page-scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // visitor chart
+        const visitCtx = document.getElementById('visitChart').getContext('2d');
+
+        new Chart(visitCtx, {
+            type: 'line',
+            data: {
+                labels: @json($visitChartLabels),
+                datasets: [{
+                    label: 'Kunjungan',
+                    data: @json($visitChartData),
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: true,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        // visitor chart
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var ctx = document.getElementById('adminOrdersChart');
+            if (ctx && window.Chart) {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: @json($chartLabels),
+                        datasets: [{
+                                label: 'Total Pesanan',
+                                data: @json($chartDataTotal),
+                                borderColor: '#3b82f6', // Biru
+                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                fill: true,
+                                tension: 0.4,
+                            },
+                            {
+                                label: 'Diverifikasi',
+                                data: @json($chartDataVerified),
+                                borderColor: '#22c55e', // Hijau
+                                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                                fill: true,
+                                tension: 0.4,
+                            },
+                            {
+                                label: 'Retur',
+                                data: @json($chartDataVerifiedWithReturn),
+                                borderColor: '#f97316', // Oranye
+                                backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                                fill: true,
+                                tension: 0.4,
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
                         },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    display: false
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: document.documentElement.classList.contains('dark') ? '#9ca3af' :
+                                        '#6b7280',
+                                    stepSize: 1
                                 }
                             },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    ticks: {
-                                        color: document.documentElement.classList.contains('dark') ? '#9ca3af' :
-                                            '#6b7280',
-                                        stepSize: 1
-                                    }
-                                },
-                                x: {
-                                    ticks: {
-                                        color: document.documentElement.classList.contains('dark') ? '#9ca3af' :
-                                            '#6b7280'
-                                    }
+                            x: {
+                                ticks: {
+                                    color: document.documentElement.classList.contains('dark') ? '#9ca3af' :
+                                        '#6b7280'
                                 }
                             }
                         }
-                    });
-                }
-            });
-        </script>
-    @endpush
+                    }
+                });
+            }
+        });
+    </script>
+@endpush
