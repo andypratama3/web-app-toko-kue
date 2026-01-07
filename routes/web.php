@@ -38,7 +38,9 @@ Route::get('/', function (Request $request) {
 
     if (!$exists) {
         DB::table('visit_logs')->insert([
-            'ip_address' => $ip
+            'ip_address' => $ip,
+            'created_at' => $today,
+            'updated_at' => $today,
         ]);
     }
 
