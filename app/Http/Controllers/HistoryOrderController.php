@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\Order;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Storage;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class HistoryOrderController extends Controller
 {
@@ -132,6 +133,41 @@ class HistoryOrderController extends Controller
         return $pdf->download($filename);
     }
 
+    public function destroy($id)
+    {
+        $admin = Auth::user();
+        DB::beginTransaction();
+
+        try {
+            $order = Order::where('region_id', $admin->region_id)->with('returns')->findOrFail($id);
+
+            // 1. Hapus bukti pembayaran utama
+            if ($order->payment_proof) {
+                Storage::disk('public')->delete($order->payment_proof);
+            }
+
+            // 2. Hapus bukti retur (jika ada)
+            foreach ($order->returns as $return) {
+                if ($return->return_proof) {
+                    Storage::disk('public')->delete($return->return_proof);
+                }
+            }
+
+            // 3. Hapus data pesanan dari database
+            // (Relasi seperti order_items dan returns akan terhapus otomatis jika foreign key di-set cascade)
+            $invoiceNumber = $order->invoice_number;
+            $order->delete();
+
+            DB::commit();
+            $routeName = 'admin.historys.index';
+            return redirect()->route($routeName)->with('success', 'Pesanan "' . $invoiceNumber . '" berhasil dihapus.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Gagal menghapus pesanan ID ' . $id . ': ' . $e->getMessage());
+            return response()->json(['message' => 'Terjadi kesalahan saat menghapus pesanan.'], 500);
+        }
+    }
+
     public function invoice($orderId)
     {
         $order = \App\Models\Order::with([
@@ -211,6 +247,7 @@ class HistoryOrderController extends Controller
 
         $selectedMonth = $request->input('month', now()->format('m'));
         $selectedYear = $request->input('year', now()->format('Y'));
+        $selectedCourier = $request->input('courier');
         $search = $request->input('search');
 
         $months = [
@@ -239,8 +276,22 @@ class HistoryOrderController extends Controller
             $ordersQuery->where('created_by_user_id', $user->id);
         }
 
+        $couriers = [];
+        foreach ($ordersQuery->get() as $order) {
+            if ($order->createdBy) {
+                $couriers[$order->createdBy->id] = [
+                    "id" => $order->createdBy->id,
+                    "name" => $order->createdBy->name
+                ];
+            }
+        }
+
         $ordersQuery->whereMonth('created_at', $selectedMonth)
             ->whereYear('created_at', $selectedYear);
+
+        $ordersQuery->when($selectedCourier, function ($query, $selectedCourier) {
+            $query->where('created_by_user_id', "=", $selectedCourier);
+        });
 
         $ordersQuery->when($search, function ($query, $searchTerm) {
             $query->where(function ($q) use ($searchTerm) {
@@ -252,6 +303,9 @@ class HistoryOrderController extends Controller
             });
         });
 
+
+        $couriers = array_values($couriers);
+
         $orders = $ordersQuery->latest()->paginate(10);
 
         foreach ($orders as $order) {
@@ -261,6 +315,7 @@ class HistoryOrderController extends Controller
                 ? ['text' => 'Lunas', 'class' => 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300']
                 : ['text' => 'Belum Lunas', 'class' => 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'];
         }
+
 
         // [!code focus:start]
         // MODIFIKASI: Handle request AJAX untuk live search
@@ -281,7 +336,7 @@ class HistoryOrderController extends Controller
         }
         // [!code focus:end]
 
-        $viewData = compact('orders', 'months', 'years', 'selectedMonth', 'selectedYear');
+        $viewData = compact('orders', 'months', 'years', 'couriers', 'selectedMonth', 'selectedYear', 'selectedCourier');
 
         $viewName = $role === 'admin'
             ? 'dashboard.admin.historys.index'

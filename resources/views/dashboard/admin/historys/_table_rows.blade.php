@@ -20,8 +20,7 @@
             <p class="mb-0 text-xs leading-tight">{{ $order->createdBy->name ?? '-' }}</p>
         </td>
         <td class="px-4 py-2">
-            <span
-                class="text-xs font-medium px-2.5 py-0.5 rounded {{ $order->payment_status['class'] }}">
+            <span class="text-xs font-medium px-2.5 py-0.5 rounded {{ $order->payment_status['class'] }}">
                 {{ $order->payment_status['text'] }}
             </span>
             @if ($order->has_return)
@@ -34,8 +33,7 @@
         <td class="px-4 py-2">
             @if ($order->has_return)
                 {{-- Tampilkan total baru dan coret total lama --}}
-                <p
-                    class="mb-0 text-xs font-semibold leading-tight text-green-600 dark:text-green-400">
+                <p class="mb-0 text-xs font-semibold leading-tight text-green-600 dark:text-green-400">
                     Rp {{ number_format($order->final_total, 0, ',', '.') }}
                 </p>
                 <p class="mb-0 text-xs leading-tight line-through text-slate-400">
@@ -67,8 +65,7 @@
                         {{-- Tombol Detail --}}
                         <button type="button"
                             class="flex items-center w-full px-4 py-2 text-sm text-gray-700 js-open-modal-btn hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600"
-                            data-target-modal="showOrderModal" data-order-id="{{ $order->id }}"
-                            role="menuitem">
+                            data-target-modal="showOrderModal" data-order-id="{{ $order->id }}" role="menuitem">
                             <i class="w-5 mr-2 text-center fas fa-eye"></i>
                             <span>Detail</span>
                         </button>
@@ -77,11 +74,7 @@
                         @php
                             $wa_number = $order->customer->phone ?? null;
                             if ($wa_number) {
-                                $wa_number = preg_replace(
-                                    '/^0/',
-                                    '62',
-                                    preg_replace('/[^0-9]/', '', $wa_number),
-                                );
+                                $wa_number = preg_replace('/^0/', '62', preg_replace('/[^0-9]/', '', $wa_number));
                             }
                             $customer_name = $order->customer->name ?? '-';
                             $wa_message =
@@ -93,8 +86,7 @@
                             $wa_message = urlencode($wa_message);
                         @endphp
                         @if ($wa_number)
-                            <a href="https://wa.me/{{ $wa_number }}?text={{ $wa_message }}"
-                                target="_blank"
+                            <a href="https://wa.me/{{ $wa_number }}?text={{ $wa_message }}" target="_blank"
                                 class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600"
                                 role="menuitem">
                                 <i class="w-5 mr-2 text-center text-green-500 fab fa-whatsapp"></i>
@@ -117,6 +109,19 @@
                             <i class="w-5 mr-2 text-center fas fa-download"></i>
                             <span>Download</span>
                         </a>
+
+                        {{-- Delete Historys --}}
+                        {{-- <a href="{{ route('admin.orders.destroy', $order->id) }}"
+                            class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600"
+                            role="menuitem">
+                            <i class="w-5 mr-2 text-center fas fa-trash "></i>
+                            <span>Delete</span>
+                        </a> --}}
+                        <button type="button" data-target-modal="delete-historys-modal-{{ $order->id }}"
+                            class="flex items-center w-full px-4 py-2 text-sm text-left text-red-600 js-open-modal-btn hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-red-500 dark:hover:text-white">
+                            <span class="inline-block w-6 mr-2 text-center"><i class="fas fa-trash"></i></span>
+                            <span>Delete</span>
+                        </button>
                     </div>
                 </div>
             </div>

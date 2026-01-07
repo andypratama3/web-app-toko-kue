@@ -124,8 +124,8 @@
                 <!-- Dropdown menu -->
                 <div id="filter-dropdown-table" class="z-10 hidden w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
                     <!-- <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">
-                                    Filter berdasarkan Status
-                                </h6> -->
+                                        Filter berdasarkan Status
+                                    </h6> -->
                     <ul class="space-y-2 text-sm" aria-labelledby="dropdownDefault">
                         @foreach ($allStatuses as $key => $label)
                             <li class="flex items-center">
@@ -1092,5 +1092,20 @@
                 buttonSpinner.classList.add('hidden');
             }
         }
+    </script>
+    <script>
+        document.getElementById('payment_proof_file').addEventListener('change', function(e) {
+            console.log("triggrer")
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = document.getElementById('previewImage');
+                img.src = event.target.result;
+                img.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
     </script>
 @endpush

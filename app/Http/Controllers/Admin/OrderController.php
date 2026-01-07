@@ -18,14 +18,14 @@ class OrderController extends Controller
      * Menampilkan daftar pesanan pada region admin.
      * Logika peringatan diperbarui sesuai kategori customer.
      */
-    public function index()
+    public function index(Request $request)
     {
         $admin = Auth::user();
         $orders = Order::with(['customer.category', 'createdBy'])
             ->where('region_id', $admin->region_id)
-            ->where('status', '!=', 'diverifikasi_admin')
-            ->latest()
-            ->get();
+            ->where('status', '!=', 'diverifikasi_admin');
+
+        $search = $request->input('search');
 
         $newOrdersCount = Order::where('region_id', $admin->region_id)
             ->where('status', 'pending')->count();
@@ -48,6 +48,23 @@ class OrderController extends Controller
                 }
             }
         }
+
+        $orders->when($search, function ($query, $searchTerm) {
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('invoice_number', 'like', "%{$searchTerm}%")
+                    ->orWhereHas('customer', function ($sub) use ($searchTerm) {
+                        $sub->where('name', 'like', "%{$searchTerm}%")
+                            ->orWhere('company_name', 'like', "%{$searchTerm}%");
+                    })
+                    ->orWhereHas('createdBy', function ($sub) use ($searchTerm) {
+                        $sub->where('name', 'like', "%{$searchTerm}%");
+                    });
+            });
+        });
+
+
+        $orders = $orders->latest()->paginate(10);
+
         return view('dashboard.admin.order-list.index', compact('orders', 'newOrdersCount'));
     }
 
@@ -234,7 +251,6 @@ class OrderController extends Controller
 
             DB::commit();
             return response()->json(['message' => 'Pesanan berhasil dihapus secara permanen.']);
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Gagal menghapus pesanan ID ' . $id . ': ' . $e->getMessage());

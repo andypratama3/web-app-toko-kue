@@ -9,6 +9,7 @@
  */
 window.initializeLiveSearch = function (options) {
     const searchInput = document.getElementById(options.searchInputId);
+    console.log(searchInput)
     const desktopContainer = document.getElementById(options.desktopContainerId);
     const mobileContainer = document.getElementById(options.mobileContainerId);
 
@@ -45,6 +46,7 @@ window.initializeLiveSearch = function (options) {
         if (mobileContainer) mobileContainer.innerHTML = `<div class="text-center p-4">${loadingHtml}</div>`;
 
         const url = new URL(window.location.href);
+        
         url.searchParams.set("search", query);
         url.searchParams.set("page", 1); // Selalu reset ke halaman 1 saat pencarian baru
 

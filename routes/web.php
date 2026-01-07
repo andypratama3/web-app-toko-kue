@@ -84,8 +84,8 @@ Route::middleware([
         Route::post('customers/{customer}/flag', [CustomerController::class, 'toggleFlag'])->name('customers.toggleFlag');
         Route::resource('customers', CustomerController::class);
 
-    // Route untuk download rekap order customer (PDF)
-    Route::get('customers/{customer}/rekap/download', [CustomerController::class, 'downloadRekap'])->name('customers.rekap.download');
+        // Route untuk download rekap order customer (PDF)
+        Route::get('customers/{customer}/rekap/download', [CustomerController::class, 'downloadRekap'])->name('customers.rekap.download');
 
         // Manajemen Pesanan untuk Admin
         Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
@@ -101,6 +101,7 @@ Route::middleware([
         // Endpoint JSON untuk detail history pesanan (untuk modal show)
         Route::get('historys/{order}/details', [HistoryOrderController::class, 'details'])->name('admin.historys.details'); // [!code ++]
         Route::get('historys/export-pdf', [HistoryOrderController::class, 'downloadHistoryPdf'])->name('historys.export.pdf');
+        Route::delete('historys/{id}', [HistoryOrderController::class, 'destroy'])->name('historys.destroy');
 
         // Routes untuk Peforma Kurir
         Route::get('peforma-kurir', [PeformaKurirController::class, 'index'])->name('peforma-kurir.index');

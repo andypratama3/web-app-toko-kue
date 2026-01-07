@@ -20,6 +20,41 @@
                 👤 {{ Auth::user()->name ?? 'Admin' }}
                 🚩 {{ Auth::user()->region->name ?? 'N/A' }}
             </h2>
+
+            <form class="flex flex-col gap-2 mb-4 md:flex-row md:items-center md:w-1/2" method="GET">
+
+                <label for="live-search-input" class="sr-only">Cari</label>
+
+                <div class="relative flex-1">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <svg aria-hidden="true" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor"
+                            viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd"
+                                d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </div>
+
+                    <input type="text" id="live-search-input" name="search" value="{{ request('search') }}"
+                        class="block w-full p-2 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg
+                   bg-gray-50 focus:ring-primary-500 focus:border-primary-500
+                   dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                        placeholder="Cari Pesanan...">
+                </div>
+
+                <button type="submit"
+                    class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium
+           text-white bg-blue-600 rounded-lg hover:bg-blue-700
+           focus:ring-4 focus:ring-blue-300
+           dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800">
+                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Cari
+                </button>
+            </form>
             <div class="overflow-x-auto">
                 @php
                     // Peta status → label tampilan (samakan dengan yang dipakai role kurir)
@@ -52,92 +87,13 @@
                             <th class="px-4 py-3">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @forelse ($orders as $order)
-                            <tr class="text-sm font-normal text-gray-700 border-b dark:text-gray-400 dark:border-gray-700">
-                                <td class="px-4 py-2 text-center">{{ $loop->iteration }}</td>
-                                <td class="px-4 py-2 font-mono">{{ $order->invoice_number }}</td>
-                                <td class="px-4 py-2">{{ $order->customer->name ?? '-' }}</td>
-                                <td class="px-4 py-2">{{ $order->createdBy->name ?? '-' }}</td>
-                                <td class="px-4 py-2">
-                                    <span
-                                        class="inline-block px-2 py-1 text-xs font-semibold rounded-full
-                                        @switch($order->status)
-                                            @case('selesai') bg-blue-100 text-blue-800 @break
-                                            @case('menunggu_verifikasi_admin') bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300 @break
-                                            @case('diverifikasi_admin') bg-green-100 text-green-800 @break
-                                            @default bg-gray-100 text-gray-800
-                                        @endswitch">
-                                        {{ $labelStatus($order->status) }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-2">
-                                    @php
-                                        // Cek retur aktif (tidak ditolak)
-                                        $activeReturn = $order->returns
-                                            ->where('status', '!=', 'ditolak')
-                                            ->sortByDesc('id')
-                                            ->first();
-                                        $returnedAmount = $activeReturn ? $activeReturn->total_amount_returned : 0;
-                                        $afterReturn = $order->total_amount - $returnedAmount;
-                                    @endphp
-                                    @if ($activeReturn && $returnedAmount > 0)
-                                        <span class="block text-xs text-gray-500 line-through">Rp
-                                            {{ number_format($order->total_amount, 0, ',', '.') }}</span>
-                                        <span class="block font-bold text-green-600">Rp
-                                            {{ number_format($afterReturn, 0, ',', '.') }}</span>
-                                    @else
-                                        Rp {{ number_format($order->total_amount, 0, ',', '.') }}
-                                    @endif
-                                </td>
-                                <td class="px-4 py-2 text-center">
-                                    @if ($order->note)
-                                        <button type="button"
-                                            class="text-gray-500 js-open-modal-btn hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
-                                            data-target-modal="viewNoteModal" data-note="{{ $order->note }}"
-                                            title="Lihat Catatan">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 20 20"
-                                                fill="currentColor">
-                                                <path fill-rule="evenodd"
-                                                    d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-                                                    clip-rule="evenodd" />
-                                            </svg>
-                                        </button>
-                                    @else
-                                        <span class="text-gray-400 dark:text-gray-500">-</span>
-                                    @endif
-                                </td>
-                                <td class="px-4 py-2">
-                                    {{-- Tombol ini akan membuka modal verifikasi --}}
-                                    @if ($order->status == 'selesai' || $order->status == 'menunggu_verifikasi_admin')
-                                        <button
-                                            class="px-3 py-1 text-xs font-bold text-white bg-blue-600 rounded js-open-modal-btn hover:bg-blue-700"
-                                            data-target-modal="verifyOrderModal" data-order-id="{{ $order->id }}">
-                                            Verifikasi
-                                        </button>
-                                    @else
-                                        <button
-                                            class="px-3 py-1 text-xs font-bold text-white bg-gray-400 rounded cursor-not-allowed"
-                                            disabled>
-                                            Verifikasi
-                                        </button>
-                                    @endif
-
-                                    <button
-                                        class="px-3 py-1 text-xs font-bold text-white bg-red-600 rounded js-open-delete-modal hover:bg-red-700"
-                                        data-order-id="{{ $order->id }}"
-                                        data-invoice-number="{{ $order->invoice_number }}">
-                                        Hapus
-                                    </button>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="8" class="py-6 text-center text-gray-500">Tidak ada pesanan ditemukan.</td>
-                            </tr>
-                        @endforelse
+                    <tbody id="order-result-container">
+                        @include('dashboard.admin.order-list._table_rows', ['orders' => $orders])
                     </tbody>
                 </table>
+                <div class="p-4">
+                    {{ $orders->withQueryString()->links() }}
+                </div>
             </div>
         </div>
     </div>
@@ -310,9 +266,11 @@
                 document.getElementById('verifyModalCustomerAddress').textContent = data.customer?.address || '';
                 document.getElementById('verifyModalPaymentMethod').textContent = data.payment_method || '-';
                 document.getElementById('verifyModalOrderCreatedAt').textContent = data.created_at || '-';
-                document.getElementById('verifyModalOrderPaidAt').textContent = data.paid_at ? `${data.paid_at}${data.paid_at_label || ''}` : 'Belum Lunas';
+                document.getElementById('verifyModalOrderPaidAt').textContent = data.paid_at ?
+                    `${data.paid_at}${data.paid_at_label || ''}` : 'Belum Lunas';
                 document.getElementById('verifyModalCourierName').textContent = data.kurir_name || '-';
-                document.getElementById('verifyModalOrderNote').textContent = data.note || 'Tidak ada catatan dari kurir.';
+                document.getElementById('verifyModalOrderNote').textContent = data.note ||
+                    'Tidak ada catatan dari kurir.';
 
                 // Populate produk yang dipesan
                 const productDetailsDiv = document.getElementById('verifyModalProductDetails');
@@ -320,8 +278,10 @@
                 if (Array.isArray(data.items) && data.items.length > 0) {
                     data.items.forEach(item => {
                         const productItem = document.createElement('div');
-                        productItem.className = 'p-2 border rounded-lg dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50';
-                        productItem.innerHTML = `<p class="font-semibold text-gray-900 dark:text-white">${item.name} ${item.variant_name ? `(${item.variant_name})` : ''}</p><p class="text-sm text-gray-700 dark:text-gray-300">Jumlah: ${item.quantity} x Rp ${new Intl.NumberFormat('id-ID').format(item.price)}</p>`;
+                        productItem.className =
+                            'p-2 border rounded-lg dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50';
+                        productItem.innerHTML =
+                            `<p class="font-semibold text-gray-900 dark:text-white">${item.name} ${item.variant_name ? `(${item.variant_name})` : ''}</p><p class="text-sm text-gray-700 dark:text-gray-300">Jumlah: ${item.quantity} x Rp ${new Intl.NumberFormat('id-ID').format(item.price)}</p>`;
                         productDetailsDiv.appendChild(productItem);
                     });
                 } else {
@@ -348,11 +308,13 @@
                     // Tampilkan detail produk retur
                     returnedProductsSection.classList.remove('hidden');
                     returnedProductsList.innerHTML = '';
-                    if (Array.isArray(data.return_details.returned_products) && data.return_details.returned_products.length > 0) {
+                    if (Array.isArray(data.return_details.returned_products) && data.return_details.returned_products
+                        .length > 0) {
                         data.return_details.returned_products.forEach(item => {
                             const returnedItem = document.createElement('div');
                             returnedItem.className = 'text-sm';
-                            returnedItem.innerHTML = `<p class="font-semibold text-gray-800 dark:text-gray-200">${item.name} ${item.variant_name ? `(${item.variant_name})` : ''}</p><p class="text-gray-600 dark:text-gray-400">Jumlah Diretur: ${item.quantity} x Rp ${new Intl.NumberFormat('id-ID').format(item.price)}</p>`;
+                            returnedItem.innerHTML =
+                                `<p class="font-semibold text-gray-800 dark:text-gray-200">${item.name} ${item.variant_name ? `(${item.variant_name})` : ''}</p><p class="text-gray-600 dark:text-gray-400">Jumlah Diretur: ${item.quantity} x Rp ${new Intl.NumberFormat('id-ID').format(item.price)}</p>`;
                             returnedProductsList.appendChild(returnedItem);
                         });
                     } else {
@@ -364,7 +326,8 @@
                     modalTitle.textContent = "Verifikasi Rincian Pesanan";
                     proofTitle.textContent = "✅ Bukti Pembayaran";
                     proofUrl = data.payment_proof;
-                    document.getElementById('verifyModalTotalAmount').innerHTML = `Rp ${data.total_amount ? Number(data.total_amount).toLocaleString('id-ID') : '0'}`;
+                    document.getElementById('verifyModalTotalAmount').innerHTML =
+                        `Rp ${data.total_amount ? Number(data.total_amount).toLocaleString('id-ID') : '0'}`;
                 }
 
                 // Tampilkan gambar jika URL ada, jika tidak, tampilkan pesan "Tidak ada bukti"
