@@ -124,8 +124,8 @@
                 <!-- Dropdown menu -->
                 <div id="filter-dropdown-table" class="z-10 hidden w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
                     <!-- <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">
-                                            Filter berdasarkan Status
-                                        </h6> -->
+                                                                    Filter berdasarkan Status
+                                                                </h6> -->
                     <ul class="space-y-2 text-sm" aria-labelledby="dropdownDefault">
                         @foreach ($allStatuses as $key => $label)
                             <li class="flex items-center">
@@ -1075,7 +1075,7 @@
                     },
                     body: JSON.stringify({
                         return_quantities: returnQuantities,
-                        reason : reason
+                        reason: reason
                     })
                 });
 
@@ -1099,18 +1099,46 @@
         }
     </script>
     <script>
-        document.getElementById('payment_proof_file').addEventListener('change', function(e) {
-            console.log("triggrer")
+        const previewImage = document.getElementById('previewImage');
+        const paymentProfFile = document.getElementById('payment_proof_file')
+
+        function resetPaymentProof() {
+            if (previewImage) {
+                previewImage.src = "";
+                previewImage.style.display = 'none';
+            }
+
+            if (paymentProfFile) {
+                paymentProfFile.value = "";
+            }
+        }
+        // preview image
+
+
+        paymentProfFile.addEventListener('change', function(e) {
             const file = e.target.files[0];
-            if (!file) return;
+            if (!file) {
+                previewImage.src = ""
+                return
+            }
 
             const reader = new FileReader();
             reader.onload = function(event) {
-                const img = document.getElementById('previewImage');
-                img.src = event.target.result;
-                img.style.display = 'block';
+
+                previewImage.src = event.target.result;
+                previewImage.style.display = 'block';
             };
             reader.readAsDataURL(file);
+        });
+
+        document.querySelector('.js-close-modal-btn').addEventListener('click', () => {
+            resetPaymentProof()
+        });
+
+        document.getElementById('orderDetailsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                resetPaymentProof()
+            }
         });
     </script>
 @endpush

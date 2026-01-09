@@ -107,6 +107,12 @@
                     <h3 id="paymentProofTitle" class="mb-4 text-xl font-bold text-gray-900 dark:text-white">Bukti
                         Pembayaran</h3>
 
+                    {{-- PREVIEW IMAGE --}}
+                    <img id="previewImage" src=""
+                        class="object-cover w-full h-auto mx-auto my-4 rounded-lg shadow-md cursor-pointer dark:border-gray-600 max-h-48">
+
+                    {{-- PREVIEW IMAGE --}}
+
                     <form id="paymentUploadForm" class="hidden space-y-3" enctype="multipart/form-data">
                         <input type="file" name="payment_proof" id="payment_proof_file"
                             class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
@@ -134,10 +140,9 @@
                         </button>
                     </form>
 
-                    {{-- PREVIEW IMAGE --}}
-                    <img id="previewImage" src=""
-                        style="display:none; max-width:300px; border:1px solid #ccc;">
-                    {{-- PREVIEW IMAGE --}}
+
+
+
                     <div id="paymentProofUploaded" class="hidden text-center">
                         <p class="mb-2 font-medium text-gray-800 dark:text-white" id="proofUploadedTitle"></p>
                         <img id="proofImage" src="" alt="Bukti Unggahan"
