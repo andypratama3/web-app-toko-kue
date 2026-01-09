@@ -1,6 +1,6 @@
 @forelse ($orders as $order)
     <tr class="text-sm font-normal text-gray-700 border-b dark:text-gray-400 dark:border-gray-700">
-        <td class="px-4 py-2 text-center">{{ ($orders->currentPage() - 1) * $orders->perPage() + $loop->iteration }}</td>
+        <td class="px-4 py-2 text-center">{{ $loop->iteration }}</td>
         <td class="px-4 py-2 font-mono">{{ $order->invoice_number }}</td>
         <td class="px-4 py-2">{{ $order->customer->name ?? '-' }}</td>
         <td class="px-4 py-2">{{ $order->createdBy->name ?? '-' }}</td>

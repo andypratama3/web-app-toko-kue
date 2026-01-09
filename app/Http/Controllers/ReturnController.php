@@ -47,7 +47,7 @@ class ReturnController extends Controller
         $validated = $request->validate([
             'return_quantities' => 'required|array|min:1',
             'return_quantities.*' => 'required|integer|min:1',
-            'reason' => 'required|string|min:10',
+            'reason' => 'string|min:10|nullable',
         ]);
 
         if ($order->status !== 'diterima_pembeli') {

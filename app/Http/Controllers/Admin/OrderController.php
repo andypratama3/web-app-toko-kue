@@ -63,7 +63,7 @@ class OrderController extends Controller
         });
 
 
-        $orders = $orders->latest()->paginate(10);
+        $orders = $orders->latest()->get();
 
         return view('dashboard.admin.order-list.index', compact('orders', 'newOrdersCount'));
     }

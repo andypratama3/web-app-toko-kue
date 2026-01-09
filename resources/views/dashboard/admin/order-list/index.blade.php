@@ -91,9 +91,6 @@
                         @include('dashboard.admin.order-list._table_rows', ['orders' => $orders])
                     </tbody>
                 </table>
-                <div class="p-4">
-                    {{ $orders->withQueryString()->links() }}
-                </div>
             </div>
         </div>
     </div>
