@@ -14,7 +14,7 @@
 </head>
 <body>
 	<h2>Ranking Peforma Kurir</h2>
-	<div class="subtitle">Bulan: <b>{{ $bulan }}</b></div>
+	<div class="subtitle">Tanggal <b>{{ $daterange }}</b></div>
 	<table>
 		<thead>
 			<tr>
@@ -22,6 +22,7 @@
 				<th>Nama Kurir</th>
 				<th>Total Customer</th>
 				<th>Jumlah Pesanan Selesai</th>
+				<th>Total</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -31,6 +32,7 @@
 				<td>{{ $row['nama_kurir'] }}</td>
 				<td>{{ $row['total_customer'] }}</td>
 				<td>{{ $row['jumlah_order'] }}</td>
+				<td>{{ $row['total'] }}</td>
 			</tr>
 			@empty
 			<tr>

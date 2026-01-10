@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Order;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class PeformaKurirController extends Controller
 {
@@ -18,30 +19,33 @@ class PeformaKurirController extends Controller
      */
     public function exportPdf(Request $request)
     {
+
         $admin = auth()->user();
         $regionId = $admin->region_id;
 
-        $year = $request->input('year', now()->year);
-        $month = $request->input('month', now()->month);
+        $dates = explode(' - ', $request->daterange ?? '');
 
-        $months = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
-            7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
-        ];
-
-        $startOfMonth = now()->setYear($year)->setMonth($month)->startOfMonth();
-        $endOfMonth = now()->setYear($year)->setMonth($month)->endOfMonth();
+        $startDate = $dates[0] ?? null;
+        $endDate   = $dates[1] ?? null;
 
         $orders = \App\Models\Order::where('region_id', $regionId)
             ->where('status', 'diverifikasi_admin')
-            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->when($startDate && $endDate, function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('created_at', [
+                    Carbon::parse($startDate)->startOfDay(),
+                    Carbon::parse($endDate)->endOfDay()
+                ]);
+            })
             ->get();
 
         $ranking = $orders->groupBy('created_by_user_id')
             ->map(function ($orders, $kurirId) {
+
+                $totalAmount = $orders->sum('total_amount');
                 return [
                     'kurir_id' => $kurirId,
                     'jumlah_order' => $orders->count(),
+                    'total' => $totalAmount,
                 ];
             })
             ->sortByDesc('jumlah_order')
@@ -58,13 +62,17 @@ class PeformaKurirController extends Controller
             return $item;
         });
 
-        $bulan = $months[$month] . ' ' . $year;
-
         $pdf = Pdf::loadView('dashboard.admin.peforma-kurir.export-peforma-kurir', [
             'ranking' => $ranking,
-            'bulan' => $bulan,
+            'daterange' => $request->daterange,
         ]);
-        return $pdf->download('peforma-kurir-'.$bulan.'.pdf');
+
+        $filename = sprintf(
+            'performa-kurir_%s_to_%s.pdf',
+            $startDate,
+            $endDate
+        );
+        return $pdf->download($filename);
     }
     /**
      * Display a listing of courier performance.
@@ -74,31 +82,29 @@ class PeformaKurirController extends Controller
         $admin = auth()->user();
         $regionId = $admin->region_id;
 
-        $year = $request->input('year', now()->year);
-        $month = $request->input('month', now()->month);
+        $dates = explode(' - ', $request->daterange ?? '');
 
-        $minYear = \App\Models\Order::min(DB::raw('YEAR(created_at)')) ?? now()->year;
-        $maxYear = now()->year + 10;
-        $years = range($minYear, $maxYear);
-
-        $months = [
-            1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April', 5 => 'Mei', 6 => 'Juni',
-            7 => 'Juli', 8 => 'Agustus', 9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
-        ];
-
-        $startOfMonth = now()->setYear($year)->setMonth($month)->startOfMonth();
-        $endOfMonth = now()->setYear($year)->setMonth($month)->endOfMonth();
+        $startDate = $dates[0] ?? null;
+        $endDate   = $dates[1] ?? null;
 
         $orders = \App\Models\Order::where('region_id', $regionId)
             ->where('status', 'diverifikasi_admin')
-            ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
+            ->when($startDate && $endDate, function ($q) use ($startDate, $endDate) {
+                $q->whereBetween('created_at', [
+                    Carbon::parse($startDate)->startOfDay(),
+                    Carbon::parse($endDate)->endOfDay()
+                ]);
+            })
             ->get();
 
         $ranking = $orders->groupBy('created_by_user_id')
             ->map(function ($orders, $kurirId) {
+
+                $totalAmount = $orders->sum('total_amount');
                 return [
                     'kurir_id' => $kurirId,
                     'jumlah_order' => $orders->count(),
+                    'total' => $totalAmount,
                 ];
             })
             ->sortByDesc('jumlah_order')
@@ -131,11 +137,6 @@ class PeformaKurirController extends Controller
 
         return view('dashboard.admin.peforma-kurir.peforma-kurir', [
             'ranking' => $paginatedRanking, // [!code focus]
-            'bulan' => $months[$month] . ' ' . $year,
-            'selectedMonth' => $month,
-            'selectedYear' => $year,
-            'months' => $months,
-            'years' => $years,
         ]);
     }
 
