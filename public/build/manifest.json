@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-DRxhcRhz.css",
+    "file": "assets/app-BFBhWyii.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -10,12 +10,12 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-BZYEA9or.js",
+    "file": "assets/app-CSRKIkca.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "css": [
-      "assets/app-DRxhcRhz.css"
+      "assets/app-BFBhWyii.css"
     ]
   },
   "resources/js/argon-dashboard-tailwind.js": {

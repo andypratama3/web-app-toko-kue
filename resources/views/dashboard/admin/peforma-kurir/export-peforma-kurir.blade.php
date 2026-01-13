@@ -7,7 +7,28 @@
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
+            font-size: 11px;
+            color: #222;
+            line-height: 1.4;
+        }
+
+        h2 {
+            margin: 0 0 4px 0;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        h3 {
+            margin: 25px 0 8px 0;
+            font-size: 14px;
+            border-left: 4px solid #444;
+            padding-left: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
             font-size: 12px;
+            margin-bottom: 15px;
         }
 
         .page-break {
@@ -15,29 +36,86 @@
         }
 
         table {
-            border-collapse: collapse;
             width: 100%;
-            margin-top: 20px;
-        }
-
-        th,
-        td {
-            border: 1px solid #333;
-            padding: 6px 8px;
-            text-align: center;
+            border-collapse: collapse;
+            margin-bottom: 18px;
         }
 
         th {
-            background: #eee;
+            background-color: #f2f2f2;
+            border: 1px solid #555;
+            padding: 8px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 11px;
         }
 
-        h2 {
-            margin-bottom: 0;
+        td {
+            border: 1px solid #555;
+            padding: 7px 8px;
+            vertical-align: top;
         }
 
-        .subtitle {
-            margin-top: 0;
-            font-size: 14px;
+        .text-left {
+            text-align: left;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        /* Ranking summary table */
+        .summary-table td {
+            text-align: center;
+            font-weight: 500;
+        }
+
+        /* Order detail table */
+        .order-table th {
+            font-size: 10.5px;
+        }
+
+        .order-table td {
+            font-size: 10.5px;
+        }
+
+        /* Nested items table */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+
+        .items-table td {
+            border: none;
+            padding: 3px 4px;
+        }
+
+        .items-table tr:not(:last-child) td {
+            border-bottom: 0.5px dashed #ccc;
+        }
+
+        .items-product {
+            font-weight: bold;
+        }
+
+        .items-variant {
+            color: #666;
+            font-size: 9.5px;
+        }
+
+        .items-qty {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        /* Prevent row breaking in PDF */
+        tr {
+            page-break-inside: avoid;
         }
     </style>
 </head>
@@ -47,7 +125,7 @@
     <div class="subtitle">Tanggal <b>{{ $daterange }}</b></div>
 
     @forelse($ranking as $row)
-        <table>
+        <table class="summary-table">
             <thead>
                 <tr>
                     <th>Rank</th>
@@ -69,7 +147,7 @@
         </table>
 
         <h3>Rincian Pesanan {{ $row['nama_kurir'] }}</h3>
-        <table>
+        <table class="order-table">
             <thead>
                 <tr>
                     <th>No.</th>
@@ -89,18 +167,12 @@
                         <td>{{ $order->invoice_number }}</td>
                         <td>{{ $order->customer->name }}, {{ $order->customer->company_name }}</td>
                         <td style="padding:0;">
-                            <table width="100%" style="border-collapse:collapse; font-size:11px;">
+                            <table class="items-table">
                                 @foreach ($order->items as $item)
                                     <tr>
-                                        <td style="border:none; text-align:left; padding:4px;">
-                                            <strong>{{ $item->product->name }}</strong>
-                                        </td>
-                                        <td style="border:none; text-align:left; padding:4px;">
-                                            {{ $item->variant_name ?? '-' }}
-                                        </td>
-                                        <td style="border:none; text-align:right; padding:4px; white-space:nowrap;">
-                                            x{{ $item->quantity }}
-                                        </td>
+                                        <td class="items-product">{{ $item->product->name }}</td>
+                                        <td class="items-variant">{{ $item->variant_name ?? '-' }}</td>
+                                        <td class="items-qty">x{{ $item->quantity }}</td>
                                     </tr>
                                 @endforeach
                             </table>

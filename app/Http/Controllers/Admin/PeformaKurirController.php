@@ -19,8 +19,6 @@ class PeformaKurirController extends Controller
      */
     public function exportPdf(Request $request)
     {
-        // dd($request->daterange);
-
         $admin = auth()->user();
         $regionId = $admin->region_id;
 
@@ -72,6 +70,11 @@ class PeformaKurirController extends Controller
         $pdf = Pdf::loadView('dashboard.admin.peforma-kurir.export-peforma-kurir', [
             'ranking' => $ranking,
             'daterange' => $request->daterange,
+        ])->setPaper('a4', 'portrait')->setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => false,
+            'dpi' => 72,
+            'defaultFont' => 'DejaVu Sans',
         ]);
 
         $filename = sprintf(
