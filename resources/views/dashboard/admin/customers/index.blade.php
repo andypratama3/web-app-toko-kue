@@ -38,7 +38,7 @@
             </div>
         </div>
         {{-- Tabel --}}
-        <div class="overflow-x-auto overflow-y-visible min-h-[580px]">
+        <div class="overflow-visible min-h-[580px]">
             <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
