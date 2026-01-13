@@ -19,6 +19,7 @@ class PeformaKurirController extends Controller
      */
     public function exportPdf(Request $request)
     {
+        // dd($request->daterange);
 
         $admin = auth()->user();
         $regionId = $admin->region_id;
@@ -28,7 +29,7 @@ class PeformaKurirController extends Controller
         $startDate = $dates[0] ?? null;
         $endDate   = $dates[1] ?? null;
 
-        $orders = \App\Models\Order::where('region_id', $regionId)
+        $orders = Order::with('items', "customer")->where('region_id', $regionId)
             ->where('status', 'diverifikasi_admin')
             ->when($startDate && $endDate, function ($q) use ($startDate, $endDate) {
                 $q->whereBetween('created_at', [
@@ -38,21 +39,25 @@ class PeformaKurirController extends Controller
             })
             ->get();
 
-        $ranking = $orders->groupBy('created_by_user_id')
+        $ranking = $orders
+            ->groupBy('created_by_user_id')
             ->map(function ($orders, $kurirId) {
+    
+                $kurir = $orders->first()->createdBy; // ambil user kurir
 
-                $totalAmount = $orders->sum('total_amount');
                 return [
-                    'kurir_id' => $kurirId,
-                    'jumlah_order' => $orders->count(),
-                    'total' => $totalAmount,
+                    'kurir_id'      => $kurirId,
+                    'nama_kurir'    => $kurir?->name,
+                    'jumlah_order'  => $orders->count(),
+                    'total'         => $orders->sum('total_amount'),
+                    'orders'        => $orders, // opsional, kalau masih butuh detail
                 ];
             })
             ->sortByDesc('jumlah_order')
             ->values();
 
         $kurirIds = $ranking->pluck('kurir_id')->all();
-        $kurirs = \App\Models\User::whereIn('id', $kurirIds)->get()->keyBy('id');
+        $kurirs = User::whereIn('id', $kurirIds)->get()->keyBy('id');
 
         $ranking = $ranking->map(function ($item, $i) use ($kurirs) {
             $user = $kurirs[$item['kurir_id']] ?? null;
@@ -61,6 +66,8 @@ class PeformaKurirController extends Controller
             $item['rank'] = $i + 1;
             return $item;
         });
+
+        // dd($ranking->toArray());
 
         $pdf = Pdf::loadView('dashboard.admin.peforma-kurir.export-peforma-kurir', [
             'ranking' => $ranking,
