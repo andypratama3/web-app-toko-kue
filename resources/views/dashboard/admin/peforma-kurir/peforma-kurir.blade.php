@@ -47,10 +47,7 @@
 
                 <button type="submit"
                     class="px-3 py-1 text-sm font-semibold text-white bg-blue-600 rounded hover:bg-blue-700">Lihat</button>
-                <a href="{{ route('admin.peforma-kurir.export.pdf', ['daterange' => request('daterange')]) }}"
-                    target="_blank"
-                    class="flex items-center px-3 py-1 text-sm font-semibold text-white bg-orange-500 rounded hover:bg-orange-600"><i
-                        class="mr-1 fas fa-file-export"></i> Export</a>
+
             </form>
         </div>
 
@@ -87,6 +84,8 @@
                             Jumlah Pesanan Selesai</th>
                         <th class="px-4 py-2 text-xs font-bold text-center text-gray-700 uppercase dark:text-gray-200">
                             Total</th>
+                        <th class="px-4 py-2 text-xs font-bold text-center text-gray-700 uppercase dark:text-gray-200">
+                            Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
@@ -106,8 +105,19 @@
                             <td class="px-4 py-2 text-center">{{ $row['nama_kurir'] }}</td>
                             <td class="px-4 py-2 text-center">{{ $row['total_customer'] }}</td>
                             <td class="px-4 py-2 text-center">{{ $row['jumlah_order'] }}</td>
-                            <td class="px-4 py-2 text-center block font-bold text-green-600">Rp
-                                {{ number_format($row['total'], 0, ',', '.') }}</td>
+                            <td class="px-4 py-2 text-center  block font-bold text-green-600">Rp
+                                {{ number_format($row['total'], 0, ',', '.') }}
+                            </td>
+                            <td class="px-4 py-2 text-center">
+                                <form
+                                    action="peforma-kurir/export/{{ $row['kurir_id'] }}/pdf?daterange={{ request('daterange') }}"
+                                    method="get">
+                                    <button type="submit"
+                                        class="flex items-center px-3 py-1 text-sm font-semibold text-white bg-orange-500 rounded hover:bg-orange-600">
+                                        <i class="mr-1 fas fa-file-export"></i> Export
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
                     @empty
                         <tr>

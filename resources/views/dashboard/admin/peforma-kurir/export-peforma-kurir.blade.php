@@ -7,92 +7,79 @@
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
-            font-size: 11px;
+            font-size: 9px;
+            /* dari 11px */
             color: #222;
-            line-height: 1.4;
+            line-height: 1.3;
         }
 
         h2 {
             margin: 0 0 4px 0;
-            font-size: 18px;
+            font-size: 14px;
+            /* dari 18px */
             text-align: center;
         }
 
         h3 {
-            margin: 25px 0 8px 0;
-            font-size: 14px;
-            border-left: 4px solid #444;
-            padding-left: 8px;
+            margin: 18px 0 6px 0;
+            font-size: 11px;
+            /* dari 14px */
+            border-left: 3px solid #444;
+            padding-left: 6px;
         }
 
         .subtitle {
             text-align: center;
-            font-size: 12px;
-            margin-bottom: 15px;
-        }
-
-        .page-break {
-            page-break-before: always;
+            font-size: 9px;
+            /* dari 12px */
+            margin-bottom: 10px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 18px;
+            margin-bottom: 12px;
         }
 
         th {
             background-color: #f2f2f2;
             border: 1px solid #555;
-            padding: 8px;
+            padding: 5px;
             font-weight: bold;
             text-align: center;
-            font-size: 11px;
+            font-size: 9px;
+            /* dari 11px */
         }
 
         td {
             border: 1px solid #555;
-            padding: 7px 8px;
+            padding: 4px 5px;
             vertical-align: top;
+            font-size: 8.8px;
         }
 
-        .text-left {
-            text-align: left;
-        }
-
-        .text-right {
-            text-align: right;
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
-        /* Ranking summary table */
         .summary-table td {
             text-align: center;
-            font-weight: 500;
+            font-weight: normal;
         }
 
-        /* Order detail table */
         .order-table th {
-            font-size: 10.5px;
+            font-size: 8.5px;
         }
 
         .order-table td {
-            font-size: 10.5px;
+            font-size: 8.5px;
         }
 
-        /* Nested items table */
         .items-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 10px;
+            font-size: 8px;
         }
 
         .items-table td {
             border: none;
-            padding: 3px 4px;
+            padding: 2px 3px;
         }
 
         .items-table tr:not(:last-child) td {
@@ -105,19 +92,24 @@
 
         .items-variant {
             color: #666;
-            font-size: 9.5px;
+            font-size: 7.5px;
         }
 
         .items-qty {
             text-align: right;
             white-space: nowrap;
+            font-size: 7.5px;
         }
 
-        /* Prevent row breaking in PDF */
         tr {
             page-break-inside: avoid;
         }
+
+        .page-break {
+            page-break-before: always;
+        }
     </style>
+
 </head>
 
 <body>
@@ -141,7 +133,9 @@
                     <td>{{ $row['nama_kurir'] }}</td>
                     <td>{{ $row['total_customer'] }}</td>
                     <td>{{ $row['jumlah_order'] }}</td>
-                    <td>{{ $row['total'] }}</td>
+                    <td>
+                        Rp.{{ number_format($row['total'], 0, ',', '.') }}
+                    </td>
                 </tr>
             </tbody>
         </table>
@@ -177,7 +171,7 @@
                                 @endforeach
                             </table>
                         </td>
-                        <td>{{ $order->total_amount }}</td>
+                        <td>Rp.{{ number_format($order->total_amount, 0, ',', '.') }}</td>
                     </tr>
                 @empty
                     <p>Tidak ada transaksi</p>
