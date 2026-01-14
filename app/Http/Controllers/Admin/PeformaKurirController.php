@@ -24,8 +24,9 @@ class PeformaKurirController extends Controller
 
         $dates = explode(' - ', $request->daterange ?? '');
 
-        $startDate = $dates[0] ?? null;
-        $endDate   = $dates[1] ?? null;
+        $startDate = $dates[0] ?? Carbon::now()->startOfMonth()->toDateString();
+        $endDate   = $dates[1] ?? Carbon::now()->toDateString();
+
 
         $orders = Order::with('items', "customer")->where('region_id', $regionId)
             ->where('status', 'diverifikasi_admin')
@@ -40,7 +41,7 @@ class PeformaKurirController extends Controller
         $ranking = $orders
             ->groupBy('created_by_user_id')
             ->map(function ($orders, $kurirId) {
-    
+
                 $kurir = $orders->first()->createdBy; // ambil user kurir
 
                 return [
@@ -94,8 +95,14 @@ class PeformaKurirController extends Controller
 
         $dates = explode(' - ', $request->daterange ?? '');
 
-        $startDate = $dates[0] ?? null;
-        $endDate   = $dates[1] ?? null;
+        $startDate = !empty($dates[0])
+            ? $dates[0]
+            : Carbon::now()->startOfMonth()->toDateString();
+
+        $endDate = !empty($dates[1])
+            ? $dates[1]
+            : Carbon::now()->toDateString();
+
 
         $orders = \App\Models\Order::where('region_id', $regionId)
             ->where('status', 'diverifikasi_admin')

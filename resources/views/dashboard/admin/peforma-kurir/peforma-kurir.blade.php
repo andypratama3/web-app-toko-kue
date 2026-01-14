@@ -8,15 +8,15 @@
             <h2 class="mb-2 text-2xl font-bold text-gray-800 dark:text-white md:mb-0">Peforma Kurir</h2>
             <form method="GET" class="flex flex-row flex-wrap items-center gap-2">
                 {{-- <div class="relative"> --}}
-                    {{-- Kelas 'appearance-none' di bawah ini berfungsi untuk MENGHAPUS panah dropdown bawaan browser. --}}
-                    {{-- <select name="month"
+                {{-- Kelas 'appearance-none' di bawah ini berfungsi untuk MENGHAPUS panah dropdown bawaan browser. --}}
+                {{-- <select name="month"
                         class="px-4 py-1 pr-8 text-sm border rounded appearance-none focus:ring focus:ring-blue-200">
                         @foreach ($months as $num => $name)
                             <option value="{{ $num }}" @if ($selectedMonth == $num) selected @endif>
                                 {{ $name }}</option>
                         @endforeach
                     </select> --}}
-                    {{-- Icon dropdown custom dihapus --}}
+                {{-- Icon dropdown custom dihapus --}}
                 {{-- </div> --}}
 
 
@@ -34,15 +34,15 @@
                 </div>
 
                 {{-- <div class="relative"> --}}
-                    {{-- Kelas 'appearance-none' di bawah ini juga MENGHAPUS panah dropdown bawaan browser. --}}
-                    {{-- <select name="year"
+                {{-- Kelas 'appearance-none' di bawah ini juga MENGHAPUS panah dropdown bawaan browser. --}}
+                {{-- <select name="year"
                         class="px-4 py-1 pr-8 text-sm border rounded appearance-none focus:ring focus:ring-blue-200">
                         @foreach ($years as $year)
                             <option value="{{ $year }}" @if ($selectedYear == $year) selected @endif>
                                 {{ $year }}</option>
                         @endforeach
                     </select> --}}
-                    {{-- Icon dropdown custom dihapus --}}
+                {{-- Icon dropdown custom dihapus --}}
                 {{-- </div> --}}
 
                 <button type="submit"
@@ -107,12 +107,12 @@
                             <td class="px-4 py-2 text-center">{{ $row['total_customer'] }}</td>
                             <td class="px-4 py-2 text-center">{{ $row['jumlah_order'] }}</td>
                             <td class="px-4 py-2 text-center block font-bold text-green-600">Rp
-                                {{ number_format($row["total"], 0, ',', '.') }}</td>
+                                {{ number_format($row['total'], 0, ',', '.') }}</td>
                         </tr>
                     @empty
                         <tr>
                             <td colspan="4" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">Belum ada data
-                                peforma kurir {{request('daterange')}}.</td>
+                                peforma kurir {{ request('daterange') }}.</td>
                         </tr>
                     @endforelse
                 </tbody>
