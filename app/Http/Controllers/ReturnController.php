@@ -71,7 +71,7 @@ class ReturnController extends Controller
             ]);
 
             // DIUBAH: Menggunakan relasi `items()` yang benar dan membuat key
-                $orderItems = $order->items()->with('product')->get()->keyBy(function ($item) {
+            $orderItems = $order->items()->with('product')->get()->keyBy(function ($item) {
                 return $item->product_id . '-' . ($item->variant_id ?? 0);
             });
 
@@ -170,7 +170,7 @@ class ReturnController extends Controller
                     'variant_name' => $item->variant_name,
                     'quantity' => $item->quantity,
                     'price' => $item->price,
-                        'image_url' => $item->product && $item->product->image_path ? Storage::url($item->product->image_path) : null,
+                    'image_url' => $item->product && $item->product->image_path ? Storage::url($item->product->image_path) : null,
                     'returned_quantity' => $returnedQuantity,
                 ];
             }),
@@ -235,5 +235,103 @@ class ReturnController extends Controller
         }
 
         return response()->json(['message' => 'File tidak ditemukan.'], 400);
+    }
+
+    public function editReturn(Request $request, Order $order)
+    {
+
+        $validated = $request->validate([
+            'order_return_id' => 'required|exists:order_returns,id',
+            'return_quantities' => 'required|array|min:1',
+            'return_quantities.*' => 'required|integer|min:1',
+            'reason' => 'nullable|string|min:10',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $kurir = Auth::user();
+
+            // ================= AMBIL RETUR BERDASARKAN ID =================
+            $orderReturn = $order->returns()
+                ->where('id', $validated['order_return_id'])
+                ->where('status', 'menunggu_konfirmasi')
+                ->firstOrFail();
+
+            // Update alasan
+            $orderReturn->update([
+                'reason' => $validated['reason']
+            ]);
+
+            // ================= AMBIL ITEM PESANAN =================
+            $orderItems = $order->items()
+                ->get()
+                ->keyBy(fn($item) => $item->product_id . '-' . ($item->variant_id ?? 0));
+
+            $totalAmountReturned = 0;
+
+            foreach ($validated['return_quantities'] as $key => $quantity) {
+                if ($quantity <= 0) continue;
+
+                if (!isset($orderItems[$key])) {
+                    throw ValidationException::withMessages([
+                        'return_quantities' => "Produk dengan key '{$key}' tidak ditemukan."
+                    ]);
+                }
+
+                $orderItem = $orderItems[$key];
+
+                if ($quantity > $orderItem->quantity) {
+                    throw ValidationException::withMessages([
+                        'return_quantities' =>
+                        "Jumlah retur untuk '{$orderItem->product_name}' melebihi jumlah pembelian."
+                    ]);
+                }
+
+                [$productId, $variantId] = explode('-', $key);
+
+                $price = $orderItem->price;
+                $subtotal = $price * $quantity;
+                $totalAmountReturned += $subtotal;
+
+                // ================= UPDATE / INSERT PRODUK RETUR =================
+                $orderReturn->returnedProducts()->updateOrCreate(
+                    [
+                        'product_id' => $productId,
+                        'product_variant_id' => $variantId == '0' ? null : $variantId,
+                    ],
+                    [
+                        'quantity' => $quantity,
+                        'price' => $price,
+                        'subtotal' => $subtotal,
+                    ]
+                );
+            }
+
+            // ================= UPDATE TOTAL =================
+            $orderReturn->update([
+                'total_amount_returned' => $totalAmountReturned
+            ]);
+
+            // ================= UPDATE STATUS ORDER =================
+            $order->update([
+                'status' => 'menunggu_retur'
+            ]);
+
+            DB::commit();
+
+            $order->load('customer', 'items.product', 'items.variant');
+
+            return response()->json([
+                'message' => 'Pengajuan retur berhasil diperbarui.',
+                'order' => $this->formatOrderDetails($order)
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

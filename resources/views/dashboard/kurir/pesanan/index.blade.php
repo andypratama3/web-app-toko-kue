@@ -124,8 +124,8 @@
                 <!-- Dropdown menu -->
                 <div id="filter-dropdown-table" class="z-10 hidden w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
                     <!-- <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">
-                                                                    Filter berdasarkan Status
-                                                                </h6> -->
+                                                                                    Filter berdasarkan Status
+                                                                                </h6> -->
                     <ul class="space-y-2 text-sm" aria-labelledby="dropdownDefault">
                         @foreach ($allStatuses as $key => $label)
                             <li class="flex items-center">
@@ -231,6 +231,7 @@
 
             document.body.addEventListener('click', function(event) {
                 const openStatusBtn = event.target.closest('.js-open-status-modal');
+
                 if (openStatusBtn) {
                     const orderId = openStatusBtn.getAttribute('data-order-id');
                     openStatusStepperModal(orderId);
@@ -239,10 +240,12 @@
 
                 const openDetailsBtn = event.target.closest('.js-open-details-modal');
                 if (openDetailsBtn) {
+                    document.getElementById('editReturnProductButton').innerHTML = ""
                     const orderId = openDetailsBtn.getAttribute('data-order-id');
                     fetchOrderDetails(orderId);
                     return;
                 }
+                
             });
 
             const updateButton = document.getElementById('updateStatusButton');
@@ -355,6 +358,15 @@
                         badgeColorClasses = 'bg-purple-100 text-purple-800';
                         break;
                     case 'menunggu_retur':
+                        // membuat button edit
+                        const buttonReturn = document.createElement('button');
+                        buttonReturn.id = 'editReturn';
+                        buttonReturn.textContent = 'edit';
+
+                        // append element
+                        document
+                            .getElementById('editReturnProductButton')
+                            .appendChild(buttonReturn);
                         badgeColorClasses = 'bg-red-100 text-red-800';
                         break;
                     case 'menunggu_verifikasi_admin':

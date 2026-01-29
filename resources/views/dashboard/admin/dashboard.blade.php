@@ -127,6 +127,38 @@
                             <div>
                                 <p
                                     class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">
+                                    average sales</p>
+                                <h5 class="mb-2 font-bold dark:text-white">{{ $avgSalesPerMonth }}</h5>
+                                <p class="mb-0 dark:text-white dark:opacity-60">
+                                    @if ($avgSalesPercentageChange >= 0)
+                                        <span
+                                            class="text-sm font-bold leading-normal text-emerald-500">+{{ number_format($salesPercentageChange, 1) }}%</span>
+                                    @else
+                                        <span
+                                            class="text-sm font-bold leading-normal text-red-400">{{ number_format($salesPercentageChange, 1) }}%</span>
+                                    @endif
+                                    than last year
+                                </p>
+                            </div>
+                        </div>
+                        <div class="px-3 text-right basis-1/3">
+                            <div
+                                class="inline-block w-12 h-12 text-center rounded-circle bg-gradient-to-tl from-orange-500 to-yellow-500">
+                                <i class="fas fa-chart-line leading-none text-lg relative top-3.5 text-white"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
+                <div class="flex-auto p-4">
+                    <div class="flex flex-row -mx-3">
+                        <div class="flex-none w-2/3 max-w-full px-3">
+                            <div>
+                                <p
+                                    class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">
                                     Customer {{ $user->region->name ?? 'Tidak ada region' }}</p>
                                 <h5 class="mb-2 font-bold dark:text-white">
                                     {{ number_format($totalCustomersInRegion, 0, ',', '.') }}</h5>
@@ -227,15 +259,42 @@
                             </button>
                             <div id="chartFilterDropdown"
                                 class="absolute right-0 z-20 hidden w-40 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-slate-700 js-dropdown-menu dark:border-slate-600">
-                                <a href="{{ route('admin.dashboard', ['region' => Auth::user()->region->slug, 'filter' => 'last_7_days']) }}"
+                                <a href="{{ route(
+                                    'admin.dashboard',
+                                    array_merge(request()->query(), [
+                                        'region' => Auth::user()->region->slug,
+                                        'filter' => 'last_7_days',
+                                    ]),
+                                ) }}"
                                     class="block px-4 py-2 text-sm font-semibold rounded-t-lg transition-colors duration-150 {{ $filter === 'last_7_days' ? 'bg-blue-100 text-blue-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-slate-600' }}">7
                                     Hari</a>
-                                <a href="{{ route('admin.dashboard', ['region' => Auth::user()->region->slug, 'filter' => 'daily']) }}"
+                                <a href="{{ route(
+                                    'admin.dashboard',
+                                    array_merge(request()->query(), [
+                                        'region' => Auth::user()->region->slug,
+                                        'filter' => 'daily',
+                                    ]),
+                                ) }}"
                                     class="block px-4 py-2 text-sm font-semibold transition-colors duration-150 {{ $filter === 'daily' ? 'bg-blue-100 text-blue-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-slate-600' }}">Harian</a>
-                                <a href="{{ route('admin.dashboard', ['region' => Auth::user()->region->slug, 'filter' => 'weekly']) }}"
+                                <a href="{{ route(
+                                    'admin.dashboard',
+                                    array_merge(request()->query(), [
+                                        'region' => Auth::user()->region->slug,
+                                        'filter' => 'weekly',
+                                    ]),
+                                ) }}"
                                     class="block px-4 py-2 text-sm font-semibold transition-colors duration-150 {{ $filter === 'weekly' ? 'bg-blue-100 text-blue-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-slate-600' }}">Mingguan</a>
-                                <a href="{{ route('admin.dashboard', ['region' => Auth::user()->region->slug, 'filter' => 'monthly']) }}"
+                                <a href="{{ route(
+                                    'admin.dashboard',
+                                    array_merge(request()->query(), [
+                                        'region' => Auth::user()->region->slug,
+                                        'filter' => 'monthly',
+                                    ]),
+                                ) }}"
                                     class="block px-4 py-2 text-sm font-semibold rounded-b-lg transition-colors duration-150 {{ $filter === 'monthly' ? 'bg-blue-100 text-blue-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-slate-600' }}">Bulanan</a>
+                                <a href="{{ route('admin.dashboard', ['region' => Auth::user()->region->slug, 'filter' => 'last_month']) }}"
+                                    class="block px-4 py-2 text-sm font-semibold rounded-b-lg transition-colors duration-150 {{ $filter === 'last_month' ? 'bg-blue-100 text-blue-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-slate-600' }}">Bulan
+                                    Lalu</a>
                             </div>
                         </div>
                     </div>
@@ -284,25 +343,60 @@
 
                             <div id="visitChartFilterDropdown"
                                 class="absolute right-0 z-20 hidden w-40 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-slate-700 js-dropdown-menu dark:border-slate-600">
-                                <a href="{{ route('admin.dashboard', ['region' => Auth::user()->region->slug, 'visit_filter' => 'last_7_days']) }}"
+                                <a href="{{ route(
+                                    'admin.dashboard',
+                                    array_merge(request()->query(), [
+                                        'region' => Auth::user()->region->slug,
+                                        'visit_filter' => 'last_7_days',
+                                    ]),
+                                ) }}"
                                     class="block px-4 py-2 text-sm font-semibold rounded-t-lg
                             {{ $visitFilter === 'last_7_days' ? 'bg-purple-100 text-purple-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-purple-50 dark:hover:bg-slate-600' }}">
                                     7 Hari
                                 </a>
-                                <a href="{{ route('admin.dashboard', ['region' => Auth::user()->region->slug, 'visit_filter' => 'daily']) }}"
+                                <a href="{{ route(
+                                    'admin.dashboard',
+                                    array_merge(request()->query(), [
+                                        'region' => Auth::user()->region->slug,
+                                        'visit_filter' => 'daily',
+                                    ]),
+                                ) }}"
                                     class="block px-4 py-2 text-sm font-semibold
                             {{ $visitFilter === 'daily' ? 'bg-purple-100 text-purple-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-purple-50 dark:hover:bg-slate-600' }}">
                                     Harian
                                 </a>
-                                <a href="{{ route('admin.dashboard', ['region' => Auth::user()->region->slug, 'visit_filter' => 'weekly']) }}"
+                                <a href="{{ route(
+                                    'admin.dashboard',
+                                    array_merge(request()->query(), [
+                                        'region' => Auth::user()->region->slug,
+                                        'visit_filter' => 'weekly',
+                                    ]),
+                                ) }}"
                                     class="block px-4 py-2 text-sm font-semibold
                             {{ $visitFilter === 'weekly' ? 'bg-purple-100 text-purple-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-purple-50 dark:hover:bg-slate-600' }}">
                                     Mingguan
                                 </a>
-                                <a href="{{ route('admin.dashboard', ['region' => Auth::user()->region->slug, 'visit_filter' => 'monthly']) }}"
+                                <a href="{{ route(
+                                    'admin.dashboard',
+                                    array_merge(request()->query(), [
+                                        'region' => Auth::user()->region->slug,
+                                        'visit_filter' => 'monthly',
+                                    ]),
+                                ) }}"
                                     class="block px-4 py-2 text-sm font-semibold rounded-b-lg
                             {{ $visitFilter === 'monthly' ? 'bg-purple-100 text-purple-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-purple-50 dark:hover:bg-slate-600' }}">
                                     Bulanan
+                                </a>
+                                <a href="{{ route(
+                                    'admin.dashboard',
+                                    array_merge(request()->query(), [
+                                        'region' => Auth::user()->region->slug,
+                                        'visit_filter' => 'last_month',
+                                    ]),
+                                ) }}"
+                                    class="block px-4 py-2 text-sm font-semibold rounded-b-lg
+                            {{ $visitFilter === 'last_month' ? 'bg-purple-100 text-purple-700 dark:bg-slate-600 dark:text-white' : 'text-gray-700 dark:text-gray-200 hover:bg-purple-50 dark:hover:bg-slate-600' }}">
+                                    Bulan Lalu
                                 </a>
                             </div>
                         </div>
@@ -417,12 +511,22 @@
                 },
                 scales: {
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        ticks: {
+                            color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280',
+                            stepSize: 1
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'
+                        }
                     }
                 }
             }
         });
         // visitor chart
+
 
         document.addEventListener('DOMContentLoaded', function() {
             var ctx = document.getElementById('adminOrdersChart');
