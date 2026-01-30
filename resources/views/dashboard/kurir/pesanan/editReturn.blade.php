@@ -7,32 +7,63 @@
 
     <form onsubmit="event.preventDefault(); submitReturn();">
 
-        <h3>Data Customer</h3>
+        <h3 class="mb-4 font-bold tracking-wide text-black uppercase text-md dark:text-white dark:opacity-60">Data Customer
+        </h3>
 
-        <label>Nama Customer</label>
-        <input type="hidden" id="id" disabled>
-        <input type="text" id="name" disabled>
+        <div class="space-y-4">
+            <div>
+                <label class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">Nama
+                    Customer</label>
+                <input type="hidden" id="id" disabled>
+                <input type="text" id="name"
+                    class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                    disabled>
 
-        <label>No. Hp</label>
-        <input type="text" id="phone" disabled>
+            </div>
 
-        <label>Alamat</label>
-        <input type="text" id="address" disabled>
+            <div>
+                <label class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">No. Hp</label>
+                <input type="text" id="phone"
+                    class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                    disabled>
+            </div>
 
-        <h3 class="mt-4">Produk</h3>
-        <div id="product"></div>
+            <div>
+                <label class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">Alamat</label>
+                <input type="text" id="address"
+                    class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                    disabled>
+            </div>
+        </div>
 
-        <h3 class="mt-4">Metode Pembayaran</h3>
-        <select id="paymentMethod" disabled>
-            <option value="">- Pilih Metode Pembayaran -</option>
-            <option value="cash">Cash</option>
-            <option value="tf">Transfer</option>
-        </select>
+        <h3 class="mb-4 font-bold tracking-wide text-black uppercase text-md dark:text-white dark:opacity-60 mt-4">Produk
+        </h3>
 
-        <label class="mt-2">Catatan</label>
-        <textarea id="note" rows="4" disabled></textarea>
+        <div class="space-y-4">
+            <div id="product"></div>
 
-        <button type="submit" class="mt-4 px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600">
+            <div>
+                <label class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">Metode
+                    Pembayaran</label>
+                <select id="paymentMethod"
+                    class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                    disabled>
+                    <option value="">- Pilih Metode Pembayaran -</option>
+                    <option value="cash">Cash</option>
+                    <option value="tf">Transfer</option>
+                </select>
+            </div>
+            <div>
+                <label class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">Catatan</label>
+                <textarea id="note" rows="4"
+                    class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                    disabled></textarea>
+            </div>
+
+
+        </div>
+
+        <button type="submit" class="px-6 py-1 bg-orange-500 text-white rounded hover:bg-orange-600 mt-6">
             Simpan Retur
         </button>
     </form>
