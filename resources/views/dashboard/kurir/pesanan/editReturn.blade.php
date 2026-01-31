@@ -69,18 +69,33 @@
     </form>
 
     <script>
-        /* ================= CSRF ================= */
         function getCsrfToken() {
             return document.querySelector('meta[name="csrf-token"]').content;
         }
 
-        /* ================= LOAD DATA ================= */
+        function getID() {
+            const path = window.location.pathname;
+            const segments = path.split('/').filter(Boolean);
+            const orderId = segments[2];
+
+            return orderId;
+        }
+
+        function direct() {
+
+            localStorage.setItem('toast', JSON.stringify({
+                type: 'success',
+                message: 'Bukti berhasil diunggah'
+            }));
+
+            window.location.href = '/kurir/pesanan';
+        }
+
         async function loadContent() {
             try {
-                const STORAGE_URL = "{{ Storage::url('') }}";
-                const params = new URLSearchParams(window.location.search);
-                const orderId = params.get('id');
+                const orderId = getID();
 
+                const STORAGE_URL = "{{ Storage::url('') }}";
                 if (!orderId) throw new Error('Order ID tidak ditemukan');
 
                 const response = await fetch(`/kurir/pesanan/${orderId}/details`, {
@@ -90,8 +105,8 @@
                 });
 
                 if (!response.ok) throw new Error('Gagal memuat data');
-
                 const data = await response.json();
+                
                 console.log(data);
 
                 document.getElementById('id').value = data.order_return.id
@@ -147,8 +162,7 @@
         /* ================= SUBMIT RETURN ================= */
         async function submitReturn() {
             try {
-                const params = new URLSearchParams(window.location.search);
-                const orderId = params.get('id');
+                const orderId = getID();
 
                 if (!orderId) throw new Error('Order ID tidak ditemukan');
 
@@ -196,7 +210,7 @@
                     throw new Error(result.message ?? 'Gagal menyimpan retur');
                 }
 
-                alert(result.message);
+                direct()
 
             } catch (error) {
                 alert(`Gagal: ${error.message}`);

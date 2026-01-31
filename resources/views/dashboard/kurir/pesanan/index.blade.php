@@ -359,9 +359,10 @@
                         break;
                     case 'menunggu_retur':
                         // membuat button edit
-                        const buttonReturn = document.createElement('button');
+                        const buttonReturn = document.createElement('a');
                         buttonReturn.id = 'editReturn';
                         buttonReturn.textContent = 'edit';
+                        buttonReturn.href = `/kurir/pesanan/${order.id}/request-return/edit`;
 
                         // append element
                         document

@@ -48,10 +48,6 @@ Route::get('/', function (Request $request) {
     return view('livewire.homepage');
 });
 
-// test
-Route::get("/test", function(){
-    return view('dashboard.kurir.pesanan.editReturn');
-});
 
 // Rute Logout manual
 Route::post('/logout', function (Request $request) {
@@ -168,6 +164,9 @@ Route::middleware([
             Route::post('/{order}/upload-return-proof', [ReturnController::class, 'uploadReturnProof'])->name('uploadReturnProof');
             
             Route::post('/{order}/request-return/edit', [ReturnController::class, 'editReturn'])->name('requestReturn');
+            Route::get('/{order}/request-return/edit', function(){
+                return view("dashboard.kurir.pesanan.editReturn");
+            });
         });
 
         // Rute di luar grup 'pesanan'
