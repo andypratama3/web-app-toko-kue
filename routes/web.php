@@ -165,7 +165,7 @@ Route::middleware([
             
             Route::post('/{order}/request-return/edit', [ReturnController::class, 'editReturn'])->name('requestReturn');
             Route::get('/{order}/request-return/edit', function(){
-                return view("dashboard.kurir.pesanan.editReturn");
+                return view("dashboard.kurir.pesanan.edit");
             });
         });
 

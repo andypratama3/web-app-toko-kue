@@ -124,8 +124,8 @@
                 <!-- Dropdown menu -->
                 <div id="filter-dropdown-table" class="z-10 hidden w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
                     <!-- <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">
-                                                                                    Filter berdasarkan Status
-                                                                                </h6> -->
+                                                                                                                Filter berdasarkan Status
+                                                                                                            </h6> -->
                     <ul class="space-y-2 text-sm" aria-labelledby="dropdownDefault">
                         @foreach ($allStatuses as $key => $label)
                             <li class="flex items-center">
@@ -245,7 +245,7 @@
                     fetchOrderDetails(orderId);
                     return;
                 }
-                
+
             });
 
             const updateButton = document.getElementById('updateStatusButton');
@@ -358,11 +358,20 @@
                         badgeColorClasses = 'bg-purple-100 text-purple-800';
                         break;
                     case 'menunggu_retur':
+                        const createdAt = new Date(order.created_at);
+                        const now = new Date();
+                        const diffDays = (now - createdAt) / (1000 * 60 * 60 * 24);
+                        
                         // membuat button edit
                         const buttonReturn = document.createElement('a');
-                        buttonReturn.id = 'editReturn';
-                        buttonReturn.textContent = 'edit';
-                        buttonReturn.href = `/kurir/pesanan/${order.id}/request-return/edit`;
+
+
+                        
+                        if (diffDays <= 5){
+                            buttonReturn.id = 'editReturn';
+                            buttonReturn.textContent = 'edit';
+                            buttonReturn.href = `/kurir/pesanan/${order.id}/request-return/edit`;
+                        }
 
                         // append element
                         document
