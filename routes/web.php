@@ -48,10 +48,6 @@ Route::get('/', function (Request $request) {
     return view('livewire.homepage');
 });
 
-Route::get("privacy-policy" , function() {
-    return view('policyPrivacy');
-});
-
 
 // Rute Logout manual
 Route::post('/logout', function (Request $request) {
