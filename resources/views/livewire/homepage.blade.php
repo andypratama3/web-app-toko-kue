@@ -2,6 +2,7 @@
 <html lang="id" style="scroll-behavior: smooth;">
 
 <head>
+    <meta name="facebook-domain-verification" content="jaqulg6tnt8xz910m0q7dmtvgkizw4" />
     <!-- Google Tag Manager -->
     <script>
         (function(w, d, s, l, i) {

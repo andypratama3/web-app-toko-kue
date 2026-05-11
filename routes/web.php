@@ -1,24 +1,24 @@
 <?php
 
-use Carbon\Carbon;
-use App\Models\Product;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Storage;
-use App\Http\Controllers\ReturnController;
-use App\Http\Controllers\ProductController;
+use App\Http\Controllers\Admin\CourierController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\Admin\PeformaCustomerController;
+use App\Http\Controllers\Admin\PeformaKurirController;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\Chatbot\WebhookController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\HistoryOrderController;
-use App\Http\Controllers\Admin\CourierController;
 use App\Http\Controllers\Kurir\PesananController;
-use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\KurirDashboardController;
-use App\Http\Controllers\Admin\PeformaKurirController;
-use App\Http\Controllers\Admin\PeformaCustomerController;
-use App\Http\Controllers\Admin\OrderController as AdminOrderController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ReturnController;
+use App\Models\Product;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 /*
 |--------------------------------------------------------------------------
@@ -197,3 +197,6 @@ Route::middleware([
         })->name('produk.json');
     });
 });
+
+Route::get('/webhook/meta', [WebhookController::class, 'verify']);
+Route::post('/webhook/meta', [WebhookController::class, 'receive']);
