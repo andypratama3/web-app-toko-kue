@@ -197,6 +197,3 @@ Route::middleware([
         })->name('produk.json');
     });
 });
-
-Route::get('/webhook/meta', [WebhookController::class, 'verify']);
-Route::post('/webhook/meta', [WebhookController::class, 'receive']);
