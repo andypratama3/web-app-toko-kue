@@ -8,20 +8,16 @@
     @section('title', 'Dashboard')
     @include('layouts.headicon')
     {{-- Vite build assets --}}
-    @vite(['resources/css/app.css', 'resources/css/argon-dashboard-tailwind.css', 'resources/js/app.js', 'resources/js/custom.js', 'resources/js/argon-dashboard-tailwind.js', 'resources/js/sidenav-burger.js', 'resources/js/navbar-scroll-fix.js', 'resources/js/dark-mode-toggle.js', 'resources/js/live-search.js', 'resources/js/custom-modal.js'])
-
-    <script src="https://cdn.tailwindcss.com"></script>
+    @vite(['resources/css/app.css', 'resources/css/argon-dashboard-tailwind.css', 'resources/js/app.js', 'resources/js/custom.js', 'resources/js/sidenav-burger.js', 'resources/js/navbar-scroll-fix.js', 'resources/js/charts.js', 'resources/js/live-search.js', 'resources/js/custom-modal.js'])
 
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
-    <!-- Font Awesome CDN -->
+    <!-- Font Awesome CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
-    <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
     {{-- <link href="resources/css/nucleo-icons.css" rel="stylesheet" />
     <link href="resources/css/nucleo-svg.css" rel="stylesheet" /> --}}
     <script src="https://unpkg.com/@popperjs/core@2"></script>
 
-    {{-- ! Script untuk Alpine.js --}}
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    {{-- Alpine.js disediakan oleh Livewire (jangan double-load lewat CDN) --}}
 
     <!-- dropdown search -->
     <!-- jQuery -->
@@ -32,37 +28,26 @@
     <!-- Livewire Styles -->
     @livewireStyles
 
-    <!-- IMPROVED DARKMODE SCRIPT - PREVENTS FOUC AND SYNCS WITH TOGGLE -->
+    <!-- DARK MODE SCRIPT - PREVENTS FOUC, SINGLE SOURCE: localStorage 'theme' -->
     <script>
-        // Reset and initialize theme properly
         (function() {
-            // For debugging - clear localStorage if there are conflicts
-            // Uncomment the next line if you want to reset theme to light mode
-            // localStorage.removeItem('color-theme');
-
-            const savedTheme = localStorage.getItem('color-theme');
-            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-            let isDark;
-            if (savedTheme) {
-                isDark = savedTheme === 'dark';
-            } else {
-                // Default to light mode if no preference is saved
-                isDark = false; // Changed from systemPrefersDark to false for default light mode
-                localStorage.setItem('color-theme', 'light');
-            }
+            // Backward compatible: baca key lama 'color-theme' bila 'theme' belum ada
+            const savedTheme = localStorage.getItem('theme') ?? localStorage.getItem('color-theme');
+            const isDark = savedTheme === 'dark';
 
             if (isDark) {
                 document.documentElement.classList.add('dark');
             } else {
                 document.documentElement.classList.remove('dark');
             }
+
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
         })();
     </script>
 </head>
 
 <body
-    class="m-0 overflow-x-hidden font-sans text-base antialiased font-normal dark:bg-slate-900 leading-default bg-gray-50 text-slate-500">
+    class="m-0 overflow-x-hidden font-sans text-base antialiased font-normal dark:bg-slate-900 dark:text-slate-300 leading-default bg-gray-50 text-slate-500">
     {{-- KOMPONEN TOAST --}}
     <x-toast />
 

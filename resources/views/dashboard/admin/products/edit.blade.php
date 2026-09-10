@@ -26,7 +26,7 @@
                                 <div class="flex items-center space-x-4">
                                     <img src="{{ Storage::url($product->image_path) }}" class="object-cover w-20 h-20 rounded-lg" alt="{{ $product->name }}">
                                     {{-- <img src="{{ asset($product->image_path) }}" class="object-cover w-20 h-20 rounded-lg" alt="{{ $product->name }}"> --}}
-                                    <input type="file" name="image" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50">
+                                    <input type="file" name="image" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-100 dark:bg-slate-800 dark:border-slate-600">
                                 </div>
                                 <p class="mt-1 text-xs text-gray-500">Kosongkan jika tidak ingin mengganti gambar.</p>
                             </div>
@@ -72,7 +72,7 @@
             {{-- Footer Modal --}}
             <div class="flex items-center justify-end pt-4 mt-4 space-x-2 border-t border-gray-200 dark:border-gray-600">
                 <button type="submit" class="text-white bg-green-600 hover:bg-green-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center">Simpan Perubahan</button>
-                <button type="button" class="js-close-modal-btn py-2.5 px-5 text-sm font-medium text-gray-900 bg-white rounded-lg border border-gray-200 hover:bg-gray-100">Batal</button>
+                <button type="button" class="js-close-modal-btn py-2.5 px-5 text-sm font-medium text-gray-900 bg-white rounded-lg border border-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700">Batal</button>
             </div>
         </div>
     </form>

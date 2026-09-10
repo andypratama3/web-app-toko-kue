@@ -12,13 +12,11 @@ export default defineConfig({
                 // JavaScript Files (sesuai screenshot Anda)
                 'resources/js/app.js',
                 'resources/js/script_homepage.js',
-                'resources/js/argon-dashboard-tailwind.js',
                 'resources/js/bootstrap.js',
                 'resources/js/carousel.js',
                 'resources/js/charts.js',
                 'resources/js/custom-modal.js',
                 'resources/js/custom.js',
-                'resources/js/dark-mode-toggle.js',
                 'resources/js/dropdown.js',
                 'resources/js/fixed-plugin.js',
                 'resources/js/live-search.js',

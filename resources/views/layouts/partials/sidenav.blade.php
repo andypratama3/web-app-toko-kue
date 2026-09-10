@@ -1,7 +1,7 @@
 <!-- 1. PENAMBAHAN 'group' DAN PEMBARUAN NAMA KELAS -->
 <!-- PENTING: Nama kelas yang benar adalah 'sidebar-collapsed' sesuai file sidenav-burger.js Anda. -->
 <aside id="sidebar"
-    class="fixed inset-y-0 z-50 flex flex-col w-64 p-0 my-4 overflow-y-hidden antialiased transition-all duration-300 -translate-x-full bg-white border-0 shadow-xl group dark:shadow-none dark:bg-slate-850 ease-nav-brand xl:ml-6 rounded-2xl xl:left-0 xl:translate-x-0"
+    class="fixed inset-y-0 z-50 flex flex-col w-64 p-0 my-4 overflow-y-hidden antialiased transition-all duration-300 -translate-x-full bg-white border-0 shadow-xl group dark:shadow-none dark:bg-slate-800 ease-nav-brand xl:ml-6 rounded-2xl xl:left-0 xl:translate-x-0"
     aria-expanded="false">
 
     @auth
@@ -202,7 +202,7 @@
                                 <a class="sidebar-menu-item py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg font-semibold @if (request()->routeIs('admin.profile')) bg-blue-500/13 dark:bg-green-900 text-blue-700 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif"
                                     href="{{ route('admin.profile') }}" data-tooltip="Profil Saya">
                                     <div class="mr-2 sidebar-icon-container"><i
-                                            class="fas fa-user @if (request()->routeIs('admin.profile')) text-blue-500 @else text-slate-700 @endif"></i>
+                                            class="fas fa-user @if (request()->routeIs('admin.profile')) text-blue-500 @else text-slate-700 dark:text-slate-300 @endif"></i>
                                     </div>
                                     <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Profil
                                         Saya</span>
@@ -284,7 +284,7 @@
                                 <a class="sidebar-menu-item py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg font-semibold @if (request()->routeIs('kurir.profile')) bg-blue-500/13 dark:bg-green-900 text-blue-700 dark:text-white dark:opacity-80 @else dark:text-white dark:opacity-80 @endif"
                                     href="{{ route('kurir.profile') }}" data-tooltip="Profil Saya">
                                     <div class="mr-2 sidebar-icon-container"><i
-                                            class="fas fa-user @if (request()->routeIs('kurir.profile')) text-blue-500 @else text-slate-700 @endif"></i>
+                                            class="fas fa-user @if (request()->routeIs('kurir.profile')) text-blue-500 @else text-slate-700 dark:text-slate-300 @endif"></i>
                                     </div>
                                     <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Profil
                                         Saya</span>
@@ -313,11 +313,11 @@
                                 class="sr-only peer" dark-toggle>
                             <div class="h-6 bg-gray-200 rounded-full w-11 peer dark:bg-gray-700 peer-checked:bg-blue-600">
                             </div>
-                            <div
-                                class="absolute top-0.5 left-[2px] bg-white border-gray-300 border rounded-full h-5 w-5 transition-all peer-checked:translate-x-full flex items-center justify-center">
-                                <span class="text-sm">☀️</span>
-                                <span class="hidden text-sm">🌙</span>
-                            </div>
+<div
+                            class="absolute top-0.5 left-[2px] bg-white border-gray-300 border rounded-full h-5 w-5 transition-all peer-checked:translate-x-full flex items-center justify-center dark:bg-slate-300 dark:border-slate-500">
+                            <span class="text-sm">☀️</span>
+                            <span class="hidden text-sm">🌙</span>
+                        </div>
                         </label>
                     </div>
                 </li>

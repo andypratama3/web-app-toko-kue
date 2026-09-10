@@ -37,7 +37,7 @@
 
     <!-- Welcome Card Section -->
     <div class="p-6">
-        <div class="p-6 bg-green-100 rounded-lg shadow dark:bg-slate-850 dark:shadow-dark-xl">
+        <div class="p-6 bg-green-100 rounded-lg shadow dark:bg-slate-800 dark:shadow-xl">
             <div>
                 <h2 class="text-2xl font-bold text-gray-800 dark:text-white">
                     Hai, {{ $greeting }} <span
@@ -52,10 +52,10 @@
 
     <!-- Stats Cards Section -->
     <div class="p-6">
-        <h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-black sm:text-2xl">💰 Resume Hari Ini</h2>
+        <h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">💰 Resume Hari Ini</h2>
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             <div
-                class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
+                class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-800 dark:shadow-xl rounded-2xl bg-clip-border">
                 <div class="flex-auto p-4">
                     <div class="flex flex-row -mx-3">
                         <div class="flex-none w-2/3 max-w-full px-3">
@@ -88,7 +88,7 @@
             </div>
 
             <div
-                class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
+                class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-800 dark:shadow-xl rounded-2xl bg-clip-border">
                 <div class="flex-auto p-4">
                     <div class="flex flex-row -mx-3">
                         <div class="flex-none w-2/3 max-w-full px-3">
@@ -120,7 +120,7 @@
             </div>
 
             <div
-                class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
+                class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-800 dark:shadow-xl rounded-2xl bg-clip-border">
                 <div class="flex-auto p-4">
                     <div class="flex flex-row -mx-3">
                         <div class="flex-none w-2/3 max-w-full px-3">
@@ -152,7 +152,7 @@
             </div>
 
             <div
-                class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
+                class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-800 dark:shadow-xl rounded-2xl bg-clip-border">
                 <div class="flex-auto p-4">
                     <div class="flex flex-row -mx-3">
                         <div class="flex-none w-2/3 max-w-full px-3">
@@ -185,7 +185,7 @@
             </div>
 
             <div
-                class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-850 dark:shadow-dark-xl rounded-2xl bg-clip-border">
+                class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-800 dark:shadow-xl rounded-2xl bg-clip-border">
                 <div class="flex-auto p-4">
                     <div class="flex flex-row -mx-3">
                         <div class="flex-none w-2/3 max-w-full px-3">

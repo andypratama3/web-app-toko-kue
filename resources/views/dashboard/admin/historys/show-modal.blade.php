@@ -10,7 +10,7 @@
         {{-- Kontainer Error --}}
         <div id="showOrderModalError" class="hidden py-10 text-center">
             <p class="font-semibold text-red-600" data-role="error-title">Gagal Memuat Data</p>
-            <p class="mt-1 text-sm text-gray-500" data-role="error-message">Silakan coba lagi.</p>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400" data-role="error-message">Silakan coba lagi.</p>
         </div>
 
         {{-- Kontainer Grid untuk konten utama --}}

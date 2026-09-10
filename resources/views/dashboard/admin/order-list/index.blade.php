@@ -73,7 +73,7 @@
                         return $statusLabelMap[$status] ?? ucwords(str_replace('_', ' ', $status));
                     };
                 @endphp
-                <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
+                <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500 dark:text-slate-300">
                     <thead class="align-bottom">
                         <tr
                             class="text-xs font-bold text-left text-gray-500 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -299,7 +299,7 @@
                     const newTotal = originalTotal - returnedAmount;
 
                     document.getElementById('verifyModalTotalAmount').innerHTML =
-                        `<span class="block text-sm font-normal text-gray-500 line-through">Rp ${Number(originalTotal).toLocaleString('id-ID')}</span>` +
+                        `<span class="block text-sm font-normal text-gray-500 line-through dark:text-gray-400">Rp ${Number(originalTotal).toLocaleString('id-ID')}</span>` +
                         `<span class="block text-green-600 dark:text-green-500">Rp ${Number(newTotal).toLocaleString('id-ID')} (Setelah Retur)</span>`;
 
                     // Tampilkan detail produk retur

@@ -6,7 +6,7 @@
         <!-- Profile Photo -->
         @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
         <div>
-            <label class="block text-sm font-medium text-gray-700">Photo</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Photo</label>
             <div class="mt-2 flex items-center space-x-4">
                 <img src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}" class="rounded-full h-20 w-20 object-cover">
                 <div>

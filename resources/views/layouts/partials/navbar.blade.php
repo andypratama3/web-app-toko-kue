@@ -110,7 +110,7 @@
             <input type="checkbox" value="" id="theme-toggle-checkbox-navbar" class="sr-only peer" dark-toggle>
             <div class="h-6 bg-gray-200 rounded-full w-11 peer dark:bg-gray-700 peer-checked:bg-blue-600"></div>
             <div
-                class="absolute top-0.5 left-[2px] bg-white border-gray-300 border rounded-full h-5 w-5 transition-all peer-checked:translate-x-full flex items-center justify-center">
+                class="absolute top-0.5 left-[2px] bg-white border-gray-300 border rounded-full h-5 w-5 transition-all peer-checked:translate-x-full flex items-center justify-center dark:bg-slate-300 dark:border-slate-500">
                 <span class="text-sm">☀️</span>
                 <span class="hidden text-sm">🌙</span>
             </div>
@@ -131,8 +131,8 @@
                         <img src="{{ asset($avatarSrc) }}" alt="User Avatar" class="object-cover w-full h-full" />
                     </div>
                     <div
-                        class="absolute right-0 z-[99999] w-64 mt-2 transition duration-200 ease-out origin-top-right scale-95 bg-white rounded-md shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:scale-100 group-hover:pointer-events-auto">
-                        <div class="px-4 py-3 text-sm text-gray-700 border-b border-gray-200">
+                        class="absolute right-0 z-[99999] w-64 mt-2 transition duration-200 ease-out origin-top-right scale-95 bg-white rounded-md shadow-lg opacity-0 pointer-events-none group-hover:opacity-100 group-hover:scale-100 group-hover:pointer-events-auto dark:bg-slate-800 dark:shadow-black/40">
+                        <div class="px-4 py-3 text-sm text-gray-700 border-b border-gray-200 dark:text-gray-300 dark:border-gray-700">
                             @php
                                 use Illuminate\Support\Facades\DB;
                                 $user = Auth::user();
@@ -152,15 +152,15 @@
                                 // [!code block:end]
                             @endphp
                             <div class="mb-2">
-                                <span class="font-semibold text-gray-900">{{ $user->name ?? 'User' }}</span>
+                                <span class="font-semibold text-gray-900 dark:text-white">{{ $user->name ?? 'User' }}</span>
                                 <span class="block mt-1 text-xs text-gray-500">📍 Region:
                                     {{ $user->region->name ?? 'Tidak ada region' }}</span>
                                 <span class="block text-xs text-gray-500">Email:
                                     {{ $user->email ?? 'Tidak ada email' }}</span>
                             </div>
-                            <div class="pt-2 border-t border-gray-100">
-                                <span class="text-sm font-semibold text-gray-900">👨🏻‍💻 Last Activity:</span>
-                                <span class="block mt-1 text-sm text-gray-700">{{ $lastLogin }}</span>
+                            <div class="pt-2 border-t border-gray-100 dark:border-gray-700">
+                                <span class="text-sm font-semibold text-gray-900 dark:text-white">👨🏻‍💻 Last Activity:</span>
+                                <span class="block mt-1 text-sm text-gray-700 dark:text-gray-400">{{ $lastLogin }}</span>
                             </div>
                         </div>
                         @php
@@ -171,12 +171,12 @@
                                 $profileUrl = url('/kurir/profile');
                             }
                         @endphp
-                        <a href="{{ $profileUrl }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">👤
+                        <a href="{{ $profileUrl }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700">👤
                             My Profile</a>
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
                             <button type="submit"
-                                class="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100">🏃
+                                class="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700">🏃
                                 Logout</button>
                         </form>
                     </div>

@@ -24,7 +24,7 @@
                 $afterReturn = $order->total_amount - $returnedAmount;
             @endphp
             @if ($activeReturn && $returnedAmount > 0)
-                <span class="block text-xs text-gray-500 line-through">Rp
+                <span class="block text-xs text-gray-500 line-through dark:text-gray-400">Rp
                     {{ number_format($order->total_amount, 0, ',', '.') }}</span>
                 <span class="block font-bold text-green-600">Rp
                     {{ number_format($afterReturn, 0, ',', '.') }}</span>
@@ -70,6 +70,6 @@
     </tr>
 @empty
     <tr>
-        <td colspan="8" class="py-6 text-center text-gray-500">Tidak ada pesanan ditemukan.</td>
+        <td colspan="8" class="py-6 text-center text-gray-500 dark:text-gray-400">Tidak ada pesanan ditemukan.</td>
     </tr>
 @endforelse

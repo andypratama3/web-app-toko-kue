@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-BFBhWyii.css",
+    "file": "assets/app-vO9Nz_dC.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -10,19 +10,13 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-CSRKIkca.js",
+    "file": "assets/app-Bm9rwW4e.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "css": [
-      "assets/app-BFBhWyii.css"
+      "assets/app-vO9Nz_dC.css"
     ]
-  },
-  "resources/js/argon-dashboard-tailwind.js": {
-    "file": "assets/argon-dashboard-tailwind-BAdjiKXr.js",
-    "name": "argon-dashboard-tailwind",
-    "src": "resources/js/argon-dashboard-tailwind.js",
-    "isEntry": true
   },
   "resources/js/bootstrap.js": {
     "file": "assets/bootstrap-DNxiirP_.js",
@@ -52,12 +46,6 @@
     "file": "assets/custom-BNsTAt03.js",
     "name": "custom",
     "src": "resources/js/custom.js",
-    "isEntry": true
-  },
-  "resources/js/dark-mode-toggle.js": {
-    "file": "assets/dark-mode-toggle-Dn2z0nwK.js",
-    "name": "dark-mode-toggle",
-    "src": "resources/js/dark-mode-toggle.js",
     "isEntry": true
   },
   "resources/js/dropdown.js": {

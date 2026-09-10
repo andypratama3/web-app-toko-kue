@@ -92,7 +92,7 @@
                 </form>
             </div>
             <div class="overflow-x-auto min-h-[580px]">
-                <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500">
+                <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500 dark:text-slate-300">
                     <thead class="align-bottom">
                         <tr
                             class="text-xs font-bold text-left text-gray-500 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -345,7 +345,7 @@
                         });
                     } else {
                         elements.productDetails.innerHTML =
-                            '<p class="text-center text-gray-500">Tidak ada produk.</p>';
+                            '<p class="text-center text-gray-500 dark:text-gray-400">Tidak ada produk.</p>';
                     }
 
                     // Mengelola total dan retur
@@ -370,7 +370,7 @@
                                 `<img src="${data.return_details.return_proof_url}" alt="Bukti Retur" class="w-full rounded border cursor-pointer hover:border-red-500" data-zoomable="true">`;
                         } else {
                             elements.returnProof.innerHTML =
-                                '<p class="text-sm text-center text-gray-500">Tidak ada bukti retur</p>';
+                                '<p class="text-sm text-center text-gray-500 dark:text-gray-400">Tidak ada bukti retur</p>';
                         }
                     } else {
                         elements.singleTotalContainer.classList.remove('hidden');
@@ -386,7 +386,7 @@
                             `<img src="${data.payment_proof_url}" alt="Bukti Pembayaran" class="w-full rounded border cursor-pointer hover:border-blue-500" data-zoomable="true">`;
                     } else {
                         elements.paymentProof.innerHTML =
-                            '<p class="text-sm text-center text-gray-500">Tidak ada bukti pembayaran</p>';
+                            '<p class="text-sm text-center text-gray-500 dark:text-gray-400">Tidak ada bukti pembayaran</p>';
                     }
                 } catch (e) {
                     console.error("Gagal memproses konten modal:", e);

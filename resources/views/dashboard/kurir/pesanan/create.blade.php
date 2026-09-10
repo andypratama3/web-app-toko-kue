@@ -93,7 +93,7 @@
                                 class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">No.
                                 HP</label>
                             <input type="text" name="phone" id="phone"
-                                class="mb-6 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 cursor-not-allowed"
+                                class="mb-6 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 cursor-not-allowed dark:bg-slate-700 dark:border-slate-600 dark:text-gray-300"
                                 disabled>
                         </div>
 
@@ -101,7 +101,7 @@
                             <label for="address"
                                 class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">Alamat</label>
                             <textarea id="address" name="address"
-                                class="mb-6 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 cursor-not-allowed"
+                                class="mb-6 bg-gray-100 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 cursor-not-allowed dark:bg-slate-700 dark:border-slate-600 dark:text-gray-300"
                                 disabled>
                                 </textarea>
                         </div>
@@ -156,7 +156,7 @@
                                     class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">Bukti
                                     Pembayaran</label>
                                 <input type="file" name="payment_proof" id="payment-proof" accept="image/*"
-                                    class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
+                                    class="focus:shadow-primary-outline dark:bg-slate-800 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none">
                                 <p class="mt-1 text-xs text-gray-500">Format: JPG, PNG. Ukuran maksimal: 2MB.</p>
                             </div> --}}
 
@@ -165,7 +165,7 @@
                                 class="inline-block mb-2 ml-1 text-xs font-bold text-slate-700 dark:text-white/80">📝
                                 Catatan</label>
                             <textarea type="text" name="note" id="note"
-                                class="focus:shadow-primary-outline dark:bg-slate-850 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"></textarea>
+                                class="focus:shadow-primary-outline dark:bg-slate-800 dark:text-white text-sm leading-5.6 ease block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding px-3 py-2 font-normal text-gray-700 outline-none transition-all placeholder:text-gray-500 focus:border-blue-500 focus:outline-none"></textarea>
                         </div>
 
                         <div class="hidden pt-4 mt-4 border-t border-gray-200 dark:border-gray-600 xl:block">
@@ -572,14 +572,14 @@
                     p.variants.forEach(v => {
                         const sudahDipilih = cart.some(c => c.variant_id === v.id);
                         pilihDiv.innerHTML += `
-                        <div class="flex flex-row items-center gap-3 p-3 border rounded bg-gray-50">
+                        <div class="flex flex-row items-center gap-3 p-3 border rounded bg-gray-50 dark:bg-slate-700 dark:border-slate-600">
                             ${imageUrl ? `<img src="${imageUrl}" alt="${p.name}" class="object-cover w-16 h-16 mr-2 border rounded" />` : ''}
                             <div class="flex-1">
                                 <div class="font-semibold">
-                                    <span class="font-bold text-gray-800 text-md">${p.name}</span>
-                                    ${v.name ? `<div class="mb-1 text-xs text-gray-600"> ▸ ${v.name} </div>` : ''}
+                                    <span class="font-bold text-gray-800 text-md dark:text-gray-100">${p.name}</span>
+                                    ${v.name ? `<div class="mb-1 text-xs text-gray-600 dark:text-gray-300"> ▸ ${v.name} </div>` : ''}
                                 </div>
-                                <div class="font-bold text-green-700">Rp ${v.price.toLocaleString()}</div>
+                                <div class="font-bold text-green-700 dark:text-green-400">Rp ${v.price.toLocaleString()}</div>
                             </div>
                             ${sudahDipilih ?
                                 `<button type="button" class="px-2 py-1 text-xs text-white bg-red-500 rounded hover:bg-red-600" onclick="hapusDariCart(${p.id}, ${v.id})"><i class="fas fa-trash"></i></button>` :

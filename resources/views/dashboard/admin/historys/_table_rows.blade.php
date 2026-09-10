@@ -129,7 +129,7 @@
     </tr>
 @empty
     <tr>
-        <td colspan="7" class="px-4 py-4 text-center text-gray-500">
+        <td colspan="7" class="px-4 py-4 text-center text-gray-500 dark:text-gray-400">
             <p class="mb-0 text-sm">Tidak ada data history pesanan yang cocok.</p>
         </td>
     </tr>

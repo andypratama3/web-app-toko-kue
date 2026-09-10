@@ -503,7 +503,7 @@
                             </div>
                             <div class="flex-auto px-0 pt-0 pb-2">
                                 <div class="hidden p-0 overflow-x-auto md:block">
-                                    <table class="items-center w-full mb-0 align-top border-collapse text-slate-500">
+                                    <table class="items-center w-full mb-0 align-top border-collapse text-slate-500 dark:text-slate-300">
                                         <thead class="align-bottom">
                                             <tr>
                                                 <th
@@ -808,7 +808,7 @@
                                                         <span class="mx-1">|</span>
                                                         @if ($showReturnedView)
                                                             <span class="inline-flex items-center gap-1">
-                                                                <del class="mr-1 text-xs text-gray-500">Rp
+                                                                <del class="mr-1 text-xs text-gray-500 dark:text-gray-400">Rp
                                                                     {{ number_format($initialTotal, 0, ',', '.') }}</del>
                                                                 <span
                                                                     class="font-bold text-green-600 dark:text-green-500">Rp
@@ -1188,7 +1188,7 @@
                 populateOrderDetailsModal(data);
             } catch (error) {
                 modalLoader.innerHTML =
-                    `<div class="text-center"><p class="font-bold text-red-600">Gagal Memuat Data</p><p class="mt-2 text-sm text-gray-500">${error.message}</p></div>`;
+                    `<div class="text-center"><p class="font-bold text-red-600">Gagal Memuat Data</p><p class="mt-2 text-sm text-gray-500 dark:text-gray-400">${error.message}</p></div>`;
             }
         }
 

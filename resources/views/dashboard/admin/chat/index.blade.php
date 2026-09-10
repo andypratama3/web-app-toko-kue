@@ -109,7 +109,7 @@
                     <td class="px-4 py-3 max-w-[200px] truncate">
                         {{ $conversation->latestMessage->content ?? '-' }}
                     </td>
-                    <td class="px-4 py-3 text-xs text-gray-500">
+                    <td class="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">
                         {{ $conversation->last_message_at ? $conversation->last_message_at->diffForHumans() : '-' }}
                     </td>
                     <td class="px-4 py-3 text-center">

@@ -62,7 +62,7 @@
                     <span
                         class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-md dark:bg-gray-600 dark:text-gray-400 dark:border-gray-500">+62</span>
                     <input type="tel" name="phone" id="kurir-create-phone" value="{{ old('phone') }}"
-                        class="rounded-none rounded-r-lg bg-gray-50 border text-gray-900 block flex-1 min-w-0 w-full text-sm border-gray-300 p-2.5"
+                        class="rounded-none rounded-r-lg bg-gray-50 border text-gray-900 block flex-1 min-w-0 w-full text-sm border-gray-300 p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:text-gray-100 dark:placeholder-gray-400"
                         placeholder="8123456789" required inputmode="numeric" pattern="[0-9]*"
                         oninput="this.value = this.value.replace(/\D/g, '')">
                 </div>

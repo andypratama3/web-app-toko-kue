@@ -52,7 +52,7 @@
         </div>
 
         <div x-data="{ show: true }" x-show="show" class="mb-4">
-            <div class="relative flex items-center justify-between px-4 py-3 text-black bg-green-100 rounded dark:bg-slate-850 dark:text-white"
+            <div class="relative flex items-center justify-between px-4 py-3 text-black bg-green-100 rounded dark:bg-slate-800 dark:text-white"
                 role="alert">
                 <span class="ml-2">Kurir yang berhasil mengantarkan pesanan <b>"Sudah diverifikasi Admin"</b> maka akan
                     mendapat poin 1, Kurir yang mengantarkan pesanan terbanyak adalah kurir yang memiliki poin skor

@@ -61,7 +61,7 @@ return $statusLabelMap[$status] ?? ucwords(str_replace('_', ' ', $status));
                 Ubah Status
             </button>
             <button type="button"
-                class="js-open-details-modal px-3 py-1.5 text-xs font-medium text-gray-900 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+                class="js-open-details-modal px-3 py-1.5 text-xs font-medium text-gray-900 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors dark:bg-slate-600 dark:text-gray-100 dark:hover:bg-slate-500"
                 data-order-id="{{ $order->id }}">
                 Rincian
             </button>

@@ -47,7 +47,7 @@
 
                 {{-- Filter Status Pesanan (Tabs) --}}
                 <div
-                    class="flex items-center w-full p-1 space-x-1 overflow-x-auto text-sm text-gray-600 bg-gray-200 rounded-lg xl:hidden dark:bg-gray-900/50">
+                    class="flex items-center w-full p-1 space-x-1 overflow-x-auto text-sm text-gray-600 bg-gray-200 rounded-lg xl:hidden dark:bg-gray-900/50 dark:text-gray-300">
                     @foreach ($allStatuses as $key => $label)
                         <a href="{{ route('kurir.pesanan.index', array_merge(request()->except('page'), ['status' => $key == 'semua' ? null : $key])) }}"
                             class="flex-shrink-0 px-3 py-1.5 font-medium rounded-md whitespace-nowrap

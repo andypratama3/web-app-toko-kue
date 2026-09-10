@@ -46,7 +46,6 @@
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/script_homepage.js'])
 
     <!-- External Scripts -->
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/dist/medium-zoom.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 
