@@ -9,10 +9,19 @@ class Region extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'slug'];
+    protected $fillable = ['name', 'slug', 'meta_phone_number_id'];
 
     public function users()
     {
         return $this->hasMany(User::class);
+    }
+
+    public static function findByPhoneNumberId(?string $phoneNumberId): ?self
+    {
+        if (!$phoneNumberId) {
+            return null;
+        }
+
+        return static::where('meta_phone_number_id', $phoneNumberId)->first();
     }
 }

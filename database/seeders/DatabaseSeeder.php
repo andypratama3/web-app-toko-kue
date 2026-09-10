@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
             RoleAndUserSeeder::class,
             ProductSeeder::class,
             CustomerCategorySeeder::class,
-            // Seeder lain bisa ditambahkan di sini
+            DeliveryZoneSeeder::class,
         ]);
     }
 }

@@ -1,11 +1,12 @@
 <?php
 
 use App\Http\Controllers\Admin\CourierController;
+use App\Http\Controllers\Admin\ChatMonitorController;
+use App\Http\Controllers\Admin\AdminNotificationController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PeformaCustomerController;
 use App\Http\Controllers\Admin\PeformaKurirController;
 use App\Http\Controllers\AdminDashboardController;
-use App\Http\Controllers\Chatbot\WebhookController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\HistoryOrderController;
 use App\Http\Controllers\Kurir\PesananController;
@@ -137,6 +138,19 @@ Route::middleware([
         // Routes untuk Peforma Customer
         Route::get('peforma-customer', [PeformaCustomerController::class, 'index'])->name('peforma-customer.index');
         Route::get('peforma-customer/{customer}', [PeformaCustomerController::class, 'show'])->name('peforma-customer.show');
+
+        // Chat Monitor WhatsApp
+        Route::get('chat', [ChatMonitorController::class, 'index'])->name('chat.index');
+        Route::get('chat/stats', [ChatMonitorController::class, 'stats'])->name('chat.stats');
+        Route::get('chat/{conversation}', [ChatMonitorController::class, 'show'])->name('chat.show');
+        Route::post('chat/{conversation}/reply', [ChatMonitorController::class, 'reply'])->name('chat.reply');
+        Route::post('chat/{conversation}/close', [ChatMonitorController::class, 'closeConversation'])->name('chat.close');
+        Route::post('chat/{conversation}/escalate', [ChatMonitorController::class, 'escalateConversation'])->name('chat.escalate');
+        Route::post('chat/{conversation}/resume', [ChatMonitorController::class, 'resumeConversation'])->name('chat.resume');
+
+        // Admin Notifications
+        Route::get('notifications', [AdminNotificationController::class, 'index'])->name('notifications.index');
+        Route::post('notifications/read-all', [AdminNotificationController::class, 'markAllRead'])->name('notifications.read-all');
     });
 
     //---------- RUTE KURIR ----------//

@@ -144,6 +144,21 @@
                                         Pesanan</span>
                                 </a>
                             </li>
+                            <li>
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('admin.chat.*')) bg-blue-500/13 dark:bg-green-900 @endif"
+                                    href="{{ route('admin.chat.index') }}" data-tooltip="Monitor Chat WhatsApp">
+                                    <div class="mr-2 sidebar-icon-container"><i class="text-green-600 fab fa-whatsapp"></i></div>
+                                    <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Chat
+                                        WhatsApp</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="sidebar-menu-item dark:text-white dark:opacity-80 py-2.7 text-sm ease-nav-brand my-0 mx-2 flex items-center whitespace-nowrap px-4 transition-colors rounded-lg @if (request()->routeIs('admin.notifications.*')) bg-blue-500/13 dark:bg-green-900 @endif"
+                                    href="{{ route('admin.notifications.index') }}" data-tooltip="Notifikasi Admin">
+                                    <div class="mr-2 sidebar-icon-container"><i class="text-yellow-500 far fa-bell"></i></div>
+                                    <span class="ml-1 duration-300 opacity-100 pointer-events-none ease sidenav-text">Notifikasi</span>
+                                </a>
+                            </li>
                         </ul>
                     <li class="w-full mt-4" x-data="{ openPerforma: true }">
                         <button @click="openPerforma = !openPerforma"

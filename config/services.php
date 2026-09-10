@@ -31,4 +31,14 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'whatsapp' => [
+        'phone_number_id' => env('META_PHONE_NUMBER_ID'),
+        'access_token' => env('META_ACCESS_TOKEN'),
+        'verify_token' => env('META_VERIFY_TOKEN'),
+        'webhook_secret' => env('META_WEBHOOK_SECRET'),
+        'graph_version' => env('META_VERSION', 'v21.0'),
+        'bot_name' => env('META_BOT_NAME', 'Kue Pandan Asli'),
+        'default_region' => env('META_DEFAULT_REGION', 'Denpasar'),
+    ],
+
 ];
