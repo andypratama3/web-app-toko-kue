@@ -5,13 +5,12 @@ namespace App\Services\WhatsApp;
 use App\Enums\OrderBotConversationState;
 use App\Models\Customer;
 use App\Models\CustomerCategory;
+use App\Models\DeliveryZone;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
-use App\Models\ProductVariant;
 use App\Models\Region;
 use App\Models\WhatsAppConversation;
-use App\Models\WhatsAppMessage;
 use App\Support\Phone;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -19,7 +18,9 @@ use Illuminate\Support\Facades\Log;
 class OrderBotService
 {
     protected WhatsappMetaService $metaService;
+
     protected DeliveryZoneService $deliveryZoneService;
+
     protected AdminNotificationRouterService $notificationRouter;
 
     public function __construct(
@@ -72,10 +73,11 @@ class OrderBotService
                 if ($result['needs_escalation']) {
                     $conversation->update(['current_state' => OrderBotConversationState::ESCALATED_TO_HUMAN->value]);
                     $this->metaService->sendText($conversation->phone_number,
-                        "Mohon maaf, jarak pengiriman Anda sekitar {$distance}km dari toko kami.\n" .
-                        "Untuk jarak di atas 14km, silakan hubungi admin kami untuk detail pengiriman.\n\n" .
+                        "Mohon maaf, jarak pengiriman Anda sekitar {$distance}km dari toko kami.\n".
+                        "Untuk jarak di atas 14km, silakan hubungi admin kami untuk detail pengiriman.\n\n".
                         "WA Admin: hubungi admin terdekat di cabang {$conversation->region->name}"
                     );
+
                     return;
                 }
 
@@ -106,6 +108,8 @@ class OrderBotService
         } elseif ($this->matchesIntent($lower, ['liat produk', 'lihat produk', 'produk', 'catalog', 'katalog'])) {
             $this->sendProductCatalog($conversation);
             $this->advanceState($conversation, OrderBotConversationState::PRODUCT_BROWSING);
+        } elseif ($city = $this->detectCityMention($lower)) {
+            $this->handleCityMention($conversation, $city);
         } elseif ($this->matchesIntent($lower, ['halo', 'hai', 'hi', 'hello', 'salam', 'assalam'])) {
             $this->sendWelcomeMessage($conversation);
         } else {
@@ -214,10 +218,10 @@ class OrderBotService
         $this->advanceState($conversation, OrderBotConversationState::AWAITING_DELIVERY_SLOT);
 
         $this->metaService->sendText($conversation->phone_number,
-            "📦 *Grab/GoSend*\n\n" .
-            "Biaya Grab/GoSend ditanggung langsung ke driver (estimasi Rp100.000–150.000 untuk zona 10–15km).\n" .
-            "Silakan pesan driver sendiri setelah pesanan dikonfirmasi.\n\n" .
-            "Pilih slot waktu pengiriman:"
+            "📦 *Grab/GoSend*\n\n".
+            "Biaya Grab/GoSend ditanggung langsung ke driver (estimasi Rp100.000–150.000 untuk zona 10–15km).\n".
+            "Silakan pesan driver sendiri setelah pesanan dikonfirmasi.\n\n".
+            'Pilih slot waktu pengiriman:'
         );
         $this->sendSlotOptions($conversation);
     }
@@ -228,8 +232,8 @@ class OrderBotService
         $this->advanceState($conversation, OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS);
 
         $this->metaService->sendLocationRequest($conversation->phone_number,
-            "📍 *Kurir Internal*\n\n" .
-            "Silakan kirim lokasi pengiriman Anda (pin GPS), atau ketik alamat lengkap."
+            "📍 *Kurir Internal*\n\n".
+            'Silakan kirim lokasi pengiriman Anda (pin GPS), atau ketik alamat lengkap.'
         );
     }
 
@@ -237,6 +241,7 @@ class OrderBotService
     {
         if ($messageData && isset($messageData['latitude'])) {
             $this->handleLocationMessage($conversation, $messageData);
+
             return;
         }
 
@@ -249,10 +254,11 @@ class OrderBotService
         if ($result['needs_escalation']) {
             $conversation->update(['current_state' => OrderBotConversationState::ESCALATED_TO_HUMAN->value]);
             $this->metaService->sendText($conversation->phone_number,
-                "Mohon maaf, jarak pengiriman Anda diperkirakan sekitar {$distance}km.\n" .
-                "Untuk jarak di atas 14km, silakan hubungi admin kami.\n\n" .
+                "Mohon maaf, jarak pengiriman Anda diperkirakan sekitar {$distance}km.\n".
+                "Untuk jarak di atas 14km, silakan hubungi admin kami.\n\n".
                 "WA Admin: hubungi admin terdekat di cabang {$conversation->region->name}"
             );
+
             return;
         }
 
@@ -267,8 +273,9 @@ class OrderBotService
         $slot = trim($text);
         $validSlots = ['1', '2', '3', '4'];
 
-        if (!in_array($slot, $validSlots)) {
+        if (! in_array($slot, $validSlots)) {
             $this->sendSlotOptions($conversation);
+
             return;
         }
 
@@ -296,7 +303,7 @@ class OrderBotService
             $this->sendProductCategories($conversation);
         } else {
             $this->metaService->sendText($conversation->phone_number,
-                "Ketik *FIX* untuk konfirmasi pesanan, atau *BATAL* untuk membatalkan."
+                'Ketik *FIX* untuk konfirmasi pesanan, atau *BATAL* untuk membatalkan.'
             );
         }
     }
@@ -313,33 +320,33 @@ class OrderBotService
                 }
 
                 $this->metaService->sendText($conversation->phone_number,
-                    "✅ *Bukti Pembayaran Diterima*\n\n" .
-                    "Bukti pembayaran Anda sudah kami terima dan akan diverifikasi oleh admin.\n\n" .
-                    "Pesanan Anda akan segera diproses. Terima kasih! 🙏"
+                    "✅ *Bukti Pembayaran Diterima*\n\n".
+                    "Bukti pembayaran Anda sudah kami terima dan akan diverifikasi oleh admin.\n\n".
+                    'Pesanan Anda akan segera diproses. Terima kasih! 🙏'
                 );
 
                 $this->advanceState($conversation, OrderBotConversationState::ORDER_CONFIRMED);
             } else {
                 $this->metaService->sendText($conversation->phone_number,
-                    "Mohon maaf, gagal menerima gambar. Silakan kirim ulang bukti pembayaran."
+                    'Mohon maaf, gagal menerima gambar. Silakan kirim ulang bukti pembayaran.'
                 );
             }
         } else {
             $lower = strtolower(trim($text));
             if ($this->matchesIntent($lower, ['sudah transfer', 'transfer', 'bukti', 'bayar'])) {
                 $this->metaService->sendText($conversation->phone_number,
-                    "Silakan kirim *gambar* bukti transfer/pembayaran."
+                    'Silakan kirim *gambar* bukti transfer/pembayaran.'
                 );
             } elseif ($this->matchesIntent($lower, ['skip', 'lewati', 'nanti'])) {
                 $this->metaService->sendText($conversation->phone_number,
-                    "✅ Pesanan Anda sudah tersimpan.\n" .
-                    "Silakan kirim bukti pembayaran kapan saja.\n\n" .
-                    "Terima kasih! 🙏"
+                    "✅ Pesanan Anda sudah tersimpan.\n".
+                    "Silakan kirim bukti pembayaran kapan saja.\n\n".
+                    'Terima kasih! 🙏'
                 );
                 $this->advanceState($conversation, OrderBotConversationState::ORDER_CONFIRMED);
             } else {
                 $this->metaService->sendText($conversation->phone_number,
-                    "Silakan kirim gambar bukti pembayaran, atau ketik *SKIP* untuk melanjutkan."
+                    'Silakan kirim gambar bukti pembayaran, atau ketik *SKIP* untuk melanjutkan.'
                 );
             }
         }
@@ -348,8 +355,8 @@ class OrderBotService
     protected function handleClosedConversation(WhatsAppConversation $conversation, string $text): void
     {
         $this->metaService->sendText($conversation->phone_number,
-            "Halo! 👋\n\n" .
-            "Ada yang bisa kami bantu? Ketik *PESAN* untuk membuat pesanan baru."
+            "Halo! 👋\n\n".
+            'Ada yang bisa kami bantu? Ketik *PESAN* untuk membuat pesanan baru.'
         );
         $this->advanceState($conversation, OrderBotConversationState::WELCOME_SENT);
     }
@@ -361,12 +368,12 @@ class OrderBotService
         $regionName = $conversation->region->name ?? config('services.whatsapp.default_region');
 
         $this->metaService->sendText($conversation->phone_number,
-            "Selamat datang di *Kue Pandan Asli* 🍃\n" .
-            "Cabang {$regionName}\n\n" .
-            "Kami menjual kue tradisional Indonesia dengan rasa pandan alami.\n" .
-            "Tanpa toko offline — hanya pesan online melalui WhatsApp ini.\n\n" .
-            "📍 Lokasi: {$regionName}\n\n" .
-            "Ketik *PESAN* untuk mulai order, atau ketik *PRODUK* untuk melihat katalog."
+            "Selamat datang di *Kue Pandan Asli* 🍃\n".
+            "Cabang {$regionName}\n\n".
+            "Kami menjual kue tradisional Indonesia dengan rasa pandan alami.\n".
+            "Tanpa toko offline — hanya pesan online melalui WhatsApp ini.\n\n".
+            "📍 Lokasi: {$regionName}\n\n".
+            'Ketik *PESAN* untuk mulai order, atau ketik *PRODUK* untuk melihat katalog.'
         );
     }
 
@@ -387,7 +394,7 @@ class OrderBotService
             $conversation->phone_number,
             "🛒 *Pilih Kategori Produk*\n\nSilakan pilih kategori yang ingin Anda lihat:",
             $sections,
-            "Ketik nama kategori jika list tidak muncul"
+            'Ketik nama kategori jika list tidak muncul'
         );
     }
 
@@ -398,12 +405,12 @@ class OrderBotService
             ->where(function ($q) use ($regionId) {
                 $q->where('region_id', $regionId)->orWhereNull('region_id');
             })
-            ->with(['variants' => fn($q) => $q->where('is_active', true)])
+            ->with(['variants' => fn ($q) => $q->where('is_active', true)])
             ->get();
 
         $text = "📋 *KATALOG PRODUK*\n\n";
 
-        $grouped = $products->groupBy(fn($p) => $p->category->name ?? 'Lainnya');
+        $grouped = $products->groupBy(fn ($p) => $p->category->name ?? 'Lainnya');
 
         foreach ($grouped as $category => $items) {
             $text .= "*{$category}*\n";
@@ -411,13 +418,13 @@ class OrderBotService
                 $variants = $product->variants;
                 $text .= "• {$product->name}\n";
                 foreach ($variants as $variant) {
-                    $text .= "  └ {$variant->name}: Rp " . number_format($variant->price, 0, ',', '.') . "\n";
+                    $text .= "  └ {$variant->name}: Rp ".number_format($variant->price, 0, ',', '.')."\n";
                 }
             }
             $text .= "\n";
         }
 
-        $text .= "Ketik *PESAN* untuk mulai order.";
+        $text .= 'Ketik *PESAN* untuk mulai order.';
 
         $this->metaService->sendText($conversation->phone_number, $text);
     }
@@ -428,8 +435,9 @@ class OrderBotService
 
         $category = \App\Models\Category::where('name', 'like', "%{$categoryName}%")->first();
 
-        if (!$category) {
+        if (! $category) {
             $this->metaService->sendText($conversation->phone_number, "Kategori '{$categoryName}' tidak ditemukan.");
+
             return;
         }
 
@@ -438,11 +446,12 @@ class OrderBotService
             ->where(function ($q) use ($regionId) {
                 $q->where('region_id', $regionId)->orWhereNull('region_id');
             })
-            ->with(['variants' => fn($q) => $q->where('is_active', true)])
+            ->with(['variants' => fn ($q) => $q->where('is_active', true)])
             ->get();
 
         if ($products->isEmpty()) {
             $this->metaService->sendText($conversation->phone_number, "Belum ada produk di kategori {$categoryName} untuk cabang Anda.");
+
             return;
         }
 
@@ -452,12 +461,12 @@ class OrderBotService
             $text .= "*{$product->name}*\n";
             $text .= "{$product->description}\n";
             foreach ($product->variants as $variant) {
-                $text .= "  💰 {$variant->name}: Rp " . number_format($variant->price, 0, ',', '.') . "\n";
+                $text .= "  💰 {$variant->name}: Rp ".number_format($variant->price, 0, ',', '.')."\n";
             }
             $text .= "\n";
         }
 
-        $text .= "Ketik *PESAN* untuk mulai order.";
+        $text .= 'Ketik *PESAN* untuk mulai order.';
 
         $this->metaService->sendText($conversation->phone_number, $text);
     }
@@ -468,7 +477,7 @@ class OrderBotService
         $text .= "{$product->description}\n\n";
         $text .= "Varian:\n";
         foreach ($product->variants->where('is_active', true) as $variant) {
-            $text .= "• {$variant->name}: Rp " . number_format($variant->price, 0, ',', '.') . "\n";
+            $text .= "• {$variant->name}: Rp ".number_format($variant->price, 0, ',', '.')."\n";
         }
         $text .= "\nKetik *PESAN* untuk order produk ini.";
 
@@ -481,9 +490,9 @@ class OrderBotService
         $conversation->setContext('order_form', []);
 
         $this->metaService->sendText($conversation->phone_number,
-            "📝 *FORMULIR PESANAN*\n\n" .
-            "Silakan isi data pesanan Anda.\n\n" .
-            "Langkah 1/5: Nama produk yang ingin dipesan?"
+            "📝 *FORMULIR PESANAN*\n\n".
+            "Silakan isi data pesanan Anda.\n\n".
+            'Langkah 1/5: Nama produk yang ingin dipesan?'
         );
     }
 
@@ -493,16 +502,16 @@ class OrderBotService
 
         $this->metaService->sendReplyButtons(
             $conversation->phone_number,
-            "🚚 *Pilih Metode Pengiriman*\n\n" .
-            "1️⃣ Diambil sendiri (gratis ongkir)\n" .
-            "2️⃣ Grab/GoSend (biaya ditanggung ke driver)\n" .
-            "3️⃣ Kurir internal Kue Pandan Asli",
+            "🚚 *Pilih Metode Pengiriman*\n\n".
+            "1️⃣ Diambil sendiri (gratis ongkir)\n".
+            "2️⃣ Grab/GoSend (biaya ditanggung ke driver)\n".
+            '3️⃣ Kurir internal Kue Pandan Asli',
             [
                 ['id' => 'delivery_1', 'title' => '1. Diambil Sendiri'],
                 ['id' => 'delivery_2', 'title' => '2. Grab/GoSend'],
                 ['id' => 'delivery_3', 'title' => '3. Kurir Internal'],
             ],
-            "Pilih opsi pengiriman"
+            'Pilih opsi pengiriman'
         );
     }
 
@@ -510,7 +519,7 @@ class OrderBotService
     {
         $this->metaService->sendReplyButtons(
             $conversation->phone_number,
-            "Pilih metode pengiriman:",
+            'Pilih metode pengiriman:',
             [
                 ['id' => 'delivery_1', 'title' => '1. Diambil Sendiri'],
                 ['id' => 'delivery_2', 'title' => '2. Grab/GoSend'],
@@ -523,18 +532,18 @@ class OrderBotService
     {
         $this->metaService->sendReplyButtons(
             $conversation->phone_number,
-            "🕐 *Pilih Slot Waktu Pengiriman*\n\n" .
-            "1️⃣ 09:00 - 11:00\n" .
-            "2️⃣ 11:00 - 13:00\n" .
-            "3️⃣ 13:00 - 15:00\n" .
-            "4️⃣ 15:00 - 17:00",
+            "🕐 *Pilih Slot Waktu Pengiriman*\n\n".
+            "1️⃣ 09:00 - 11:00\n".
+            "2️⃣ 11:00 - 13:00\n".
+            "3️⃣ 13:00 - 15:00\n".
+            '4️⃣ 15:00 - 17:00',
             [
                 ['id' => 'slot_1', 'title' => '09:00-11:00'],
                 ['id' => 'slot_2', 'title' => '11:00-13:00'],
                 ['id' => 'slot_3', 'title' => '13:00-15:00'],
                 ['id' => 'slot_4', 'title' => '15:00-17:00'],
             ],
-            "Pilih slot waktu"
+            'Pilih slot waktu'
         );
     }
 
@@ -564,7 +573,7 @@ class OrderBotService
         $totalProduct = $productPrice * $quantity;
         $totalAll = $totalProduct + $ongkir;
 
-        $methodText = match($method) {
+        $methodText = match ($method) {
             'self_pickup' => 'Diambil Sendiri',
             'grab_gosend' => 'Grab/GoSend',
             'internal_courier' => 'Kurir Internal',
@@ -574,16 +583,16 @@ class OrderBotService
         $text = "📋 *RINGKASAN PESANAN*\n\n";
         $text .= "Produk: {$productName}\n";
         $text .= "Qty: {$quantity}\n";
-        $text .= "Harga: Rp " . number_format($productPrice, 0, ',', '.') . "\n";
-        $text .= "Subtotal Produk: Rp " . number_format($totalProduct, 0, ',', '.') . "\n";
-        $text .= "Ongkir ({$methodText}): Rp " . number_format($ongkir, 0, ',', '.') . "\n";
+        $text .= 'Harga: Rp '.number_format($productPrice, 0, ',', '.')."\n";
+        $text .= 'Subtotal Produk: Rp '.number_format($totalProduct, 0, ',', '.')."\n";
+        $text .= "Ongkir ({$methodText}): Rp ".number_format($ongkir, 0, ',', '.')."\n";
         $text .= "─────────────────\n";
-        $text .= "*TOTAL: Rp " . number_format($totalAll, 0, ',', '.') . "*\n\n";
+        $text .= '*TOTAL: Rp '.number_format($totalAll, 0, ',', '.')."*\n\n";
         $text .= "Penerima: {$recipientName}\n";
         $text .= "Alamat: {$address}\n";
         $text .= "Tanggal: {$date}\n";
         $text .= "Jam: {$time} (slot {$slot})\n\n";
-        $text .= "Ketik *FIX* untuk konfirmasi, atau *BATAL* untuk membatalkan.";
+        $text .= 'Ketik *FIX* untuk konfirmasi, atau *BATAL* untuk membatalkan.';
 
         $this->metaService->sendText($conversation->phone_number, $text);
     }
@@ -608,9 +617,10 @@ class OrderBotService
 
                         if ($activeOrders >= $maxOrders) {
                             $this->metaService->sendText($conversation->phone_number,
-                                "⚠️ Kuota order aktif Anda sudah mencapai batas ({$maxOrders} order).\n" .
-                                "Silakan tunggu pesanan sebelumnya selesai atau hubungi admin."
+                                "⚠️ Kuota order aktif Anda sudah mencapai batas ({$maxOrders} order).\n".
+                                'Silakan tunggu pesanan sebelumnya selesai atau hubungi admin.'
                             );
+
                             return null;
                         }
                     }
@@ -628,11 +638,11 @@ class OrderBotService
                     'address' => $form['recipient_address'] ?? $context['delivery_address'] ?? '',
                     'total_amount' => $subtotal + ($context['ongkir'] ?? 0),
                     'payment_method' => 'qris',
-                    'note' => "Penerima: {$form['recipient_name']}\n" .
-                              "Tanggal kirim: {$form['delivery_date']}\n" .
-                              "Jam kirim: {$form['delivery_time']}\n" .
-                              "Slot: {$context['delivery_slot']}\n" .
-                              "Metode: {$context['delivery_method']}\n" .
+                    'note' => "Penerima: {$form['recipient_name']}\n".
+                              "Tanggal kirim: {$form['delivery_date']}\n".
+                              "Jam kirim: {$form['delivery_time']}\n".
+                              "Slot: {$context['delivery_slot']}\n".
+                              "Metode: {$context['delivery_method']}\n".
                               (isset($context['distance_km']) ? "Jarak: {$context['distance_km']}km\n" : ''),
                     'created_by_user_id' => null, // Bot system
                     'region_id' => $conversation->region_id,
@@ -656,7 +666,9 @@ class OrderBotService
                 return $order;
             });
 
-            if (!$order) return;
+            if (! $order) {
+                return;
+            }
 
             $conversation->setContext('confirmed_order_id', $order->id);
             $this->advanceState($conversation, OrderBotConversationState::AWAITING_PAYMENT_PROOF);
@@ -665,11 +677,11 @@ class OrderBotService
             $this->notificationRouter->notifyNewOrder($order->id);
 
             $this->metaService->sendText($conversation->phone_number,
-                "✅ *Pesanan Berhasil Dibuat!*\n\n" .
-                "Nomor Invoice: *{$order->invoice_number}*\n" .
-                "Total: *Rp " . number_format($order->total_amount, 0, ',', '.') . "*\n\n" .
-                "Silakan lakukan pembayaran melalui QRIS, lalu kirim bukti transfer di sini.\n" .
-                "Atau ketik *SKIP* untuk melanjutkan tanpa mengirim bukti."
+                "✅ *Pesanan Berhasil Dibuat!*\n\n".
+                "Nomor Invoice: *{$order->invoice_number}*\n".
+                'Total: *Rp '.number_format($order->total_amount, 0, ',', '.')."*\n\n".
+                "Silakan lakukan pembayaran melalui QRIS, lalu kirim bukti transfer di sini.\n".
+                'Atau ketik *SKIP* untuk melanjutkan tanpa mengirim bukti.'
             );
 
         } catch (\Exception $e) {
@@ -679,7 +691,7 @@ class OrderBotService
             ]);
 
             $this->metaService->sendText($conversation->phone_number,
-                "❌ Terjadi kesalahan saat membuat pesanan. Silakan coba lagi atau hubungi admin."
+                '❌ Terjadi kesalahan saat membuat pesanan. Silakan coba lagi atau hubungi admin.'
             );
         }
     }
@@ -702,7 +714,126 @@ class OrderBotService
                 return true;
             }
         }
+
         return false;
+    }
+
+    protected function detectCityMention(string $text): ?string
+    {
+        $aliases = [
+            'suroboyo' => 'Surabaya',
+            'kota pahlawan' => 'Surabaya',
+            'jawa timur' => 'Jawa Timur',
+            'jatim' => 'Jawa Timur',
+        ];
+
+        foreach ($aliases as $keyword => $city) {
+            if ($this->containsWholeWord($text, $keyword)) {
+                return $city;
+            }
+        }
+
+        foreach (Region::all() as $region) {
+            foreach ([$region->slug, $region->name] as $needle) {
+                if ($this->containsWholeWord($text, (string) $needle)) {
+                    return (string) $region->name;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    protected function containsWholeWord(string $text, string $word): bool
+    {
+        $word = trim($word);
+        if ($word === '') {
+            return false;
+        }
+
+        return preg_match('/\b'.preg_quote($word, '/').'\b/i', $text) === 1;
+    }
+
+    protected function handleCityMention(WhatsAppConversation $conversation, string $city): void
+    {
+        $slug = strtolower(trim($city));
+        $regionName = trim((string) ($conversation->region?->name ?? ''));
+        $regionSlug = strtolower(trim((string) ($conversation->region?->slug ?? '')));
+        $regionLabel = $regionName !== '' ? $regionName : 'cabang kami';
+
+        $conversation->setContext('customer_city', $city);
+
+        // Kota sama persis dengan cabang saat ini
+        if ($slug !== '' && $regionSlug !== '' && $slug === $regionSlug) {
+            $this->metaService->sendText($conversation->phone_number,
+                "Benar! Kami dari cabang *{$regionLabel}* 😊\n\n".
+                'Mau lihat menu, cek harga, cek ongkir, atau mulai pesanan?'
+            );
+
+            return;
+        }
+
+        // Wilayah payung (provinsi), pasti dilayani salah satu cabang
+        if ($slug === 'jawa timur') {
+            $this->metaService->sendText($conversation->phone_number,
+                "Siap, kami melayani pengiriman di area *Jawa Timur* dari beberapa cabang 😊\n\n".
+                "Nomor ini melayani area *{$regionLabel}*. Mau lihat menu, cek harga, atau mulai pesanan?"
+            );
+
+            return;
+        }
+
+        // Kota masuk area delivery cabang saat ini
+        if ($this->regionServesCity($conversation, $slug)) {
+            $this->metaService->sendText($conversation->phone_number,
+                "Siap, area *{$city}* kami layani dari cabang *{$regionLabel}* 😊\n\n".
+                'Mau lihat menu, cek harga, cek ongkir, atau mulai pesanan?'
+            );
+
+            return;
+        }
+
+        // Kota dilayani cabang lain
+        $servingRegion = $this->findRegionServingCity($slug);
+        if ($servingRegion !== null) {
+            $this->metaService->sendText($conversation->phone_number,
+                "Mohon info ya 😊 Nomor ini melayani area *{$regionLabel}*.\n".
+                "Untuk pengiriman ke area *{$city}*, silakan hubungi admin cabang *{$servingRegion}*.\n\n".
+                "Ada yang bisa kami bantu untuk area *{$regionLabel}*?"
+            );
+
+            return;
+        }
+
+        $this->metaService->sendText($conversation->phone_number,
+            "Mohon info ya 😊 Nomor ini melayani area *{$regionLabel}*.\n".
+            "Untuk pengiriman ke area *{$city}*, silakan hubungi admin kami.\n\n".
+            'Ada yang bisa kami bantu?'
+        );
+    }
+
+    protected function regionServesCity(WhatsAppConversation $conversation, string $slug): bool
+    {
+        return DeliveryZone::active()
+            ->forRegion($conversation->region_id)
+            ->get()
+            ->contains(function (DeliveryZone $zone) use ($slug) {
+                return str_contains(strtolower((string) $zone->landmark_keyword), $slug)
+                    || str_contains(strtolower((string) $zone->area_name), $slug);
+            });
+    }
+
+    protected function findRegionServingCity(string $slug): ?string
+    {
+        $zone = DeliveryZone::active()
+            ->with('region')
+            ->get()
+            ->first(function (DeliveryZone $zone) use ($slug) {
+                return str_contains(strtolower((string) $zone->landmark_keyword), $slug)
+                    || str_contains(strtolower((string) $zone->area_name), $slug);
+            });
+
+        return $zone?->region?->name;
     }
 
     protected function findProductByKeyword(WhatsAppConversation $conversation, string $keyword): ?Product
@@ -715,10 +846,10 @@ class OrderBotService
             })
             ->where(function ($q) use ($keyword) {
                 $q->where('name', 'like', "%{$keyword}%")
-                  ->orWhere('tag', 'like', "%{$keyword}%")
-                  ->orWhere('description', 'like', "%{$keyword}%");
+                    ->orWhere('tag', 'like', "%{$keyword}%")
+                    ->orWhere('description', 'like', "%{$keyword}%");
             })
-            ->with(['variants' => fn($q) => $q->where('is_active', true)])
+            ->with(['variants' => fn ($q) => $q->where('is_active', true)])
             ->first();
     }
 
@@ -728,7 +859,7 @@ class OrderBotService
 
         $customer = Customer::where('phone', $phone)->first();
 
-        if (!$customer) {
+        if (! $customer) {
             $form = $conversation->context['order_form'] ?? [];
             $customer = Customer::create([
                 'name' => $form['recipient_name'] ?? $conversation->profile_name ?? 'Customer WA',
@@ -739,7 +870,7 @@ class OrderBotService
             ]);
         }
 
-        if (!$conversation->customer_id) {
+        if (! $conversation->customer_id) {
             $conversation->update(['customer_id' => $customer->id]);
         }
 
@@ -755,7 +886,7 @@ class OrderBotService
                 $q->where('region_id', $regionId)->orWhereNull('region_id');
             })
             ->where('name', 'like', "%{$productName}%")
-            ->with(['variants' => fn($q) => $q->where('is_active', true)])
+            ->with(['variants' => fn ($q) => $q->where('is_active', true)])
             ->first();
     }
 
@@ -779,11 +910,11 @@ class OrderBotService
     protected function sendHelpMessage(WhatsAppConversation $conversation): void
     {
         $this->metaService->sendText($conversation->phone_number,
-            "Halo! 👋 Ada yang bisa kami bantu?\n\n" .
-            "Ketik *PESAN* untuk membuat pesanan\n" .
-            "Ketik *PRODUK* untuk melihat katalog\n" .
-            "Ketik *BANTUAN* untuk bantuan\n\n" .
-            "Atau langsung ketik produk yang Anda inginkan."
+            "Halo! 👋 Ada yang bisa kami bantu?\n\n".
+            "Ketik *PESAN* untuk membuat pesanan\n".
+            "Ketik *PRODUK* untuk melihat katalog\n".
+            "Ketik *BANTUAN* untuk bantuan\n\n".
+            'Atau langsung ketik produk yang Anda inginkan.'
         );
     }
 }

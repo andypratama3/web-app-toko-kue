@@ -1,0 +1,1690 @@
+{
+  "version": "2.0.0",
+  "name": "Kue Pandan Asli Conversational FAQ & Intent Dataset",
+  "website": "kuepandanasli.com",
+  "language": "id-ID",
+  "regions": [
+    "Surabaya",
+    "Malang",
+    "Sidoarjo",
+    "Gresik",
+    "Batu",
+    "Pasuruan",
+    "Jawa Timur"
+  ],
+
+  "capabilities": {
+    "keyword_matching": true,
+    "semantic_matching": true,
+    "typo_tolerance": true,
+    "slang_detection": true,
+    "javanese_detection": true,
+    "suroboyoan_detection": true,
+    "malangan_detection": true,
+    "walikan_detection": true,
+    "entity_extraction": true,
+    "context_awareness": true,
+    "conversation_memory": true,
+    "slot_filling": true,
+    "follow_up_question": true,
+    "multi_intent": true,
+    "intent_switching": true,
+    "order_context": true,
+    "customer_context": true,
+    "date_parsing": true,
+    "time_parsing": true,
+    "address_parsing": true,
+    "quantity_parsing": true,
+    "fallback": true,
+    "human_handoff": true
+  },
+
+  "conversation_rules": {
+    "never_repeat_already_known_entities": true,
+    "ask_only_missing_required_entities": true,
+    "preserve_previous_context": true,
+    "allow_customer_to_change_topic": true,
+    "allow_multiple_intents_in_one_message": true,
+    "allow_short_answers": true,
+    "allow_typo_messages": true,
+    "allow_mixed_language": true,
+    "allow_incomplete_messages": true,
+    "allow_follow_up_without_repeating_subject": true,
+
+    "example": {
+      "customer_1": "Apakah bisa kirim hari ini?",
+      "bot_1": "Bisa 😊 Alamat pengiriman lengkapnya di mana?",
+      "customer_2": "Jl. Soekarno Hatta Malang",
+      "bot_2": "Siap. Untuk pengiriman hari ini ke Jl. Soekarno Hatta, Malang. Kuenya mau varian apa dan berapa pcs?"
+    }
+  },
+
+  "entities": {
+
+    "date": {
+      "type": "date",
+      "examples": [
+        "hari ini",
+        "sekarang",
+        "besok",
+        "lusa",
+        "kemarin",
+        "minggu depan",
+        "senin",
+        "selasa",
+        "rabu",
+        "kamis",
+        "jumat",
+        "sabtu",
+        "minggu",
+        "10 september 2026",
+        "10/09/2026",
+        "10-09-2026",
+        "tanggal 10",
+        "besok pagi",
+        "sesok",
+        "saiki"
+      ]
+    },
+
+    "time": {
+      "type": "time",
+      "examples": [
+        "pagi",
+        "siang",
+        "sore",
+        "malam",
+        "jam 8",
+        "jam 10 pagi",
+        "jam 2 siang",
+        "jam 19",
+        "19:00",
+        "habis maghrib",
+        "setelah makan siang"
+      ]
+    },
+
+    "quantity": {
+      "type": "integer",
+      "examples": [
+        "1",
+        "2",
+        "3",
+        "5",
+        "10",
+        "satu",
+        "dua",
+        "tiga",
+        "lima",
+        "sepuluh",
+        "satu lusin",
+        "setengah lusin",
+        "banyak",
+        "akeh"
+      ]
+    },
+
+    "address": {
+      "type": "address",
+      "examples": [
+        "Jl. Soekarno Hatta",
+        "Malang",
+        "Surabaya",
+        "Sidoarjo",
+        "Gresik",
+        "dekat kampus",
+        "dekat alun-alun",
+        "rumah saya di",
+        "kantor saya di",
+        "kirim nang omah"
+      ]
+    },
+
+    "product": {
+      "type": "product",
+      "examples": [
+        "kue",
+        "kue pandan",
+        "kue pandan asli",
+        "yang coklat",
+        "yang ini",
+        "varian yang tadi",
+        "kue ukuran besar"
+      ]
+    },
+
+    "payment_method": {
+      "type": "payment_method",
+      "examples": [
+        "cash",
+        "tunai",
+        "transfer",
+        "qris",
+        "gopay",
+        "ovo",
+        "dana",
+        "shopeepay",
+        "cod",
+        "debit",
+        "kartu"
+      ]
+    },
+
+    "customer_name": {
+      "type": "person_name",
+      "examples": [
+        "Andy",
+        "Pak Budi",
+        "Bu Siti",
+        "nama saya Andy"
+      ]
+    },
+
+    "phone_number": {
+      "type": "phone",
+      "examples": [
+        "08123456789",
+        "628123456789"
+      ]
+    },
+
+    "order_id": {
+      "type": "string",
+      "examples": [
+        "ORD-001",
+        "INV-20260910-001",
+        "pesanan nomor 123"
+      ]
+    },
+
+    "occasion": {
+      "type": "occasion",
+      "examples": [
+        "ulang tahun",
+        "hajatan",
+        "arisan",
+        "rapat",
+        "kantor",
+        "sekolah",
+        "wisuda",
+        "pernikahan",
+        "pengajian"
+      ]
+    }
+  },
+
+  "intents": [
+
+    {
+      "id": "GREETING",
+      "category": "general",
+      "priority": 100,
+
+      "keywords": [
+        "halo",
+        "hai",
+        "hi",
+        "hello",
+        "hallo",
+        "helo",
+        "assalamualaikum",
+        "assalamu'alaikum",
+        "selamat pagi",
+        "selamat siang",
+        "selamat sore",
+        "selamat malam",
+        "pagi",
+        "siang",
+        "sore",
+        "malam",
+        "permisi",
+        "rek",
+        "cak",
+        "sam",
+        "min",
+        "halo rek",
+        "halo cak",
+        "halo sam",
+        "malam min",
+        "selamat malam min"
+      ],
+
+      "examples": [
+        "Selamat malam",
+        "halo min",
+        "malam kak",
+        "permisi min",
+        "halo rek",
+        "cak mau tanya"
+      ],
+
+      "response": {
+        "default": "Halo 😊 Selamat datang di Kue Pandan Asli. Ada yang bisa kami bantu?"
+      },
+
+      "does_not_require_follow_up": true
+    },
+
+    {
+      "id": "DELIVERY_AVAILABLE",
+      "category": "delivery",
+      "priority": 90,
+
+      "keywords": [
+        "bisa kirim",
+        "bisa dikirim",
+        "bisa antar",
+        "bisa diantar",
+        "bisa dianter",
+        "bisa delivery",
+        "ada delivery",
+        "ada kurir",
+        "pakai kurir",
+        "kirim ke rumah",
+        "antar ke rumah",
+        "delivery gak",
+        "delivery ga",
+        "iso kirim",
+        "iso antar",
+        "iso diantar",
+        "kirim nang rumah",
+        "kirim ndek rumah",
+        "antar omah",
+        "nganter omah",
+        "bisa nganter",
+        "cak bisa dianter",
+        "rek bisa kirim",
+        "sam iso antar",
+        "bisa kirim hari ini",
+        "bisa antar hari ini",
+        "bisa delivery hari ini",
+        "bisa kirim sekarang"
+      ],
+
+      "examples": [
+        "Apakah bisa kirim hari ini?",
+        "Cak bisa dianter hari ini?",
+        "Rek bisa kirim saiki?",
+        "Sam iso antar sesok?",
+        "Bisa kirim ke rumah?"
+      ],
+
+      "entities": {
+        "extract": [
+          "date",
+          "time",
+          "address"
+        ]
+      },
+
+      "required_entities": [
+        "address"
+      ],
+
+      "optional_entities": [
+        "date",
+        "time"
+      ],
+
+      "follow_up": {
+        "if_missing": {
+          "address": [
+            "Bisa 😊 Alamat pengiriman lengkapnya di mana?",
+            "Bisa. Boleh kirim alamat lengkap tujuan pengirimannya?",
+            "Siap. Kirim alamat lengkapnya ya 😊"
+          ]
+        }
+      }
+    },
+
+    {
+      "id": "DELIVERY_FEE",
+      "category": "delivery",
+      "priority": 90,
+
+      "keywords": [
+        "ongkir",
+        "ongkos kirim",
+        "biaya kirim",
+        "biaya delivery",
+        "biaya antar",
+        "ongkos antar",
+        "berapa ongkir",
+        "ongkir berapa",
+        "ongkire piro",
+        "ongkos kirim piro",
+        "antar kena berapa",
+        "delivery kena berapa",
+        "berapa biaya kirim",
+        "ada ongkir",
+        "gratis ongkir",
+        "free ongkir",
+        "ongkir gratis",
+        "ongkirnya berapa",
+        "ongkir brp"
+      ],
+
+      "entities": {
+        "extract": [
+          "address"
+        ]
+      },
+
+      "required_entities": [
+        "address"
+      ],
+
+      "follow_up": {
+        "if_missing": {
+          "address": [
+            "Untuk cek ongkir, boleh kirim alamat lengkap pengirimannya ya 😊"
+          ]
+        }
+      }
+    },
+
+    {
+      "id": "DELIVERY_TIME",
+      "category": "delivery",
+      "priority": 90,
+
+      "keywords": [
+        "berapa lama kirim",
+        "lama pengiriman",
+        "berapa lama sampai",
+        "kapan sampai",
+        "estimasi kirim",
+        "estimasi sampai",
+        "jam berapa sampai",
+        "kirim jam berapa",
+        "antar jam berapa",
+        "delivery jam berapa",
+        "bisa sampai hari ini",
+        "sampai hari ini",
+        "bisa dikirim hari ini",
+        "kapan dikirim",
+        "kapan dianter",
+        "kapan diantar",
+        "durasi kirim",
+        "suwene kirim",
+        "piro suwene",
+        "kapan teko"
+      ],
+
+      "entities": {
+        "extract": [
+          "date",
+          "time",
+          "address"
+        ]
+      },
+
+      "required_entities": [
+        "address",
+        "date"
+      ],
+
+      "follow_up": {
+        "if_missing": {
+          "address": "Alamat pengirimannya lengkapnya di mana?",
+          "date": "Tanggal pengirimannya kapan?"
+        }
+      }
+    },
+
+    {
+      "id": "DELIVERY_STATUS",
+      "category": "delivery",
+      "priority": 95,
+
+      "keywords": [
+        "sudah dikirim",
+        "sudah diantar",
+        "sudah dianter",
+        "kurir dimana",
+        "kurirnya dimana",
+        "pesanan dimana",
+        "paket dimana",
+        "kue dimana",
+        "belum sampai",
+        "belum datang",
+        "belum diantar",
+        "belum dikirim",
+        "durung teko",
+        "durung datang",
+        "durung dikirim",
+        "durung dianter",
+        "kok belum datang",
+        "kok belum sampai",
+        "kapan sampai",
+        "pesenanku durung teko"
+      ],
+
+      "entities": {
+        "extract": [
+          "order_id"
+        ]
+      },
+
+      "required_entities": [
+        "order_id"
+      ],
+
+      "follow_up": {
+        "if_missing": {
+          "order_id": "Boleh kirim nomor pesanan atau invoice-nya supaya kami cek statusnya?"
+        }
+      }
+    },
+
+    {
+      "id": "PRODUCT_SHELF_LIFE",
+      "category": "product",
+      "priority": 85,
+
+      "keywords": [
+        "tahan berapa lama",
+        "kue tahan berapa lama",
+        "tahan berapa hari",
+        "bisa tahan berapa hari",
+        "masa simpan",
+        "umur kue",
+        "expired",
+        "kadaluarsa",
+        "kadaluwarsa",
+        "tanggal kadaluarsa",
+        "best before",
+        "shelf life",
+        "disimpan berapa lama",
+        "masih enak besok",
+        "besok masih enak",
+        "tahan sampai besok",
+        "bisa tahan seminggu",
+        "awet berapa lama",
+        "kue iki tahan piro",
+        "tahan piro dina",
+        "suwene tahan",
+        "iso tahan piro"
+      ],
+
+      "examples": [
+        "Kue nya tahan berapa lama?",
+        "Kuenya bisa tahan berapa hari?",
+        "Sam kue iki tahan piro?",
+        "Kalau buat besok masih enak gak?"
+      ],
+
+      "entities": {
+        "extract": [
+          "product",
+          "date"
+        ]
+      },
+
+      "optional_entities": [
+        "product",
+        "date"
+      ],
+
+      "follow_up": {
+        "if_missing": {
+          "date": [
+            "Kuenya tahan sesuai jenis produknya. Kalau untuk kebutuhan tertentu, tanggal kirim atau tanggal makannya kapan ya?"
+          ]
+        }
+      }
+    },
+
+    {
+      "id": "PRODUCT_FRESHNESS",
+      "category": "product",
+      "priority": 85,
+
+      "keywords": [
+        "fresh gak",
+        "masih fresh",
+        "fresh",
+        "baru dibuat",
+        "dibuat hari ini",
+        "produksi hari ini",
+        "tanggal produksi",
+        "tanggal dibuat",
+        "segar",
+        "seger",
+        "anyar",
+        "baru gawe",
+        "anyar gak",
+        "kue baru",
+        "kapan dibuat",
+        "dibuat kapan"
+      ],
+
+      "entities": {
+        "extract": [
+          "product",
+          "date"
+        ]
+      }
+    },
+
+    {
+      "id": "PRODUCT_MENU",
+      "category": "product",
+      "priority": 85,
+
+      "keywords": [
+        "menu",
+        "menu kue",
+        "daftar menu",
+        "daftar kue",
+        "list kue",
+        "list menu",
+        "kue apa aja",
+        "kue apa saja",
+        "ada kue apa",
+        "ada apa aja",
+        "produknya apa",
+        "produk apa",
+        "pilihan kuenya apa",
+        "varian kue",
+        "varian apa",
+        "rasa apa saja",
+        "rasa apa aja",
+        "ono kue opo",
+        "ono opo",
+        "kue opo",
+        "menu opo",
+        "opo wae menune",
+        "sam ono kue opo",
+        "cak ono kue opo",
+        "rek ono kue opo"
+      ]
+    },
+
+    {
+      "id": "PRODUCT_PRICE",
+      "category": "product",
+      "priority": 90,
+
+      "keywords": [
+        "harga",
+        "harganya",
+        "berapa harga",
+        "berapa harganya",
+        "harga berapa",
+        "hargane piro",
+        "regane piro",
+        "regane pinten",
+        "piro regane",
+        "iki piro",
+        "satu berapa",
+        "per pcs berapa",
+        "per kotak berapa",
+        "berapa per pcs",
+        "berapa per box",
+        "berapa satuannya",
+        "harga satuan",
+        "harga per pcs",
+        "harga per box",
+        "brp",
+        "brapa",
+        "hrga",
+        "hargaa",
+        "harganya piro",
+        "sam iki piro",
+        "cak iki piro",
+        "rek iki piro",
+        "sam regane piro",
+        "cak regane piro"
+      ],
+
+      "entities": {
+        "extract": [
+          "product",
+          "quantity"
+        ]
+      }
+    },
+
+    {
+      "id": "PRODUCT_STOCK",
+      "category": "product",
+      "priority": 90,
+
+      "keywords": [
+        "ready",
+        "ready gak",
+        "ready ga",
+        "ready kah",
+        "masih ready",
+        "masih ada",
+        "ada stok",
+        "stok ada",
+        "stoknya ada",
+        "tersedia",
+        "tersedia gak",
+        "tersedia ga",
+        "available",
+        "ono stok",
+        "ono gak",
+        "isih ono",
+        "isih ana",
+        "masih ono",
+        "iki ono",
+        "ono kue iki",
+        "rdy",
+        "redi",
+        "stokk",
+        "stock"
+      ],
+
+      "entities": {
+        "extract": [
+          "product",
+          "quantity",
+          "date"
+        ]
+      }
+    },
+
+    {
+      "id": "PRODUCT_RECOMMENDATION",
+      "category": "product",
+      "priority": 75,
+
+      "keywords": [
+        "rekomendasi",
+        "rekomendasi kue",
+        "rekomendasi dong",
+        "saran kue",
+        "kue yang enak",
+        "kue paling enak",
+        "best seller",
+        "favorit",
+        "yang paling laku",
+        "yang banyak dipesan",
+        "recommended",
+        "enaknya beli apa",
+        "mending beli apa",
+        "pilihin kue",
+        "rekomendasiin dong",
+        "kue apa yang enak",
+        "aku bingung pilih",
+        "rekomen",
+        "ono rekomendasi gak",
+        "tuku opo enak"
+      ],
+
+      "entities": {
+        "extract": [
+          "occasion",
+          "quantity"
+        ]
+      }
+    },
+
+    {
+      "id": "ORDER_CREATE",
+      "category": "order",
+      "priority": 100,
+
+      "keywords": [
+        "pesan",
+        "pesen",
+        "pesan kue",
+        "pesen kue",
+        "mau pesan",
+        "mau pesen",
+        "mau order",
+        "mau beli",
+        "ingin pesan",
+        "ingin beli",
+        "order kue",
+        "booking kue",
+        "aku pesan",
+        "aku pesen",
+        "saya mau pesan",
+        "saya mau beli",
+        "tak tuku",
+        "mau tuku",
+        "aku tuku",
+        "ayas pesen",
+        "ayas mau order",
+        "ayas tuku",
+        "iso pesen",
+        "bisa pesen",
+        "bisa order",
+        "pesen saiki",
+        "order saiki",
+        "pesan saiki",
+        "tuku saiki",
+        "pesen dong",
+        "order dong"
+      ],
+
+      "entities": {
+        "extract": [
+          "product",
+          "quantity",
+          "date",
+          "time",
+          "address",
+          "payment_method",
+          "customer_name",
+          "phone_number",
+          "occasion"
+        ]
+      },
+
+      "required_entities": [
+        "product",
+        "quantity"
+      ],
+
+      "optional_entities": [
+        "date",
+        "time",
+        "address",
+        "payment_method",
+        "customer_name",
+        "phone_number",
+        "occasion"
+      ],
+
+      "follow_up_order": [
+        "product",
+        "quantity",
+        "date",
+        "delivery_or_pickup",
+        "address",
+        "payment_method"
+      ]
+    },
+
+    {
+      "id": "ORDER_QUANTITY",
+      "category": "order",
+      "priority": 85,
+
+      "keywords": [
+        "berapa pcs",
+        "berapa biji",
+        "berapa buah",
+        "jumlah",
+        "mau berapa",
+        "pesan berapa",
+        "ambil berapa",
+        "satu",
+        "dua",
+        "tiga",
+        "empat",
+        "lima",
+        "sepuluh",
+        "lusin",
+        "lusinan",
+        "banyak",
+        "pesen akeh",
+        "ambil akeh"
+      ],
+
+      "entities": {
+        "extract": [
+          "quantity",
+          "product"
+        ]
+      }
+    },
+
+    {
+      "id": "ORDER_CHANGE",
+      "category": "order",
+      "priority": 95,
+
+      "keywords": [
+        "ubah pesanan",
+        "ubah order",
+        "ganti pesanan",
+        "ganti order",
+        "mau ubah",
+        "mau ganti",
+        "tambah pesanan",
+        "kurangi pesanan",
+        "tambah jumlah",
+        "kurangi jumlah",
+        "ganti rasa",
+        "ganti ukuran",
+        "ganti alamat",
+        "ganti tanggal",
+        "ubah tanggal",
+        "ubah alamat",
+        "ubah jumlah",
+        "pesananku mau diubah",
+        "orderanku mau diubah",
+        "pesenanku ganti",
+        "iso ganti pesenan gak"
+      ],
+
+      "entities": {
+        "extract": [
+          "order_id",
+          "product",
+          "quantity",
+          "date",
+          "time",
+          "address"
+        ]
+      },
+
+      "required_entities": [
+        "order_id"
+      ]
+    },
+
+    {
+      "id": "ORDER_CANCEL",
+      "category": "order",
+      "priority": 100,
+
+      "keywords": [
+        "batal",
+        "batalkan",
+        "mau batal",
+        "cancel",
+        "cancel order",
+        "cancel pesanan",
+        "batalkan pesanan",
+        "batalkan order",
+        "gak jadi",
+        "ga jadi",
+        "nggak jadi",
+        "tidak jadi",
+        "ora dadi",
+        "ndak jadi",
+        "durung jadi",
+        "pesananku batal",
+        "orderanku batal",
+        "gak jadi pesan",
+        "ora dadi pesen"
+      ],
+
+      "entities": {
+        "extract": [
+          "order_id"
+        ]
+      },
+
+      "required_entities": [
+        "order_id"
+      ]
+    },
+
+    {
+      "id": "ORDER_STATUS",
+      "category": "order",
+      "priority": 95,
+
+      "keywords": [
+        "status pesanan",
+        "status order",
+        "cek pesanan",
+        "cek order",
+        "pesanan saya",
+        "order saya",
+        "pesenanku",
+        "orderanku",
+        "pesanan saya mana",
+        "order saya mana",
+        "sudah dipesan",
+        "sudah masuk",
+        "sudah tercatat",
+        "pesananku wes masuk",
+        "wes diproses",
+        "sudah diproses",
+        "cek status",
+        "cek pesenanku",
+        "cek orderanku"
+      ],
+
+      "entities": {
+        "extract": [
+          "order_id",
+          "customer_name",
+          "phone_number"
+        ]
+      },
+
+      "required_entities": [
+        "order_id"
+      ]
+    },
+
+    {
+      "id": "PICKUP",
+      "category": "delivery",
+      "priority": 85,
+
+      "keywords": [
+        "ambil sendiri",
+        "ambil langsung",
+        "pickup",
+        "pick up",
+        "take away",
+        "bisa pickup",
+        "bisa ambil",
+        "bisa ambil sendiri",
+        "ambil di toko",
+        "ambil ke toko",
+        "datang ambil",
+        "aku ambil",
+        "tak ambil",
+        "mau ambil",
+        "ambil nang toko",
+        "ambil ndek toko",
+        "iso dijupuk",
+        "iso ambil"
+      ]
+    },
+
+    {
+      "id": "STORE_LOCATION",
+      "category": "location",
+      "priority": 90,
+
+      "keywords": [
+        "lokasi",
+        "lokasinya dimana",
+        "lokasi toko",
+        "alamat",
+        "alamat toko",
+        "alamatnya dimana",
+        "tokonya dimana",
+        "toko dimana",
+        "dimana tokonya",
+        "di mana lokasi",
+        "maps",
+        "google maps",
+        "shareloc",
+        "share lokasi",
+        "pin lokasi",
+        "link maps",
+        "ambil dimana",
+        "pickup dimana",
+        "nang endi",
+        "ndek endi",
+        "neng endi",
+        "tokone nang endi",
+        "toko ndek endi",
+        "ambil ndek endi"
+      ]
+    },
+
+    {
+      "id": "LOCATION_AREA",
+      "category": "location",
+      "priority": 100,
+
+      "keywords": [
+        "surabaya",
+        "suroboyo",
+        "kota pahlawan",
+        "malang",
+        "kota malang",
+        "sidoarjo",
+        "gresik",
+        "batu",
+        "pasuruan",
+        "jawa timur",
+        "jatim",
+        "area surabaya",
+        "area malang",
+        "daerah surabaya",
+        "daerah malang",
+        "wilayah surabaya",
+        "wilayah malang",
+        "melayani surabaya",
+        "melayani malang",
+        "kirim ke surabaya",
+        "kirim ke malang",
+        "kirim nang suroboyo",
+        "kirim nang malang",
+        "antar nang suroboyo",
+        "antar nang malang",
+        "ono nang suroboyo",
+        "ono nang malang"
+      ],
+
+      "examples": [
+        "Kamu ada di surabaya?",
+        "Bisa kirim ke malang?",
+        "Suroboyo ono gak?",
+        "Melayani area surabaya?",
+        "Apakah bisa kirim ke Jawa Timur?"
+      ],
+
+      "entities": {
+        "extract": [
+          "address"
+        ]
+      },
+
+      "optional_entities": [
+        "address"
+      ],
+
+      "response": {
+        "default": "Siap, kami melayani pengiriman ke {city} 😊 Mau lihat menu, cek harga, cek ongkir, atau mulai pesanan?"
+      },
+
+      "does_not_require_follow_up": true
+    },
+
+    {
+      "id": "STORE_HOURS",
+      "category": "location",
+      "priority": 80,
+
+      "keywords": [
+        "jam buka",
+        "jam tutup",
+        "buka jam berapa",
+        "tutup jam berapa",
+        "buka sampai jam berapa",
+        "operasional",
+        "jam operasional",
+        "hari buka",
+        "hari tutup",
+        "buka hari apa",
+        "tutup hari apa",
+        "buka sekarang",
+        "masih buka",
+        "tokonya buka",
+        "tokonya tutup",
+        "jam bukanya piro",
+        "buka jam piro",
+        "tutup jam piro",
+        "saiki buka gak",
+        "masih buka gak"
+      ]
+    },
+
+    {
+      "id": "PAYMENT_METHOD",
+      "category": "payment",
+      "priority": 85,
+
+      "keywords": [
+        "cara bayar",
+        "pembayaran",
+        "metode pembayaran",
+        "bisa bayar apa",
+        "bisa transfer",
+        "transfer bisa",
+        "rekening",
+        "nomor rekening",
+        "bank apa",
+        "qris",
+        "QRIS ada",
+        "cash",
+        "tunai",
+        "COD",
+        "bayar ditempat",
+        "bayar di tempat",
+        "bisa debit",
+        "bisa kartu",
+        "bisa ewallet",
+        "gopay",
+        "ovo",
+        "dana",
+        "shopeepay",
+        "bayare piye",
+        "bayar e piye",
+        "iso transfer",
+        "iso cash",
+        "iso COD"
+      ]
+    },
+
+    {
+      "id": "PROMO",
+      "category": "promotion",
+      "priority": 70,
+
+      "keywords": [
+        "promo",
+        "promonya apa",
+        "ada promo",
+        "promo hari ini",
+        "promo sekarang",
+        "diskon",
+        "ada diskon",
+        "diskonnya berapa",
+        "potongan harga",
+        "harga promo",
+        "promo terbaru",
+        "promo bulan ini",
+        "voucher",
+        "kode voucher",
+        "kode promo",
+        "cashback",
+        "special price",
+        "ono promo",
+        "ono diskon",
+        "promo opo"
+      ]
+    },
+
+    {
+      "id": "CUSTOM_ORDER",
+      "category": "custom",
+      "priority": 80,
+
+      "keywords": [
+        "bisa custom",
+        "bisa request",
+        "custom kue",
+        "request kue",
+        "kue custom",
+        "custom desain",
+        "custom rasa",
+        "custom ukuran",
+        "sesuai request",
+        "sesuai pesanan",
+        "bisa dibuat khusus",
+        "bisa dibuat sesuai request",
+        "bisa request khusus",
+        "minta khusus",
+        "pesan khusus",
+        "iso custom",
+        "iso request",
+        "bisa gawe khusus",
+        "bisa gawe sesuai request",
+        "gawe custom"
+      ]
+    },
+
+    {
+      "id": "CUSTOM_MESSAGE",
+      "category": "custom",
+      "priority": 80,
+
+      "keywords": [
+        "bisa tulisan",
+        "bisa kasih tulisan",
+        "bisa tulis nama",
+        "bisa tulis ucapan",
+        "tulis nama",
+        "tulis ucapan",
+        "tulisan di kue",
+        "tulisan atas kue",
+        "mau kasih tulisan",
+        "mau tulis nama",
+        "request tulisan",
+        "tulisan custom",
+        "bisa request tulisan",
+        "iso tulis jeneng",
+        "iso gawe tulisan",
+        "tulis jeneng",
+        "tulis opo"
+      ]
+    },
+
+    {
+      "id": "EVENT_ORDER",
+      "category": "order",
+      "priority": 75,
+
+      "keywords": [
+        "buat acara",
+        "untuk acara",
+        "acara kantor",
+        "acara sekolah",
+        "acara keluarga",
+        "ulang tahun",
+        "birthday",
+        "anniversary",
+        "hajatan",
+        "pengajian",
+        "arisan",
+        "rapat",
+        "meeting",
+        "seminar",
+        "wisuda",
+        "pernikahan",
+        "lamaran",
+        "aqiqah",
+        "tasyakuran",
+        "selamatan",
+        "syukuran",
+        "souvenir",
+        "snack acara",
+        "konsumsi acara",
+        "pesanan kantor",
+        "pesanan sekolah"
+      ],
+
+      "entities": {
+        "extract": [
+          "occasion",
+          "quantity",
+          "date",
+          "address"
+        ]
+      }
+    },
+
+    {
+      "id": "COMPLAINT",
+      "category": "support",
+      "priority": 100,
+
+      "keywords": [
+        "komplain",
+        "complaint",
+        "keluhan",
+        "mau komplain",
+        "pesanan salah",
+        "kue salah",
+        "salah pesanan",
+        "salah rasa",
+        "salah ukuran",
+        "kurang",
+        "kurang satu",
+        "jumlah kurang",
+        "rusak",
+        "pecah",
+        "hancur",
+        "tidak sesuai",
+        "gak sesuai",
+        "ga sesuai",
+        "beda dari pesanan",
+        "kok beda",
+        "kok salah",
+        "ini salah",
+        "kecewa",
+        "kecewa banget"
+      ],
+
+      "entities": {
+        "extract": [
+          "order_id",
+          "product"
+        ]
+      }
+    },
+
+    {
+      "id": "HUMAN_AGENT",
+      "category": "support",
+      "priority": 110,
+
+      "keywords": [
+        "admin",
+        "min",
+        "minta admin",
+        "hubungi admin",
+        "chat admin",
+        "bicara dengan admin",
+        "mau bicara orang",
+        "operator",
+        "customer service",
+        "cs",
+        "human",
+        "orang asli",
+        "bukan bot",
+        "mau chat orang",
+        "sambungkan ke admin",
+        "tolong admin",
+        "admin dong",
+        "kontak admin",
+        "nomor admin",
+        "WA admin",
+        "whatsapp admin"
+      ],
+
+      "action": "handoff_to_human"
+    },
+
+    {
+      "id": "THANKS",
+      "category": "general",
+      "priority": 50,
+
+      "keywords": [
+        "terima kasih",
+        "makasih",
+        "makasih ya",
+        "thanks",
+        "thank you",
+        "tengkyu",
+        "thx",
+        "trimakasih",
+        "terimakasih",
+        "matur nuwun",
+        "nuwun",
+        "thanks rek",
+        "makasih rek",
+        "makasih cak",
+        "makasih sam"
+      ]
+    },
+
+    {
+      "id": "GOODBYE",
+      "category": "general",
+      "priority": 40,
+
+      "keywords": [
+        "bye",
+        "dadah",
+        "sampai jumpa",
+        "sampai nanti",
+        "nanti lagi",
+        "cukup",
+        "sudah",
+        "udah",
+        "wes cukup",
+        "bye rek",
+        "dadah rek"
+      ]
+    }
+  ],
+
+  "conversation_flows": {
+
+    "DELIVERY_TODAY": {
+      "trigger_examples": [
+        "Apakah bisa kirim hari ini?",
+        "Bisa kirim hari ini?",
+        "Cak bisa dianter saiki?",
+        "Rek bisa kirim sekarang?",
+        "Sam iso antar saiki?"
+      ],
+
+      "extracted_entities": {
+        "date": "today"
+      },
+
+      "missing_entities": [
+        "address"
+      ],
+
+      "bot_response": "Bisa 😊 Alamat pengiriman lengkapnya di mana?",
+
+      "next_expected_input": "address"
+    },
+
+    "DELIVERY_FOLLOWUP": {
+      "context": "DELIVERY_TODAY",
+
+      "customer_examples": [
+        "Jl. Soekarno Hatta Malang",
+        "Malang Kota",
+        "Jl. Ijen No 10",
+        "rumah saya di Lowokwaru"
+      ],
+
+      "action": "save_address",
+
+      "next_question": "product"
+    },
+
+    "SHELF_LIFE": {
+      "trigger_examples": [
+        "Kue nya tahan berapa lama?",
+        "Kuenya tahan berapa hari?",
+        "Sam kue iki tahan piro?"
+      ],
+
+      "intent": "PRODUCT_SHELF_LIFE",
+
+      "next_context": {
+        "ask_date_if_needed": true
+      }
+    },
+
+    "ORDER_FLOW": {
+      "steps": [
+        {
+          "slot": "product",
+          "question": "Mau pesan kue yang varian apa?"
+        },
+        {
+          "slot": "quantity",
+          "question": "Mau pesan berapa pcs?"
+        },
+        {
+          "slot": "date",
+          "question": "Untuk tanggal berapa?"
+        },
+        {
+          "slot": "delivery_or_pickup",
+          "question": "Mau dikirim atau ambil langsung?"
+        },
+        {
+          "slot": "address",
+          "condition": "delivery_or_pickup == delivery",
+          "question": "Boleh kirim alamat lengkapnya?"
+        },
+        {
+          "slot": "payment_method",
+          "question": "Pembayarannya mau menggunakan metode apa?"
+        },
+        {
+          "slot": "confirmation",
+          "question": "Pesanannya sudah sesuai. Mau kami proses?"
+        }
+      ]
+    }
+  },
+
+  "context_management": {
+
+    "context_fields": [
+      "active_intent",
+      "previous_intent",
+      "product",
+      "quantity",
+      "date",
+      "time",
+      "address",
+      "delivery_or_pickup",
+      "payment_method",
+      "order_id",
+      "customer_name",
+      "phone_number",
+      "occasion"
+    ],
+
+    "rules": [
+      {
+        "rule": "If customer answers a missing entity, attach it to active intent"
+      },
+      {
+        "rule": "If customer says 'yang tadi', use previous product context"
+      },
+      {
+        "rule": "If customer says 'besok', update date without asking what date"
+      },
+      {
+        "rule": "If customer says 'iya', continue previous flow"
+      },
+      {
+        "rule": "If customer changes topic, switch active intent"
+      },
+      {
+        "rule": "If customer asks multiple questions, process multiple intents"
+      },
+      {
+        "rule": "Never ask for an entity that already exists in context"
+      },
+      {
+        "rule": "Use conversation history to resolve pronouns such as 'ini', 'itu', 'yang tadi', 'yang ini'"
+      }
+    ]
+  },
+
+  "multi_intent_examples": [
+
+    {
+      "customer": "Bisa kirim hari ini? Sekalian berapa ongkirnya?",
+      "intents": [
+        "DELIVERY_AVAILABLE",
+        "DELIVERY_FEE"
+      ],
+      "entities": {
+        "date": "today"
+      },
+      "missing": [
+        "address"
+      ],
+      "bot_response": "Bisa 😊 Untuk cek ongkir sekaligus pengiriman hari ini, boleh kirim alamat lengkap tujuan?"
+    },
+
+    {
+      "customer": "Mau pesan 3 kue buat besok, bisa dianter?",
+      "intents": [
+        "ORDER_CREATE",
+        "DELIVERY_AVAILABLE"
+      ],
+      "entities": {
+        "quantity": 3,
+        "date": "tomorrow"
+      },
+      "missing": [
+        "product",
+        "address"
+      ],
+      "bot_response": "Bisa 😊 Kuenya mau varian apa? Sekalian kirim alamat lengkap tujuan pengiriman ya."
+    },
+
+    {
+      "customer": "Kue ini tahan berapa lama dan bisa dikirim besok?",
+      "intents": [
+        "PRODUCT_SHELF_LIFE",
+        "DELIVERY_AVAILABLE"
+      ],
+      "entities": {
+        "date": "tomorrow"
+      },
+      "missing": [
+        "address"
+      ]
+    }
+  ],
+
+  "contextual_examples": [
+
+    {
+      "conversation": [
+        {
+          "customer": "Bisa kirim hari ini?"
+        },
+        {
+          "bot": "Bisa 😊 Alamat pengiriman lengkapnya di mana?"
+        },
+        {
+          "customer": "Jl. Soekarno Hatta Malang"
+        }
+      ],
+
+      "state": {
+        "intent": "DELIVERY_AVAILABLE",
+        "date": "today",
+        "address": "Jl. Soekarno Hatta Malang"
+      }
+    },
+
+    {
+      "conversation": [
+        {
+          "customer": "Mau pesan kue pandan"
+        },
+        {
+          "bot": "Siap 😊 Mau berapa pcs?"
+        },
+        {
+          "customer": "3"
+        },
+        {
+          "bot": "Untuk tanggal berapa?"
+        },
+        {
+          "customer": "besok"
+        }
+      ],
+
+      "state": {
+        "intent": "ORDER_CREATE",
+        "product": "kue pandan",
+        "quantity": 3,
+        "date": "tomorrow"
+      }
+    },
+
+    {
+      "conversation": [
+        {
+          "customer": "Kue nya tahan berapa lama?"
+        },
+        {
+          "bot": "Kue punya masa simpan sesuai jenis produknya 😊 Kuenya untuk dimakan tanggal berapa?"
+        },
+        {
+          "customer": "10 September"
+        }
+      ],
+
+      "state": {
+        "intent": "PRODUCT_SHELF_LIFE",
+        "date": "2026-09-10"
+      }
+    }
+  ],
+
+  "follow_up_logic": {
+
+    "priority": [
+      "resolve_current_intent",
+      "extract_entities",
+      "save_entities",
+      "detect_missing_required_entities",
+      "ask_one_or_two_missing_entities",
+      "continue_flow"
+    ],
+
+    "rules": {
+      "ask_one_question_at_a_time": false,
+      "maximum_questions_per_message": 2,
+      "avoid_repeating_questions": true,
+      "use_previous_context": true,
+      "allow_user_to_answer_partially": true
+    }
+  },
+
+  "fallback": {
+
+    "low_confidence_threshold": 0.45,
+
+    "response": "Maaf ya, aku belum menangkap maksudnya 😊 Bisa dijelaskan sedikit lagi? Misalnya mau tanya menu, harga, stok, pemesanan, pengiriman, atau pembayaran.",
+
+    "retry_limit": 2,
+
+    "after_retry": "handoff_to_human"
+  },
+
+  "human_handoff": {
+
+    "trigger_after": [
+      "customer explicitly requests admin",
+      "customer requests human",
+      "low confidence after retry",
+      "complex complaint",
+      "refund dispute",
+      "payment dispute",
+      "order modification after production",
+      "delivery problem"
+    ],
+
+    "response": "Siap, saya bantu teruskan ke admin 😊 Mohon tunggu sebentar ya."
+  }
+}
