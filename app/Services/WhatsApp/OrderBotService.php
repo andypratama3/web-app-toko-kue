@@ -43,6 +43,12 @@ class OrderBotService
             'message' => substr($messageText, 0, 100),
         ]);
 
+        // Escape hatch: keyword global ("BATAL", "MENU", "MULAI ULANG") valid dari state apa pun,
+        // supaya user tidak pernah terjebak di tengah alur order.
+        if ($this->checkGlobalEscape($conversation, $messageText)) {
+            return;
+        }
+
         match ($state) {
             OrderBotConversationState::INIT => $this->handleInit($conversation, $messageText),
             OrderBotConversationState::WELCOME_SENT => $this->handleAfterWelcome($conversation, $messageText),
@@ -90,6 +96,174 @@ class OrderBotService
         } elseif ($state === OrderBotConversationState::AWAITING_DELIVERY_METHOD) {
             $this->handleDeliveryMethod($conversation, '3');
         }
+    }
+
+    /**
+     * Escape hatch global. Keyword ini dicek SEBELUM state machine dipanggil,
+     * sehingga user tidak pernah terkunci di tengah alur order.
+     */
+    protected function checkGlobalEscape(WhatsAppConversation $conversation, string $text): bool
+    {
+        $state = OrderBotConversationState::from($conversation->current_state);
+        $lower = strtolower(trim($text));
+
+        $orderFlowStates = [
+            OrderBotConversationState::AWAITING_ORDER_FORM,
+            OrderBotConversationState::AWAITING_DELIVERY_METHOD,
+            OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS,
+            OrderBotConversationState::AWAITING_DELIVERY_SLOT,
+            OrderBotConversationState::ORDER_SUMMARY,
+            OrderBotConversationState::AWAITING_PAYMENT_PROOF,
+        ];
+
+        // BATAL / CANCEL — batalkan proses order dan kembali ke menu
+        if (in_array($state, array_merge($orderFlowStates, [OrderBotConversationState::PRODUCT_BROWSING]), true)
+            && $this->matchesIntent($lower, ['batal', 'cancel', 'batalkan', 'batalin'])
+        ) {
+            $conversation->clearContext();
+            $this->advanceState($conversation, OrderBotConversationState::MENU_SELECTION);
+            $this->metaService->sendText(
+                $conversation->phone_number,
+                "🛑 Pesanan dibatalkan.\n\nBerikut pilihan kategori:"
+            );
+            $this->sendProductCategories($conversation);
+
+            return true;
+        }
+
+        // MENU / KEMBALI — kembali ke menu dari tengah alur order
+        if (in_array($state, $orderFlowStates, true)
+            && $this->matchesIntent($lower, ['menu', 'utama', 'kembali', 'awal', 'back'])
+        ) {
+            $conversation->clearContext();
+            $this->advanceState($conversation, OrderBotConversationState::MENU_SELECTION);
+            $this->metaService->sendText(
+                $conversation->phone_number,
+                "📋 Kembali ke menu.\n\nBerikut pilihan kategori:"
+            );
+            $this->sendProductCategories($conversation);
+
+            return true;
+        }
+
+        // PESAN / ORDER — mulai ulang formulir pesanan (jangan ditelan sebagai isi form)
+        if (in_array($state, $orderFlowStates, true)
+            && $this->matchesIntent($lower, ['mau pesan', 'pesan', 'order', 'ordering', 'mau order'])
+        ) {
+            $conversation->clearContext();
+            $this->advanceState($conversation, OrderBotConversationState::AWAITING_ORDER_FORM);
+            $this->metaService->sendText(
+                $conversation->phone_number,
+                "📝 Oke, kita mulai ulang formulir pesanannya ya 😊"
+            );
+            $this->askOrderForm($conversation);
+
+            return true;
+        }
+
+        // PRODUK / KATALOG — lihat katalog dari tengah alur order
+        if (in_array($state, $orderFlowStates, true)
+            && $this->matchesIntent($lower, ['lihat produk', 'produk', 'katalog', 'catalog', 'kategori'])
+        ) {
+            $conversation->clearContext();
+            $this->advanceState($conversation, OrderBotConversationState::PRODUCT_BROWSING);
+            $this->sendProductCatalog($conversation);
+
+            return true;
+        }
+
+        // HALO / BANTUAN — jelaskan posisi user sekarang, tanpa menelan pesannya
+        if (in_array($state, $orderFlowStates, true)
+            && ($this->matchesIntent($lower, ['halo', 'hai', 'hi', 'hello', 'salam', 'assalam'])
+                || $this->matchesIntent($lower, ['bantuan', 'help', 'tolong']))
+        ) {
+            $this->metaService->sendText(
+                $conversation->phone_number,
+                "Halo! 😊 Sepertinya kamu masih di tengah proses pesanan.\n\n".
+                "📌 *Yang sedang bot tunggu:*\n{$this->buildCurrentStepGuide($conversation)}\n\n".
+                "💡 *Perintah yang bisa kamu pakai:*\n".
+                "• *PESAN* — mulai ulang formulir pesanan dari awal\n".
+                "• *PRODUK* — lihat katalog produk\n".
+                "• *MENU* — kembali ke daftar kategori\n".
+                "• *BATAL* — batalkan pesanan\n\n".
+                'Atau langsung lanjutkan menjawab pertanyaan di atas.'
+            );
+
+            return true;
+        }
+
+        // MULAI ULANG / RESET — mulai dari awal, berlaku untuk semua state
+        if ($this->matchesIntent($lower, ['mulai ulang', 'mulai dari awal', 'ulang dari awal', 'start ulang', 'restart', 'reset', 'ulangi', 'mulai lagi'])) {
+            $conversation->clearContext();
+            $conversation->update([
+                'current_state' => OrderBotConversationState::WELCOME_SENT->value,
+                'status' => 'active',
+            ]);
+            $this->sendWelcomeMessage($conversation);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Reset percakapan yang terbengkalai (stale) untuk user yang kembali setelah lama tidak aktif,
+     * sehingga bot selalu bisa mulai dari awal lagi. Dipanggil dari webhook job SEBELUM
+     * message count/last_message_at diperbarui.
+     *
+     * @param  \Illuminate\Support\Carbon|null  $lastActivity  waktu pesan masuk sebelumnya
+     */
+    public function resetConversationIfStale(WhatsAppConversation $conversation, ?\Illuminate\Support\Carbon $lastActivity): bool
+    {
+        if (! $lastActivity) {
+            return false;
+        }
+
+        $thresholdMinutes = (int) config('services.whatsapp.session_expire_minutes', 60);
+
+        if ($lastActivity->diffInMinutes(now()) < $thresholdMinutes) {
+            return false;
+        }
+
+        $state = OrderBotConversationState::from($conversation->current_state);
+        $intermediateStates = [
+            OrderBotConversationState::WELCOME_SENT,
+            OrderBotConversationState::MENU_SELECTION,
+            OrderBotConversationState::PRODUCT_BROWSING,
+            OrderBotConversationState::AWAITING_ORDER_FORM,
+            OrderBotConversationState::AWAITING_DELIVERY_METHOD,
+            OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS,
+            OrderBotConversationState::AWAITING_DELIVERY_SLOT,
+            OrderBotConversationState::ORDER_SUMMARY,
+            OrderBotConversationState::AWAITING_PAYMENT_PROOF,
+            OrderBotConversationState::ORDER_CONFIRMED,
+        ];
+
+        if (! in_array($state, $intermediateStates, true)) {
+            return false;
+        }
+
+        $this->metaService->sendText(
+            $conversation->phone_number,
+            "Halo *{$conversation->profile_name}* 👋\n\n".
+            'Sepertinya obrolan sebelumnya sudah lama. Mari mulai dari awal lagi 😊'."\n\n".
+            "Ketik *PESAN* untuk mulai order,\n".
+            'atau ketik *PRODUK* untuk melihat katalog.'
+        );
+        $conversation->clearContext();
+        $conversation->update([
+            'current_state' => OrderBotConversationState::WELCOME_SENT->value,
+            'status' => 'active',
+        ]);
+
+        Log::channel('whatsapp')->info('🔄 Stale conversation reset', [
+            'phone' => $conversation->phone_number,
+            'previous_state' => $state->value,
+            'inactive_minutes' => $lastActivity->diffInMinutes(now()),
+        ]);
+
+        return true;
     }
 
     protected function handleInit(WhatsAppConversation $conversation, string $text): void
@@ -362,6 +536,35 @@ class OrderBotService
     }
 
     // ========== MESSAGE BUILDERS ==========
+
+    /**
+     * Kembalikan pertanyaan yang sedang ditunggu bot pada state saat ini,
+     * agar user yang bingung tahu harus menjawab/apa.
+     */
+    protected function buildCurrentStepGuide(WhatsAppConversation $conversation): string
+    {
+        $context = $conversation->context ?? [];
+        $formStep = $context['form_step'] ?? 0;
+        $state = OrderBotConversationState::from($conversation->current_state);
+
+        return match ($state) {
+            OrderBotConversationState::AWAITING_ORDER_FORM => match ($formStep) {
+                0 => 'Isi nama produk yang ingin dipesan.',
+                1 => 'Isi nama penerima.',
+                2 => 'Isi alamat pengiriman lengkap.',
+                3 => 'Isi tanggal kirim (contoh: 10 September 2026).',
+                4 => 'Isi jam tiba yang diinginkan (contoh: 10:00).',
+                default => 'Pilih metode pengiriman (1 / 2 / 3).',
+            },
+            OrderBotConversationState::AWAITING_DELIVERY_METHOD,
+            OrderBotConversationState::MENU_SELECTION => 'Pilih metode pengiriman (1 Diambil sendiri, 2 Grab/GoSend, 3 Kurir internal).',
+            OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS => 'Kirim lokasi GPS (pin lokasi) atau ketik alamat lengkap.',
+            OrderBotConversationState::AWAITING_DELIVERY_SLOT => 'Pilih slot waktu pengiriman (1 / 2 / 3 / 4).',
+            OrderBotConversationState::ORDER_SUMMARY => 'Ketik *FIX* untuk konfirmasi pesanan, atau *BATAL* untuk membatalkan.',
+            OrderBotConversationState::AWAITING_PAYMENT_PROOF => 'Kirim gambar bukti pembayaran, atau ketik *SKIP* untuk lanjut.',
+            default => 'Lanjutkan percakapan sesuai pesan terakhir bot.',
+        };
+    }
 
     protected function sendWelcomeMessage(WhatsAppConversation $conversation): void
     {

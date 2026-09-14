@@ -277,4 +277,79 @@ class OrderBotStateTransitionTest extends TestCase
         $order = Order::first();
         $this->assertMatchesRegularExpression('/^INV\/\d{4}\/\d{2}\/\d{3}\/\d{3}\/\d{3}$/', $order->invoice_number);
     }
+
+    public function test_pesan_during_form_restarts_order_form(): void
+    {
+        // Simulasi user yang "nyangkut" di tengah form (state AWAITING_LOCATION_OR_ADDRESS)
+        // lalu mengetik "PESAN" — harus memulai ulang formulir, bukan ditelan sebagai alamat.
+        $this->conversation->update([
+            'current_state' => OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS->value,
+            'context' => [
+                'delivery_method' => 'kurir_internal',
+                'order_form' => [
+                    'product_name' => 'Tumpeng Mini',
+                    'recipient_name' => 'Budi',
+                    'recipient_address' => 'Jl. Lama No.1',
+                    'delivery_date' => '10 September 2026',
+                    'delivery_time' => '10:00',
+                ],
+            ],
+        ]);
+
+        $this->botService->handleMessage($this->conversation, 'PESAN');
+
+        $this->conversation->refresh();
+        $this->assertEquals(OrderBotConversationState::AWAITING_ORDER_FORM->value, $this->conversation->current_state);
+        $this->assertEquals(0, $this->conversation->getContext('form_step'));
+        $this->assertSame([], $this->conversation->getContext('order_form'));
+    }
+
+    public function test_pesan_during_form_step_does_not_swallow_as_field(): void
+    {
+        // Dari log asli: user berada di form step delivery_date lalu mengetik "halo"/"pesan".
+        // Kedua kata itu tidak boleh tersimpan sebagai isi field.
+        $this->conversation->update([
+            'current_state' => OrderBotConversationState::AWAITING_ORDER_FORM->value,
+            'context' => ['form_step' => 3, 'order_form' => ['product_name' => 'Tumpeng Mini']],
+        ]);
+
+        $this->botService->handleMessage($this->conversation, 'halo');
+
+        $this->conversation->refresh();
+        $this->assertEquals(OrderBotConversationState::AWAITING_ORDER_FORM->value, $this->conversation->current_state);
+        $this->assertEquals(3, $this->conversation->getContext('form_step'));
+        $this->assertNull($this->conversation->getContext('order_form.delivery_date'));
+
+        $this->botService->handleMessage($this->conversation, 'PESAN');
+
+        $this->conversation->refresh();
+        $this->assertEquals(OrderBotConversationState::AWAITING_ORDER_FORM->value, $this->conversation->current_state);
+        $this->assertEquals(0, $this->conversation->getContext('form_step'));
+    }
+
+    public function test_halo_during_form_shows_guidance_without_leaving_form(): void
+    {
+        $this->conversation->update([
+            'current_state' => OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS->value,
+            'context' => ['delivery_method' => 'kurir_internal'],
+        ]);
+
+        $this->botService->handleMessage($this->conversation, 'Halo');
+
+        $this->conversation->refresh();
+        $this->assertEquals(OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS->value, $this->conversation->current_state);
+    }
+
+    public function test_produk_during_form_goes_to_catalog(): void
+    {
+        $this->conversation->update([
+            'current_state' => OrderBotConversationState::AWAITING_DELIVERY_METHOD->value,
+            'context' => ['order_form' => ['product_name' => 'Tumpeng Mini']],
+        ]);
+
+        $this->botService->handleMessage($this->conversation, 'produk');
+
+        $this->conversation->refresh();
+        $this->assertEquals(OrderBotConversationState::PRODUCT_BROWSING->value, $this->conversation->current_state);
+    }
 }

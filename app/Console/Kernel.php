@@ -12,7 +12,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Reset percakapan WhatsApp yang terbengkalai (buntu) tiap jam,
+        // agar bot selalu bisa memulai percakapan baru.
+        $schedule->command('whatsapp:expire-conversations')->hourly();
     }
 
     /**

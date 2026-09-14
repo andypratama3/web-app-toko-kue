@@ -54,6 +54,14 @@ class Customer extends Model
     }
 
     /**
+     * Percakapan WhatsApp yang terhubung dengan customer ini (indikasi opt-in WA).
+     */
+    public function conversations()
+    {
+        return $this->hasMany(WhatsAppConversation::class, 'customer_id');
+    }
+
+    /**
      * Mutator untuk format otomatis 'name'.
      */
     protected function name(): Attribute

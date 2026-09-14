@@ -256,6 +256,65 @@ class WhatsappMetaService
         return $this->phoneNumberId;
     }
 
+    /**
+     * Ambil daftar template message template dari Meta (perlu META_WABA_ID).
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function fetchTemplates(?string $status = 'APPROVED', int $limit = 100): array
+    {
+        $wabaId = config('services.whatsapp.waba_id');
+
+        if (! $wabaId) {
+            Log::channel('whatsapp')->warning('⚠️ META_WABA_ID belum dikonfigurasi, tidak bisa mengambil template');
+
+            return [];
+        }
+
+        try {
+            $response = $this->client()->get(
+                "https://graph.facebook.com/{$this->version}/{$wabaId}/message_templates",
+                [
+                    'fields' => 'id,name,status,language,category,components',
+                    'status' => $status,
+                    'limit' => $limit,
+                ]
+            );
+
+            if (! $response->successful()) {
+                Log::channel('whatsapp')->error('❌ Failed to fetch templates from Meta', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+
+                return [];
+            }
+
+            $data = $response->json('data', []);
+
+            Log::channel('whatsapp')->info('📑 Templates fetched from Meta', ['count' => count($data)]);
+
+            return $data;
+        } catch (\Exception $e) {
+            Log::channel('whatsapp')->error('❌ Exception fetching templates', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return [];
+        }
+    }
+
+    /** Ekstrak label kategori template Meta menjadi string singkat untuk UI. */
+    public static function templateCategoryLabel(string $category): string
+    {
+        return match (strtoupper($category)) {
+            'MARKETING' => 'Marketing',
+            'UTILITY' => 'Utility',
+            'AUTHENTICATION' => 'Autentikasi',
+            default => $category,
+        };
+    }
+
     protected function sendMessage(array $payload, string $recipientPhone, string $type, bool $record = true, ?string $phoneNumberId = null): ?string
     {
         try {

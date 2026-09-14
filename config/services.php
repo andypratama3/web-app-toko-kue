@@ -39,6 +39,14 @@ return [
         'graph_version' => env('META_VERSION', 'v21.0'),
         'bot_name' => env('META_BOT_NAME', 'Kue Pandan Asli'),
         'default_region' => env('META_DEFAULT_REGION', 'Denpasar'),
+        // ID WhatsApp Business Account (untuk ambil daftar template broadcast)
+        'waba_id' => env('META_WABA_ID'),
+        // Berapa menit tanpa aktivitas sampai percakapan tengah-order dianggap buntu dan direset
+        'session_expire_minutes' => (int) env('META_SESSION_EXPIRE_MINUTES', 60),
+        // Jeda (detik) antar pengiriman broadcast agar tidak kena rate limit Meta
+        'broadcast_interval_seconds' => (int) env('BROADCAST_INTERVAL_SECONDS', 1),
+        // Berapa recipient diproses per-batch pada job broadcast
+        'broadcast_batch_size' => (int) env('BROADCAST_BATCH_SIZE', 50),
     ],
 
 ];

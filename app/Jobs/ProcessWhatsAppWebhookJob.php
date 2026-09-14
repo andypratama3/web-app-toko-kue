@@ -147,6 +147,9 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
             'status' => 'received',
         ]);
 
+        // Reset percakapan yang terbengkalai sebelum memproses (supaya user selalu bisa mulai baru)
+        $botService->resetConversationIfStale($conversation, $conversation->last_message_at);
+
         $conversation->incrementMessageCount();
 
         WhatsAppMessageReceived::dispatch($savedMessage, $conversation->phone_number, $content ?? '');

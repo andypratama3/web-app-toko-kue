@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\BroadcastController;
 use App\Http\Controllers\Admin\CourierController;
 use App\Http\Controllers\Admin\ChatMonitorController;
 use App\Http\Controllers\Admin\AdminNotificationController;
@@ -151,6 +152,16 @@ Route::middleware([
         // Admin Notifications
         Route::get('notifications', [AdminNotificationController::class, 'index'])->name('notifications.index');
         Route::post('notifications/read-all', [AdminNotificationController::class, 'markAllRead'])->name('notifications.read-all');
+
+        // Broadcast WhatsApp (promosi dengan template approved Meta)
+        Route::get('broadcast', [BroadcastController::class, 'index'])->name('broadcast.index');
+        Route::get('broadcast/create', [BroadcastController::class, 'create'])->name('broadcast.create');
+        Route::get('broadcast/preview-count', [BroadcastController::class, 'previewCount'])->name('broadcast.preview-count');
+        Route::get('broadcast/preview-body', [BroadcastController::class, 'previewBody'])->name('broadcast.preview-body');
+        Route::post('broadcast/sync-template', [BroadcastController::class, 'syncTemplate'])->name('broadcast.sync');
+        Route::post('broadcast', [BroadcastController::class, 'store'])->name('broadcast.store');
+        Route::get('broadcast/{broadcast}', [BroadcastController::class, 'show'])->name('broadcast.show');
+        Route::post('broadcast/{broadcast}/cancel', [BroadcastController::class, 'cancel'])->name('broadcast.cancel');
     });
 
     //---------- RUTE KURIR ----------//

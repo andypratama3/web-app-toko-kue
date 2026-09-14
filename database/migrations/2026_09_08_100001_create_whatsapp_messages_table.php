@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('whatsapp_messages', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('conversation_id');
+            $table->uuid('conversation_id')->nullable();
             $table->string('whatsapp_message_id')->unique(); // Meta message ID for dedup
             $table->string('sender_type')->default('customer'); // customer, bot, admin
             $table->string('message_type')->default('text'); // text, image, document, interactive, location, sticker, video
