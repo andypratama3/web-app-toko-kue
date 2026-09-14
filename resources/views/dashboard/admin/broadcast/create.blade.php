@@ -218,8 +218,12 @@
                 if (this.selectedTemplate.header_text) text += this.selectedTemplate.header_text + '\n\n';
                 text += this.selectedTemplate.body_text || '';
                 if (this.selectedTemplate.button_text) text += '\n\n[Tombol: ' + this.selectedTemplate.button_text + ']';
+                const openTag = '{'.repeat(2);
+                const closeTag = '}'.repeat(2);
                 for (const key in this.params) {
-                    text = text.split('{{' + key + '}}').join(this.params[key] || `{{${key}}}`);
+                    const tag = openTag + key + closeTag;
+                    const value = this.params[key];
+                    text = text.split(tag).join(value || tag);
                 }
                 this.preview = text;
                 this.count = null;
