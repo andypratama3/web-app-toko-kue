@@ -19,6 +19,8 @@ class WhatsAppBroadcast extends Model
         'whatsapp_template_id',
         'title',
         'body_preview',
+        'header_media_type',
+        'header_media_url',
         'parameters',
         'recipient_filter',
         'recipient_count',

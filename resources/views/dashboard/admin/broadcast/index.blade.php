@@ -76,6 +76,11 @@
                         <span class="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded dark:bg-purple-900 dark:text-purple-300">
                             {{ $broadcast->template->name ?? '-' }}
                         </span>
+                        @if($broadcast->header_media_type)
+                            <span class="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
+                                <i class="fas fa-image"></i> {{ ucfirst($broadcast->header_media_type) }}
+                            </span>
+                        @endif
                     </td>
                     <td class="px-4 py-3">
                         @if($broadcast->region)

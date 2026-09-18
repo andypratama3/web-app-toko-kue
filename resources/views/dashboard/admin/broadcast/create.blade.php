@@ -11,6 +11,8 @@
         'button_text' => $t->button_text,
         'parameters_count' => $t->parameters_count,
         'category' => \App\Services\WhatsApp\WhatsappMetaService::templateCategoryLabel($t->category ?? ''),
+        'header_format' => \App\Services\WhatsApp\WhatsAppBroadcastService::headerFormat($t->components ?? []),
+        'header_example_url' => \App\Services\WhatsApp\WhatsAppBroadcastService::headerExampleUrl($t->components ?? []),
         'is_active' => (bool) $t->is_active,
     ])->values();
 
@@ -27,13 +29,21 @@
             </p>
         </div>
 
-        @if($errors->has('parameters'))
+        @if($errors->has('parameters') || $errors->has('header_media_file') || $errors->has('header_media_url'))
             <div class="mb-4 p-3 text-sm text-red-800 bg-red-100 rounded-lg dark:bg-red-900 dark:text-red-200">
-                {{ $errors->first('parameters') }}
+                @if($errors->has('parameters'))
+                    {{ $errors->first('parameters') }}<br>
+                @endif
+                @if($errors->has('header_media_file'))
+                    {{ $errors->first('header_media_file') }}<br>
+                @endif
+                @if($errors->has('header_media_url'))
+                    {{ $errors->first('header_media_url') }}
+                @endif
             </div>
         @endif
 
-        <form method="POST" action="{{ route('admin.broadcast.store') }}" x-data="broadcastForm()" x-init="init()">
+        <form method="POST" action="{{ route('admin.broadcast.store') }}" enctype="multipart/form-data" x-data="broadcastForm()" x-init="init()">
             @csrf
 
             <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -58,6 +68,60 @@
                             placeholder="mis. Promo Lebaran 2026">
                     </div>
 
+                    {{-- Header Media (template bergambar/video/dokumen) --}}
+                    <template x-if="selectedTemplate && ['IMAGE', 'VIDEO', 'DOCUMENT'].includes(selectedTemplate.header_format)">
+                        <div class="p-4 border rounded-lg border-[#8BA870]/40 bg-green-50/50 dark:bg-green-900/10">
+                            <div class="flex items-center justify-between mb-2">
+                                <h3 class="text-sm font-semibold text-gray-900 dark:text-white"
+                                    x-text="`Media Header (${selectedTemplate.header_format === 'IMAGE' ? 'Gambar' : selectedTemplate.header_format === 'VIDEO' ? 'Video' : 'Dokumen'})`"></h3>
+                                <span class="text-xs text-gray-400 dark:text-gray-500">Opsional</span>
+                            </div>
+
+                            <template x-if="selectedTemplate.header_example_url">
+                                <img :src="selectedTemplate.header_example_url" alt="Media bawaan template"
+                                    class="w-full max-h-40 object-cover rounded-lg mb-3 border border-gray-200">
+                            </template>
+
+                            <p class="mb-3 text-xs text-gray-500 dark:text-gray-400">
+                                Template ini sudah dilengkapi media yang di-<strong>approve Meta</strong>. Boleh dipakai
+                                polos, atau diganti media promosi sendiri (jenis media harus sama dengan template).
+                            </p>
+
+                            <div class="space-y-2">
+                                <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer dark:text-gray-300">
+                                    <input type="radio" name="header_media_choice" value="template" x-model="headerMediaChoice"
+                                        class="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 focus:ring-green-500">
+                                    Pakai media bawaan template (default)
+                                </label>
+
+                                <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer dark:text-gray-300">
+                                    <input type="radio" name="header_media_choice" value="upload" x-model="headerMediaChoice"
+                                        class="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 focus:ring-green-500">
+                                    Upload gambar/video baru
+                                </label>
+                                <div x-show="headerMediaChoice === 'upload'" class="pt-1 pl-6">
+                                    <input type="file" name="header_media_file" id="header_media_file"
+                                        :accept="selectedTemplate.header_format === 'VIDEO' ? '.mp4,.3gp,.mov,video/*' : selectedTemplate.header_format === 'DOCUMENT' ? '.pdf,application/pdf' : '.jpg,.jpeg,.png,.webp,image/*'"
+                                        class="block w-full text-sm text-gray-600 dark:text-gray-300 cursor-pointer file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-[#8BA870] file:text-white file:font-medium file:cursor-pointer">
+                                    <span class="block mt-1 text-xs text-gray-400 dark:text-gray-500"
+                                        x-text="selectedTemplate.header_format === 'VIDEO' ? 'Format: MP4 / 3GP / MOV, maks 20 MB' : selectedTemplate.header_format === 'DOCUMENT' ? 'Format: PDF, maks 10 MB' : 'Format: JPG / PNG / WEBP, maks 10 MB'"></span>
+                                </div>
+
+                                <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer dark:text-gray-300">
+                                    <input type="radio" name="header_media_choice" value="url" x-model="headerMediaChoice"
+                                        class="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 focus:ring-green-500">
+                                    Pakai URL gambar/video
+                                </label>
+                                <div x-show="headerMediaChoice === 'url'" class="pt-1 pl-6">
+                                    <input type="url" name="header_media_url" id="header_media_url" x-model="headerMediaUrl"
+                                        placeholder="https://kuepandanasli.com/assets/promo-hampers.png"
+                                        class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-[#8BA870] focus:border-[#8BA870] block w-full p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    <span class="block mt-1 text-xs text-gray-400 dark:text-gray-500">URL harus dapat diakses publik oleh WhatsApp/Meta.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
                     {{-- Parameter Template --}}
                     <template x-if="selectedTemplate">
                         <div class="p-4 border rounded-lg dark:border-gray-600">
@@ -67,7 +131,7 @@
                                     <span class="text-xs text-gray-400" x-text="`${selectedTemplate.parameters_count} parameter`"></span>
                                 </div>
                                 <p class="mt-1 text-xs text-gray-400">
-                                    Token <code class="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{nama}</code> akan diganti nama masing-masing penerima.
+                                    Token <code class="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 text-white dark:text-white rounded">{nama}</code> akan diganti nama masing-masing penerima.
                                 </p>
                             </div>
 
@@ -89,6 +153,10 @@
                             {{-- Preview --}}
                             <div class="mt-4">
                                 <div class="mb-1 text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase">Pratinjau Pesan</div>
+                                <div x-show="headerMediaChoice === 'template' && selectedTemplate.header_example_url" class="mb-2">
+                                    <img :src="selectedTemplate.header_example_url" alt="Media bawaan template"
+                                        class="max-h-32 object-cover rounded-lg border border-gray-200 dark:border-gray-600">
+                                </div>
                                 <div class="p-3 text-sm bg-gray-50 border border-gray-200 rounded-lg whitespace-pre-wrap dark:bg-gray-700 dark:border-gray-600 dark:text-white" x-text="preview">
                                 </div>
                             </div>
@@ -187,9 +255,16 @@
             preview: '',
             count: null,
             countLoading: false,
+            headerMediaChoice: 'template',
+            headerMediaUrl: '',
+            headerMediaFile: null,
 
             init() {
                 if (this.myRegionId) this.selectedRegionId = this.myRegionId;
+            },
+
+            get selectedHeaderFormat() {
+                return this.selectedTemplate?.header_format || 'TEXT';
             },
 
             get selectedTemplate() {
@@ -205,6 +280,9 @@
                 this.params = {};
                 this.preview = '';
                 this.count = null;
+                this.headerMediaChoice = 'template';
+                this.headerMediaUrl = '';
+                this.headerMediaFile = null;
                 if (!this.selectedTemplate) return;
                 for (const key of this.paramKeys) {
                     this.params[key] = '';
@@ -212,10 +290,27 @@
                 this.updatePreview();
             },
 
+            get allowedMediaType() {
+                const f = this.selectedHeaderFormat;
+                if (f === 'IMAGE') return 'image';
+                if (f === 'VIDEO') return 'video';
+                if (f === 'DOCUMENT') return 'document';
+                return null;
+            },
+
             updatePreview() {
                 if (!this.selectedTemplate) { this.preview = ''; return; }
                 let text = '';
-                if (this.selectedTemplate.header_text) text += this.selectedTemplate.header_text + '\n\n';
+                if (this.allowedMediaType) {
+                    const labelMap = { image: 'Gambar', video: 'Video', document: 'Dokumen' };
+                    const label = labelMap[this.allowedMediaType] || 'Media';
+                    const src = this.headerMediaChoice === 'template'
+                        ? 'media bawaan template'
+                        : (this.headerMediaUrl || 'file terpilih');
+                    text += `[${label}: ${src}]\n\n`;
+                } else if (this.selectedTemplate.header_text) {
+                    text += this.selectedTemplate.header_text + '\n\n';
+                }
                 text += this.selectedTemplate.body_text || '';
                 if (this.selectedTemplate.button_text) text += '\n\n[Tombol: ' + this.selectedTemplate.button_text + ']';
                 const openTag = '{'.repeat(2);

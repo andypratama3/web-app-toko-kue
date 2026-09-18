@@ -11,6 +11,7 @@ use App\Models\WhatsAppTemplate;
 use App\Services\WhatsApp\WhatsAppBroadcastService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class BroadcastController extends Controller
 {
@@ -58,6 +59,9 @@ class BroadcastController extends Controller
             'customer_category_id' => 'nullable|exists:customer_categories,id',
             'only_opt_in' => 'nullable|boolean',
             'parameters' => 'nullable|array',
+            'header_media_type' => 'nullable|string|in:image,video,document',
+            'header_media_url' => 'nullable|url|max:2048',
+            'header_media_file' => 'nullable|file',
         ]);
 
         $regionRaw = $validated['region_id'] ?? null;
@@ -66,6 +70,10 @@ class BroadcastController extends Controller
         }
 
         $template = WhatsAppTemplate::findOrFail($validated['whatsapp_template_id']);
+        $headerFormat = WhatsAppBroadcastService::headerFormat($template->components ?? []);
+
+        // Olah media header (gambar/video/document) bila template punya header media.
+        [$headerMediaType, $headerMediaUrl] = $this->resolveHeaderMedia($request, $headerFormat);
 
         $parameters = [];
         foreach ($validated['parameters'] ?? [] as $index => $value) {
@@ -98,8 +106,10 @@ class BroadcastController extends Controller
             'region_id' => $filter['region_id'],
             'whatsapp_template_id' => $template->id,
             'title' => $validated['title'] ?? null,
+            'body_preview' => $service->renderBodyPreview($template, $parameters, $headerMediaType, $headerMediaUrl),
+            'header_media_type' => $headerMediaType,
+            'header_media_url' => $headerMediaUrl,
             'parameters' => $parameters,
-            'body_preview' => $service->renderBodyPreview($template, $parameters),
             'status' => 'draft',
         ]);
 
@@ -117,6 +127,65 @@ class BroadcastController extends Controller
 
         return redirect()->route('admin.broadcast.show', $broadcast)
             ->with('success', "Broadcast dikirim ke {$recipientCount} penerima.");
+    }
+
+    /**
+     * Tentukan media header broadcast dari upload file / URL, sesuai tipe header template.
+     * Mengembalikan [type|null, url|null]. Media kosong = pakai media bawaan template yang di-approve Meta.
+     */
+    protected function resolveHeaderMedia(Request $request, ?string $headerFormat): array
+    {
+        // Header teks tidak boleh membawa media.
+        if (! $headerFormat || $headerFormat === 'TEXT') {
+            return [null, null];
+        }
+
+        $allowedType = strtolower($headerFormat); // image | video | document
+        $file = $request->file('header_media_file');
+        $urlRaw = trim((string) $request->input('header_media_url', ''));
+
+        if ($file && $file->isValid()) {
+            $mimes = match ($allowedType) {
+                'image' => 'jpg,jpeg,png,webp',
+                'video' => 'mp4,3gp,mov',
+                default => 'pdf',
+            };
+            $maxKb = $allowedType === 'video' ? 20480 : 10240;
+
+            $request->validate([
+                'header_media_file' => ["required", "file", "mimes:{$mimes}", "max:{$maxKb}"],
+            ]);
+
+            // Ekstensi diambil dari MIME yang terdeteksi (bukan nama file klien)
+            // agar tidak mungkin tersimpan sebagai .php/.phtml/.svg dsb.
+            $detectedMime = strtolower((string) $file->getMimeType());
+            $extension = match ($detectedMime) {
+                'image/jpeg' => 'jpg',
+                'image/png' => 'png',
+                'image/webp' => 'webp',
+                'video/mp4' => 'mp4',
+                'video/3gpp' => '3gp',
+                'video/quicktime' => 'mov',
+                'application/pdf' => 'pdf',
+                default => null,
+            };
+
+            if ($extension === null) {
+                return back()->withErrors(['header_media_file' => 'Tipe file tidak diizinkan.'])->withInput();
+            }
+
+            $filename = 'broadcast_media/'.time().'_'.uniqid().'.'.$extension;
+            $file->storeAs('public', $filename);
+            $url = url(\Illuminate\Support\Facades\Storage::url($filename));
+
+            return [$allowedType, $url];
+        }
+
+        if ($urlRaw && str_starts_with($urlRaw, 'http')) {
+            return [$allowedType, $urlRaw];
+        }
+
+        return [null, null];
     }
 
     public function show(WhatsAppBroadcast $broadcast)
@@ -181,8 +250,16 @@ class BroadcastController extends Controller
             $parameters[(int) $index] = trim((string) $value);
         }
 
+        $mediaType = $request->input('header_media_type');
+        $mediaUrl  = $request->input('header_media_url');
+
         return response()->json([
-            'preview' => app(WhatsAppBroadcastService::class)->renderBodyPreview($template, $parameters),
+            'preview' => app(WhatsAppBroadcastService::class)->renderBodyPreview(
+                $template,
+                $parameters,
+                $mediaType ?: null,
+                $mediaUrl ?: null,
+            ),
         ]);
     }
 

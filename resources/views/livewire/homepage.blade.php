@@ -45,12 +45,13 @@
     @include('layouts.headicon')
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/script_homepage.js'])
 
-    <!-- External Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/dist/medium-zoom.min.js"></script>
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- External Scripts (di-self-host agar tidak bergantung CDN saat production) -->
+    <script src="{{ asset('assets/homepage/vendor/alpine.min.js') }}" defer></script>
+    <script src="{{ asset('assets/homepage/vendor/medium-zoom.min.js') }}"></script>
+    <script src="{{ asset('assets/homepage/vendor/aos.js') }}"></script>
 
     <!-- External Styles -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link href="{{ asset('assets/homepage/vendor/aos.css') }}" rel="stylesheet">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
@@ -233,135 +234,190 @@
                 <img src="{{ asset('assets/homepage/about-us.jpg') }}" alt="About Us" loading="lazy"
                     class="w-full h-[400px] object-cover rounded-2xl shadow-lg">
             </div>
-            <!-- Right: Content (tab only on this side) -->
+            <!-- Right: Content (carousel Tentang / Visi / Misi) -->
             <div class="flex flex-col items-start w-full md:w-1/2">
-                <div x-data="{ tab: 'tentang' }" class="w-full">
-                    <div class="relative flex gap-8 mb-4 border-b border-gray-200">
-                        <button @click="tab = 'tentang'"
-                            class="px-1 pb-2 text-lg font-semibold transition-colors duration-200 border-b-2 focus:outline-none"
-                            :class="tab === 'tentang' ? 'text-[#8BA870] border-[#8BA870]' :
-                                'text-gray-500 hover:text-[#8BA870] border-b-2 border-transparent'">
-                            Tentang
-                        </button>
-                        <button @click="tab = 'visi'"
-                            class="px-1 pb-2 text-lg font-semibold transition-colors duration-200 border-b-2 focus:outline-none"
-                            :class="tab === 'visi' ? 'text-[#8BA870] border-[#8BA870]' :
-                                'text-gray-500 hover:text-[#8BA870] border-b-2 border-transparent'">
-                            Visi
-                        </button>
-                        <button @click="tab = 'misi'"
-                            class="px-1 pb-2 text-lg font-semibold transition-colors duration-200 border-b-2 focus:outline-none"
-                            :class="tab === 'misi' ? 'text-[#8BA870] border-[#8BA870]' :
-                                'text-gray-500 hover:text-[#8BA870] border-b-2 border-transparent'">
-                            Misi
-                        </button>
-                    </div>
-                    <h2 class="text-3xl md:text-4xl font-bold text-[#2C3E50] mb-6" x-show="tab === 'tentang'">Kue
-                        Pandan Asli</h2>
-                    <div x-show="tab === 'tentang'" x-transition:enter="transition ease-out duration-800"
-                        x-transition:enter-start="opacity-0 translate-y-4"
-                        x-transition:enter-end="opacity-100 translate-y-0"
-                        x-transition:leave="transition ease-in duration-400" x-transition:leave-start="opacity-100"
-                        x-transition:leave-end="opacity-0">
-                        <div x-data="{ open: false }">
-                            <p class="mb-8 leading-relaxed text-gray-600">
-                            <div x-show="!open" class="text-justify">
-                                Kue Pandan Asli, kami adalah perusahaan kuliner yang berfokus pada produksi dan
-                                pengembangan kue tradisional berbahan alami tanpa bahan pengawet, tanpa pewarna
-                                tambahan, tanpa pengharum tambahan dan tanpa pemanis buatan. Kami berfokus pada bahan
-                                bahan alami mulai dari pewarna kami menggunakan 100% pandan pada seluruh produk kami.
-                                Kami berkomitmen menghadirkan kue tradisional dengan bahan baku premium, alami dan
-                                kekinian.<br>
-                                <button @click="open = true"
-                                    class="inline-flex items-center gap-2 bg-[#8BA870] text-white px-4 py-1.5 rounded-full font-semibold shadow hover:bg-[#7a965e] transition mt-8 group">
-                                    <svg class="w-4 h-4 text-white transition-transform group-hover:translate-x-1"
-                                        fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                                    </svg>
-                                    <span>Selengkapnya</span>
+                <div x-data="{
+                    slides: ['tentang', 'visi', 'misi'],
+                    index: 0,
+                    open: false,
+                    timer: null,
+                    init() {
+                        this.timer = setInterval(() => this.advance(), 6000);
+                    },
+                    label(i) {
+                        return this.slides[i].charAt(0).toUpperCase() + this.slides[i].slice(1);
+                    },
+                    advance() {
+                        this.index = (this.index + 1) % this.slides.length;
+                    },
+                    go(i) {
+                        this.index = i;
+                        this.restart();
+                    },
+                    next() {
+                        this.advance();
+                        this.restart();
+                    },
+                    prev() {
+                        this.index = (this.index - 1 + this.slides.length) % this.slides.length;
+                        this.restart();
+                    },
+                    restart() {
+                        clearInterval(this.timer);
+                        this.timer = setInterval(() => this.advance(), 6000);
+                    }
+                }" class="w-full">
+                    <!-- Header: label + panah -->
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex gap-6 border-b border-gray-200">
+                            <template x-for="(s, i) in slides" :key="s">
+                                <button @click="go(i)" :aria-label="label(i)"
+                                    class="px-1 pb-2 text-lg font-semibold transition-colors duration-200 border-b-2 focus:outline-none"
+                                    :class="index === i ? 'text-[#8BA870] border-[#8BA870]' :
+                                        'text-gray-500 hover:text-[#8BA870] border-transparent'">
+                                    <span x-text="label(i)"></span>
                                 </button>
-                            </div>
-                            <div x-show="open" class="text-justify">
-                                Kue Pandan Asli, kami adalah perusahaan kuliner yang berfokus pada produksi dan
-                                pengembangan kue tradisional berbahan alami tanpa bahan pengawet, tanpa pewarna
-                                tambahan, tanpa pengharum tambahan dan tanpa pemanis buatan. Kami berfokus pada bahan
-                                bahan alami mulai dari pewarna kami menggunakan 100% pandan pada seluruh produk kami.
-                                Kami berkomitmen menghadirkan kue tradisional dengan bahan baku premium, alami dan
-                                kekinian.<br><br>
-                                Kue Pandan Asli mengenalkan kembali warisan kuliner nusantara melalui produk-produk
-                                unggulan seperti Kue Ijo Pandan, Kue Pulut Srikaya, Kue Lumpur Surga, Kue Ongol, Kue Ubi
-                                Nanas dan Koci Ketan Hitam dengan mengedepankan 100% bahan alami yang telah melalui
-                                quality control tim kami mulai dari pemilihan daun pandan yang hijau tua segar, gula
-                                jawa murni dari suplier sampai dengan pemilihan nanas langsung dari petani lokal.
-                                Mengangkat Kue Tradisional yang dikemas secara premium, cantik dan estetik agar sesuai
-                                dengan perkembangan zaman.<br><br>
-                                Kami percaya bahwasanya makanan tidak hanya soal rasa, tetapi juga pengalaman dan nilai
-                                budaya. Oleh karena itu, setiap produk kami dikemas dengan visual yang photogenic dan
-                                instagramable, menjadikannya pilihan utama sebagai oleh-oleh yang tersedia mulai dari
-                                Paket Hampers A (Anggun), Hampers B (Bagus) dan Hampers C (Cantik) dan Paket Tumpeng kue
-                                tradisional mulai dari Tumpeng Mini dan Tumpeng Besar yang cocok untuk berbagai
-                                acara.<br>
-                                <button @click="open = false"
-                                    class="inline-flex items-center gap-2 bg-gray-200 text-[#8BA870] px-4 py-1.5 rounded-full font-semibold shadow hover:bg-gray-300 transition mt-8 group">
-                                    <svg class="w-4 h-4 text-[#8BA870] group-hover:-translate-x-1 transition-transform"
-                                        fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M7 16l-4-4m0 0l4-4m-4 4h18" />
-                                    </svg>
-                                    <span>Tutup Selengkapnya</span>
-                                </button>
-                            </div>
-                            </p>
+                            </template>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button @click="prev()" aria-label="Sebelumnya"
+                                class="flex items-center justify-center w-9 h-9 text-[#8BA870] bg-white border border-[#8BA870]/30 rounded-full shadow-sm transition-all duration-300 hover:bg-[#8BA870] hover:text-white hover:scale-110 focus:outline-none">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 19l-7-7 7-7" />
+                                </svg>
+                            </button>
+                            <button @click="next()" aria-label="Berikutnya"
+                                class="flex items-center justify-center w-9 h-9 text-[#8BA870] bg-white border border-[#8BA870]/30 rounded-full shadow-sm transition-all duration-300 hover:bg-[#8BA870] hover:text-white hover:scale-110 focus:outline-none">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 5l7 7-7 7" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
-                    <div x-show="tab === 'visi'" x-transition:enter="transition ease-out duration-800"
-                        x-transition:enter-start="opacity-0 translate-y-4"
-                        x-transition:enter-end="opacity-100 translate-y-0"
-                        x-transition:leave="transition ease-in duration-400" x-transition:leave-start="opacity-100"
-                        x-transition:leave-end="opacity-0">
-                        <h2 class="text-3xl md:text-4xl font-bold text-[#2C3E50] mb-6">Visi Kami</h2>
-                        <div class="mb-8 leading-relaxed text-gray-600">
-                            <p class="mb-4 text-justify">Menjadi pelopor dalam pelestarian dan pengembangan kue
-                                tradisional Indonesia berbahan alami, dengan menghadirkan produk yang tidak hanya lezat
-                                dan sehat, tetapi juga dikemas secara modern dan menarik.</p>
-                            <p class="text-justify">Kami ingin membawa warisan kuliner nusantara ke generasi masa kini
-                                dan mendatang, sehingga kue tradisional tetap relevan, dicintai, dan menjadi kebanggaan
-                                bangsa.</p>
+
+                    <!-- Track slide -->
+                    <div class="overflow-hidden" @mouseenter="clearInterval(timer)" @mouseleave="restart()">
+                        <div class="flex transition-transform duration-700 ease-in-out"
+                            :style="`transform: translateX(-${index * 100}%)`">
+
+                            <!-- Slide: Tentang -->
+                            <div class="min-w-full pr-2">
+                                <h2 class="mb-6 text-3xl font-bold md:text-4xl text-[#2C3E50]">Kue Pandan Asli</h2>
+                                <div x-show="!open" class="text-justify">
+                                    <p class="leading-relaxed text-gray-600">
+                                        Kue Pandan Asli, kami adalah perusahaan kuliner yang berfokus pada produksi dan
+                                        pengembangan kue tradisional berbahan alami tanpa bahan pengawet, tanpa pewarna
+                                        tambahan, tanpa pengharum tambahan dan tanpa pemanis buatan. Kami berfokus pada
+                                        bahan bahan alami mulai dari pewarna kami menggunakan 100% pandan pada seluruh
+                                        produk kami. Kami berkomitmen menghadirkan kue tradisional dengan bahan baku
+                                        premium, alami dan kekinian.
+                                    </p>
+                                    <button @click="open = true"
+                                        class="inline-flex items-center gap-2 mt-8 bg-[#8BA870] text-white px-4 py-1.5 rounded-full font-semibold shadow hover:bg-[#7a965e] transition group">
+                                        <span>Selengkapnya</span>
+                                        <svg class="w-4 h-4 text-white transition-transform group-hover:translate-x-1"
+                                            fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div x-show="open" class="text-justify">
+                                    <p class="leading-relaxed text-gray-600">
+                                        Kue Pandan Asli, kami adalah perusahaan kuliner yang berfokus pada produksi dan
+                                        pengembangan kue tradisional berbahan alami tanpa bahan pengawet, tanpa pewarna
+                                        tambahan, tanpa pengharum tambahan dan tanpa pemanis buatan. Kami berfokus pada
+                                        bahan bahan alami mulai dari pewarna kami menggunakan 100% pandan pada seluruh
+                                        produk kami. Kami berkomitmen menghadirkan kue tradisional dengan bahan baku
+                                        premium, alami dan kekinian.
+                                    </p>
+                                    <p class="mt-4 leading-relaxed text-gray-600">
+                                        Kue Pandan Asli mengenalkan kembali warisan kuliner nusantara melalui
+                                        produk-produk unggulan seperti Kue Ijo Pandan, Kue Pulut Srikaya, Kue Lumpur
+                                        Surga, Kue Ongol, Kue Ubi Nanas dan Koci Ketan Hitam dengan mengedepankan 100%
+                                        bahan alami yang telah melalui quality control tim kami mulai dari pemilihan daun
+                                        pandan yang hijau tua segar, gula jawa murni dari suplier sampai dengan pemilihan
+                                        nanas langsung dari petani lokal. Mengangkat Kue Tradisional yang dikemas secara
+                                        premium, cantik dan estetik agar sesuai dengan perkembangan zaman.
+                                    </p>
+                                    <p class="mt-4 leading-relaxed text-gray-600">
+                                        Kami percaya bahwasanya makanan tidak hanya soal rasa, tetapi juga pengalaman dan
+                                        nilai budaya. Oleh karena itu, setiap produk kami dikemas dengan visual yang
+                                        photogenic dan instagramable, menjadikannya pilihan utama sebagai oleh-oleh yang
+                                        tersedia mulai dari Paket Hampers A (Anggun), Hampers B (Bagus) dan Hampers C
+                                        (Cantik) dan Paket Tumpeng kue tradisional mulai dari Tumpeng Mini dan Tumpeng
+                                        Besar yang cocok untuk berbagai acara.
+                                    </p>
+                                    <button @click="open = false"
+                                        class="inline-flex items-center gap-2 mt-8 bg-gray-200 text-[#8BA870] px-4 py-1.5 rounded-full font-semibold shadow hover:bg-gray-300 transition group">
+                                        <svg class="w-4 h-4 text-[#8BA870] group-hover:-translate-x-1 transition-transform"
+                                            fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+                                        </svg>
+                                        <span>Tutup Selengkapnya</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Slide: Visi -->
+                            <div class="min-w-full pr-2">
+                                <h2 class="mb-6 text-3xl font-bold md:text-4xl text-[#2C3E50]">Visi Kami</h2>
+                                <div class="leading-relaxed text-gray-600">
+                                    <p class="text-justify">Menjadi pelopor dalam pelestarian dan pengembangan kue
+                                        tradisional Indonesia berbahan alami, dengan menghadirkan produk yang tidak
+                                        hanya lezat dan sehat, tetapi juga dikemas secara modern dan menarik.</p>
+                                    <p class="mt-4 text-justify">Kami ingin membawa warisan kuliner nusantara ke
+                                        generasi masa kini dan mendatang, sehingga kue tradisional tetap relevan,
+                                        dicintai, dan menjadi kebanggaan bangsa.</p>
+                                </div>
+                            </div>
+
+                            <!-- Slide: Misi -->
+                            <div class="min-w-full pr-2">
+                                <h2 class="mb-6 text-3xl font-bold md:text-4xl text-[#2C3E50]">Misi Kami</h2>
+                                <ul class="space-y-4 leading-relaxed text-gray-600">
+                                    <li class="flex gap-3 text-justify">
+                                        <span class="flex-shrink-0 mt-1.5 w-2 h-2 rounded-full bg-[#8BA870]"></span>
+                                        <span><span class="font-semibold text-[#8BA870]">Mengutamakan bahan alami:</span>
+                                            Seluruh produk dibuat dari bahan baku alami, tanpa bahan pengawet, tanpa
+                                            pewarna tambahan, tanpa pengharum tambahan dan tanpa pemanis buatan.</span>
+                                    </li>
+                                    <li class="flex gap-3 text-justify">
+                                        <span class="flex-shrink-0 mt-1.5 w-2 h-2 rounded-full bg-[#8BA870]"></span>
+                                        <span><span class="font-semibold text-[#8BA870]">Inovasi berkelanjutan:</span>
+                                            Terus mengembangkan varian kue tradisional dengan sentuhan modern, baik dari
+                                            segi rasa maupun tampilan.</span>
+                                    </li>
+                                    <li class="flex gap-3 text-justify">
+                                        <span class="flex-shrink-0 mt-1.5 w-2 h-2 rounded-full bg-[#8BA870]"></span>
+                                        <span><span class="font-semibold text-[#8BA870]">Tanggung jawab produk:</span>
+                                            Menjaga kualitas mulai dari pemilihan bahan, proses produksi, hingga
+                                            pengemasan dan pengiriman ke konsumen.</span>
+                                    </li>
+                                    <li class="flex gap-3 text-justify">
+                                        <span class="flex-shrink-0 mt-1.5 w-2 h-2 rounded-full bg-[#8BA870]"></span>
+                                        <span><span class="font-semibold text-[#8BA870]">Pelayanan prima:</span>
+                                            Memberikan pengalaman terbaik bagi pelanggan melalui produk berkualitas,
+                                            pelayanan ramah, dan kemasan eksklusif.</span>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                    <div x-show="tab === 'misi'" x-transition:enter="transition ease-out duration-800"
-                        x-transition:enter-start="opacity-0 translate-y-4"
-                        x-transition:enter-end="opacity-100 translate-y-0"
-                        x-transition:leave="transition ease-in duration-400" x-transition:leave-start="opacity-100"
-                        x-transition:leave-end="opacity-0">
-                        <h2 class="text-3xl md:text-4xl font-bold text-[#2C3E50] mb-6">Misi Kami</h2>
-                        <ul class="pl-6 mb-8 space-y-2 leading-relaxed text-gray-600 list-disc">
-                            <li class="text-justify">
-                                <span class="font-semibold text-[#8BA870]">Mengutamakan bahan alami:</span> Seluruh
-                                produk dibuat dari bahan baku alami, tanpa bahan pengawet, tanpa pewarna tambahan, tanpa
-                                pengharum tambahan dan tanpa pemanis buatan.
-                            </li>
-                            <li class="text-justify">
-                                <span class="font-semibold text-[#8BA870]">Inovasi berkelanjutan:</span> Terus
-                                mengembangkan varian kue tradisional dengan sentuhan modern, baik dari segi rasa maupun
-                                tampilan.
-                            </li>
-                            <li class="text-justify">
-                                <span class="font-semibold text-[#8BA870]">Tanggung jawab produk:</span> Menjaga
-                                kualitas mulai dari pemilihan bahan, proses produksi, hingga pengemasan dan pengiriman
-                                ke konsumen.
-                            </li>
-                            <li class="text-justify">
-                                <span class="font-semibold text-[#8BA870]">Pelayanan prima:</span> Memberikan
-                                pengalaman terbaik bagi pelanggan melalui produk berkualitas, pelayanan ramah, dan
-                                kemasan eksklusif.
-                            </li>
-                        </ul>
+
+                    <!-- Dots -->
+                    <div class="flex justify-center gap-2 mt-6">
+                        <template x-for="(s, i) in slides" :key="s">
+                            <button @click="go(i)" :aria-label="`Slide ${label(i)}`"
+                                class="h-2 rounded-full transition-all duration-300 focus:outline-none"
+                                :class="index === i ? 'w-6 bg-[#8BA870]' : 'w-2 bg-gray-300 hover:bg-gray-400'"></button>
+                        </template>
                     </div>
                 </div>
             </div>
-        </div>
         </div>
     </section>
 

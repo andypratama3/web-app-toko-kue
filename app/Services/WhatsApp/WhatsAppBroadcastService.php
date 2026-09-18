@@ -105,7 +105,7 @@ class WhatsAppBroadcastService
     /**
      * Template bisa dipakai broadcast bila:
      * - Punya teks BODY (wajib untuk pesan marketing)
-     * - Header bila ada harus TEXT (bukan media/image, karena butuh asset upload)
+     * - Header bila ada harus TEXT, IMAGE, VIDEO, atau DOCUMENT (media didukung)
      * - Tombol bila ada harus statis (tanpa parameter dinamis seperti url_suffix)
      */
     protected function isBroadcastable(array $components, ?string $bodyText): bool
@@ -117,8 +117,11 @@ class WhatsAppBroadcastService
         foreach ($components as $component) {
             $type = strtoupper($component['type'] ?? '');
 
-            if ($type === 'HEADER' && ($component['format'] ?? '') !== 'TEXT' && ($component['format'] ?? '') !== '') {
-                return false;
+            if ($type === 'HEADER') {
+                $format = strtoupper($component['format'] ?? 'TEXT');
+                if (! in_array($format, ['TEXT', 'IMAGE', 'VIDEO', 'DOCUMENT', ''], true)) {
+                    return false;
+                }
             }
 
             if ($type === 'BUTTONS') {
@@ -145,6 +148,35 @@ class WhatsAppBroadcastService
         preg_match_all('/\{\{(\d+)\}\}/', $text, $matches);
 
         return $matches[1] ? max($matches[1]) : 0;
+    }
+
+    /** Tipe header template (TEXT | IMAGE | VIDEO | DOCUMENT) atau null bila tidak ada header. */
+    public static function headerFormat(?array $components): ?string
+    {
+        foreach ($components ?? [] as $component) {
+            if (strtoupper($component['type'] ?? '') === 'HEADER') {
+                $format = strtoupper($component['format'] ?? 'TEXT');
+                return in_array($format, ['IMAGE', 'VIDEO', 'DOCUMENT', 'TEXT'], true) ? $format : 'TEXT';
+            }
+        }
+
+        return null;
+    }
+
+    /** URL media contoh header (yang disetujui Meta saat review) atau null. */
+    public static function headerExampleUrl(?array $components): ?string
+    {
+        foreach ($components ?? [] as $component) {
+            if (strtoupper($component['type'] ?? '') !== 'HEADER') {
+                continue;
+            }
+
+            $handle = $component['example']['header_handle'][0] ?? null;
+
+            return is_string($handle) && str_starts_with($handle, 'http') ? $handle : null;
+        }
+
+        return null;
     }
 
     // ========== RECIPIENTS ==========
@@ -247,10 +279,33 @@ class WhatsAppBroadcastService
         $parameters = $broadcast->parameters ?? [];
         $components = [];
 
+        // Header media (IMAGE/VIDEO/DOCUMENT): tambahkan komponen header
+        // bila admin menyediakan media (link publik). Tanpa media, Meta memakai
+        // media bawaan template yang sudah di-approve.
+        if ($broadcast->header_media_type && $broadcast->header_media_url) {
+            $mediaType = strtolower($broadcast->header_media_type);
+            $components[] = [
+                'type' => 'header',
+                'parameters' => [
+                    [
+                        'type' => $mediaType,
+                        $mediaType => [
+                            'link' => $broadcast->header_media_url,
+                        ],
+                    ],
+                ],
+            ];
+        }
+
         foreach ($template->components ?? [] as $component) {
             $type = strtolower($component['type'] ?? '');
 
             if (! in_array($type, ['header', 'body'], true)) {
+                continue;
+            }
+
+            // Header media sudah dipecayakan lewat komponen khusus di atas.
+            if ($type === 'header' && $broadcast->header_media_type) {
                 continue;
             }
 
@@ -284,13 +339,20 @@ class WhatsAppBroadcastService
     /**
      * Render teks preview (untuk ditampilkan admin) setelah parameter diisi.
      */
-    public function renderBodyPreview(WhatsAppTemplate $template, array $parameters): string
+    public function renderBodyPreview(WhatsAppTemplate $template, array $parameters, ?string $headerMediaType = null, ?string $headerMediaUrl = null): string
     {
         $text = $template->body_text ?? '';
         $header = $template->header_text ?? '';
         $preview = '';
 
-        if ($header) {
+        if ($headerMediaType && $headerMediaUrl) {
+            $label = [
+                'image' => 'Gambar',
+                'video' => 'Video',
+                'document' => 'Dokumen',
+            ][strtolower($headerMediaType)] ?? ucfirst(strtolower($headerMediaType));
+            $preview .= "[{$label}: {$headerMediaUrl}]\n\n";
+        } elseif ($header) {
             $preview .= $header."\n\n";
         }
 

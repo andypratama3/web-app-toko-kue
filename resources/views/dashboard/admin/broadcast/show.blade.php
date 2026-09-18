@@ -73,6 +73,27 @@
         {{-- Pratinjau pesan --}}
         <div class="mb-6 p-4 border rounded-lg dark:border-gray-600">
             <h3 class="mb-2 text-sm font-semibold text-gray-900 dark:text-white">Pratinjau Pesan</h3>
+
+            @if($broadcast->header_media_url)
+                <div class="mb-3">
+                    @if($broadcast->header_media_type === 'video')
+                        <video controls playsinline preload="metadata"
+                            class="max-h-56 rounded-lg border border-gray-200 dark:border-gray-600">
+                            <source src="{{ $broadcast->header_media_url }}" type="video/mp4">
+                            Browser tidak mendukung video.
+                        </video>
+                    @else
+                        <img src="{{ $broadcast->header_media_url }}" alt="Media header broadcast"
+                            class="max-h-56 object-cover rounded-lg border border-gray-200 dark:border-gray-600"
+                            onerror="this.style.display='none'">
+                    @endif
+                    <div class="mt-1 text-xs text-gray-400">
+                        Media header: <span class="font-medium text-gray-500 dark:text-gray-300">{{ strtoupper($broadcast->header_media_type) }}</span>
+                        <span class="break-all">{{ $broadcast->header_media_url }}</span>
+                    </div>
+                </div>
+            @endif
+
             <div class="p-3 text-sm bg-gray-50 border border-gray-200 rounded-lg whitespace-pre-wrap dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                 {{ $broadcast->body_preview ?? $broadcast->template->body_text ?? '-' }}
             </div>
