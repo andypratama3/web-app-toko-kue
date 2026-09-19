@@ -60,7 +60,7 @@ class WhatsAppBroadcast extends Model
 
     public function recipients(): HasMany
     {
-        return $this->hasMany(WhatsAppBroadcastRecipient::class);
+        return $this->hasMany(WhatsAppBroadcastRecipient::class, 'broadcast_id');
     }
 
     public function pendingRecipients(): HasMany
