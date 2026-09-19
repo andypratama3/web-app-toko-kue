@@ -239,7 +239,7 @@ class WhatsAppBroadcastService
         $this->recipientQuery($filter)
             ->with('region')
             ->chunkById(500, function ($customers) use ($broadcast, &$count) {
-                $rows = $customers->map(function (Customer $customer) use (&$count) {
+                $rows = $customers->map(function (Customer $customer) use ($broadcast, &$count) {
                     $count++;
 
                     return [
