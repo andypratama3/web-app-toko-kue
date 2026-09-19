@@ -15,6 +15,10 @@ class Kernel extends ConsoleKernel
         // Reset percakapan WhatsApp yang terbengkalai (buntu) tiap jam,
         // agar bot selalu bisa memulai percakapan baru.
         $schedule->command('whatsapp:expire-conversations')->hourly();
+
+        // Sinkronkan template broadcast dari Meta (approx/approved) tiap jam,
+        // agar template PP yang baru di-approve otomatis masuk daftar.
+        $schedule->command('broadcast:sync-templates')->hourly();
     }
 
     /**
