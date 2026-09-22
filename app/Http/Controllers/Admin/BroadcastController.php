@@ -159,10 +159,25 @@ class BroadcastController extends Controller
             // Ekstensi diambil dari MIME yang terdeteksi (bukan nama file klien)
             // agar tidak mungkin tersimpan sebagai .php/.phtml/.svg dsb.
             $detectedMime = strtolower((string) $file->getMimeType());
+
+            // Meta WhatsApp Cloud API tidak mendukung header WebP. Auto-konversi ke PNG.
+            if ($allowedType === 'image' && $detectedMime === 'image/webp') {
+                $pngData = $this->convertWebpToPng($file);
+
+                if ($pngData === null) {
+                    return back()->withErrors(['header_media_file' => 'Gambar WebP tidak dapat dikonversi ke PNG. Gunakan format JPG atau PNG.'])->withInput();
+                }
+
+                $filename = 'broadcast_media/'.time().'_'.uniqid().'.png';
+                \Illuminate\Support\Facades\Storage::disk('public')->put($filename, $pngData);
+                $url = url(\Illuminate\Support\Facades\Storage::url($filename));
+
+                return [$allowedType, $url];
+            }
+
             $extension = match ($detectedMime) {
                 'image/jpeg' => 'jpg',
                 'image/png' => 'png',
-                'image/webp' => 'webp',
                 'video/mp4' => 'mp4',
                 'video/3gpp' => '3gp',
                 'video/quicktime' => 'mov',
@@ -176,7 +191,7 @@ class BroadcastController extends Controller
 
             $filename = 'broadcast_media/'.time().'_'.uniqid().'.'.$extension;
             $file->storeAs('public', $filename);
-            $url = url(\Illuminate\Support\Facades\Storage::url($filename));
+            $url = url(Storage::url($filename));
 
             return [$allowedType, $url];
         }
@@ -186,6 +201,34 @@ class BroadcastController extends Controller
         }
 
         return [null, null];
+    }
+
+    protected function convertWebpToPng($file): ?string
+    {
+        if (! function_exists('imagecreatefromwebp') || ! function_exists('imagepng')) {
+            return null;
+        }
+
+        $image = @imagecreatefromwebp($file->getRealPath());
+
+        if (! $image) {
+            return null;
+        }
+
+        $png = imagecreatetruecolor(imagesx($image), imagesy($image));
+        imagesavealpha($png, true);
+        imagecolortransparent($png, imagecolorallocatealpha($png, 0, 0, 0, 127));
+        imagealphablending($png, false);
+        imagecopy($png, $image, 0, 0, 0, 0, imagesx($image), imagesy($image));
+
+        ob_start();
+        imagepng($png);
+        $data = ob_get_clean();
+
+        imagedestroy($image);
+        imagedestroy($png);
+
+        return $data;
     }
 
     public function show(WhatsAppBroadcast $broadcast)

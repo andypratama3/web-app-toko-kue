@@ -239,20 +239,31 @@ class WhatsAppBroadcastService
         $this->recipientQuery($filter)
             ->with('region')
             ->chunkById(500, function ($customers) use ($broadcast, &$count) {
-                $rows = $customers->map(function (Customer $customer) use ($broadcast, &$count) {
+                $seen = [];
+                $rows = [];
+
+                foreach ($customers as $customer) {
+                    $phone = Phone::normalize((string) $customer->phone);
+
+                    // Hindari kirim ganda ke nomor yang sama (customer bisa dobel entri).
+                    if (! $phone || isset($seen[$phone])) {
+                        continue;
+                    }
+
+                    $seen[$phone] = true;
                     $count++;
 
-                    return [
+                    $rows[] = [
                         'broadcast_id' => $broadcast->id,
                         'customer_id' => $customer->id,
                         'region_id' => $customer->region_id,
-                        'phone' => Phone::normalize((string) $customer->phone),
+                        'phone' => $phone,
                         'name' => $customer->name,
                         'status' => 'pending',
                         'created_at' => now(),
                         'updated_at' => now(),
                     ];
-                })->all();
+                }
 
                 WhatsAppBroadcastRecipient::insert($rows);
             });

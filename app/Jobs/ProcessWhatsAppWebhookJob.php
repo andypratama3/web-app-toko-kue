@@ -8,6 +8,7 @@ use App\Models\Region;
 use App\Models\WhatsAppConversation;
 use App\Models\WhatsAppMessage;
 use App\Models\WhatsAppMessageStatus;
+use App\Models\WhatsAppBroadcastRecipient;
 use App\Support\Phone;
 use App\Services\WhatsApp\IncomingMediaHandler;
 use App\Services\WhatsApp\OrderBotService;
@@ -198,6 +199,26 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
 
                 if ($newPriority > $currentPriority) {
                     $message->update(['status' => $statusValue]);
+                }
+            }
+
+            // Broadcast: jikalau Meta memakai status failed (mis. media header ditolak / nomor tak valid),
+            // pantulkan kegagalan itu ke recipient broadcast agar statistik tidak menyesatkan.
+            if ($statusValue === 'failed') {
+                $recipient = WhatsAppBroadcastRecipient::where('message_id', $messageId)->first();
+
+                if ($recipient) {
+                    $errorText = is_array($errors) ? json_encode($errors) : (string) $errors;
+                    $recipient->update(['status' => 'failed', 'error' => $errorText]);
+
+                    $broadcast = $recipient->broadcast;
+                    if ($broadcast && ! in_array($broadcast->status, ['completed', 'failed', 'cancelled'], true)) {
+                        $broadcast->refresh();
+                        $broadcast->update([
+                            'sent_count' => $broadcast->recipients()->where('status', 'sent')->count(),
+                            'failed_count' => $broadcast->recipients()->where('status', 'failed')->count(),
+                        ]);
+                    }
                 }
             }
 
