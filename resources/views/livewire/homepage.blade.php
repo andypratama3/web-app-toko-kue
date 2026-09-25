@@ -181,7 +181,7 @@
             <div
                 class="max-w-md p-3 mx-auto border shadow-lg bg-white/30 backdrop-blur-sm rounded-xl border-white/20 sm:max-w-2xl">
                 <h3 class="mb-2 text-sm font-semibold text-center text-white drop-shadow-md">Pesan Sekarang</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-1.5 sm:gap-2">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2">
                     <!-- Admin Surabaya -->
                     <a href="https://wa.me/6282144834303?text=Hai%20admin%20*Kue%20Pandan%20Asli%20Surabaya*%2C%20perkenalan%20nama%20saya%20(isi%20nama%20anda)%20.%20Saya%20ingin%20.."
                         target="_blank"
@@ -208,8 +208,9 @@
                         <span class="text-xs font-medium">Admin Malang</span>
                     </a>
 
-                    <!-- Admin Bali -->
-                    <a href="https://wa.me/6282338901223?text=Hai%20admin%20*Kue%20Pandan%20Asli%20Bali*%2C%20perkenalan%20nama%20saya%20(isi%20nama%20anda)%20.%20Saya%20ingin%20.."
+                    {{-- SEMENTARA: Outlet Bali/Denpasar dinonaktifkan. Untuk mengaktifkan lagi,
+                         hapus blok komentar di bawah (tag {{-- --}}) tanpa mengubah bagian lain. --}}
+                    {{-- <a href="https://wa.me/6282338901223?text=Hai%20admin%20*Kue%20Pandan%20Asli%20Bali*%2C%20perkenalan%20nama%20saya%20(isi%20nama%20anda)%20.%20Saya%20ingin%20.."
                         target="_blank"
                         class="flex items-center justify-center gap-2 bg-greenlight hover:bg-[#20b858] text-white px-4 py-2 rounded-full shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95 w-full">
                         <div class="flex items-center justify-center flex-shrink-0 w-5 h-5 bg-white rounded-full">
@@ -219,7 +220,7 @@
                             </svg>
                         </div>
                         <span class="text-xs font-medium">Admin Bali</span>
-                    </a>
+                    </a> --}}
                 </div>
             </div>
         </div>
@@ -1816,8 +1817,10 @@
                     class="outlet-btn bg-[#8BA870] text-white px-5 py-2 rounded-lg font-medium shadow hover:bg-[#7a965e] transition">Surabaya</button>
                 <button id="btn-malang"
                     class="outlet-btn bg-[#8BA870] text-white px-5 py-2 rounded-lg font-medium shadow hover:bg-[#7a965e] transition">Malang</button>
-                <button id="btn-denpasar"
-                    class="outlet-btn bg-[#8BA870] text-white px-5 py-2 rounded-lg font-medium shadow hover:bg-[#7a965e] transition">Denpasar</button>
+                {{-- SEMENTARA: tab Outlet Bali/Denpasar dinonaktifkan. Hapus blok komentar ini
+                     untuk mengaktifkan kembali. --}}
+                {{-- <button id="btn-denpasar"
+                    class="outlet-btn bg-[#8BA870] text-white px-5 py-2 rounded-lg font-medium shadow hover:bg-[#7a965e] transition">Denpasar</button> --}}
 
             </div>
             <div id="outlet-content" data-aos="fade-up"

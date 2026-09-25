@@ -57,10 +57,10 @@
     </div>
 
     {{-- Top color bar --}}
-    <div class="fixed w-full bg-greenlight dark:hidden min-h-75"></div>
+    <div class="fixed w-full pointer-events-none bg-greenlight dark:hidden min-h-75"></div>
 
     {{-- Sidebar Overlay --}}
-    <div id="sidebar-overlay" class="fixed inset-0 z-30 hidden transition-opacity duration-200 bg-black bg-opacity-40">
+    <div id="sidebar-overlay" class="fixed inset-0 z-30 hidden transition-opacity duration-200 bg-black/40">
     </div>
 
     @include('layouts.partials.sidenav')
