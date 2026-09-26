@@ -198,16 +198,14 @@ class ConversationRegionResolver
         $score = 0;
 
         foreach ($this->splitKeywords($zone->landmark_keyword) as $keyword) {
-            $length = mb_strlen($keyword);
-
-            if ($length >= 6 && str_contains($haystack, $keyword)) {
-                $score = max($score, 20 + min($length, 20));
+            if ($this->matchesTerm($haystack, $keyword)) {
+                $score = max($score, 20 + min(mb_strlen($keyword), 20));
             }
         }
 
         $area = $this->normalize((string) $zone->area_name);
 
-        if ($area !== '' && mb_strlen($area) >= 4 && str_contains($haystack, $area)) {
+        if ($this->matchesTerm($haystack, $area)) {
             $score = max($score, 30);
         }
 
@@ -215,13 +213,34 @@ class ConversationRegionResolver
             foreach (array_filter([$region->name, $region->slug]) as $name) {
                 $name = $this->normalize((string) $name);
 
-                if ($name !== '' && mb_strlen($name) >= 4 && str_contains($haystack, $name)) {
+                if ($this->matchesTerm($haystack, $name)) {
                     $score = max($score, 35);
                 }
             }
         }
 
         return $score;
+    }
+
+    /**
+     * Cocok pada awal kata, bukan di tengah kata. Alamat dari pelanggan
+     * sering salah ketik atau digabung ("GubengAYA", "SidoarjoWarok"),
+     * jadi keyword tetap dikenali selama jadi awalan kata. Hanya keyword
+     * >= 4 huruf agar tidak terlalu longgar.
+     */
+    protected function matchesTerm(string $haystack, string $term): bool
+    {
+        if ($term === '' || mb_strlen($term) < 4) {
+            return false;
+        }
+
+        return (bool) preg_match(
+            '/(^|\s)' . preg_quote($term, '/') . '(\s|$)/u',
+            $haystack
+        ) || (bool) preg_match(
+            '/(^|\s)' . preg_quote($term, '/') . '\S*/u',
+            $haystack
+        );
     }
 
     protected function splitKeywords(?string $raw): array

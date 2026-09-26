@@ -152,6 +152,75 @@ class ConversationRegionResolverTest extends TestCase
         $this->assertSame($denpasar->id, $resolver->apply($conversation->refresh()));
     }
 
+    public function test_it_matches_short_place_names_on_word_boundaries(): void
+    {
+        $malang = $this->makeRegion('Malang', 'malang');
+        $denpasar = $this->makeRegion('Denpasar', 'denpasar');
+
+        // "sanur" hanya 5 huruf dan pernah gagal dikenali
+        DeliveryZone::create([
+            'region_id' => $denpasar->id,
+            'distance_km' => 5,
+            'ongkir' => 10000,
+            'area_name' => 'Denpasar Selatan',
+            'landmark_keyword' => 'sanur, panitta',
+            'is_active' => true,
+        ]);
+        DeliveryZone::create([
+            'region_id' => $malang->id,
+            'distance_km' => 3,
+            'ongkir' => 10000,
+            'area_name' => 'Pusat Kota Malang',
+            'landmark_keyword' => 'langstar, dinoyo',
+            'is_active' => true,
+        ]);
+
+        $resolver = app(ConversationRegionResolver::class);
+
+        $this->assertSame($denpasar->id, $resolver->regionIdForAddress('Jl. Sanur Beach No. 8'));
+        $this->assertSame($denpasar->id, $resolver->regionIdForAddress('Sanur'));
+        $this->assertSame($malang->id, $resolver->regionIdForAddress('Jl. Ijen No. 5, Malang'));
+    }
+
+    public function test_it_tolerates_typos_and_joined_words_in_addresses(): void
+    {
+        $malang = $this->makeRegion('Malang', 'malang');
+        $surabaya = $this->makeRegion('Surabaya', 'surabaya');
+
+        DeliveryZone::create([
+            'region_id' => $surabaya->id,
+            'distance_km' => 3,
+            'ongkir' => 10000,
+            'area_name' => 'Pusat Kota Surabaya',
+            'landmark_keyword' => 'gubeng, kenjeran',
+            'is_active' => true,
+        ]);
+
+        $resolver = app(ConversationRegionResolver::class);
+
+        // pelanggan sering mengetik "GubengAYA" atau "SidoarjoWarok"
+        $this->assertSame($surabaya->id, $resolver->regionIdForAddress('Jl. GubengAYA No. 10'));
+    }
+
+    public function test_it_returns_null_for_address_without_known_place(): void
+    {
+        $malang = $this->makeRegion('Malang', 'malang');
+        $denpasar = $this->makeRegion('Denpasar', 'denpasar');
+
+        DeliveryZone::create([
+            'region_id' => $denpasar->id,
+            'distance_km' => 5,
+            'ongkir' => 10000,
+            'area_name' => 'Denpasar Selatan',
+            'landmark_keyword' => 'sanur, panitta',
+            'is_active' => true,
+        ]);
+
+        $resolver = app(ConversationRegionResolver::class);
+
+        $this->assertNull($resolver->regionIdForAddress('Jl. Mawar No. 3, RT 05 RW 02'));
+    }
+
     public function test_manual_assignment_is_not_overwritten_by_auto_attribution(): void
     {
         $malang = $this->makeRegion('Malang', 'malang');
