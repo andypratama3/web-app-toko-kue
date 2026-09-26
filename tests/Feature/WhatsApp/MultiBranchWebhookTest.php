@@ -6,6 +6,7 @@ use App\Enums\OrderBotConversationState;
 use App\Jobs\ProcessWhatsAppWebhookJob;
 use App\Models\Region;
 use App\Models\WhatsAppConversation;
+use App\Services\WhatsApp\ConversationRegionResolver;
 use App\Services\WhatsApp\IncomingMediaHandler;
 use App\Services\WhatsApp\OrderBotService;
 use App\Services\WhatsApp\WhatsappMetaService;
@@ -49,7 +50,8 @@ class MultiBranchWebhookTest extends TestCase
         $job->handle(
             app(WhatsappMetaService::class),
             app(OrderBotService::class),
-            app(IncomingMediaHandler::class)
+            app(IncomingMediaHandler::class),
+            app(ConversationRegionResolver::class)
         );
 
         $conversation = WhatsAppConversation::first();
@@ -82,7 +84,8 @@ class MultiBranchWebhookTest extends TestCase
         $job->handle(
             app(WhatsappMetaService::class),
             app(OrderBotService::class),
-            app(IncomingMediaHandler::class)
+            app(IncomingMediaHandler::class),
+            app(ConversationRegionResolver::class)
         );
 
         $conversation = WhatsAppConversation::first();

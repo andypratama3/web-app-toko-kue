@@ -148,6 +148,7 @@ Route::middleware([
         Route::post('chat/{conversation}/close', [ChatMonitorController::class, 'closeConversation'])->name('chat.close');
         Route::post('chat/{conversation}/escalate', [ChatMonitorController::class, 'escalateConversation'])->name('chat.escalate');
         Route::post('chat/{conversation}/resume', [ChatMonitorController::class, 'resumeConversation'])->name('chat.resume');
+        Route::patch('chat/{conversation}/region', [ChatMonitorController::class, 'updateRegion'])->name('chat.region');
 
         // Admin Notifications
         Route::get('notifications', [AdminNotificationController::class, 'index'])->name('notifications.index');

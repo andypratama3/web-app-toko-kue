@@ -96,7 +96,8 @@ class WebhookMessageProcessingTest extends TestCase
         $job->handle(
             app(\App\Services\WhatsApp\WhatsappMetaService::class),
             app(\App\Services\WhatsApp\OrderBotService::class),
-            app(\App\Services\WhatsApp\IncomingMediaHandler::class)
+            app(\App\Services\WhatsApp\IncomingMediaHandler::class),
+            app(\App\Services\WhatsApp\ConversationRegionResolver::class)
         );
 
         $this->assertDatabaseCount('whatsapp_conversations', 1);
@@ -115,7 +116,8 @@ class WebhookMessageProcessingTest extends TestCase
         $job->handle(
             app(\App\Services\WhatsApp\WhatsappMetaService::class),
             app(\App\Services\WhatsApp\OrderBotService::class),
-            app(\App\Services\WhatsApp\IncomingMediaHandler::class)
+            app(\App\Services\WhatsApp\IncomingMediaHandler::class),
+            app(\App\Services\WhatsApp\ConversationRegionResolver::class)
         );
 
         $this->assertDatabaseCount('whatsapp_messages', 2);
@@ -136,7 +138,8 @@ class WebhookMessageProcessingTest extends TestCase
         $job->handle(
             app(\App\Services\WhatsApp\WhatsappMetaService::class),
             app(\App\Services\WhatsApp\OrderBotService::class),
-            app(\App\Services\WhatsApp\IncomingMediaHandler::class)
+            app(\App\Services\WhatsApp\IncomingMediaHandler::class),
+            app(\App\Services\WhatsApp\ConversationRegionResolver::class)
         );
 
         $this->assertDatabaseCount('whatsapp_messages', 2);
@@ -148,7 +151,8 @@ class WebhookMessageProcessingTest extends TestCase
         $job2->handle(
             app(\App\Services\WhatsApp\WhatsappMetaService::class),
             app(\App\Services\WhatsApp\OrderBotService::class),
-            app(\App\Services\WhatsApp\IncomingMediaHandler::class)
+            app(\App\Services\WhatsApp\IncomingMediaHandler::class),
+            app(\App\Services\WhatsApp\ConversationRegionResolver::class)
         );
 
         // No extra customer message (dedup) and no duplicate bot reply
@@ -205,7 +209,8 @@ class WebhookMessageProcessingTest extends TestCase
         $job->handle(
             app(\App\Services\WhatsApp\WhatsappMetaService::class),
             app(\App\Services\WhatsApp\OrderBotService::class),
-            app(\App\Services\WhatsApp\IncomingMediaHandler::class)
+            app(\App\Services\WhatsApp\IncomingMediaHandler::class),
+            app(\App\Services\WhatsApp\ConversationRegionResolver::class)
         );
 
         $message->refresh();

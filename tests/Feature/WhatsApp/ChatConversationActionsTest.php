@@ -6,6 +6,7 @@ use App\Enums\OrderBotConversationState;
 use App\Models\Region;
 use App\Models\User;
 use App\Models\WhatsAppConversation;
+use App\Services\WhatsApp\ConversationRegionResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
@@ -76,7 +77,58 @@ class ChatConversationActionsTest extends TestCase
         $this->assertNull($fresh->context);
     }
 
-    public function test_actions_are_forbidden_for_other_region(): void
+    public function test_admin_sees_only_own_branch_by_default(): void
+    {
+        $otherRegion = Region::create(['name' => 'Surabaya', 'slug' => 'surabaya']);
+        $otherConversation = WhatsAppConversation::create([
+            'phone_number' => '6281234567890',
+            'region_id' => $otherRegion->id,
+            'status' => 'active',
+            'current_state' => OrderBotConversationState::INIT->value,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.chat.index'))
+            ->assertOk()
+            ->assertSee($this->conversation->phone_number)
+            ->assertDontSee($otherConversation->phone_number);
+    }
+
+    public function test_admin_can_view_all_branches_with_all_filter(): void
+    {
+        $otherRegion = Region::create(['name' => 'Surabaya', 'slug' => 'surabaya']);
+        $otherConversation = WhatsAppConversation::create([
+            'phone_number' => '6281234567890',
+            'region_id' => $otherRegion->id,
+            'status' => 'active',
+            'current_state' => OrderBotConversationState::INIT->value,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.chat.index', ['region' => 'all']))
+            ->assertOk()
+            ->assertSee($this->conversation->phone_number)
+            ->assertSee($otherConversation->phone_number);
+    }
+
+    public function test_admin_can_filter_by_specific_branch(): void
+    {
+        $otherRegion = Region::create(['name' => 'Surabaya', 'slug' => 'surabaya']);
+        $otherConversation = WhatsAppConversation::create([
+            'phone_number' => '6281234567890',
+            'region_id' => $otherRegion->id,
+            'status' => 'active',
+            'current_state' => OrderBotConversationState::INIT->value,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.chat.index', ['region' => $otherRegion->id]))
+            ->assertOk()
+            ->assertSee($otherConversation->phone_number)
+            ->assertDontSee($this->conversation->phone_number);
+    }
+
+    public function test_admin_can_act_on_conversation_of_other_branch(): void
     {
         $otherRegion = Region::create(['name' => 'Surabaya', 'slug' => 'surabaya']);
         $otherConversation = WhatsAppConversation::create([
@@ -88,6 +140,27 @@ class ChatConversationActionsTest extends TestCase
 
         $this->actingAs($this->admin)
             ->post(route('admin.chat.close', $otherConversation->id))
-            ->assertForbidden();
+            ->assertRedirect();
+
+        $this->assertSame('closed', $otherConversation->fresh()->status);
+    }
+
+    public function test_admin_can_assign_conversation_to_branch_manually(): void
+    {
+        $otherRegion = Region::create(['name' => 'Surabaya', 'slug' => 'surabaya']);
+
+        $this->actingAs($this->admin)
+            ->patch(route('admin.chat.region', $this->conversation->id), [
+                'region_id' => $otherRegion->id,
+            ])
+            ->assertRedirect();
+
+        $fresh = $this->conversation->fresh();
+
+        $this->assertSame($otherRegion->id, (int) $fresh->region_id);
+        $this->assertSame(
+            ConversationRegionResolver::SOURCE_MANUAL,
+            $fresh->getContext('branch_source')
+        );
     }
 }

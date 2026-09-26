@@ -12,6 +12,7 @@ use App\Models\WhatsAppBroadcastRecipient;
 use App\Support\Phone;
 use App\Services\WhatsApp\IncomingMediaHandler;
 use App\Services\WhatsApp\OrderBotService;
+use App\Services\WhatsApp\ConversationRegionResolver;
 use App\Services\WhatsApp\WhatsappMetaService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -29,6 +30,7 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
 
     protected array $payload;
     protected ?string $phoneNumberId;
+    protected ?ConversationRegionResolver $regionResolver = null;
 
     public function __construct(array $payload, ?string $phoneNumberId = null)
     {
@@ -39,8 +41,10 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
     public function handle(
         WhatsappMetaService $metaService,
         OrderBotService $botService,
-        IncomingMediaHandler $mediaHandler
+        IncomingMediaHandler $mediaHandler,
+        ConversationRegionResolver $regionResolver
     ): void {
+        $this->regionResolver = $regionResolver;
         $entry = $this->payload['entry'][0] ?? null;
         if (!$entry) return;
 
@@ -168,6 +172,10 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
         } else {
             $botService->handleMessage($conversation, $content ?? '', $messageData);
         }
+
+        // Bot baru saja bisa mengisi alamat tujuan di context, jadi atribusi
+        // cabang dijalankan setelah pesan diproses, bukan sebelum.
+        $this->regionResolver->apply($conversation->refresh());
     }
 
     protected function processStatuses(array $statuses): void

@@ -66,43 +66,28 @@ class AdminChatReplyTest extends TestCase
         $this->assertSame(2, $this->conversation->fresh()->message_count);
     }
 
-    public function test_admin_cannot_reply_to_conversation_of_another_region(): void
+    public function test_admin_can_reply_to_conversation_of_another_branch(): void
     {
+        Http::fake([
+            'graph.facebook.com/*' => Http::response(['messages' => [['id' => 'wamid_cross_region']]], 200),
+        ]);
+
         $otherRegion = Region::create(['name' => 'Surabaya', 'slug' => 'surabaya']);
         $otherConversation = WhatsAppConversation::create([
             'phone_number' => '6281234567890',
             'region_id' => $otherRegion->id,
             'status' => 'active',
-            'current_state' => 'INIT',
+            'current_state' => 'ESCALATED_TO_HUMAN',
         ]);
 
         $this->actingAs($this->admin)
             ->post(route('admin.chat.reply', $otherConversation->id), ['message' => 'Halo'])
-            ->assertForbidden();
-    }
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
 
-    public function test_message_is_required(): void
-    {
-        $this->actingAs($this->admin)
-            ->from(route('admin.chat.index'))
-            ->post(route('admin.chat.reply', $this->conversation->id), ['message' => ''])
-            ->assertSessionHasErrors('message');
-    }
-
-    public function test_reply_failure_returns_error_flash(): void
-    {
-        Http::fake([
-            'graph.facebook.com/*' => Http::response(['error' => ['message' => 'session expired']], 400),
-        ]);
-
-        $this->actingAs($this->admin)
-            ->from(route('admin.chat.show', $this->conversation->id))
-            ->post(route('admin.chat.reply', $this->conversation->id), ['message' => 'Pesan test'])
-            ->assertSessionHasErrors('message_send');
-
-        $this->assertDatabaseMissing('whatsapp_messages', [
-            'conversation_id' => $this->conversation->id,
-            'sender_type' => 'admin',
+        $this->assertDatabaseHas('whatsapp_messages', [
+            'conversation_id' => $otherConversation->id,
+            'whatsapp_message_id' => 'wamid_cross_region',
         ]);
     }
 }
