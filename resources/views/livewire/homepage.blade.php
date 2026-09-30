@@ -175,8 +175,8 @@
             class="absolute inset-0 object-cover object-center w-full h-full brightness-90">
         <div class="absolute inset-0 z-10 flex flex-col items-center justify-center" data-aos="fade-down">
             <h1 class="mb-4 text-4xl font-extrabold text-white md:text-6xl drop-shadow-lg">Kue Pandan Asli</h1>
-            <p class="max-w-2xl mb-8 text-lg font-medium text-center text-white md:text-2xl drop-shadow">Kue Ijo Adalah
-                Kue tradisional Indonesia, cocok untuk semua acara spesial Anda.</p>
+            <p class="max-w-2xl mb-8 text-lg font-medium text-center text-white md:text-2xl drop-shadow">Kue Ijo adalah
+                kue tradisional Indonesia yang cocok untuk semua acara spesial Anda.</p>
             <!-- Kotak dengan 3 tombol WhatsApp Admin -->
             <div
                 class="max-w-md p-3 mx-auto border shadow-lg bg-white/30 backdrop-blur-sm rounded-xl border-white/20 sm:max-w-2xl">
@@ -208,8 +208,7 @@
                         <span class="text-xs font-medium">Admin Malang</span>
                     </a>
 
-                    {{-- SEMENTARA: Outlet Bali/Denpasar dinonaktifkan. Untuk mengaktifkan lagi,
-                         hapus blok komentar di bawah (tag {{-- --}}) tanpa mengubah bagian lain. --}}
+                    {{-- Outlet Bali/Denpasar sementara dinonaktifkan. --}}
                     {{-- <a href="https://wa.me/6282338901223?text=Hai%20admin%20*Kue%20Pandan%20Asli%20Bali*%2C%20perkenalan%20nama%20saya%20(isi%20nama%20anda)%20.%20Saya%20ingin%20.."
                         target="_blank"
                         class="flex items-center justify-center gap-2 bg-greenlight hover:bg-[#20b858] text-white px-4 py-2 rounded-full shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 active:scale-95 w-full">
