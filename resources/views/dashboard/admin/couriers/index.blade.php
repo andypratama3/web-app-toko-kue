@@ -26,7 +26,7 @@
             <div
                 class="flex flex-col items-stretch justify-end flex-shrink-0 w-full space-y-2 md:w-auto md:flex-row md:space-y-0 md:items-center md:space-x-3">
                 <button type="button" data-target-modal="create-courier-modal"
-                    class="flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-blue-700 rounded-lg js-open-modal-btn hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                    class="admin-touch-target hidden w-full items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-700 rounded-lg js-open-modal-btn md:flex hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
                     <svg class="h-3.5 w-3.5 mr-2" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"
                         aria-hidden="true">
                         <path clip-rule="evenodd" fill-rule="evenodd"
@@ -36,8 +36,9 @@
                 </button>
             </div>
         </div>
-        <div class="overflow-x-auto min-h-[580px]">
-            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+        <x-admin.responsive-table min-height="580">
+            <table
+                class="admin-table w-full text-sm text-left text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
                         <th scope="col" class="px-4 py-3 text-center">No.</th>
@@ -53,7 +54,12 @@
                     @include('dashboard.admin.couriers._table_rows', ['couriers' => $couriers])
                 </tbody>
             </table>
-        </div>
+        </x-admin.responsive-table>
+
+    {{-- FAB "Tambah Kurir" — hanya tampil di mobile --}}
+    <x-admin.fab modal="create-courier-modal" label="Tambah Kurir" variant="blue">
+        <i class="fas fa-plus"></i>
+    </x-admin.fab>
         <nav class="flex justify-center w-full p-4 md:justify-end" aria-label="Table navigation">
             {{ $couriers->links() }}
         </nav>

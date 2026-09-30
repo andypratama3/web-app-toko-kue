@@ -6,7 +6,7 @@
         <div class="p-4 md:p-5">
             {{-- Area utama yang bisa di-scroll --}}
             <div class.blade.php"overflow-y-auto max-h-[70vh] p-1">
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2">
                     {{-- Nama Produk --}}
                     <div class="col-span-2">
                         <label for="create-name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama Produk</label>

@@ -55,7 +55,6 @@
                     Cari
                 </button>
             </form>
-            <div class="overflow-x-auto">
                 @php
                     // Peta status → label tampilan (samakan dengan yang dipakai role kurir)
                     $statusLabelMap = [
@@ -73,9 +72,12 @@
                         return $statusLabelMap[$status] ?? ucwords(str_replace('_', ' ', $status));
                     };
                 @endphp
-                <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500 dark:text-slate-300">
-                    <thead class="align-bottom">
-                        <tr
+
+                <x-admin.responsive-table>
+                    <table
+                        class="admin-table items-center w-full mb-0 align-top border-gray-200 text-slate-500 dark:text-slate-300">
+                        <thead class="align-bottom">
+                            <tr
                             class="text-xs font-bold text-left text-gray-500 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                             <th class="px-4 py-3 text-center">No</th>
                             <th class="px-4 py-3">Invoice</th>
@@ -91,7 +93,7 @@
                         @include('dashboard.admin.order-list._table_rows', ['orders' => $orders])
                     </tbody>
                 </table>
-            </div>
+            </x-admin.responsive-table>
         </div>
     </div>
 @endsection

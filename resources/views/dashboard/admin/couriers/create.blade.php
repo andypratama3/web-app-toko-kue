@@ -4,7 +4,7 @@
     <form name="createCourierForm" method="POST" action="{{ route('admin.couriers.store') }}">
         @csrf
         <div class="p-4 md:p-5">
-            <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 mb-4">
                 <div class="col-span-2">
                     <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama
                         Kurir</label>

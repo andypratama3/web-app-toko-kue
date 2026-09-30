@@ -32,13 +32,15 @@
 <nav id="navbar-main"
     class="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-0 py-0 transition-all duration-300 ease-in lg:flex-nowrap lg:justify-start bg-greenlight dark:bg-slate-900 dark:shadow-none"
     navbar-main navbar-scroll="true">
-    <div class="flex items-center justify-between w-full h-20 px-6">
+    {{-- Mobile: judul tampil, search disembunyikan (ada di dalam halaman).
+         Desktop: tinggi penuh & search tetap di navbar. --}}
+    <div class="flex items-center justify-between w-full h-16 px-3 sm:h-20 sm:px-6">
 
         {{-- Left side: Mobile toggle + Breadcrumb --}}
-        <div class="flex items-center flex-grow h-full">
+        <div class="flex items-center flex-grow h-full min-w-0">
             {{-- Mobile Hamburger Toggle Button --}}
             <a href="javascript:;"
-                class="flex items-center justify-center p-2 text-white transition-all ease-nav-brand xl:hidden"
+                class="admin-touch-target flex items-center justify-center flex-shrink-0 text-white transition-all ease-nav-brand xl:hidden"
                 id="mobile-toggle" sidenav-trigger>
                 <i class="text-xl fas fa-bars"></i>
             </a>
@@ -75,6 +77,11 @@
                     });
                 </script>
             @endpush
+
+            {{-- Judul halaman — hanya di mobile/tablet (< xl), setelah hamburger --}}
+            <h1 class="min-w-0 flex-1 truncate ml-2 text-base font-semibold text-white sm:text-lg xl:hidden">
+                @yield('page_title', 'Dashboard')
+            </h1>
 
             {{-- Breadcrumb Navigation --}}
             <div class="flex-col justify-center flex-grow hidden h-full ml-4 xl:flex xl:ml-0">

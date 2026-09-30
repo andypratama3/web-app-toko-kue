@@ -3,18 +3,18 @@
 @section('page_title', 'Produk')
 
 @section('content')
-    <div class="relative p-6 bg-white shadow-md dark:bg-gray-800 sm:rounded-lg">
+    <div class="relative p-3 sm:p-4 md:p-6 bg-white shadow-md dark:bg-gray-800 sm:rounded-lg">
         {{-- Tombol Tambah Produk Baru --}}
-        <div class="flex items-center justify-between pb-4 mb-4 border-b">
+        <div class="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 border-b">
             <div>
-                <h2 class="text-xl font-semibold text-gray-800 dark:text-white">Daftar Produk</h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Kelola produk dan varian untuk region
+                <h2 class="text-lg font-semibold text-gray-800 sm:text-xl md:text-2xl dark:text-white">Daftar Produk</h2>
+                <p class="text-xs text-gray-500 sm:text-sm dark:text-gray-400">Kelola produk dan varian untuk region
                     {{ $regionName }}.</p>
             </div>
             {{-- ========================= PERBAIKAN TOMBOL TAMBAH ========================= --}}
             <button type="button" data-target-modal="create-product-modal"
-                class="flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-blue-700 rounded-lg js-open-modal-btn hover:bg-blue-800 focus:ring-4 focus:ring-blue-300">
-                <i class="mr-2 fas fa-plus"></i>
+                class="admin-touch-target hidden w-full gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-700 rounded-lg js-open-modal-btn md:flex md:w-auto hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                <i class="fas fa-plus"></i>
                 Tambah Produk
             </button>
         </div>
@@ -40,7 +40,7 @@
                                         </div>
                                     @endif
                                     @if ($product->tag)
-                                        <div class="absolute px-2 py-1 text-xs ... top-3 right-3">{{ $product->tag }}</div>
+                                        <div class="absolute px-2 py-1 text-xs font-semibold text-white rounded-full bg-gray-700 top-3 right-3 max-w-[45%] truncate">{{ $product->tag }}</div>
                                     @endif
                                 </div>
                                 <div class="flex flex-col flex-grow p-5">
@@ -89,6 +89,11 @@
             </div>
         @endforelse
     </div>
+
+    {{-- FAB "Tambah Produk" — hanya tampil di mobile --}}
+    <x-admin.fab modal="create-product-modal" label="Tambah Produk" variant="blue">
+        <i class="fas fa-plus"></i>
+    </x-admin.fab>
 @endsection
 
 @push('flowbite-modals')

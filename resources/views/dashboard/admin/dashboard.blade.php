@@ -36,7 +36,7 @@
     @endphp
 
     <!-- Welcome Card Section -->
-    <div class="p-6">
+    <div class="p-3 sm:p-4 md:p-6">
         <div class="p-6 bg-green-100 rounded-lg shadow dark:bg-slate-800 dark:shadow-xl">
             <div>
                 <h2 class="text-2xl font-bold text-gray-800 dark:text-white">
@@ -51,14 +51,14 @@
     </div>
 
     <!-- Stats Cards Section -->
-    <div class="p-6">
+    <div class="p-3 sm:p-4 md:p-6">
         <h2 class="mb-4 text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">💰 Resume Hari Ini</h2>
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             <div
                 class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-800 dark:shadow-xl rounded-2xl bg-clip-border">
                 <div class="flex-auto p-4">
                     <div class="flex flex-row -mx-3">
-                        <div class="flex-none w-2/3 max-w-full px-3">
+                        <div class="flex-1 min-w-0 w-full sm:w-2/3 px-3">
                             <div>
                                 <p
                                     class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">
@@ -91,7 +91,7 @@
                 class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-800 dark:shadow-xl rounded-2xl bg-clip-border">
                 <div class="flex-auto p-4">
                     <div class="flex flex-row -mx-3">
-                        <div class="flex-none w-2/3 max-w-full px-3">
+                        <div class="flex-1 min-w-0 w-full sm:w-2/3 px-3">
                             <div>
                                 <p
                                     class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">
@@ -123,7 +123,7 @@
                 class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-800 dark:shadow-xl rounded-2xl bg-clip-border">
                 <div class="flex-auto p-4">
                     <div class="flex flex-row -mx-3">
-                        <div class="flex-none w-2/3 max-w-full px-3">
+                        <div class="flex-1 min-w-0 w-full sm:w-2/3 px-3">
                             <div>
                                 <p
                                     class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">
@@ -155,7 +155,7 @@
                 class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-800 dark:shadow-xl rounded-2xl bg-clip-border">
                 <div class="flex-auto p-4">
                     <div class="flex flex-row -mx-3">
-                        <div class="flex-none w-2/3 max-w-full px-3">
+                        <div class="flex-1 min-w-0 w-full sm:w-2/3 px-3">
                             <div>
                                 <p
                                     class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">
@@ -188,7 +188,7 @@
                 class="relative flex flex-col min-w-0 break-words bg-white shadow-xl dark:bg-slate-800 dark:shadow-xl rounded-2xl bg-clip-border">
                 <div class="flex-auto p-4">
                     <div class="flex flex-row -mx-3">
-                        <div class="flex-none w-2/3 max-w-full px-3">
+                        <div class="flex-1 min-w-0 w-full sm:w-2/3 px-3">
                             <div>
                                 <p
                                     class="mb-0 font-sans text-sm font-semibold leading-normal uppercase dark:text-white dark:opacity-60">
@@ -224,7 +224,7 @@
 
         <div
             class="relative overflow-hidden bg-white border border-gray-100 shadow-2xl rounded-3xl dark:bg-slate-800 dark:border-slate-700">
-            <div class="p-6">
+            <div class="p-3 sm:p-4 md:p-6">
                 <div class="flex flex-wrap items-center justify-between gap-4 mb-2">
                     <div class="flex flex-col">
                         <h6 class="flex items-center gap-2 text-lg font-bold text-gray-800 dark:text-white">
@@ -310,7 +310,7 @@
         {{-- visitor chart --}}
         <div
             class="relative overflow-hidden bg-white border border-gray-100 shadow-2xl rounded-3xl dark:bg-slate-800 dark:border-slate-700">
-            <div class="p-6">
+            <div class="p-3 sm:p-4 md:p-6">
                 <div class="flex flex-wrap items-center justify-between gap-4 mb-2">
                     <div class="flex flex-col">
                         <h6 class="flex items-center gap-2 text-lg font-bold text-gray-800 dark:text-white">
@@ -412,7 +412,7 @@
 
         <div
             class="relative flex flex-col overflow-hidden bg-white border border-gray-100 shadow-2xl rounded-3xl dark:bg-slate-800 dark:border-slate-700">
-            <div class="p-6">
+            <div class="p-3 sm:p-4 md:p-6">
                 {{-- Header Kartu --}}
                 <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
                     <div class="flex flex-col">

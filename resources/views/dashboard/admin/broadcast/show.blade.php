@@ -117,8 +117,9 @@
         @endif
 
         {{-- Daftar penerima --}}
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+        <x-admin.responsive-table>
+            <table
+                class="admin-table w-full text-sm text-left text-gray-500 dark:text-gray-400">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
                         <th scope="col" class="px-4 py-3">Nama</th>
@@ -131,9 +132,9 @@
                 <tbody>
                     @forelse($recipients as $recipient)
                     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                        <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ $recipient->name ?? '-' }}</td>
-                        <td class="px-4 py-3">{{ $recipient->phone }}</td>
-                        <td class="px-4 py-3">
+                        <td data-label="Nama" class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ $recipient->name ?? '-' }}</td>
+                        <td data-label="WhatsApp" class="px-4 py-3">{{ $recipient->phone }}</td>
+                        <td data-label="Status" class="px-4 py-3">
                             @if($recipient->status === 'sent')
                                 <span class="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded dark:bg-green-900 dark:text-green-300">Terkirim</span>
                             @elseif($recipient->status === 'failed')
@@ -142,10 +143,10 @@
                                 <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">Menunggu</span>
                             @endif
                         </td>
-                        <td class="px-4 py-3 max-w-[220px] truncate" title="{{ $recipient->error ?? '' }}">
+                        <td data-label="Pesan" class="px-4 py-3 max-w-[220px] truncate" title="{{ $recipient->error ?? '' }}">
                             {{ $recipient->error ?? '-' }}
                         </td>
-                        <td class="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">
+                        <td data-label="Terkirim" class="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">
                             {{ $recipient->sent_at ? $recipient->sent_at->format('d M Y, H:i:s') : '-' }}
                         </td>
                     </tr>
@@ -156,7 +157,7 @@
                     @endforelse
                 </tbody>
             </table>
-        </div>
+            </x-admin.responsive-table>
 
         <div class="p-4">
             {{ $recipients->links() }}

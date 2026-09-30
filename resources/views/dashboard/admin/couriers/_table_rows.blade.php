@@ -1,15 +1,16 @@
 @forelse ($couriers as $courier)
     <tr class="border-b dark:border-gray-700">
-        <td class="px-4 py-3 font-medium text-center text-gray-900 dark:text-white">
+        <td data-label="No." class="px-4 py-3 font-medium text-center text-gray-900 dark:text-white">
             {{ ($couriers->currentPage() - 1) * $couriers->perPage() + $loop->iteration }}
         </td>
-        <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-            {{ $courier->name }}</th>
-        <td class="px-4 py-3 text-center">{{ $courier->email }}</td>
-        <td class="px-4 py-3 text-center">{{ $courier->region->name }}</td>
-        <td class="px-4 py-3 text-center">{{ Str::limit($courier->note, 20) }}</td>
-        <td class="px-4 py-3 text-center">{{ $courier->created_at->format('d M Y') }}</td>
-        <td class="px-4 py-3 text-right">
+        <td data-label="Kurir" class="px-4 py-3 font-medium text-gray-900 dark:text-white">
+            <span class="break-words">{{ $courier->name }}</span>
+        </td>
+        <td data-label="Email" class="px-4 py-3 text-center">{{ $courier->email }}</td>
+        <td data-label="Region" class="px-4 py-3 text-center">{{ $courier->region->name }}</td>
+        <td data-label="Note" class="px-4 py-3 text-center">{{ Str::limit($courier->note, 20) }}</td>
+        <td data-label="Bergabung" class="px-4 py-3 text-center">{{ $courier->created_at->format('d M Y') }}</td>
+        <td data-label="Aksi" class="px-4 py-3 text-right">
             <div class="relative inline-block">
                 <button data-target-dropdown="courier-actions-dropdown-{{ $courier->id }}"
                     class="px-2 py-1 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-lg js-dropdown-toggle hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-2 focus:ring-gray-100 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">

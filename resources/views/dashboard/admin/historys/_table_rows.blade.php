@@ -1,25 +1,25 @@
 @forelse ($orders as $order)
     <tr class="border-b dark:border-gray-700">
         {{-- NO --}}
-        <td class="px-4 py-3 font-medium text-center text-gray-900 dark:text-white">
+        <td data-label="No." class="px-4 py-3 font-medium text-center text-gray-900 dark:text-white">
             {{ ($orders->currentPage() - 1) * $orders->perPage() + $loop->iteration }}
         </td>
-        <td class="px-4 py-2">
+        <td data-label="Invoice" class="px-4 py-2">
             <p class="mb-0 text-xs font-semibold leading-tight">{{ $order->invoice_number }}</p>
             <p class="mb-0 text-xs leading-tight text-slate-400">
                 {{ $order->created_at->isoFormat('D MMM YYYY, HH:mm') }}
             </p>
         </td>
-        <td class="px-4 py-2">
+        <td data-label="Customer" class="px-4 py-2">
             <p class="mb-0 text-xs font-semibold leading-tight">{{ $order->customer->name ?? '-' }}
             </p>
             <p class="mb-0 text-xs leading-tight text-slate-400">
                 {{ $order->customer->company_name ?? '-' }}</p>
         </td>
-        <td class="px-4 py-2">
+        <td data-label="Kurir" class="px-4 py-2">
             <p class="mb-0 text-xs leading-tight">{{ $order->createdBy->name ?? '-' }}</p>
         </td>
-        <td class="px-4 py-2">
+        <td data-label="Status" class="px-4 py-2">
             <span class="text-xs font-medium px-2.5 py-0.5 rounded {{ $order->payment_status['class'] }}">
                 {{ $order->payment_status['text'] }}
             </span>
@@ -30,7 +30,7 @@
                 </span>
             @endif
         </td>
-        <td class="px-4 py-2">
+        <td data-label="Total" class="px-4 py-2">
             @if ($order->has_return)
                 {{-- Tampilkan total baru dan coret total lama --}}
                 <p class="mb-0 text-xs font-semibold leading-tight text-green-600 dark:text-green-400">
@@ -47,7 +47,7 @@
             @endif
         </td>
 
-        <td class="px-4 py-2 text-center">
+        <td data-label="Aksi" class="px-4 py-2 text-center">
             {{-- Wrapper untuk dropdown --}}
             <div class="relative inline-block text-left">
                 {{-- Tombol untuk membuka dropdown --}}

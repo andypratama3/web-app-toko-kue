@@ -1,10 +1,10 @@
 @forelse ($orders as $order)
     <tr class="text-sm font-normal text-gray-700 border-b dark:text-gray-400 dark:border-gray-700">
-        <td class="px-4 py-2 text-center">{{ $loop->iteration }}</td>
-        <td class="px-4 py-2 font-mono">{{ $order->invoice_number }}</td>
-        <td class="px-4 py-2">{{ $order->customer->name ?? '-' }}</td>
-        <td class="px-4 py-2">{{ $order->createdBy->name ?? '-' }}</td>
-        <td class="px-4 py-2">
+        <td data-label="No." class="px-4 py-2 text-center">{{ $loop->iteration }}</td>
+        <td data-label="Invoice" class="px-4 py-2 font-mono">{{ $order->invoice_number }}</td>
+        <td data-label="Customer" class="px-4 py-2">{{ $order->customer->name ?? '-' }}</td>
+        <td data-label="Kurir" class="px-4 py-2">{{ $order->createdBy->name ?? '-' }}</td>
+        <td data-label="Status" class="px-4 py-2">
             <span
                 class="inline-block px-2 py-1 text-xs font-semibold rounded-full
                                         @switch($order->status)
@@ -16,7 +16,7 @@
                 {{ $labelStatus($order->status) }}
             </span>
         </td>
-        <td class="px-4 py-2">
+        <td data-label="Total" class="px-4 py-2">
             @php
                 // Cek retur aktif (tidak ditolak)
                 $activeReturn = $order->returns->where('status', '!=', 'ditolak')->sortByDesc('id')->first();
@@ -32,7 +32,7 @@
                 Rp {{ number_format($order->total_amount, 0, ',', '.') }}
             @endif
         </td>
-        <td class="px-4 py-2 text-center">
+        <td data-label="Catatan" class="px-4 py-2 text-center">
             @if ($order->note)
                 <button type="button"
                     class="text-gray-500 js-open-modal-btn hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
@@ -47,7 +47,7 @@
                 <span class="text-gray-400 dark:text-gray-500">-</span>
             @endif
         </td>
-        <td class="px-4 py-2">
+        <td data-label="Aksi" class="px-4 py-2">
             {{-- Tombol ini akan membuka modal verifikasi --}}
             @if ($order->status == 'selesai' || $order->status == 'menunggu_verifikasi_admin')
                 <button

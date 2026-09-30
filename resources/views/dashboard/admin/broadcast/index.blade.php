@@ -27,8 +27,8 @@
                     </button>
                 </form>
                 <a href="{{ route('admin.broadcast.create') }}"
-                    class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300">
-                    <i class="mr-1 fas fa-paper-plane"></i> Broadcast Baru
+                    class="admin-touch-target hidden w-full items-center justify-center gap-2 px-3 py-2 text-sm font-medium text-white bg-green-600 rounded-lg md:inline-flex hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300">
+                    <i class="fas fa-paper-plane"></i> Broadcast Baru
                 </a>
             </div>
         </form>
@@ -51,8 +51,9 @@
     @endif
 
     {{-- Table --}}
-    <div class="overflow-x-auto min-h-[400px]">
-        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+    <x-admin.responsive-table min-height="400">
+        <table
+            class="admin-table w-full text-sm text-left text-gray-500 dark:text-gray-400">
             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
                     <th scope="col" class="px-4 py-3">Judul</th>
@@ -68,11 +69,11 @@
             <tbody>
                 @forelse($broadcasts as $broadcast)
                 <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                    <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">
+                    <td data-label="Judul" class="px-4 py-3 font-medium text-gray-900 dark:text-white">
                         {{ $broadcast->title ?? 'Tanpa judul' }}
                         <div class="text-xs font-normal text-gray-400">{{ $broadcast->statusLabel() }}</div>
                     </td>
-                    <td class="px-4 py-3">
+                    <td data-label="Template" class="px-4 py-3">
                         <span class="text-xs bg-purple-100 text-purple-800 px-2 py-0.5 rounded dark:bg-purple-900 dark:text-purple-300">
                             {{ $broadcast->template->name ?? '-' }}
                         </span>
@@ -82,14 +83,14 @@
                             </span>
                         @endif
                     </td>
-                    <td class="px-4 py-3">
+                    <td data-label="Cabang" class="px-4 py-3">
                         @if($broadcast->region)
                             {{ $broadcast->region->name }}
                         @else
                             <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded dark:bg-gray-700 dark:text-gray-300">Semua</span>
                         @endif
                     </td>
-                    <td class="px-4 py-3">
+                    <td data-label="Status" class="px-4 py-3">
                         @php
                             $statusColors = [
                                 'draft' => 'gray',
@@ -105,17 +106,17 @@
                             {{ $broadcast->statusLabel() }}
                         </span>
                     </td>
-                    <td class="px-4 py-3">{{ $broadcast->recipient_count }}</td>
-                    <td class="px-4 py-3">
+                    <td data-label="Penerima" class="px-4 py-3">{{ $broadcast->recipient_count }}</td>
+                    <td data-label="Terkirim" class="px-4 py-3">
                         {{ $broadcast->sent_count }}
                         @if($broadcast->failed_count)
                             <span class="text-xs text-red-500">({{ $broadcast->failed_count }} gagal)</span>
                         @endif
                     </td>
-                    <td class="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">
+                    <td data-label="Dibuat" class="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">
                         {{ $broadcast->created_at->format('d M Y, H:i') }}
                     </td>
-                    <td class="px-4 py-3 text-center whitespace-nowrap">
+                    <td data-label="Aksi" class="px-4 py-3 text-center">
                         <a href="{{ route('admin.broadcast.show', $broadcast->id) }}"
                             class="font-medium text-blue-600 dark:text-blue-500 hover:underline">
                             Detail
@@ -138,7 +139,15 @@
                 @endforelse
             </tbody>
         </table>
-    </div>
+        </x-admin.responsive-table>
+
+    {{-- FAB "Broadcast Baru" — hanya tampil di mobile --}}
+    <a href="{{ route('admin.broadcast.create') }}"
+        aria-label="Broadcast Baru" title="Broadcast Baru"
+        class="admin-touch-target fixed bottom-4 right-4 z-50 h-14 w-14 items-center justify-center text-white bg-green-600 rounded-full shadow-lg md:hidden hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300">
+        <i class="text-lg leading-none fas fa-paper-plane"></i>
+        <span class="sr-only">Broadcast Baru</span>
+    </a>
 
     {{-- Pagination --}}
     <div class="p-4">

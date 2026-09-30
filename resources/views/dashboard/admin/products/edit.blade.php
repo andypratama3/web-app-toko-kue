@@ -7,7 +7,7 @@
         <div class="p-4 md:p-5">
             {{-- Area utama yang bisa di-scroll --}}
             <div class="overflow-y-auto max-h-[70vh] p-1">
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2">
                     {{-- Nama Produk, Kategori, Tag --}}
                     <div class="col-span-2"><label for="name-{{ $product->id }}" class="block mb-2 text-sm font-medium">Nama Produk</label><input type="text" name="name" value="{{ old('name', $product->name) }}" id="name-{{ $product->id }}" class="w-full p-2.5 text-sm bg-gray-50 rounded-lg border border-gray-300 dark:bg-slate-800 dark:border-slate-600 dark:text-gray-100 dark:placeholder-gray-400" required></div>
                     <div class="col-span-2 sm:col-span-1"><label for="category-{{ $product->id }}" class="block mb-2 text-sm font-medium">Kategori</label><select id="category-{{ $product->id }}" name="category_id" class="w-full p-2.5 text-sm bg-gray-50 rounded-lg border border-gray-300 dark:bg-slate-800 dark:border-slate-600 dark:text-gray-100">@foreach ($categories as $category)<option value="{{ $category->id }}" @selected(old('category_id', $product->category_id) == $category->id)>{{ $category->name }}</option>@endforeach</select></div>

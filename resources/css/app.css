@@ -300,7 +300,7 @@ body.dark #sidebar .sidebar-icon-container i::after {
 
     .main-content {
         margin-left: 0 !important;
-        padding-top: 5rem !important; /* Keep space for fixed navbar on mobile */
+        padding-top: 4rem !important; /* Ruang untuk navbar fixed (64px) */
     }
 
     /* Mobile navbar positioning */
@@ -311,9 +311,9 @@ body.dark #sidebar .sidebar-icon-container i::after {
         position: fixed !important;
         top: 0 !important;
         z-index: 50 !important;
-        height: 5rem !important;
-        min-height: 5rem !important;
-        max-height: 5rem !important;
+        height: 4rem !important; /* 64px — hemat tinggi layar di HP/tablet */
+        min-height: 4rem !important;
+        max-height: 4rem !important;
         /* overflow visible supaya dropdown profil tidak terpotong di layar kecil */
         overflow: visible !important;
         /* Warna solid (bukan transparent) agar ikon putih tetap terlihat di atas konten */
@@ -326,11 +326,11 @@ body.dark #sidebar .sidebar-icon-container i::after {
 
     /* Mobile navbar container */
     #navbar-main > div {
-        padding-left: 1.5rem !important; /* Slightly increased for mobile */
-        padding-right: 1.5rem !important; /* Increased right padding for mobile */
-        height: 5rem !important;
-        min-height: 5rem !important;
-        max-height: 5rem !important;
+        padding-left: 1rem !important; /* Ruang cukup untuk touch target */
+        padding-right: 0.5rem !important;
+        height: 4rem !important; /* 64px — hemat tinggi layar di HP */
+        min-height: 4rem !important;
+        max-height: 4rem !important;
     }
 
     /* Mobile profile section positioning */
@@ -656,3 +656,207 @@ body {
 /* Scrollbar dokumen sengaja TIDAK disembunyikan.
    menyembunyikannya membuat overflow horizontal terpotong diam-diam
    (kolom kanan tabel tidak bisa dijangkau pengguna). */
+
+/* ============================================================
+   ADMIN RESPONSIVE — mobile-first
+   Breakpoint: mobile <768px (card view) · ≥768px (tabel normal)
+   ============================================================ */
+
+/* --- 1. TABEL → CARD VIEW di mobile -------------------------------
+   Satu DOM untuk desktop & mobile (bukan render dua kali), sehingga
+   live-search yang men-swap <tbody> tetap ikut punya data-label.
+   Label diambil dari atribut data-label tiap <td>. */
+@media (max-width: 767px) {
+    .admin-table thead {
+        display: none;
+    }
+
+    .admin-table,
+    .admin-table tbody,
+    .admin-table tr,
+    .admin-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .admin-table tr {
+        margin-bottom: 0.75rem;
+        padding: 0.75rem;
+        background-color: #fff;
+        border: 1px solid rgb(229 231 235);
+        border-radius: 0.75rem;
+        box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    }
+
+    .admin-table tr:last-child {
+        margin-bottom: 0;
+    }
+
+    .admin-table td {
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+        justify-content: space-between;
+        padding: 0.375rem 0;
+        border: 0;
+        text-align: left !important;
+        /* lepaskan nowrap yang dipakai di desktop */
+        white-space: normal !important;
+    }
+
+    .admin-table td + td {
+        border-top: 1px dashed rgb(229 231 235);
+        padding-top: 0.5rem;
+        margin-top: 0.125rem;
+    }
+
+    .admin-table td::before {
+        content: attr(data-label);
+        flex: 0 0 38%;
+        font-weight: 600;
+        font-size: 0.75rem;
+        line-height: 1.25rem;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    /* nilai sel: boleh panjang, membungkus, tidak memaksa lebar */
+    .admin-table td > * {
+        min-width: 0;
+        word-break: break-word;
+    }
+
+    /* sel tanpa label (mis. baris "tidak ada data") tetap rapi */
+    .admin-table td:not([data-label]) {
+        display: block;
+        text-align: center;
+    }
+
+    .admin-table td:not([data-label])::before {
+        content: none;
+    }
+
+    /* tombol aksi tetap rata kanan */
+    .admin-table td[data-label="Aksi"],
+    .admin-table td[data-label="Aksi"]::before {
+        text-align: right;
+    }
+
+    .admin-table .relative.inline-block {
+        display: inline-block;
+    }
+
+    .dark .admin-table tr {
+        background-color: rgb(31 41 55 / 0.4);
+        border-color: rgb(55 65 81);
+    }
+
+    .dark .admin-table td {
+        color: rgb(209 213 219);
+    }
+
+    .dark .admin-table td::before {
+        color: rgb(156 163 175);
+    }
+
+    .dark .admin-table td + td {
+        border-top-color: rgb(55 65 81);
+    }
+}
+
+/* --- 2. WRAPPER TABEL: bisa scroll horizontal di ≥md --------------- */
+.admin-table-scroll {
+    width: 100%;
+    /* >= 768px tabel kembali normal; kolom banyak meluap -> scroll di dalam
+       wrapper (bukan halaman) supaya tidak muncul scrollbar global. */
+    overflow-x: auto;
+    /* scrollbar tipis tapi terlihat = penanda scroll */
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+}
+
+.admin-table-scroll::-webkit-scrollbar {
+    height: 6px;
+}
+
+.admin-table-scroll::-webkit-scrollbar-thumb {
+    background-color: rgb(156 163 175);
+    border-radius: 9999px;
+}
+
+.admin-table-scroll::-webkit-scrollbar-track {
+    background-color: rgb(243 244 246);
+    border-radius: 9999px;
+}
+
+.dark .admin-table-scroll::-webkit-scrollbar-track {
+    background-color: rgb(30 41 59);
+}
+
+/* --- 2b. HAMBURGER navbar -------------------------------------------
+   Tombol ini `xl:hidden`, jadi masih terlihat di tablet 768–1279px —
+   bukan cuma di <= 767px. Karena itu ukuran sentuhnya dipasang di luar
+   media query mobile.
+   PENTING: jangan set `display` di sini. Script navbar memakai
+   class `hidden` untuk menyembunyikan hamburger saat sidebar terbuka,
+   dan `display` di sini akan mengalahkan class itu. */
+#mobile-toggle {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s ease;
+}
+
+#mobile-toggle:hover,
+#mobile-toggle:focus-visible {
+    background-color: rgba(255, 255, 255, 0.15);
+    outline: none;
+}
+
+/* --- 3. TOUCH TARGET minimal 44×44px (Apple HIG / WCAG 2.5.5) ------ */
+@media (max-width: 767px) {
+    .admin-touch-target {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 2.75rem;
+        min-height: 2.75rem;
+    }
+
+    /* tombol kecil di dalam kartu (flag, ellipsis aksi) */
+    .admin-table .js-dropdown-toggle {
+        min-width: 2.75rem;
+        min-height: 2.75rem;
+    }
+
+    .admin-table .toggle-flag-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 2.75rem;
+        min-height: 2.75rem;
+        flex-shrink: 0;
+    }
+}
+
+/* --- 4. ANTI ZOOM iOS: input minimal 16px ------------------------- */
+@media (max-width: 767px) {
+
+    input,
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+}
+
+/* --- 5. WRAPPER: cegah anak flex memaksa halaman melebar ---------- */
+.admin-shell {
+    min-width: 0;
+}
+
+.admin-shell>* {
+    min-width: 0;
+}

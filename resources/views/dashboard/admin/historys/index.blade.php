@@ -91,8 +91,9 @@
                     </a>
                 </form>
             </div>
-            <div class="overflow-x-auto min-h-[580px]">
-                <table class="items-center w-full mb-0 align-top border-gray-200 text-slate-500 dark:text-slate-300">
+            <x-admin.responsive-table min-height="580">
+                <table
+                    class="admin-table items-center w-full mb-0 align-top border-gray-200 text-slate-500 dark:text-slate-300">
                     <thead class="align-bottom">
                         <tr
                             class="text-xs font-bold text-left text-gray-500 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -109,7 +110,7 @@
                         @include('dashboard.admin.historys._table_rows', ['orders' => $orders])
                     </tbody>
                 </table>
-            </div>
+            </x-admin.responsive-table>
             <div class="p-4">
                 {{ $orders->withQueryString()->links() }}
             </div>
