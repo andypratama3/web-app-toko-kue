@@ -321,7 +321,7 @@ body.dark #sidebar .sidebar-icon-container i::after {
     }
 
     .dark #navbar-main {
-        background-color: #0e172a !important;
+        background-color: #0f172a !important;
     }
 
     /* Mobile navbar container */
@@ -412,11 +412,21 @@ body.dark #sidebar .sidebar-icon-container i::after {
         border-radius: 0.5rem !important;
     }
 
-    /* Last Activity text styling for mobile */
+    /* Dark mode: rgba(0,0,0,...) shadow + border vanish on a dark panel */
+    .dark #navbar-main .group .absolute.bg-white {
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+
+    /* Last Activity label styling for mobile */
     #navbar-main .group .absolute .text-xs.text-gray-500 {
         color: #6b7280 !important; /* Ensure text is visible */
         font-weight: 500 !important;
         line-height: 1.4 !important;
+    }
+
+    .dark #navbar-main .group .absolute .text-xs.text-gray-500 {
+        color: #9ca3af !important; /* #6b7280 fails AA on the dark panel */
     }
 
     /* Last Activity value styling for mobile */
@@ -424,6 +434,10 @@ body.dark #sidebar .sidebar-icon-container i::after {
         color: #374151 !important; /* Darker color for better visibility */
         font-weight: 600 !important;
         font-size: 0.875rem !important; /* Slightly larger text */
+    }
+
+    .dark #navbar-main .group .absolute .block.mt-1 {
+        color: #e2e8f0 !important; /* #374151 is ~1.2:1 on slate-800 = invisible */
     }
 }
 
@@ -466,7 +480,7 @@ body {
 
 /* Dark mode navbar styling */
 .dark #navbar-main {
-    background-color: #0e172a !important; /* slate-900 for dark mode */
+    background-color: #0f172a !important; /* slate-900, must match dark:bg-slate-900 on <body> */
 }
 
 /* Ensure navbar content doesn't scroll */
@@ -559,11 +573,21 @@ body {
         max-width: 320px !important;
     }
 
-    /* Last Activity text styling */
+    /* Dark mode: rgba(0,0,0,...) shadow + border vanish on a dark panel */
+    .dark #navbar-main .group .absolute.bg-white {
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+
+    /* Last Activity label styling */
     #navbar-main .group .absolute .text-xs.text-gray-500 {
         color: #6b7280 !important; /* Ensure text is visible */
         font-weight: 500 !important;
         line-height: 1.4 !important;
+    }
+
+    .dark #navbar-main .group .absolute .text-xs.text-gray-500 {
+        color: #9ca3af !important; /* #6b7280 fails AA on the dark panel */
     }
 
     /* Last Activity value styling */
@@ -571,6 +595,10 @@ body {
         color: #374151 !important; /* Darker color for better visibility */
         font-weight: 600 !important;
         font-size: 0.875rem !important; /* Slightly larger text */
+    }
+
+    .dark #navbar-main .group .absolute .block.mt-1 {
+        color: #e2e8f0 !important; /* #374151 is ~1.2:1 on slate-800 = invisible */
     }
 }
 

@@ -8,7 +8,7 @@
     @section('title', 'Dashboard')
     @include('layouts.headicon')
     {{-- Vite build assets --}}
-    @vite(['resources/css/app.css', 'resources/css/argon-dashboard-tailwind.css', 'resources/js/app.js', 'resources/js/custom.js', 'resources/js/sidenav-burger.js', 'resources/js/navbar-scroll-fix.js', 'resources/js/charts.js', 'resources/js/live-search.js', 'resources/js/custom-modal.js'])
+    @vite(['resources/css/argon-dashboard-tailwind.css', 'resources/js/app.js', 'resources/js/custom.js', 'resources/js/sidenav-burger.js', 'resources/js/navbar-scroll-fix.js', 'resources/js/charts.js', 'resources/js/live-search.js', 'resources/js/custom-modal.js', 'resources/css/app.css'])
 
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
     <!-- Font Awesome CSS -->

@@ -22,7 +22,7 @@
                         <i class="text-red-500 fas fa-flag" title="Customer Bermasalah. Klik untuk menghapus tanda."></i>
                     @else
                         {{-- Tampilan jika customer NORMAL --}}
-                        <i class="text-gray-400 fas fa-flag hover:text-gray-600"
+                        <i class="text-gray-400 fas fa-flag hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                             title="Tandai sebagai customer bermasalah."></i>
                     @endif
                 </button>

@@ -1,4 +1,4 @@
-var Fr=(U,X)=>()=>(X||U((X={exports:{}}).exports,X),X.exports);/* empty css            */var zr=Fr((bn,Qe)=>{/*!
+var Fr=(U,X)=>()=>(X||U((X={exports:{}}).exports,X),X.exports);var zr=Fr((bn,Qe)=>{/*!
  * Chart.js v3.0.2
  * https://www.chartjs.org
  * (c) 2021 Chart.js Contributors

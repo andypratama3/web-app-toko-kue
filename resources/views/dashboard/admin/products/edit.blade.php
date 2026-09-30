@@ -6,17 +6,17 @@
         @method('PUT')
         <div class="p-4 md:p-5">
             {{-- Area utama yang bisa di-scroll --}}
-            <div class.blade.php"overflow-y-auto max-h-[70vh] p-1">
+            <div class="overflow-y-auto max-h-[70vh] p-1">
                 <div class="grid grid-cols-2 gap-4">
                     {{-- Nama Produk, Kategori, Tag --}}
-                    <div class="col-span-2"><label for="name-{{ $product->id }}" class="block mb-2 text-sm font-medium">Nama Produk</label><input type="text" name="name" value="{{ old('name', $product->name) }}" id="name-{{ $product->id }}" class="w-full p-2.5 text-sm bg-gray-50 rounded-lg border border-gray-300" required></div>
-                    <div class="col-span-2 sm:col-span-1"><label for="category-{{ $product->id }}" class="block mb-2 text-sm font-medium">Kategori</label><select id="category-{{ $product->id }}" name="category_id" class="w-full p-2.5 text-sm bg-gray-50 rounded-lg border border-gray-300">@foreach ($categories as $category)<option value="{{ $category->id }}" @selected(old('category_id', $product->category_id) == $category->id)>{{ $category->name }}</option>@endforeach</select></div>
-                    <div class="col-span-2 sm:col-span-1"><label for="tag-{{ $product->id }}" class="block mb-2 text-sm font-medium">Tag (Opsional)</label><input type="text" name="tag" value="{{ old('tag', $product->tag) }}" id="tag-{{ $product->id }}" class="w-full p-2.5 text-sm bg-gray-50 rounded-lg border border-gray-300" placeholder="Ala Carte"></div>
+                    <div class="col-span-2"><label for="name-{{ $product->id }}" class="block mb-2 text-sm font-medium">Nama Produk</label><input type="text" name="name" value="{{ old('name', $product->name) }}" id="name-{{ $product->id }}" class="w-full p-2.5 text-sm bg-gray-50 rounded-lg border border-gray-300 dark:bg-slate-800 dark:border-slate-600 dark:text-gray-100 dark:placeholder-gray-400" required></div>
+                    <div class="col-span-2 sm:col-span-1"><label for="category-{{ $product->id }}" class="block mb-2 text-sm font-medium">Kategori</label><select id="category-{{ $product->id }}" name="category_id" class="w-full p-2.5 text-sm bg-gray-50 rounded-lg border border-gray-300 dark:bg-slate-800 dark:border-slate-600 dark:text-gray-100">@foreach ($categories as $category)<option value="{{ $category->id }}" @selected(old('category_id', $product->category_id) == $category->id)>{{ $category->name }}</option>@endforeach</select></div>
+                    <div class="col-span-2 sm:col-span-1"><label for="tag-{{ $product->id }}" class="block mb-2 text-sm font-medium">Tag (Opsional)</label><input type="text" name="tag" value="{{ old('tag', $product->tag) }}" id="tag-{{ $product->id }}" class="w-full p-2.5 text-sm bg-gray-50 rounded-lg border border-gray-300 dark:bg-slate-800 dark:border-slate-600 dark:text-gray-100 dark:placeholder-gray-400" placeholder="Ala Carte"></div>
 
                     {{-- Deskripsi --}}
                     <div class="col-span-2">
                         <label for="description-{{ $product->id }}" class="block mb-2 text-sm font-medium">Deskripsi</label>
-                        <textarea id="description-{{ $product->id }}" name="description" rows="5" class="block p-2.5 w-full text-sm bg-gray-50 rounded-lg border border-gray-300 max-h-48" required>{{ old('description', $product->description) }}</textarea>
+                        <textarea id="description-{{ $product->id }}" name="description" rows="5" class="block p-2.5 w-full text-sm bg-gray-50 rounded-lg border border-gray-300 max-h-48 dark:bg-slate-800 dark:border-slate-600 dark:text-gray-100" required>{{ old('description', $product->description) }}</textarea>
                     </div>
                     <div class="col-span-2">
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -35,7 +35,7 @@
                                 <label class="block mb-2 text-sm font-medium">Status Produk</label>
                                 <label class="inline-flex items-center cursor-pointer">
                                     <input type="checkbox" name="is_active" value="1" class="sr-only peer" @checked(old('is_active', $product->is_active))>
-                                    <div class="relative w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    <div class="relative w-11 h-6 bg-gray-200 dark:bg-slate-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 dark:peer-checked:bg-blue-500"></div>
                                     <span class="text-sm font-medium ms-3">Produk Aktif</span>
                                 </label>
                             </div>
@@ -49,8 +49,8 @@
                                 @foreach (old('variants') as $index => $variant)
                                     <div class="flex items-center space-x-2 variant-item">
                                         <input type="hidden" name="variants[{{ $index }}][id]" value="{{ $variant['id'] ?? '' }}">
-                                        <input type="text" name="variants[{{ $index }}][name]" class="w-full p-2 text-sm border-gray-300 rounded-lg" placeholder="Nama Varian" value="{{ $variant['name'] }}" required>
-                                        <input type="number" name="variants[{{ $index }}][price]" class="w-full p-2 text-sm border-gray-300 rounded-lg" placeholder="Harga" value="{{ $variant['price'] }}" required>
+                                        <input type="text" name="variants[{{ $index }}][name]" class="w-full p-2 text-sm bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600 dark:text-gray-100 rounded-lg" placeholder="Nama Varian" value="{{ $variant['name'] }}" required>
+                                        <input type="number" name="variants[{{ $index }}][price]" class="w-full p-2 text-sm bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600 dark:text-gray-100 rounded-lg" placeholder="Harga" value="{{ $variant['price'] }}" required>
                                         <button type="button" class="px-3 py-2 text-white bg-red-600 rounded-lg remove-variant-btn">&times;</button>
                                     </div>
                                 @endforeach
@@ -58,8 +58,8 @@
                                 @foreach ($product->variants->where('is_active', true) as $index => $variant)
                                     <div class="flex items-center space-x-2 variant-item">
                                         <input type="hidden" name="variants[{{ $variant->id }}][id]" value="{{ $variant->id }}">
-                                        <input type="text" name="variants[{{ $variant->id }}][name]" class="w-full p-2 text-sm border-gray-300 rounded-lg" placeholder="Nama Varian" value="{{ $variant->name }}" required>
-                                        <input type="number" name="variants[{{ $variant->id }}][price]" class="w-full p-2 text-sm border-gray-300 rounded-lg" placeholder="Harga" value="{{ $variant->price }}" required>
+                                        <input type="text" name="variants[{{ $variant->id }}][name]" class="w-full p-2 text-sm bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600 dark:text-gray-100 rounded-lg" placeholder="Nama Varian" value="{{ $variant->name }}" required>
+                                        <input type="number" name="variants[{{ $variant->id }}][price]" class="w-full p-2 text-sm bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600 dark:text-gray-100 rounded-lg" placeholder="Harga" value="{{ $variant->price }}" required>
                                         <button type="button" class="px-3 py-2 text-white bg-red-600 rounded-lg remove-variant-btn">&times;</button>
                                     </div>
                                 @endforeach
@@ -95,8 +95,8 @@
                 const newVariantHtml = `
                     <div class="flex items-center mb-2 space-x-2 variant-item">
                         <input type="hidden" name="variants[${index}][id]" value="">
-                        <input type="text" name="variants[${index}][name]" class="w-full p-2 text-sm border-gray-300 rounded-lg" placeholder="Nama Varian" required>
-                        <input type="number" name="variants[${index}][price]" class="w-full p-2 text-sm border-gray-300 rounded-lg" placeholder="Harga" required>
+                        <input type="text" name="variants[${index}][name]" class="w-full p-2 text-sm bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600 dark:text-gray-100 rounded-lg" placeholder="Nama Varian" required>
+                        <input type="number" name="variants[${index}][price]" class="w-full p-2 text-sm bg-white dark:bg-slate-800 border-gray-300 dark:border-slate-600 dark:text-gray-100 rounded-lg" placeholder="Harga" required>
                         <button type="button" class="px-3 py-2 text-white bg-red-600 rounded-lg remove-variant-btn" title="Hapus Varian">&times;</button>
                     </div>
                 `;

@@ -152,13 +152,13 @@
                                 y: {
                                     beginAtZero: true,
                                     ticks: {
-                                        color: '#6b7280',
+                                        color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280',
                                         stepSize: 1
                                     }
                                 },
                                 x: {
                                     ticks: {
-                                        color: '#6b7280'
+                                        color: document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280'
                                     }
                                 }
                             }

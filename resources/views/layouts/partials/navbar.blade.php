@@ -153,9 +153,9 @@
                             @endphp
                             <div class="mb-2">
                                 <span class="font-semibold text-gray-900 dark:text-white">{{ $user->name ?? 'User' }}</span>
-                                <span class="block mt-1 text-xs text-gray-500">📍 Region:
+                                <span class="block mt-1 text-xs text-gray-500 dark:text-gray-400">📍 Region:
                                     {{ $user->region->name ?? 'Tidak ada region' }}</span>
-                                <span class="block text-xs text-gray-500">Email:
+                                <span class="block text-xs text-gray-500 dark:text-gray-400">Email:
                                     {{ $user->email ?? 'Tidak ada email' }}</span>
                             </div>
                             <div class="pt-2 border-t border-gray-100 dark:border-gray-700">
