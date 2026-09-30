@@ -554,10 +554,10 @@ class OrderBotService
                 2 => 'Isi alamat pengiriman lengkap.',
                 3 => 'Isi tanggal kirim (contoh: 10 September 2026).',
                 4 => 'Isi jam tiba yang diinginkan (contoh: 10:00).',
-                default => 'Pilih metode pengiriman (1 / 2 / 3).',
+                default => 'Pilih metode pengiriman (1 Diambil Sendiri / 2 Grab/GoSend / 3 Kurir Internal).',
             },
             OrderBotConversationState::AWAITING_DELIVERY_METHOD,
-            OrderBotConversationState::MENU_SELECTION => 'Pilih metode pengiriman (1 Diambil sendiri, 2 Grab/GoSend, 3 Kurir internal).',
+            OrderBotConversationState::MENU_SELECTION => 'Pilih metode pengiriman (1 Diambil Sendiri / 2 Grab/GoSend / 3 Kurir Internal).',
             OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS => 'Kirim lokasi GPS (pin lokasi) atau ketik alamat lengkap.',
             OrderBotConversationState::AWAITING_DELIVERY_SLOT => 'Pilih slot waktu pengiriman (1 / 2 / 3 / 4).',
             OrderBotConversationState::ORDER_SUMMARY => 'Ketik *FIX* untuk konfirmasi pesanan, atau *BATAL* untuk membatalkan.',
@@ -569,9 +569,16 @@ class OrderBotService
     protected function sendWelcomeMessage(WhatsAppConversation $conversation): void
     {
         $regionName = $conversation->region->name ?? config('services.whatsapp.default_region');
+        $hour = (int) now()->format('H');
+        $greeting = match (true) {
+            $hour >= 5 && $hour < 11 => 'Selamat pagi',
+            $hour >= 11 && $hour < 15 => 'Selamat siang',
+            $hour >= 15 && $hour < 18 => 'Selamat sore',
+            default => 'Selamat malam',
+        };
 
         $this->metaService->sendText($conversation->phone_number,
-            "Selamat datang di *Kue Pandan Asli* 🍃\n".
+            "{$greeting} dari *Kue Pandan Asli* 🍃\n".
             "Cabang {$regionName}\n\n".
             "Kami menjual kue tradisional Indonesia dengan rasa pandan alami.\n".
             "Tanpa toko offline — hanya pesan online melalui WhatsApp ini.\n\n".
@@ -830,9 +837,16 @@ class OrderBotService
                 }
 
                 $product = $this->resolveProduct($conversation, $form['product_name'] ?? '');
+                if (! $product) {
+                    $this->metaService->sendText($conversation->phone_number,
+                        "❌ Produk *{$form['product_name']}* tidak ditemukan.\n".
+                        "Silakan ketik *MENU* untuk memilih kategori ulang, atau ketik nama produk yang tersedia."
+                    );
+                    return null;
+                }
                 $variant = $product ? $product->variants->where('is_active', true)->first() : null;
 
-                $subtotal = ($variant->price ?? 0) * ($context['product_quantity'] ?? 1);
+                $subtotal = ($variant?->price ?? 0) * ($context['product_quantity'] ?? 1);
 
                 $order = Order::create([
                     'invoice_number' => $this->generateInvoiceNumber($conversation),
@@ -861,7 +875,7 @@ class OrderBotService
                         'variant_id' => $variant?->id,
                         'variant_name' => $variant?->name,
                         'quantity' => $context['product_quantity'] ?? 1,
-                        'price' => $variant->price ?? 0,
+                        'price' => $variant?->price ?? 0,
                         'subtotal' => $subtotal,
                     ]);
                 }
@@ -1042,18 +1056,38 @@ class OrderBotService
     protected function findProductByKeyword(WhatsAppConversation $conversation, string $keyword): ?Product
     {
         $regionId = $conversation->region_id;
+        $lowerKeyword = strtolower(trim($keyword));
 
-        return Product::where('is_active', true)
+        $query = Product::where('is_active', true)
             ->where(function ($q) use ($regionId) {
+                $q->where('region_id', $q->raw('region_id'))->orWhereNull('region_id');
+            })
+            ->with(['variants' => fn ($q) => $q->where('is_active', true)]);
+
+        // Prioritas: nama/tag persis dulu, baru partial
+        $exactMatch = (clone $query)
+            ->where(function ($q) use ($regionId, $lowerKeyword) {
                 $q->where('region_id', $regionId)->orWhereNull('region_id');
             })
-            ->where(function ($q) use ($keyword) {
-                $q->where('name', 'like', "%{$keyword}%")
-                    ->orWhere('tag', 'like', "%{$keyword}%")
-                    ->orWhere('description', 'like', "%{$keyword}%");
+            ->where(function ($q) use ($lowerKeyword) {
+                $q->whereRaw("LOWER(name) = ?", [$lowerKeyword])
+                  ->orWhereRaw("LOWER(tag) = ?", [$lowerKeyword]);
             })
-            ->with(['variants' => fn ($q) => $q->where('is_active', true)])
             ->first();
+
+        if ($exactMatch) {
+            return $exactMatch;
+        }
+
+        $partialMatch = $query
+            ->where(function ($q) use ($lowerKeyword) {
+                $q->whereRaw("LOWER(name) LIKE ?", ["%{$lowerKeyword}%"])
+                  ->orWhereRaw("LOWER(tag) LIKE ?", ["%{$lowerKeyword}%"])
+                  ->orWhereRaw("LOWER(description) LIKE ?", ["%{$lowerKeyword}%"]);
+            })
+            ->first();
+
+        return $partialMatch;
     }
 
     protected function findOrCreateCustomer(WhatsAppConversation $conversation): Customer
