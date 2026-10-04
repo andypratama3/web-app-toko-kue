@@ -1,0 +1,2 @@
+Checking the actual scenario:
+Bug 3: "Saat pengguna mengirim lokasi (Tunjungan Plaza, Surabaya), bot menghitung jarak 79.18km dari toko (Malang). Bot memberikan pesan error yang benar, TETAPI pastikan setelah pesan error ini, state pengguna di-reset dengan benar agar mereka bisa memulai ulang pesanan (PESAN) tanpa harus mematikan bot."

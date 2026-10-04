@@ -927,8 +927,16 @@ class OrderBotService
     protected function matchesIntent(string $text, array $keywords): bool
     {
         foreach ($keywords as $keyword) {
-            if (str_contains($text, $keyword)) {
-                return true;
+            $keyword = strtolower(trim($keyword));
+            // Use word boundaries for short keywords (greetings, commands) to avoid false positives
+            if (strlen($keyword) <= 3) {
+                if (preg_match('/\b' . preg_quote($keyword, '/') . '\b/', $text)) {
+                    return true;
+                }
+            } else {
+                if (str_contains($text, $keyword)) {
+                    return true;
+                }
             }
         }
 
