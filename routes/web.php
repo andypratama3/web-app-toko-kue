@@ -115,6 +115,7 @@ Route::middleware([
 
         // Route untuk download rekap order customer (PDF)
         Route::get('customers/{customer}/rekap/download', [CustomerController::class, 'downloadRekap'])->name('customers.rekap.download');
+        Route::get('orders/{order}/bot-rekap/pdf', [AdminOrderController::class, 'downloadBotRekap'])->name('orders.bot.rekap.pdf');
 
         // Manajemen Pesanan untuk Admin
         Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');

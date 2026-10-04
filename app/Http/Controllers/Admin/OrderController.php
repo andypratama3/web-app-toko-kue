@@ -257,4 +257,22 @@ class OrderController extends Controller
             return response()->json(['message' => 'Terjadi kesalahan saat menghapus pesanan.'], 500);
         }
     }
+    public function downloadBotRekap(Request $request, $id)
+    {
+        $start = $request->input('start');
+        $end = $request->input('end');
+        $order = Order::with('items','customer')->findOrFail($id);
+        if ($order->channel !== 'whatsapp' || $order->status !== 'diverifikasi_admin') {
+            abort(403, 'Rekap hanya untuk pesanan bot yang sudah diverifikasi.');
+        }
+        if ($start && $end) {
+            $rangeStart = Carbon::parse($start)->startOfDay();
+            $rangeEnd = Carbon::parse($end)->endOfDay();
+            if ($order->created_at < $rangeStart || $order->created_at > $rangeEnd) {
+                abort(403, 'Pesanan bot di luar range tanggal.');
+            }
+        }
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('dashboard.admin.orders.bot-rekap_pdf', compact('order','start','end'));
+        return $pdf->download('BotRekap_' . $order->invoice_number . '.pdf');
+    }
 }
