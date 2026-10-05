@@ -383,6 +383,8 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                 $product = $this->findProductByKeyword($conversation, $lower);
             }
             if ($product) {
+                $conversation->setContext('selected_product_name', $product->name);
+                $conversation->setContext('selected_category', $product->category->name ?? null);
                 $this->sendProductDetail($conversation, $product);
             } else {
                 $this->metaService->sendText($conversation->phone_number,
@@ -814,14 +816,28 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
     protected function askOrderForm(WhatsAppConversation $conversation): void
     {
-        $conversation->setContext('form_step', 0);
-        $conversation->setContext('order_form', []);
+        $selectedProduct = $conversation->getContext('selected_product_name');
 
-        $this->metaService->sendText($conversation->phone_number,
-            "📝 *FORMULIR PESANAN*\n\n".
-            "Silakan isi data pesanan Anda.\n\n".
-            'Langkah 1/5: Nama produk yang ingin dipesan?'
-        );
+        if ($selectedProduct) {
+            // Produk sudah dipilih (via angka atau keyword) — langsung gabungan
+            $conversation->setContext('order_form', ['product_name' => $selectedProduct]);
+            $conversation->setContext('form_step', 1);
+
+            $this->metaService->sendText($conversation->phone_number,
+                "✅ Produk: *{$selectedProduct}*\n\n".
+                "Silakan isi semua data pesanan dalam 1 pesan (pisahkan dengan |):\n".
+                "Nama Penerima | Alamat Lengkap | Tanggal Kirim (10 Sept 2026) | Jam Tiba (10:00)"
+            );
+        } else {
+            $conversation->setContext('form_step', 0);
+            $conversation->setContext('order_form', []);
+
+            $this->metaService->sendText($conversation->phone_number,
+                "📝 *FORMULIR PESANAN*\n\n".
+                "Silakan isi data pesanan Anda.\n\n".
+                'Langkah 1/5: Nama produk yang ingin dipesan?'
+            );
+        }
     }
 
 
