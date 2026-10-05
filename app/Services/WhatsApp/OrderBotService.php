@@ -72,17 +72,21 @@ class OrderBotService
             $lat = $locationData['latitude'] ?? null;
             $lng = $locationData['longitude'] ?? null;
 
-            if ($lat && $lng) {
+            if ($lat !== null && $lng !== null && is_numeric($lat) && is_numeric($lng)) {
                 $distance = $this->deliveryZoneService->estimateDistance($lat, $lng, $conversation->region_id);
                 $result = $this->deliveryZoneService->calculateOngkir($distance, $conversation->region_id);
 
                 if ($result['needs_escalation']) {
+                    $conversation->clearContext();
                     $conversation->update(['current_state' => OrderBotConversationState::ESCALATED_TO_HUMAN->value]);
+                    $regionName = $conversation->region?->name ?? config('services.whatsapp.default_region', 'cabang kami');
                     $this->metaService->sendText($conversation->phone_number,
                         "Mohon maaf, jarak pengiriman Anda sekitar {$distance}km dari toko kami.\n".
                         "Untuk jarak di atas 14km, silakan hubungi admin kami untuk detail pengiriman.\n\n".
-                        "WA Admin: hubungi admin terdekat di cabang {$conversation->region->name}"
+                        "WA Admin: hubungi admin terdekat di cabang {$regionName}"
                     );
+                    // M1 FIX: notify admin AFTER state is committed and message sent
+                    $this->notifyAdminOfEscalation($conversation, $distance, $regionName);
 
                     return;
                 }
@@ -95,6 +99,13 @@ class OrderBotService
             }
         } elseif ($state === OrderBotConversationState::AWAITING_DELIVERY_METHOD) {
             $this->handleDeliveryMethod($conversation, '3');
+        } else {
+            // H2 FIX: never swallow a location message silently — reply with current step guide
+            $this->metaService->sendText($conversation->phone_number,
+                "📍 Lokasi diterima, tapi saat ini bot sedang menunggu:\n\n".
+                $this->buildCurrentStepGuide($conversation)."\n\n".
+                "Ketik *MENU* untuk mulai ulang, atau lanjutkan menjawab langkah yang sedang diminta."
+            );
         }
     }
 
@@ -146,8 +157,17 @@ class OrderBotService
             return true;
         }
 
-        // PESAN / ORDER — mulai ulang formulir pesanan (jangan ditelan sebagai isi form)
-        if (in_array($state, $orderFlowStates, true)
+        // PESAN / ORDER — mulai ulang formulir pesanan; juga berlaku dari ESCALATED_TO_HUMAN (H1 fix)
+        $canRestart = in_array($state, array_merge($orderFlowStates, [OrderBotConversationState::ESCALATED_TO_HUMAN]), true);
+        $isFormFieldAnswer = $conversation->getContext('form_step') !== null
+            && (
+                stripos($lower, 'alamat') !== false
+                || stripos($lower, 'nama') !== false
+                || stripos($lower, 'tangg') !== false
+                || stripos($lower, 'jam') !== false
+            );
+        if ($canRestart
+            && ! $isFormFieldAnswer
             && $this->matchesIntent($lower, ['mau pesan', 'pesan', 'order', 'ordering', 'mau order'])
         ) {
             $conversation->clearContext();
@@ -426,12 +446,16 @@ class OrderBotService
         $result = $this->deliveryZoneService->calculateOngkir($distance, $conversation->region_id);
 
         if ($result['needs_escalation']) {
+            $conversation->clearContext();
             $conversation->update(['current_state' => OrderBotConversationState::ESCALATED_TO_HUMAN->value]);
+            $regionName = $conversation->region?->name ?? config('services.whatsapp.default_region', 'cabang kami');
             $this->metaService->sendText($conversation->phone_number,
                 "Mohon maaf, jarak pengiriman Anda diperkirakan sekitar {$distance}km.\n".
                 "Untuk jarak di atas 14km, silakan hubungi admin kami.\n\n".
-                "WA Admin: hubungi admin terdekat di cabang {$conversation->region->name}"
+                "WA Admin: hubungi admin terdekat di cabang {$regionName}"
             );
+            // M1 FIX: notify admin after escalation is committed
+            $this->notifyAdminOfEscalation($conversation, $distance, $regionName);
 
             return;
         }
@@ -469,12 +493,26 @@ class OrderBotService
     {
         $lower = strtolower(trim($text));
 
-        if ($this->matchesIntent($lower, ['fix', 'oke', 'ok', 'ya', 'konfirmasi', 'confirm', 'lanjut'])) {
+        // H3 FIX: "ya" / "oke" berhati-hati — hanya konfirmasi jika tidak ada kata tanya/harga
+        $isConfirm = $this->matchesIntent($lower, ['fix', 'fix ya', 'oke fix', 'konfirmasi', 'confirm', 'lanjut'])
+            && ! $this->matchesIntent($lower, ['berapa', 'harga', 'ongkir', 'jam', 'tanggal', 'mkasih']);
+        if ($isConfirm) {
             $this->confirmOrder($conversation);
         } elseif ($this->matchesIntent($lower, ['batal', 'cancel', 'ubah'])) {
-            $conversation->clearContext();
-            $this->advanceState($conversation, OrderBotConversationState::MENU_SELECTION);
-            $this->sendProductCategories($conversation);
+            // H3: "ubah" hanya dibatalkan jika bukan permintaan ubah alamat (jangan menelan jawaban form)
+            if (str_contains($lower, 'alamat')) {
+                $this->metaService->sendText($conversation->phone_number,
+                    "Alamat bisa diperbarui. Silakan kirim alamat baru, atau ketik *BATAL* untuk membatalkan pesanan."
+                );
+            } else {
+                $conversation->clearContext();
+                $this->advanceState($conversation, OrderBotConversationState::MENU_SELECTION);
+                $this->metaService->sendText(
+                    $conversation->phone_number,
+                    "🛑 Pesanan dibatalkan.\n\nBerikut pilihan kategori:"
+                );
+                $this->sendProductCategories($conversation);
+            }
         } else {
             $this->metaService->sendText($conversation->phone_number,
                 'Ketik *FIX* untuk konfirmasi pesanan, atau *BATAL* untuk membatalkan.'
@@ -526,8 +564,43 @@ class OrderBotService
         }
     }
 
+    protected function notifyAdminOfEscalation(WhatsAppConversation $conversation, float $distance, string $regionName): void
+    {
+        try {
+            $router = new AdminNotificationRouterService(app(WhatsappMetaService::class));
+            // AdminNotificationRouterService has notifyNewOrder / notifyOrderStatusUpdate; 
+            // escalation uses direct DB insert into admin_notifications (simplest correct path)
+            \App\Models\AdminNotification::create([
+                'user_id' => null,
+                'region_id' => $conversation->region_id,
+                'message' => "⚠️ Pesanan dari {$conversation->phone_number} dibatalkan (jarak {$distance}km > 14km). Cabang: {$regionName}.",
+                'is_read' => false,
+                'type' => 'escalated',
+                'metadata' => ['conversation_id' => $conversation->id],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::channel('whatsapp')->warning('Admin escalation notify failed', ['error' => $e->getMessage()]);
+        }
+    }
+
     protected function handleClosedConversation(WhatsAppConversation $conversation, string $text): void
     {
+        $lower = strtolower(trim($text));
+        $state = OrderBotConversationState::from($conversation->current_state);
+
+        // H1 FIX: if user explicitly wants to restart from ESCALATED or CLOSED, honor "PESAN" immediately
+        if ($state === OrderBotConversationState::ESCALATED_TO_HUMAN && $this->matchesIntent($lower, ['pesan', 'order', 'mau pesan'])) {
+            $conversation->clearContext();
+            $this->advanceState($conversation, OrderBotConversationState::AWAITING_ORDER_FORM);
+            $this->metaService->sendText($conversation->phone_number,
+                "📝 Oke, kita mulai ulang pesanan dari awal ya 😊"
+            );
+            $this->askOrderForm($conversation);
+            return;
+        }
+
         $this->metaService->sendText($conversation->phone_number,
             "Halo! 👋\n\n".
             'Ada yang bisa kami bantu? Ketik *PESAN* untuk membuat pesanan baru.'
@@ -826,11 +899,10 @@ class OrderBotService
                             ->count();
 
                         if ($activeOrders >= $maxOrders) {
-                            $this->metaService->sendText($conversation->phone_number,
-                                "⚠️ Kuota order aktif Anda sudah mencapai batas ({$maxOrders} order).\n".
-                                'Silakan tunggu pesanan sebelumnya selesai atau hubungi admin.'
-                            );
-
+                            // M3 FIX: do not send HTTP inside DB transaction — collect and send after
+                            $quotaMsg = "⚠️ Kuota order aktif Anda sudah mencapai batas ({$maxOrders} order).\n".
+                                'Silakan tunggu pesanan sebelumnya selesai atau hubungi admin.';
+                            $conversation->update(['context' => array_merge($conversation->context ?? [], ['_pending_msg' => $quotaMsg])]);
                             return null;
                         }
                     }
@@ -838,15 +910,18 @@ class OrderBotService
 
                 $product = $this->resolveProduct($conversation, $form['product_name'] ?? '');
                 if (! $product) {
-                    $this->metaService->sendText($conversation->phone_number,
-                        "❌ Produk *{$form['product_name']}* tidak ditemukan.\n".
-                        "Silakan ketik *MENU* untuk memilih kategori ulang, atau ketik nama produk yang tersedia."
-                    );
+                    $conversation->update(['context' => array_merge($conversation->context ?? [], ['_pending_msg' => "❌ Produk *{$form['product_name']}* tidak ditemukan.\nSilakan ketik *MENU* untuk memilih kategori ulang, atau ketik nama produk yang tersedia."]) ]);
                     return null;
                 }
-                $variant = $product ? $product->variants->where('is_active', true)->first() : null;
+                $variant = $product ? $product->variants->where('is_active', true)->orderBy('price')->first() : null;
 
-                $subtotal = ($variant?->price ?? 0) * ($context['product_quantity'] ?? 1);
+                // M4 FIX: reject orders with no active variant (would bill Rp 0)
+                if (! $variant) {
+                    $conversation->update(['context' => array_merge($conversation->context ?? [], ['_pending_msg' => "❌ Produk *{$product->name}* tidak memiliki varian aktif yang tersedia.\nSilakan ketik *MENU* untuk memilih produk lain."]) ]);
+                    return null;
+                }
+
+                $subtotal = $variant->price * ($context['product_quantity'] ?? 1);
 
                 $order = Order::create([
                     'invoice_number' => $this->generateInvoiceNumber($conversation),
@@ -882,6 +957,13 @@ class OrderBotService
 
                 return $order;
             });
+
+            // M3 FIX: drain any pending messages collected inside the transaction (quota / missing product / missing variant)
+            $pending = $conversation->getContext('_pending_msg');
+            if ($pending) {
+                $this->metaService->sendText($conversation->phone_number, $pending);
+                $conversation->setContext('_pending_msg', null);
+            }
 
             if (! $order) {
                 return;

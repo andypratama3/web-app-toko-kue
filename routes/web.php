@@ -194,10 +194,10 @@ Route::middleware([
             Route::post('/{order}/request-return', [ReturnController::class, 'requestReturn'])->name('requestReturn');
             Route::post('/{order}/upload-return-proof', [ReturnController::class, 'uploadReturnProof'])->name('uploadReturnProof');
             
-            Route::post('/{order}/request-return/edit', [ReturnController::class, 'editReturn'])->name('requestReturn');
+            Route::post('/{order}/request-return/edit', [ReturnController::class, 'editReturn'])->name('requestReturn.edit');
             Route::get('/{order}/request-return/edit', function(){
                 return view("dashboard.kurir.pesanan.edit");
-            });
+            })->name('requestReturn.edit.form');
         });
 
         // Rute di luar grup 'pesanan'

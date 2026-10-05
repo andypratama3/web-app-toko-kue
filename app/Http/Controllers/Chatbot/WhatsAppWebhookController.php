@@ -35,21 +35,15 @@ class WhatsAppWebhookController extends Controller
     {
         $payload = $request->all();
 
-        // Verify signature if webhook secret is configured
+        // Verify signature — FAIL LOUDB (C1): a missing secret must never allow webhooks through
         $webhookSecret = config('services.whatsapp.webhook_secret');
-        if ($webhookSecret) {
-            $signature = $request->header('X-Hub-Signature-256');
-            if (!$signature) {
-                Log::channel('whatsapp')->warning('⚠️ Missing webhook signature');
-                return response()->json(['status' => 'error', 'message' => 'Missing signature'], 401);
-            }
+        abort_if(empty($webhookSecret), 500, 'META_WEBHOOK_SECRET is not configured — webhook disabled');
 
-            $expectedSignature = 'sha256=' . hash_hmac('sha256', $request->getContent(), $webhookSecret);
-            if (!hash_equals($expectedSignature, $signature)) {
-                Log::channel('whatsapp')->warning('❌ Invalid webhook signature');
-                return response()->json(['status' => 'error', 'message' => 'Invalid signature'], 401);
-            }
-        }
+        $signature = $request->header('X-Hub-Signature-256') ?? '';
+        abort_unless($signature !== '', 401, 'Missing webhook signature');
+
+        $expectedSignature = 'sha256=' . hash_hmac('sha256', $request->getContent(), $webhookSecret);
+        abort_unless(hash_equals($expectedSignature, $signature), 401, 'Invalid webhook signature');
 
         // Log incoming webhook
         Log::channel('whatsapp')->info('📥 Webhook received', [
@@ -65,18 +59,11 @@ class WhatsAppWebhookController extends Controller
 
         // Resolve the phone number this event belongs to (multi-cabang routing)
         $phoneNumberId = $payload['entry'][0]['changes'][0]['value']['metadata']['phone_number_id'] ?? null;
+        abort_unless($phoneNumberId, 400, 'Missing phone_number_id in webhook payload');
 
-        if ($phoneNumberId) {
-            $isKnownNumber = Region::findByPhoneNumberId($phoneNumberId) !== null
-                || $phoneNumberId == config('services.whatsapp.phone_number_id');
-
-            if (!$isKnownNumber) {
-                Log::channel('whatsapp')->warning('⚠️ Webhook from unknown phone number', [
-                    'phone_number_id' => $phoneNumberId,
-                ]);
-                return response()->json(['status' => 'error', 'message' => 'Unknown source'], 403);
-            }
-        }
+        $isKnownNumber = Region::findByPhoneNumberId($phoneNumberId) !== null
+            || $phoneNumberId == config('services.whatsapp.phone_number_id');
+        abort_unless($isKnownNumber, 403, 'Webhook from unknown phone number');
 
         // Dispatch job for async processing (non-blocking)
         ProcessWhatsAppWebhookJob::dispatch($payload, $phoneNumberId);

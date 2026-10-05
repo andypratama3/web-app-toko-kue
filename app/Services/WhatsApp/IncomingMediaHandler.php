@@ -4,6 +4,8 @@ namespace App\Services\WhatsApp;
 
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Intervention\Image\Encoders\JpegEncoder;
+use Intervention\Image\ImageManager;
 
 class IncomingMediaHandler
 {
@@ -40,17 +42,25 @@ class IncomingMediaHandler
     {
         try {
             $fullPath = Storage::disk('public')->path($path);
-            $image = \Intervention\Image\Laravel\Facades\Image::read($fullPath);
-
             $compressedPath = Str::before($path, '.') . '_compressed.jpg';
-            $compressedFullPath = Storage::disk('public')->path($compressedPath);
 
-            $image->encodeJpeg($quality)->save($compressedFullPath);
+            // Intervention Image v3 (installed: 3.11.6): ImageManager + JpegEncoder
+            // V3 removed Laravel facade and encodeJpeg(); use ImageManager::read() + encode(new JpegEncoder($q))
+            // If ImageManager fails, fall back to the original uncompressed file.
+            $manager = ImageManager::gd();
+            $image = $manager->read($fullPath);
+            $image->encode(new JpegEncoder($quality))->save(Storage::disk('public')->path($compressedPath));
 
             Storage::disk('public')->delete($path);
-
             return $compressedPath;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            // C2 FIX: catch \Throwable (not \Exception) because Image errors are Error, not Exception.
+            // Log the failure but DO NOT kill the webhook job — return the original file so the order can still proceed.
+            \Illuminate\Support\Facades\Log::channel('whatsapp')->warning('Image compression skipped (intervention v3)', [
+                'path' => $path,
+                'message' => $e->getMessage(),
+                'class' => get_class($e),
+            ]);
             return $path;
         }
     }
