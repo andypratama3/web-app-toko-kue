@@ -94,6 +94,14 @@ class OrderBotService
                 $conversation->setContext('distance_km', $distance);
                 $conversation->setContext('ongkir', $result['ongkir']);
                 $conversation->setContext('delivery_address', "Lokasi GPS ({$lat}, {$lng})");
+
+                $context = $conversation->context ?? [];
+                if (empty($context['delivery_method'])) {
+                    $this->advanceState($conversation, OrderBotConversationState::AWAITING_DELIVERY_METHOD);
+                    $this->askDeliveryMethod($conversation);
+                    return;
+                }
+
                 $this->advanceState($conversation, OrderBotConversationState::AWAITING_DELIVERY_SLOT);
                 $this->sendSlotOptions($conversation);
             }
@@ -297,8 +305,15 @@ class OrderBotService
         $lower = strtolower(trim($text));
 
         if ($this->matchesIntent($lower, ['mau pesan', 'pesan', 'order', 'ordering', 'mau order'])) {
-            $this->sendProductCategories($conversation);
-            $this->advanceState($conversation, OrderBotConversationState::MENU_SELECTION);
+            // Lokasi harus dipilih dulu saat chat agar tidak salah arah
+            $conversation->clearContext();
+            $this->advanceState($conversation, OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS);
+            $this->metaService->sendLocationRequest($conversation->phone_number,
+                "📍 *Pilih Lokasi Pengiriman Dulu*
+
+Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat lengkap."
+            );
+            return;
         } elseif ($this->matchesIntent($lower, ['liat produk', 'lihat produk', 'produk', 'catalog', 'katalog'])) {
             $this->sendProductCatalog($conversation);
             $this->advanceState($conversation, OrderBotConversationState::PRODUCT_BROWSING);
@@ -343,7 +358,30 @@ class OrderBotService
             $this->sendProductCategories($conversation);
             $this->advanceState($conversation, OrderBotConversationState::MENU_SELECTION);
         } else {
-            $product = $this->findProductByKeyword($conversation, $lower);
+            $product = null;
+            // Jika user memilih angka dari list produk
+            if (is_numeric($lower)) {
+                $regionId = $conversation->region_id;
+                $products = Product::where('is_active', true)
+                    ->where(function ($q) use ($regionId) {
+                        $q->where('region_id', $regionId)->orWhereNull('region_id');
+                    })
+                    ->with(['variants' => fn ($q) => $q->where('is_active', true)])
+                    ->get();
+                $grouped = $products->groupBy(fn ($p) => $p->category->name ?? 'Lainnya');
+                $flatIndex = 0;
+                foreach ($grouped as $category => $items) {
+                    foreach ($items as $p) {
+                        $flatIndex++;
+                        if ($flatIndex == (int)$lower) {
+                            $product = $p;
+                            break 2;
+                        }
+                    }
+                }
+            } else {
+                $product = $this->findProductByKeyword($conversation, $lower);
+            }
             if ($product) {
                 $this->sendProductDetail($conversation, $product);
             } else {
@@ -362,10 +400,7 @@ class OrderBotService
 
         match ($formStep) {
             0 => $this->processOrderFormStep($conversation, $formData, 'product_name', $text),
-            1 => $this->processOrderFormStep($conversation, $formData, 'recipient_name', $text),
-            2 => $this->processOrderFormStep($conversation, $formData, 'recipient_address', $text),
-            3 => $this->processOrderFormStep($conversation, $formData, 'delivery_date', $text),
-            4 => $this->processOrderFormStep($conversation, $formData, 'delivery_time', $text),
+            1 => $this->processCombinedForm($conversation, $text),
             default => $this->askDeliveryMethod($conversation),
         };
     }
@@ -374,10 +409,10 @@ class OrderBotService
     {
         $formData[$field] = trim($value);
         $conversation->setContext('order_form', $formData);
-        $conversation->setContext('form_step', array_search($field, ['product_name', 'recipient_name', 'recipient_address', 'delivery_date', 'delivery_time']) + 1);
+        $conversation->setContext('form_step', ($field === 'product_name') ? 1 : (array_search($field, ['recipient_name', 'recipient_address', 'delivery_date', 'delivery_time']) + 1));
 
         match ($field) {
-            'product_name' => $this->metaService->sendText($conversation->phone_number, "✅ Produk: {$value}\n\nSiapa nama penerima?"),
+            'product_name' => $this->metaService->sendText($conversation->phone_number, "✅ Produk: {$value}\n\nSilakan isi semua data pesanan dalam 1 pesan (pisahkan dengan |):\nNama Penerima | Alamat Lengkap | Tanggal Kirim (10 Sept 2026) | Jam Tiba (10:00)"),
             'recipient_name' => $this->metaService->sendText($conversation->phone_number, "✅ Penerima: {$value}\n\nAlamat pengiriman lengkap?"),
             'recipient_address' => $this->metaService->sendText($conversation->phone_number, "✅ Alamat: {$value}\n\nTanggal kirim (contoh: 10 September 2026)?"),
             'delivery_date' => $this->metaService->sendText($conversation->phone_number, "✅ Tanggal: {$value}\n\nJam tiba yang diinginkan? (contoh: 10:00)"),
@@ -462,6 +497,15 @@ class OrderBotService
 
         $conversation->setContext('distance_km', $distance);
         $conversation->setContext('ongkir', $result['ongkir']);
+
+        // Jika belum memilih metode pengiriman, lanjutkan ke pilihan metode (lokasi sudah dipilih dulu)
+        $context = $conversation->context ?? [];
+        if (empty($context['delivery_method'])) {
+            $this->advanceState($conversation, OrderBotConversationState::AWAITING_DELIVERY_METHOD);
+            $this->askDeliveryMethod($conversation);
+            return;
+        }
+
         $this->advanceState($conversation, OrderBotConversationState::AWAITING_DELIVERY_SLOT);
         $this->sendSlotOptions($conversation);
     }
@@ -696,9 +740,10 @@ class OrderBotService
 
         foreach ($grouped as $category => $items) {
             $text .= "*{$category}*\n";
-            foreach ($items as $product) {
+            foreach ($items as $index => $product) {
+                $num = $index + 1;
                 $variants = $product->variants;
-                $text .= "• {$product->name}\n";
+                $text .= "{$num}. {$product->name}\n";
                 foreach ($variants as $variant) {
                     $text .= "  └ {$variant->name}: Rp ".number_format($variant->price, 0, ',', '.')."\n";
                 }
@@ -740,7 +785,8 @@ class OrderBotService
         $text = "📦 *{$categoryName}*\n\n";
 
         foreach ($products as $index => $product) {
-            $text .= "*{$product->name}*\n";
+            $num = $index + 1;
+            $text .= "{$num}. *{$product->name}*\n";
             $text .= "{$product->description}\n";
             foreach ($product->variants as $variant) {
                 $text .= "  💰 {$variant->name}: Rp ".number_format($variant->price, 0, ',', '.')."\n";
@@ -778,6 +824,25 @@ class OrderBotService
         );
     }
 
+
+    protected function processCombinedForm(WhatsAppConversation $conversation, string $text): void
+    {
+        $parts = array_map('trim', explode('|', $text));
+        if (count($parts) < 4) {
+            $this->metaService->sendText($conversation->phone_number,
+                "❌ Format belum lengkap. Silakan isi semua dalam 1 pesan (pisahkan dengan |):\nNama Penerima | Alamat Lengkap | Tanggal Kirim | Jam Tiba"
+            );
+            return;
+        }
+        $formData = $conversation->getContext('order_form') ?? [];
+        $formData['recipient_name'] = $parts[0];
+        $formData['recipient_address'] = $parts[1];
+        $formData['delivery_date'] = $parts[2];
+        $formData['delivery_time'] = $parts[3];
+        $conversation->setContext('order_form', $formData);
+        $conversation->setContext('form_step', 2); // done
+        $this->askDeliveryMethod($conversation);
+    }
     protected function askDeliveryMethod(WhatsAppConversation $conversation): void
     {
         $this->advanceState($conversation, OrderBotConversationState::AWAITING_DELIVERY_METHOD);
