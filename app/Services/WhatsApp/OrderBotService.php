@@ -469,7 +469,7 @@ class OrderBotService
     protected function handleDeliverySlot(WhatsAppConversation $conversation, string $text): void
     {
         $slot = trim($text);
-        $validSlots = ['1', '2', '3', '4'];
+        $validSlots = ['1', '2', '3'];
 
         if (! in_array($slot, $validSlots)) {
             $this->sendSlotOptions($conversation);
@@ -480,8 +480,7 @@ class OrderBotService
         $slots = [
             '1' => '09:00-11:00',
             '2' => '11:00-13:00',
-            '3' => '13:00-15:00',
-            '4' => '15:00-17:00',
+            '3' => '13:00-17:00',
         ];
 
         $conversation->setContext('delivery_slot', $slots[$slot]);
@@ -818,13 +817,11 @@ class OrderBotService
             "🕐 *Pilih Slot Waktu Pengiriman*\n\n".
             "1️⃣ 09:00 - 11:00\n".
             "2️⃣ 11:00 - 13:00\n".
-            "3️⃣ 13:00 - 15:00\n".
-            '4️⃣ 15:00 - 17:00',
+            '3️⃣ 13:00 - 17:00',
             [
                 ['id' => 'slot_1', 'title' => '09:00-11:00'],
                 ['id' => 'slot_2', 'title' => '11:00-13:00'],
-                ['id' => 'slot_3', 'title' => '13:00-15:00'],
-                ['id' => 'slot_4', 'title' => '15:00-17:00'],
+                ['id' => 'slot_3', 'title' => '13:00-17:00'],
             ],
             'Pilih slot waktu'
         );
