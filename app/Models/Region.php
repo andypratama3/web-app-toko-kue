@@ -9,7 +9,7 @@ class Region extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'slug', 'meta_phone_number_id'];
+    protected $fillable = ['name', 'slug', 'meta_phone_number_id', 'owner_phone'];
 
     public function users()
     {

@@ -24,7 +24,7 @@ class MultiBranchWebhookTest extends TestCase
         parent::setUp();
 
         config(['services.whatsapp.verify_token' => 'test-token']);
-        config(['services.whatsapp.webhook_secret' => '']);
+        config(['services.whatsapp.webhook_secret' => 'test-secret']);
         config(['services.whatsapp.default_region' => 'Denpasar']);
         config(['services.whatsapp.phone_number_id' => '111111111111111']);
 
@@ -67,7 +67,9 @@ class MultiBranchWebhookTest extends TestCase
 
         $payload = $this->buildWebhookPayload('6281234567890', 'Halo', 'msg_mb_002', '999999999999999');
 
-        $response = $this->postJson('/api/webhook/meta', $payload);
+        $response = $this->withHeaders([
+            'X-Hub-Signature-256' => 'sha256=' . hash_hmac('sha256', json_encode($payload), 'test-secret'),
+        ])->postJson('/api/webhook/meta', $payload);
 
         $response->assertStatus(403);
         Queue::assertNotPushed(ProcessWhatsAppWebhookJob::class);
@@ -120,6 +122,51 @@ class MultiBranchWebhookTest extends TestCase
         app(WhatsappMetaService::class)->sendText('6281234567890', 'Halo dari Denpasar');
 
         Http::assertSent(fn($request) => str_contains($request->url(), '/111111111111111/messages'));
+    }
+
+    public function test_multi_entry_payload_processes_all_messages(): void
+    {
+        $entry1 = $this->buildWebhookPayload('6281111111111', 'Halo', 'msg_multi_1', '222222222222222')['entry'][0];
+        $entry2 = $this->buildWebhookPayload('6282222222222', 'Pesan', 'msg_multi_2', '222222222222222')['entry'][0];
+        $payload = ['object' => 'whatsapp_business_account', 'entry' => [$entry1, $entry2]];
+
+        $job = new ProcessWhatsAppWebhookJob($payload, '222222222222222');
+        $job->handle(
+            app(WhatsappMetaService::class),
+            app(OrderBotService::class),
+            app(IncomingMediaHandler::class),
+            app(ConversationRegionResolver::class)
+        );
+
+        $this->assertDatabaseCount('whatsapp_conversations', 2);
+        $this->assertDatabaseHas('whatsapp_messages', ['whatsapp_message_id' => 'msg_multi_1']);
+        $this->assertDatabaseHas('whatsapp_messages', ['whatsapp_message_id' => 'msg_multi_2']);
+    }
+
+    public function test_unsupported_message_type_gets_polite_reply_without_bot(): void
+    {
+        $payload = $this->buildWebhookPayload('6281234567890', 'Halo', 'msg_sticker_1', '222222222222222');
+        $payload['entry'][0]['changes'][0]['value']['messages'][0] = [
+            'from' => '6281234567890',
+            'id' => 'msg_sticker_1',
+            'timestamp' => (string) now()->timestamp,
+            'type' => 'sticker',
+            'sticker' => ['id' => 'sticker_123'],
+        ];
+
+        $job = new ProcessWhatsAppWebhookJob($payload, '222222222222222');
+        $job->handle(
+            app(WhatsappMetaService::class),
+            app(OrderBotService::class),
+            app(IncomingMediaHandler::class),
+            app(ConversationRegionResolver::class)
+        );
+
+        $conversation = WhatsAppConversation::where('phone_number', '6281234567890')->first();
+        $this->assertNotNull($conversation);
+        // INIT tak tersentuh bot (tetap INIT, bukan WELCOME_SENT)
+        $this->assertEquals(OrderBotConversationState::INIT->value, $conversation->current_state);
+        Http::assertSent(fn ($request) => str_contains($request->data()['text']['body'] ?? '', 'belum didukung'));
     }
 
     protected function buildWebhookPayload(string $phone, string $text, string $messageId, string $phoneNumberId): array

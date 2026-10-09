@@ -26,7 +26,7 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
-    public int $timeout = 60;
+    public int $timeout = 120;
 
     protected array $payload;
     protected ?string $phoneNumberId;
@@ -45,31 +45,42 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
         ConversationRegionResolver $regionResolver
     ): void {
         $this->regionResolver = $regionResolver;
-        $entry = $this->payload['entry'][0] ?? null;
-        if (!$entry) return;
 
-        $changes = $entry['changes'][0] ?? null;
-        if (!$changes) return;
-
-        $value = $changes['value'] ?? [];
-
-        // Process status updates
-        if (isset($value['statuses'])) {
-            $this->processStatuses($value['statuses']);
-            return;
-        }
-
-        // Process incoming messages
-        if (isset($value['messages'])) {
-            foreach ($value['messages'] as $message) {
-                $this->processMessage($message, $value, $metaService, $botService, $mediaHandler);
+        // Meta dapat menggabungkan beberapa entry/changes dalam 1 delivery —
+        // proses SEMUANYA (bukan hanya [0][0]) agar tak ada pesan yang hilang.
+        foreach ($this->payload['entry'] ?? [] as $entry) {
+            foreach ($entry['changes'] ?? [] as $change) {
+                $this->processChange($change, $metaService, $botService, $mediaHandler);
             }
         }
+    }
 
-        // Process contacts (for profile info)
+    protected function processChange(
+        array $change,
+        WhatsappMetaService $metaService,
+        OrderBotService $botService,
+        IncomingMediaHandler $mediaHandler
+    ): void {
+        $value = $change['value'] ?? [];
+
+        // Profil dulu agar percakapan baru langsung punya nama.
         if (isset($value['contacts'])) {
             foreach ($value['contacts'] as $contact) {
                 $this->updateConversationProfile($contact);
+            }
+        }
+
+        // Nomor pengirim per-change (batch multi-nomor punya metadata sendiri).
+        $changePhoneNumberId = $value['metadata']['phone_number_id'] ?? $this->phoneNumberId;
+
+        // Status dan pesan diproses independen (bisa sekantong dalam 1 value).
+        if (isset($value['statuses'])) {
+            $this->processStatuses($value['statuses']);
+        }
+
+        if (isset($value['messages'])) {
+            foreach ($value['messages'] as $message) {
+                $this->processMessage($message, $value, $metaService, $botService, $mediaHandler, $changePhoneNumberId);
             }
         }
     }
@@ -79,7 +90,8 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
         array $value,
         WhatsappMetaService $metaService,
         OrderBotService $botService,
-        IncomingMediaHandler $mediaHandler
+        IncomingMediaHandler $mediaHandler,
+        ?string $phoneNumberId = null
     ): void {
         $phone = $message['from'] ?? null;
         $messageId = $message['id'] ?? null;
@@ -91,17 +103,18 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
 
         $phone = Phone::normalize($phone);
 
-        // Dedup check
+        // Dedup cepat sebelum kerja mahal (unduh media). Klaim atomik menyusul
+        // tepat sebelum insert untuk menutup celah balapan antar-worker.
         if (WhatsAppMessage::where('whatsapp_message_id', $messageId)->exists()) {
             Log::channel('whatsapp')->info('⏭️ Duplicate message skipped', ['message_id' => $messageId]);
             return;
         }
 
         // Get or create conversation
-        $conversation = $this->getOrCreateConversation($phone, $value);
+        $conversation = $this->getOrCreateConversation($phone, $value, $phoneNumberId);
 
         // Mark as read
-        $metaService->markAsRead($messageId, $this->phoneNumberId);
+        $metaService->markAsRead($messageId, $phoneNumberId ?? $this->phoneNumberId);
 
         // Determine message type and content
         $messageType = $message['type'] ?? 'text';
@@ -140,17 +153,52 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
                 $content = "[{$messageType}]";
         }
 
-        // Save incoming message
-        $savedMessage = WhatsAppMessage::create([
-            'conversation_id' => $conversation->id,
-            'whatsapp_message_id' => $messageId,
-            'sender_type' => 'customer',
-            'message_type' => $messageType,
-            'content' => $content,
-            'media_url' => $messageData['media_path'] ?? null,
-            'media_type' => $messageType === 'image' ? 'image' : null,
-            'status' => 'received',
-        ]);
+        // Klaim atomik: balapan dua worker diselesaikan unique index —
+        // yang kalah skip SEBELUM efek samping apa pun (bot belum jalan).
+        try {
+            $savedMessage = WhatsAppMessage::create([
+                'conversation_id' => $conversation->id,
+                'whatsapp_message_id' => $messageId,
+                'sender_type' => 'customer',
+                'message_type' => $messageType,
+                'content' => $content,
+                'media_url' => $messageData['media_path'] ?? null,
+                'media_type' => $messageType === 'image' ? 'image' : null,
+                'status' => 'received',
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            if (WhatsAppMessage::where('whatsapp_message_id', $messageId)->exists()) {
+                Log::channel('whatsapp')->info('⏭️ Duplicate message skipped (race)', ['message_id' => $messageId]);
+
+                return;
+            }
+
+            throw $e;
+        }
+
+        // Tipe tak didukung (stiker/video/audio/dokumen/dll): catat + balas sopan,
+        // JANGAN masuk state machine agar alur order tak tercemar "[video]" dkk.
+        if (! in_array($messageType, ['text', 'image', 'location', 'interactive'], true)) {
+            $conversation->incrementMessageCount();
+            $awaitingProof = $conversation->current_state === OrderBotConversationState::AWAITING_PAYMENT_PROOF->value
+                && in_array($messageType, ['video', 'document', 'audio'], true);
+            $metaService->sendText($conversation->phone_number, $awaitingProof
+                ? 'Untuk bukti bayar, kirim *foto/screenshot* (JPG/PNG), bukan video/dokumen ya 🙏'
+                : 'Maaf, format pesan ini belum didukung. Kirim teks, foto/gambar, atau lokasi (pin GPS) ya 🙏'
+            );
+
+            return;
+        }
+
+        // Gambar gagal diunduh: minta kirim ulang, jangan maju ke bot sebagai bukti.
+        if ($messageType === 'image' && isset($messageData['media_id']) && empty($messageData['media_path'])) {
+            $conversation->incrementMessageCount();
+            $metaService->sendText($conversation->phone_number,
+                'Mohon maaf, foto tidak terunduh. Silakan kirim ulang sebagai *gambar/foto* (bukan dokumen).'
+            );
+
+            return;
+        }
 
         // Reset percakapan yang terbengkalai sebelum memproses (supaya user selalu bisa mulai baru)
         $botService->resetConversationIfStale($conversation, $conversation->last_message_at);
@@ -166,6 +214,12 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
             'state' => $conversation->current_state,
         ]);
 
+        // Atribusi cabang DUA tahap: sebelum bot (sumber customer/alamat lama agar
+        // katalog & ongkir pesan ini memakai cabang yang benar) + sesudah bot
+        // (bot baru saja bisa menulis alamat baru di context).
+        $this->regionResolver->apply($conversation);
+        $conversation->refresh();
+
         // Route message to bot
         if ($messageType === 'location') {
             $botService->handleLocationMessage($conversation, $messageData);
@@ -173,8 +227,6 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
             $botService->handleMessage($conversation, $content ?? '', $messageData);
         }
 
-        // Bot baru saja bisa mengisi alamat tujuan di context, jadi atribusi
-        // cabang dijalankan setelah pesan diproses, bukan sebelum.
         $this->regionResolver->apply($conversation->refresh());
     }
 
@@ -237,35 +289,46 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
         }
     }
 
-    protected function getOrCreateConversation(string $phone, array $value): WhatsAppConversation
+    protected function getOrCreateConversation(string $phone, array $value, ?string $phoneNumberId = null): WhatsAppConversation
     {
-        $conversation = WhatsAppConversation::where('phone_number', $phone)->first();
+        // Extract region from phone number or default
+        $regionId = $this->detectRegionFromContext($value, $phoneNumberId);
 
-        if (!$conversation) {
-            // Extract region from phone number or default
-            $regionId = $this->detectRegionFromContext($value);
+        try {
+            $conversation = WhatsAppConversation::firstOrCreate(
+                ['phone_number' => $phone],
+                [
+                    'profile_name' => $value['contacts'][0]['profile']['name'] ?? null,
+                    'region_id' => $regionId,
+                    'status' => 'active',
+                    'current_state' => OrderBotConversationState::INIT->value,
+                ]
+            );
 
-            $conversation = WhatsAppConversation::create([
-                'phone_number' => $phone,
-                'profile_name' => $value['contacts'][0]['profile']['name'] ?? null,
-                'region_id' => $regionId,
-                'status' => 'active',
-                'current_state' => OrderBotConversationState::INIT->value,
-            ]);
+            if ($conversation->wasRecentlyCreated) {
+                Log::channel('whatsapp')->info('🆕 New conversation created', [
+                    'phone' => $phone,
+                    'region_id' => $regionId,
+                ]);
+            }
 
-            Log::channel('whatsapp')->info('🆕 New conversation created', [
-                'phone' => $phone,
-                'region_id' => $regionId,
-            ]);
+            return $conversation;
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Balapan dua pesan pertama: ambil baris pemenang via unique index.
+            $existing = WhatsAppConversation::where('phone_number', $phone)->first();
+            if ($existing) {
+                return $existing;
+            }
+
+            throw $e;
         }
-
-        return $conversation;
     }
 
-    protected function detectRegionFromContext(array $value): ?int
+    protected function detectRegionFromContext(array $value, ?string $phoneNumberId = null): ?int
     {
         // Prefer the region bound to the incoming phone number (multi-cabang)
-        $regionFromNumber = $this->phoneNumberId ? Region::findByPhoneNumberId($this->phoneNumberId) : null;
+        $numberId = $phoneNumberId ?? $this->phoneNumberId;
+        $regionFromNumber = $numberId ? Region::findByPhoneNumberId($numberId) : null;
         if ($regionFromNumber) {
             return $regionFromNumber->id;
         }
@@ -319,5 +382,20 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
             'error' => $exception->getMessage(),
             'payload' => $this->payload,
         ]);
+
+        // Jangan gagal diam-diam: munculkan di dashboard admin agar ditindaklanjuti.
+        try {
+            \App\Models\AdminNotification::create([
+                'user_id' => null,
+                'region_id' => null,
+                'type' => 'system',
+                'title' => 'Webhook WhatsApp gagal diproses',
+                'message' => 'Pesan masuk gagal diproses 3x: ' . mb_substr($exception->getMessage(), 0, 500)
+                    . '. Cek log whatsapp & hubungi customer bila perlu.',
+                'is_read' => false,
+            ]);
+        } catch (\Throwable $e) {
+            Log::channel('whatsapp')->warning('⚠️ Gagal mencatat notif job-failed', ['error' => $e->getMessage()]);
+        }
     }
 }

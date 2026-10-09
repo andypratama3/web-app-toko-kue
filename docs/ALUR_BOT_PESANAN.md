@@ -510,3 +510,31 @@ flowchart TD
 ---
 
 *Dokumen disarikan dari implementasi aktual. Wajib diverifikasi ulang bila ada perubahan pada `OrderBotService`, `ProcessWhatsAppWebhookJob`, atau `WhatsAppWebhookController`.*
+
+---
+
+## 13. Perubahan 09 Okt 2026 (improve owner)
+
+1. **Filter cabang eksplisit di awal** (`OrderBotService::askBranchSelection/handleBranchChoice`): setelah ketik `PESAN`, bot bertanya cabang (tombol, max 3 dari tabel `regions`) sebelum minta lokasi. Jawaban angka / `branch_{id}` / nama / slug / alias kota (Suroboyo→Surabaya). Pilihan dikunci `branch_source=manual` (tak ditimpa resolver). Bila DB hanya punya 1 cabang, langkah ini dilewati otomatis.
+2. **Forward WA ke owner** (`AdminNotificationRouterService::forwardOrderToOwner/forwardPaymentProof`, kolom baru `regions.owner_phone`): saat `FIX`, owner cabang terima format pesanan; saat bukti bayar masuk, owner terima gambar + caption invoice. `owner_phone` kosong → dilewati + log, alur bot tetap jalan. Isi via `UPDATE regions SET owner_phone='628…' WHERE slug='surabaya';`.
+3. **PRICELIST** (`sendPricelist`): keyword `harga/pricelist/daftar harga/list harga` dari state apa pun (kecuali `INIT`) tanpa keluar alur.
+4. **Foto produk** (`sendProductDetail`): bila `products.image_path` ada, bot kirim gambar (caption nama + harga termurah) lalu teks detail. Gagal kirim gambar → teks saja.
+5. **Pertanyaan bebas** (`extractProductQuery`): awalan `apa itu/apakah/info/detail/tentang` dikupas sebelum pencarian produk, mis. "apa itu tumpeng mini?" → cari "tumpeng mini".
+6. **Bugfix**: `confirmOrder` (`Collection::orderBy` → `sortBy`, semua order sebelumnya gagal), `findProductByKeyword` (`$q->raw()` → `where region_id`), eskalasi (`metadata` tak ada di tabel → dihapus, tambah `title`).
+
+## 14. Audit mendalam 09 Okt 2026 (by-code, 4 auditor paralel + verifikasi manual)
+
+**Plumbing webhook/job** (`WhatsAppWebhookController`, `ProcessWhatsAppWebhookJob`):
+- Proses SEMUA `entry/changes` (sebelumnya hanya `[0][0]` — pesan batch Meta hilang diam-diam); `statuses` + `messages` diproses independen; `contacts` sebelum `messages` (nama profil tak lagi null); `phone_number_id` di-threading per-change untuk batch multi-nomor.
+- Klaim dedup atomik (unique index + catch → skip sebelum efek samping) + `firstOrCreate` percakapan; timeout job 60→120 dtk; `failed()` membuat `AdminNotification` (tak lagi gagal diam-diam).
+- Tipe tak didukung (stiker/video/audio/dokumen) → balasan sopan, tak masuk state machine; gambar gagal unduh → minta kirim ulang (tak maju sebagai bukti); tanpa unduh-ganda di critical path.
+- Atribusi cabang 2 tahap (sebelum + sesudah bot); `catch (\Throwable)` di semua pengirim Meta; log konten per-tipe.
+
+**Perintah global → kata-utuh** (`matchesCommand`): "Jl. Batalyon" tak lagi BATAL, "menunggu" tak lagi MENU, "produksi" tak lagi PRODUK, "assalamualaikum, Shinta" lolos ke form. Berlaku untuk BATAL/MENU/PESAN/PRODUK/HALO/RESET, konfirmasi ringkasan, SKIP, dan pricelist.
+
+**Alur order**: penomoran katalog global + `catalog_ids` (angka selalu cocok); satu helper varian termurah (ringkasan = tagihan, nama varian tampil); bukti tanpa order DITOLAK dengan pesan (tak ada sukses palsu); guard ringkasan/konfirmasi tak lengkap; slot "4" diperbaiki + pesan invalid; invoice `lockForUpdate` (anti nomor kembar); testing menjalankan SQLite — SQL mentah harus portabel (`LENGTH`, bukan `CHAR_LENGTH`).
+- Form: validasi 4 bagian (sebut field kosong, `|` ekstra gabung ke alamat); `resumeOrderForm` anti-lompat; jumlah `Nx` (mis. `2x Tumpeng Mini`, maks 100); pelanggan lama di-update alamat + cabang; `resolveProduct` exact-dulu + escape wildcard; cabang: escape BATAL/MENU, pin dititipkan saat pilih metode, cocok dua-arah + normalisasi strip, >3 cabang (daftar penuh + tombol 3); `UBAH ALAMAT` benar-benar menyimpan + hitung ulang ongkir; konfirmasi `ya/oke/setuju/...`, `lanjut` tak lagi konfirmasi; cabang mati di `handleClosedConversation` dihapus (satu jalur kanonis); `ORDER_CONFIRMED` + PESAN langsung form.
+
+**Servis**: ongkir zona-dulu (Gresik/Ubud 15km hidup kembali), estimasi alamat dari `delivery_zones` per cabang (Surabaya/Malang tak lagi selalu 5km), titik referensi via slug, `scopeForRegion` nullable, `detectCityMention` dari zona (Sidoarjo/Gresik/Batu/Kuta/Ubud terdeteksi), teks panjang di-chunk ≤3500, status `menunggu_verifikasi_admin` ada pesan customer-nya.
+
+**Operasional (perlu owner)**: `META_WEBHOOK_SECRET` wajib terisi di production (kosong = semua webhook 500); `APP_URL` harus publik https agar foto produk & bukti sampai ke owner; isi `regions.owner_phone` per cabang.

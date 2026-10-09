@@ -16,7 +16,8 @@ class WebhookVerificationTest extends TestCase
         parent::setUp();
 
         config(['services.whatsapp.verify_token' => 'test-verify-token-123']);
-        config(['services.whatsapp.webhook_secret' => '']);
+        config(['services.whatsapp.webhook_secret' => 'test-secret']);
+        config(['services.whatsapp.phone_number_id' => 'test-pn-id']);
     }
 
     public function test_webhook_verification_with_valid_token(): void
@@ -59,7 +60,9 @@ class WebhookVerificationTest extends TestCase
                     'id' => '123456',
                     'changes' => [
                         [
-                            'value' => [],
+                            'value' => [
+                                'metadata' => ['phone_number_id' => 'test-pn-id'],
+                            ],
                             'field' => 'messages',
                         ],
                     ],
@@ -67,7 +70,9 @@ class WebhookVerificationTest extends TestCase
             ],
         ];
 
-        $response = $this->postJson('/api/webhook/meta', $payload);
+        $response = $this->withHeaders([
+            'X-Hub-Signature-256' => 'sha256=' . hash_hmac('sha256', json_encode($payload), 'test-secret'),
+        ])->postJson('/api/webhook/meta', $payload);
 
         $response->assertStatus(200);
         $response->assertJson(['status' => 'ok']);
@@ -75,7 +80,11 @@ class WebhookVerificationTest extends TestCase
 
     public function test_webhook_post_invalid_structure_returns_ok(): void
     {
-        $response = $this->postJson('/api/webhook/meta', ['invalid' => 'payload']);
+        $payload = ['invalid' => 'payload'];
+
+        $response = $this->withHeaders([
+            'X-Hub-Signature-256' => 'sha256=' . hash_hmac('sha256', json_encode($payload), 'test-secret'),
+        ])->postJson('/api/webhook/meta', $payload);
 
         $response->assertStatus(200);
         $response->assertJson(['status' => 'ok']);
@@ -85,7 +94,7 @@ class WebhookVerificationTest extends TestCase
     {
         config(['services.whatsapp.webhook_secret' => 'my-secret-key']);
 
-        $payload = ['entry' => [['changes' => [['value' => []]]]]];
+        $payload = ['entry' => [['changes' => [['value' => ['metadata' => ['phone_number_id' => 'test-pn-id']]]]]]];
         $signature = 'sha256=' . hash_hmac('sha256', json_encode($payload), 'my-secret-key');
 
         $response = $this->withHeaders([

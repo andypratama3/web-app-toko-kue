@@ -32,7 +32,8 @@ class WebhookMessageProcessingTest extends TestCase
         parent::setUp();
 
         config(['services.whatsapp.verify_token' => 'test-token']);
-        config(['services.whatsapp.webhook_secret' => '']);
+        config(['services.whatsapp.webhook_secret' => 'test-secret']);
+        config(['services.whatsapp.phone_number_id' => 'test-pn-id']);
         config(['services.whatsapp.default_region' => 'Denpasar']);
 
         $this->region = Region::create(['name' => 'Denpasar', 'slug' => 'denpasar']);
@@ -80,7 +81,9 @@ class WebhookMessageProcessingTest extends TestCase
 
         $payload = $this->buildWebhookPayload('6281234567890', 'Halo', 'msg_001');
 
-        $response = $this->postJson('/api/webhook/meta', $payload);
+        $response = $this->withHeaders([
+            'X-Hub-Signature-256' => 'sha256=' . hash_hmac('sha256', json_encode($payload), 'test-secret'),
+        ])->postJson('/api/webhook/meta', $payload);
 
         $response->assertStatus(200);
         Queue::assertPushed(ProcessWhatsAppWebhookJob::class);
@@ -232,6 +235,10 @@ class WebhookMessageProcessingTest extends TestCase
                     'changes' => [
                         [
                             'value' => [
+                                'metadata' => [
+                                    'display_phone_number' => '62851xxxxx',
+                                    'phone_number_id' => 'test-pn-id',
+                                ],
                                 'messages' => [
                                     [
                                         'from' => $phone,

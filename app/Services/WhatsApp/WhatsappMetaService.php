@@ -179,7 +179,7 @@ class WhatsappMetaService
                 'status' => 'read',
                 'message_id' => $messageId,
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::channel('whatsapp')->error('❌ Failed to mark message as read', [
                 'message_id' => $messageId,
                 'error' => $e->getMessage(),
@@ -195,7 +195,7 @@ class WhatsappMetaService
                 'status' => 'typing_on',
                 'message_id' => $messageId,
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::channel('whatsapp')->warning('⚠️ Failed to send typing indicator', [
                 'message_id' => $messageId,
                 'error' => $e->getMessage(),
@@ -242,7 +242,7 @@ class WhatsappMetaService
             \Illuminate\Support\Facades\Storage::disk('public')->put($path, $imageResponse->body());
 
             return $path;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::channel('whatsapp')->error('❌ Failed to download media', [
                 'media_id' => $mediaId,
                 'error' => $e->getMessage(),
@@ -295,7 +295,7 @@ class WhatsappMetaService
             Log::channel('whatsapp')->info('📑 Templates fetched from Meta', ['count' => count($data)]);
 
             return $data;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::channel('whatsapp')->error('❌ Exception fetching templates', [
                 'error' => $e->getMessage(),
             ]);
@@ -350,7 +350,7 @@ class WhatsappMetaService
             ]);
 
             return null;
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::channel('whatsapp')->error('❌ Exception sending message', [
                 'to' => $recipientPhone,
                 'error' => $e->getMessage(),
@@ -361,16 +361,25 @@ class WhatsappMetaService
 
     protected function extractContentForLog(array $payload, string $type): ?string
     {
-        $content = $payload[$type]['body']['text']
-            ?? $payload[$type]['body']
-            ?? $payload[$type]['text']
-            ?? null;
+        $content = match ($type) {
+            'text' => $payload['text']['body'] ?? null,
+            'image' => $payload['image']['caption'] ?? ('[Gambar] ' . ($payload['image']['link'] ?? '')),
+            'interactive' => $payload['interactive']['body']['text'] ?? json_encode($payload['interactive'] ?? [], JSON_UNESCAPED_UNICODE),
+            'template' => ($payload['template']['name'] ?? '[Template]')
+                . ' (' . ($payload['template']['language']['code'] ?? '?') . ')',
+            default => $payload[$type]['body']['text']
+                ?? $payload[$type]['body']
+                ?? $payload[$type]['text']
+                ?? null,
+        };
 
         if (is_array($content)) {
             return json_encode($content, JSON_UNESCAPED_UNICODE) ?: null;
         }
 
-        return is_scalar($content) ? (string) $content : null;
+        $text = is_scalar($content) ? (string) $content : null;
+
+        return $text !== null && $text !== '' ? mb_substr($text, 0, 2000) : null;
     }
 
     protected function getConversationId(string $phoneNumber): ?string

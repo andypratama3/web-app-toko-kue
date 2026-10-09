@@ -33,8 +33,13 @@ class DeliveryZone extends Model
         return $query->where('is_active', true);
     }
 
-    public function scopeForRegion($query, int $regionId)
+    public function scopeForRegion($query, ?int $regionId)
     {
+        // region null (cabang belum dipilih) → tak ada zona yang cocok, pakai tier fallback.
+        if ($regionId === null) {
+            return $query->whereRaw('1 = 0');
+        }
+
         return $query->where('region_id', $regionId);
     }
 }

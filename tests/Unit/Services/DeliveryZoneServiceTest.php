@@ -65,6 +65,61 @@ class DeliveryZoneServiceTest extends TestCase
         $this->assertEquals(10000, $result['ongkir']);
     }
 
+    public function test_explicit_zone_wins_over_escalation(): void
+    {
+        $region = Region::create(['name' => 'Surabaya', 'slug' => 'surabaya']);
+        \App\Models\DeliveryZone::create([
+            'region_id' => $region->id,
+            'area_name' => 'Gresik',
+            'landmark_keyword' => 'gresik, manyar',
+            'distance_km' => 15.0,
+            'ongkir' => 15000,
+            'is_active' => true,
+        ]);
+
+        $result = $this->service->calculateOngkir(14.5, $region->id);
+
+        $this->assertFalse($result['needs_escalation']);
+        $this->assertEquals(15000, $result['ongkir']);
+        $this->assertEquals('Gresik', $result['zone_name']);
+    }
+
+    public function test_null_region_falls_back_to_tier_without_crash(): void
+    {
+        $result = $this->service->calculateOngkir(5.0, null);
+
+        $this->assertFalse($result['needs_escalation']);
+        $this->assertEquals(10000, $result['ongkir']);
+    }
+
+    public function test_address_estimator_uses_zone_keywords(): void
+    {
+        $region = Region::create(['name' => 'Surabaya', 'slug' => 'surabaya']);
+        \App\Models\DeliveryZone::create([
+            'region_id' => $region->id,
+            'area_name' => 'Sidoarjo',
+            'landmark_keyword' => 'sidoarjo, gedangan',
+            'distance_km' => 12.0,
+            'ongkir' => 15000,
+            'is_active' => true,
+        ]);
+
+        $this->assertEquals(12.0, $this->service->estimateDistanceByAddress('Jl. Gedangan No 5, Sidoarjo', $region->id));
+        // Tak cocok zona mana pun → default 5.0
+        $this->assertEquals(5.0, $this->service->estimateDistanceByAddress('Jl. Mawar No 1', $region->id));
+        // "Batubara" tidak boleh cocok keyword "batu"
+        $malang = Region::create(['name' => 'Malang', 'slug' => 'malang']);
+        \App\Models\DeliveryZone::create([
+            'region_id' => $malang->id,
+            'area_name' => 'Batu',
+            'landmark_keyword' => 'batu, jatim park',
+            'distance_km' => 10.0,
+            'ongkir' => 15000,
+            'is_active' => true,
+        ]);
+        $this->assertEquals(5.0, $this->service->estimateDistanceByAddress('Jl. Batubara No 2', $malang->id));
+    }
+
     public function test_haversine_distance(): void
     {
         // Denpasar to Kuta (approximately 8km)

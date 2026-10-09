@@ -86,14 +86,152 @@ class OrderBotStateTransitionTest extends TestCase
         $this->assertEquals(OrderBotConversationState::WELCOME_SENT->value, $this->conversation->current_state);
     }
 
-    public function test_welcome_sent_to_menu_selection_via_pesan(): void
+    public function test_welcome_sent_to_branch_selection_via_pesan(): void
+    {
+        Region::create(['name' => 'Surabaya', 'slug' => 'surabaya']);
+
+        $this->conversation->update(['current_state' => OrderBotConversationState::WELCOME_SENT->value]);
+
+        $this->botService->handleMessage($this->conversation, 'Mau pesan');
+
+        $this->conversation->refresh();
+        // Filter cabang eksplisit: tetap di WELCOME_SENT dengan flag awaiting_branch
+        $this->assertEquals(OrderBotConversationState::WELCOME_SENT->value, $this->conversation->current_state);
+        $this->assertTrue((bool) $this->conversation->getContext('awaiting_branch'));
+    }
+
+    public function test_welcome_sent_skips_branch_when_single_region(): void
     {
         $this->conversation->update(['current_state' => OrderBotConversationState::WELCOME_SENT->value]);
 
         $this->botService->handleMessage($this->conversation, 'Mau pesan');
 
         $this->conversation->refresh();
-        $this->assertEquals(OrderBotConversationState::MENU_SELECTION->value, $this->conversation->current_state);
+        // Hanya 1 cabang di DB — langsung ke langkah lokasi
+        $this->assertEquals(OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS->value, $this->conversation->current_state);
+        $this->assertNull($this->conversation->getContext('awaiting_branch'));
+    }
+
+    public function test_branch_choice_by_name_locks_region_and_requests_location(): void
+    {
+        Region::create(['name' => 'Surabaya', 'slug' => 'surabaya']);
+
+        $this->conversation->update([
+            'current_state' => OrderBotConversationState::WELCOME_SENT->value,
+            'context' => ['awaiting_branch' => true],
+        ]);
+
+        $this->botService->handleMessage($this->conversation, 'Surabaya');
+
+        $this->conversation->refresh();
+        $surabaya = Region::where('slug', 'surabaya')->first();
+        $this->assertEquals($surabaya->id, $this->conversation->region_id);
+        $this->assertEquals('manual', $this->conversation->getContext('branch_source'));
+        $this->assertNull($this->conversation->getContext('awaiting_branch'));
+        $this->assertEquals(OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS->value, $this->conversation->current_state);
+    }
+
+    public function test_pricelist_request_preserves_state(): void
+    {
+        $this->conversation->update([
+            'current_state' => OrderBotConversationState::ORDER_SUMMARY->value,
+            'context' => [
+                'delivery_method' => 'self_pickup',
+                'order_form' => ['product_name' => 'Test'],
+            ],
+        ]);
+
+        $this->botService->handleMessage($this->conversation, 'harga');
+
+        $this->conversation->refresh();
+        $this->assertEquals(OrderBotConversationState::ORDER_SUMMARY->value, $this->conversation->current_state);
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_apa_itu_question_finds_product_detail(): void
+    {
+        $this->conversation->update(['current_state' => OrderBotConversationState::PRODUCT_BROWSING->value]);
+
+        $this->botService->handleMessage($this->conversation, 'apa itu Tumpeng Mini Mix?');
+
+        $this->conversation->refresh();
+        $this->assertEquals('Tumpeng Mini Mix', $this->conversation->getContext('selected_product_name'));
+        $this->assertEquals(OrderBotConversationState::PRODUCT_BROWSING->value, $this->conversation->current_state);
+    }
+
+    public function test_confirm_forwards_order_format_to_owner(): void
+    {
+        $this->region->update(['owner_phone' => '628999000111']);
+
+        $this->conversation->update([
+            'current_state' => OrderBotConversationState::ORDER_SUMMARY->value,
+            'context' => [
+                'delivery_method' => 'self_pickup',
+                'delivery_slot' => '09:00-11:00',
+                'ongkir' => 0,
+                'product_quantity' => 1,
+                'order_form' => [
+                    'product_name' => 'Tumpeng Mini',
+                    'recipient_name' => 'Budi',
+                    'recipient_address' => 'Jl. Test No.1',
+                    'delivery_date' => '10 September 2026',
+                    'delivery_time' => '10:00',
+                ],
+            ],
+        ]);
+
+        $this->botService->handleMessage($this->conversation, 'FIX');
+
+        $this->assertDatabaseCount('orders', 1);
+        Http::assertSent(function ($request) {
+            $data = $request->data();
+
+            return ($data['to'] ?? null) === '628999000111'
+                && str_contains($data['text']['body'] ?? '', 'PESANAN BARU');
+        });
+    }
+
+    public function test_payment_proof_is_forwarded_to_owner(): void
+    {
+        $this->region->update(['owner_phone' => '628999000111']);
+
+        $order = Order::create([
+            'invoice_number' => 'INV/0101/01/000/001/001',
+            'customer_id' => Customer::create([
+                'name' => 'Budi',
+                'phone' => '6281234567890',
+                'address' => 'Jl. Test No.1',
+                'region_id' => $this->region->id,
+            ])->id,
+            'phone' => '6281234567890',
+            'address' => 'Jl. Test No.1',
+            'total_amount' => 250000,
+            'payment_method' => 'qris',
+            'region_id' => $this->region->id,
+            'status' => 'baru',
+            'channel' => 'whatsapp',
+        ]);
+
+        $this->conversation->update([
+            'current_state' => OrderBotConversationState::AWAITING_PAYMENT_PROOF->value,
+            'context' => ['confirmed_order_id' => $order->id],
+        ]);
+
+        $this->botService->handleMessage(
+            $this->conversation,
+            '[Gambar]',
+            ['media_id' => 'media_test_123', 'media_path' => 'payment_proofs/bukti_test.jpg']
+        );
+
+        $this->conversation->refresh();
+        $this->assertEquals(OrderBotConversationState::ORDER_CONFIRMED->value, $this->conversation->current_state);
+        $this->assertEquals('payment_proofs/bukti_test.jpg', $order->fresh()->payment_proof);
+        Http::assertSent(function ($request) {
+            $data = $request->data();
+
+            return ($data['to'] ?? null) === '628999000111'
+                && ($data['type'] ?? null) === 'image';
+        });
     }
 
     public function test_menu_selection_to_product_browsing_tumpeng(): void
@@ -338,6 +476,245 @@ class OrderBotStateTransitionTest extends TestCase
 
         $this->conversation->refresh();
         $this->assertEquals(OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS->value, $this->conversation->current_state);
+    }
+
+    public function test_batalyon_address_is_not_treated_as_cancel(): void
+    {
+        $this->conversation->update([
+            'current_state' => OrderBotConversationState::AWAITING_ORDER_FORM->value,
+            'context' => ['form_step' => 1, 'order_form' => ['product_name' => 'Tumpeng Mini Mix']],
+        ]);
+
+        $this->botService->handleMessage($this->conversation, 'Shinta | Jl. Batalyon No 10 Surabaya | 12 Okt 2026 | 10:00');
+
+        $this->conversation->refresh();
+        $this->assertEquals(OrderBotConversationState::AWAITING_DELIVERY_METHOD->value, $this->conversation->current_state);
+        $this->assertEquals('Jl. Batalyon No 10 Surabaya', $this->conversation->getContext('order_form.recipient_address'));
+    }
+
+    public function test_menunggu_word_does_not_escape_to_menu(): void
+    {
+        $this->conversation->update([
+            'current_state' => OrderBotConversationState::AWAITING_ORDER_FORM->value,
+            'context' => ['form_step' => 1, 'order_form' => ['product_name' => 'Tumpeng Mini Mix']],
+        ]);
+
+        $this->botService->handleMessage($this->conversation, 'Budi | Jl. Menunggu No 1 | 12 Okt 2026 | 10:00');
+
+        $this->conversation->refresh();
+        $this->assertEquals(OrderBotConversationState::AWAITING_DELIVERY_METHOD->value, $this->conversation->current_state);
+    }
+
+    public function test_confirm_with_yes_word_creates_order(): void
+    {
+        $this->conversation->update([
+            'current_state' => OrderBotConversationState::ORDER_SUMMARY->value,
+            'context' => [
+                'delivery_method' => 'self_pickup',
+                'delivery_slot' => '09:00-11:00',
+                'ongkir' => 0,
+                'order_form' => [
+                    'product_name' => 'Tumpeng Mini',
+                    'recipient_name' => 'Budi',
+                    'recipient_address' => 'Jl. Test No.1',
+                    'delivery_date' => '10 September 2026',
+                    'delivery_time' => '10:00',
+                ],
+            ],
+        ]);
+
+        $this->botService->handleMessage($this->conversation, 'Ya, oke');
+
+        $this->assertDatabaseCount('orders', 1);
+    }
+
+    public function test_lanjut_phrase_and_price_question_do_not_confirm(): void
+    {
+        $context = [
+            'delivery_method' => 'self_pickup',
+            'delivery_slot' => '09:00-11:00',
+            'ongkir' => 0,
+            'order_form' => ['product_name' => 'Tumpeng Mini'],
+        ];
+
+        $this->conversation->update([
+            'current_state' => OrderBotConversationState::ORDER_SUMMARY->value,
+            'context' => $context,
+        ]);
+        $this->botService->handleMessage($this->conversation, 'mau lanjut mikir dulu');
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertEquals(OrderBotConversationState::ORDER_SUMMARY->value, $this->conversation->refresh()->current_state);
+
+        $this->botService->handleMessage($this->conversation, 'ya, berapa harganya?');
+        $this->assertDatabaseCount('orders', 0);
+        $this->assertEquals(OrderBotConversationState::ORDER_SUMMARY->value, $this->conversation->refresh()->current_state);
+    }
+
+    public function test_proof_without_order_is_rejected_not_confirmed(): void
+    {
+        $this->conversation->update([
+            'current_state' => OrderBotConversationState::AWAITING_PAYMENT_PROOF->value,
+            'context' => [],
+        ]);
+
+        $this->botService->handleMessage(
+            $this->conversation,
+            '[Gambar]',
+            ['media_id' => 'media_orphan', 'media_path' => 'payment_proofs/orphan.jpg']
+        );
+
+        $this->conversation->refresh();
+        $this->assertEquals(OrderBotConversationState::AWAITING_PAYMENT_PROOF->value, $this->conversation->current_state);
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_combined_form_rejects_empty_field(): void
+    {
+        $this->conversation->update([
+            'current_state' => OrderBotConversationState::AWAITING_ORDER_FORM->value,
+            'context' => ['form_step' => 1, 'order_form' => ['product_name' => 'Tumpeng Mini Mix']],
+        ]);
+
+        $this->botService->handleMessage($this->conversation, 'Shinta |  | 12 Okt 2026 | 10:00');
+
+        $this->conversation->refresh();
+        $this->assertEquals(OrderBotConversationState::AWAITING_ORDER_FORM->value, $this->conversation->current_state);
+        $this->assertEquals(1, $this->conversation->getContext('form_step'));
+    }
+
+    public function test_combined_form_joins_extra_pipes_into_address(): void
+    {
+        $this->conversation->update([
+            'current_state' => OrderBotConversationState::AWAITING_ORDER_FORM->value,
+            'context' => ['form_step' => 1, 'order_form' => ['product_name' => 'Tumpeng Mini Mix']],
+        ]);
+
+        $this->botService->handleMessage($this->conversation, 'Shinta | Toko A | Cabang B | 12 Okt 2026 | 10:00');
+
+        $this->conversation->refresh();
+        $this->assertEquals(OrderBotConversationState::AWAITING_DELIVERY_METHOD->value, $this->conversation->current_state);
+        $this->assertEquals('Toko A | Cabang B', $this->conversation->getContext('order_form.recipient_address'));
+    }
+
+    public function test_quantity_prefix_flows_to_order_item(): void
+    {
+        $this->conversation->update([
+            'current_state' => OrderBotConversationState::AWAITING_ORDER_FORM->value,
+            'context' => ['form_step' => 0, 'order_form' => []],
+        ]);
+
+        $this->botService->handleMessage($this->conversation, '2x Tumpeng Mini Mix');
+
+        $this->conversation->refresh();
+        $this->assertEquals(1, $this->conversation->getContext('form_step'));
+        $this->assertEquals(2, $this->conversation->getContext('product_quantity'));
+        $this->assertEquals('Tumpeng Mini Mix', $this->conversation->getContext('order_form.product_name'));
+
+        $this->conversation->update([
+            'current_state' => OrderBotConversationState::ORDER_SUMMARY->value,
+            'context' => [
+                'delivery_method' => 'self_pickup',
+                'delivery_slot' => '09:00-11:00',
+                'ongkir' => 0,
+                'product_quantity' => 2,
+                'order_form' => [
+                    'product_name' => 'Tumpeng Mini Mix',
+                    'recipient_name' => 'Budi',
+                    'recipient_address' => 'Jl. Test No.1',
+                    'delivery_date' => '10 September 2026',
+                    'delivery_time' => '10:00',
+                ],
+            ],
+        ]);
+        $this->botService->handleMessage($this->conversation, 'FIX');
+
+        $order = Order::first();
+        $this->assertNotNull($order);
+        $this->assertEquals(2, $order->items->first()->quantity);
+        $this->assertEquals(500000, (int) $order->total_amount);
+    }
+
+    public function test_ubah_alamat_flow_updates_and_resummarizes(): void
+    {
+        $this->conversation->update([
+            'current_state' => OrderBotConversationState::ORDER_SUMMARY->value,
+            'context' => [
+                'delivery_method' => 'self_pickup',
+                'delivery_slot' => '09:00-11:00',
+                'ongkir' => 0,
+                'order_form' => [
+                    'product_name' => 'Tumpeng Mini Mix',
+                    'recipient_name' => 'Budi',
+                    'recipient_address' => 'Jl. Lama No.1',
+                    'delivery_date' => '10 September 2026',
+                    'delivery_time' => '10:00',
+                ],
+            ],
+        ]);
+
+        $this->botService->handleMessage($this->conversation, 'ubah alamat');
+        $this->conversation->refresh();
+        $this->assertTrue((bool) $this->conversation->getContext('editing_address'));
+        $this->assertDatabaseCount('orders', 0);
+
+        $this->botService->handleMessage($this->conversation, 'Jl. Baru No 9 Surabaya');
+        $this->conversation->refresh();
+        $this->assertNull($this->conversation->getContext('editing_address'));
+        $this->assertEquals('Jl. Baru No 9 Surabaya', $this->conversation->getContext('order_form.recipient_address'));
+        $this->assertEquals(OrderBotConversationState::ORDER_SUMMARY->value, $this->conversation->current_state);
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_menanti_question_is_not_skip(): void
+    {
+        $this->conversation->update([
+            'current_state' => OrderBotConversationState::AWAITING_PAYMENT_PROOF->value,
+            'context' => [],
+        ]);
+
+        $this->botService->handleMessage($this->conversation, 'saya menanti konfirmasi admin');
+
+        $this->conversation->refresh();
+        $this->assertEquals(OrderBotConversationState::AWAITING_PAYMENT_PROOF->value, $this->conversation->current_state);
+    }
+
+    public function test_catalog_numbering_matches_selection(): void
+    {
+        $category = Category::create(['name' => 'Hampers', 'slug' => 'hampers']);
+        Product::create([
+            'category_id' => $category->id,
+            'region_id' => $this->region->id,
+            'name' => 'Hampers Natal',
+            'description' => 'Hampers natal',
+            'is_active' => true,
+        ]);
+
+        $this->conversation->update(['current_state' => OrderBotConversationState::WELCOME_SENT->value]);
+        $this->botService->handleMessage($this->conversation, 'produk');
+
+        $this->conversation->refresh();
+        $this->assertEquals(OrderBotConversationState::PRODUCT_BROWSING->value, $this->conversation->current_state);
+        $this->assertCount(2, $this->conversation->getContext('catalog_ids'));
+
+        $this->botService->handleMessage($this->conversation, '2');
+        $this->conversation->refresh();
+        $this->assertEquals('Hampers Natal', $this->conversation->getContext('selected_product_name'));
+    }
+
+    public function test_branch_escape_batal_cancels_selection(): void
+    {
+        Region::create(['name' => 'Surabaya', 'slug' => 'surabaya']);
+
+        $this->conversation->update([
+            'current_state' => OrderBotConversationState::WELCOME_SENT->value,
+            'context' => ['awaiting_branch' => true],
+        ]);
+
+        $this->botService->handleMessage($this->conversation, 'batal');
+
+        $this->conversation->refresh();
+        $this->assertNull($this->conversation->getContext('awaiting_branch'));
+        $this->assertEquals(OrderBotConversationState::WELCOME_SENT->value, $this->conversation->current_state);
     }
 
     public function test_produk_during_form_goes_to_catalog(): void
