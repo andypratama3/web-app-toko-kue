@@ -211,14 +211,21 @@ Route::middleware([
         // Endpoint JSON untuk data produk di halaman pesanan
         Route::get('produk/json', function () {
             $regionId = Auth::user()->region_id;
-            return Product::where('is_active', true)->where('region_id', $regionId)
+            return Product::where('is_active', true)
+                ->where(function ($q) use ($regionId) {
+                    // Produk cabang sendiri + produk global (region NULL, mis. katalog resmi).
+                    $q->where('region_id', $regionId)->orWhereNull('region_id');
+                })
                 ->with(['variants' => fn($q) => $q->where('is_active', true)->select('id', 'product_id', 'name', 'price')])
                 ->get(['id', 'name', 'image_path'])
                 ->map(fn($p) => [
                     'id' => $p->id,
                     'name' => $p->name,
                     // PERBAIKAN: Gunakan Storage::url() untuk menghasilkan URL yang benar
-                    'image' => $p->image_path ? Storage::url($p->image_path) : null,
+                    // Produk katalog memakai path public/assets/..., bukan storage.
+                    'image' => $p->image_path
+                        ? (str_starts_with($p->image_path, 'assets/') ? asset($p->image_path) : Storage::url($p->image_path))
+                        : null,
                     'variants' => $p->variants->map(fn($v) => ['id' => $v->id, 'name' => $v->name, 'price' => $v->price]),
                 ]);
         })->name('produk.json');

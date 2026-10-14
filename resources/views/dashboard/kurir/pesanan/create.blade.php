@@ -328,10 +328,12 @@
                 paymentMenu.classList.toggle('hidden');
             });
             paymentMenu.addEventListener('click', function(e) {
-                if (e.target.tagName === 'A') {
+                // Pakai closest agar klik pada ikon di dalam <a> tetap terhitung.
+                const link = e.target.closest('a');
+                if (link && paymentMenu.contains(link)) {
                     e.preventDefault();
-                    const value = e.target.getAttribute('data-value');
-                    const text = e.target.textContent;
+                    const value = link.getAttribute('data-value');
+                    const text = link.textContent;
                     selectedPaymentText.textContent = text;
                     hiddenPaymentInput.value = value;
                     // if (value === 'tf' || value === 'qr') {
@@ -375,9 +377,30 @@
                 const data = await response.json();
 
                 if (data.items && data.items.length > 0) {
-                    // Jika ada item, ganti isi cart dengan data baru
-                    cart = data.items;
-                    showToast('Pesanan terakhir berhasil dimuat.', 'success');
+                    // Samakan harga dengan katalog terkini (harga server yang berlaku),
+                    // buang item yang produk/variannya sudah tidak tersedia.
+                    const refreshed = [];
+                    data.items.forEach(it => {
+                        const prod = produkList.find(p => p.id === it.product_id);
+                        if (!prod) return;
+                        const varian = (prod.variants || []).find(v => v.id === it.variant_id);
+                        if (!varian) return;
+                        refreshed.push({
+                            product_id: prod.id,
+                            product_name: prod.name,
+                            variant_id: varian.id,
+                            variant_name: varian.name,
+                            price: varian.price,
+                            qty: Math.max(1, parseInt(it.qty, 10) || 1),
+                        });
+                    });
+                    cart = refreshed;
+                    showToast(
+                        refreshed.length > 0
+                            ? 'Pesanan terakhir dimuat (harga disesuaikan katalog terbaru).'
+                            : 'Item pesanan terakhir sudah tidak tersedia di katalog.',
+                        refreshed.length > 0 ? 'success' : 'info'
+                    );
                 } else {
                     // Jika tidak ada pesanan, kosongkan cart dan beri info
                     cart = [];
@@ -588,18 +611,14 @@
                         </div>`;
                     });
                 } else {
-                    const sudahDipilih = cart.some(c => c.product_id === p.id && !c.variant_id);
+                    // Produk tanpa varian tidak bisa dipesan (server butuh variant_id).
                     pilihDiv.innerHTML += `
-                    <div class="flex flex-row items-center gap-3 p-3 border rounded bg-gray-50">
+                    <div class="flex flex-row items-center gap-3 p-3 border rounded bg-gray-50 dark:bg-slate-700 dark:border-slate-600">
                         ${imageUrl ? `<img src="${imageUrl}" alt="${p.name}" class="object-cover w-16 h-16 mr-2 border rounded" />` : ''}
                         <div class="flex-1">
                             <div class="font-semibold">${p.name}</div>
-                            <div class="font-bold text-green-700">Rp ${p.price ? p.price.toLocaleString() : ''}</div>
+                            <div class="text-xs text-amber-600 dark:text-amber-400">Varian belum tersedia — hubungi admin.</div>
                         </div>
-                        ${sudahDipilih ?
-                            `<button type="button" class="px-2 py-1 text-xs text-white bg-red-500 rounded hover:bg-red-600" onclick="hapusDariCart(${p.id}, null)"><i class="fas fa-trash"></i></button>` :
-                            `<button type="button" class="px-2 py-1 text-xs text-white bg-green-500 rounded hover:bg-green-600" onclick="tambahKeCart(${p.id}, null)"><i class="fas fa-cart-plus"></i></button>`
-                        }
                     </div>`;
                 }
             });
@@ -607,10 +626,18 @@
 
         function tambahKeCart(productId, variantId) {
             let product = produkList.find(p => p.id === productId);
+            if (!product) {
+                showToast('Produk tidak ditemukan di katalog.', 'error');
+                return;
+            }
             let cartItem = null;
             let variant = null;
             if (variantId) {
-                variant = product.variants.find(v => v.id === variantId);
+                variant = (product.variants || []).find(v => v.id === variantId);
+                if (!variant) {
+                    showToast('Varian tidak tersedia.', 'error');
+                    return;
+                }
                 cartItem = cart.find(c => c.variant_id === variantId);
             } else {
                 cartItem = cart.find(c => c.product_id === productId && !c.variant_id);
@@ -621,12 +648,17 @@
                     `Kuantitas ${product.name}${variant ? ' - ' + variant.name : ''} ditambahkan menjadi ${cartItem.qty}.`,
                     'info');
             } else {
+                const harga = variant ? variant.price : (product.price || product.harga);
+                if (harga === undefined || harga === null || isNaN(harga)) {
+                    showToast('Harga produk belum tersedia — hubungi admin.', 'error');
+                    return;
+                }
                 cart.push({
                     product_id: productId,
                     product_name: product.name,
                     variant_id: variantId || null,
                     variant_name: variant ? variant.name : null,
-                    price: variant ? variant.price : (product.price || product.harga),
+                    price: harga,
                     qty: 1
                 });
                 showToast(`${product.name}${variant ? ' - ' + variant.name : ''} ditambahkan ke keranjang.`, 'success');
@@ -641,14 +673,15 @@
             let variant = null;
             let cartItemIndex = -1;
             if (variantId) {
-                variant = product.variants.find(v => v.id === variantId);
+                variant = product ? (product.variants || []).find(v => v.id === variantId) : null;
                 cartItemIndex = cart.findIndex(c => c.variant_id === variantId);
             } else {
                 cartItemIndex = cart.findIndex(c => c.product_id === productId && !c.variant_id);
             }
             if (cartItemIndex !== -1) {
+                const removed = cart[cartItemIndex];
                 cart.splice(cartItemIndex, 1);
-                showToast(`${product.name}${variant ? ' - ' + variant.name : ''} dihapus dari keranjang.`, 'info');
+                showToast(`${removed.product_name || (product ? product.name : 'Produk')}${removed.variant_name ? ' - ' + removed.variant_name : (variant ? ' - ' + variant.name : '')} dihapus dari keranjang.`, 'info');
                 renderCart();
                 tampilkanPilihanProduk();
             }

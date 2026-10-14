@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderReturn;
 use App\Models\OrderReturnProduct;
+use App\Models\Product;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -184,6 +185,32 @@ class PesananController extends Controller
     }
 
     /**
+     * Membuat nomor invoice yang dijamin unik.
+     *
+     * Sequence harian dihitung dari jumlah order hari itu; dua checkout
+     * bersamaan bisa menghasilkan nomor sama, jadi cek keunikan dan
+     * naikkan sequence hingga maksimal 10x percobaan.
+     */
+    private function generateUniqueInvoiceNumber(Carbon $currentTime, $user, int $customerId): string
+    {
+        $tanggal = $currentTime->format('dmy');
+        $formattedRegionId = str_pad($user->region_id, 2, '0', STR_PAD_LEFT);
+        $formattedKurirId = str_pad($user->id, 3, '0', STR_PAD_LEFT);
+        $formattedCustomerId = str_pad($customerId, 3, '0', STR_PAD_LEFT);
+
+        $base = (int) Order::whereDate('created_at', $currentTime->toDateString())->count();
+        for ($i = 0; $i < 10; $i++) {
+            $invoiceNumber = "INV/{$tanggal}/{$formattedRegionId}/{$formattedKurirId}/{$formattedCustomerId}/" . str_pad($base + $i, 3, '0', STR_PAD_LEFT);
+            if (!Order::where('invoice_number', $invoiceNumber)->exists()) {
+                return $invoiceNumber;
+            }
+        }
+
+        // Fallback terakhir: tambahkan detik agar praktis tidak mungkin kembar.
+        return "INV/{$tanggal}/{$formattedRegionId}/{$formattedKurirId}/{$formattedCustomerId}/" . $currentTime->format('His') . str_pad(random_int(0, 99), 2, '0', STR_PAD_LEFT);
+    }
+
+    /**
      * Memproses dan menyimpan data pesanan baru yang dikirim dari formulir checkout.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -209,6 +236,20 @@ class PesananController extends Controller
         $customer = Customer::with('category')->find($validated['customer_id']);
         if (!$customer) {
             return response()->json(['message' => 'Customer tidak ditemukan.'], 404);
+        }
+
+        // Customer harus milik region kurir yang login (sama seperti daftar di create()).
+        // Mencegah order atas customer cabang lain via manipulasi customer_id.
+        $loggedInUserId = Auth::id();
+        $loggedInUserRegion = Auth::user()->region_id;
+        if (!is_null($loggedInUserRegion) && (int) $customer->region_id !== (int) $loggedInUserRegion) {
+            return response()->json(['message' => 'Customer bukan dari wilayah Anda.'], 422);
+        }
+
+        // Decode & validasi keranjang: harus array non-kosong.
+        $products = json_decode($validated['products'], true);
+        if (!is_array($products) || count($products) === 0) {
+            return response()->json(['message' => 'Keranjang masih kosong. Tambahkan minimal 1 produk.'], 422);
         }
 
         // Cek batas maksimal pesanan aktif berdasarkan kategori customer
@@ -248,7 +289,7 @@ class PesananController extends Controller
                 'total_amount' => 0, // Akan di-update setelah item ditambahkan
                 'payment_method' => $validated['payment_method'],
                 'payment_proof' => $paymentProofPath,
-                'note' => $validated['note'],
+                'note' => $validated['note'] ?? null,
                 'created_by_user_id' => $loggedInUser->id,
                 'region_id' => $loggedInUser->region_id,
             ]);
@@ -258,33 +299,61 @@ class PesananController extends Controller
             $order->updated_at = $currentTime;
             $order->save();
 
-            // Generate nomor invoice unik
-            $orderCountToday = Order::whereDate('created_at', $currentTime->toDateString())->count();
-            $dailySequenceNumber = str_pad($orderCountToday, 3, '0', STR_PAD_LEFT);
-            $tanggal = $currentTime->format('dmy');
-            $formattedRegionId = str_pad($loggedInUser->region_id, 2, '0', STR_PAD_LEFT);
-            $formattedKurirId = str_pad($loggedInUser->id, 3, '0', STR_PAD_LEFT);
-            $formattedCustomerId = str_pad($validated['customer_id'], 3, '0', STR_PAD_LEFT);
-            $invoiceNumber = "INV/{$tanggal}/{$formattedRegionId}/{$formattedKurirId}/{$formattedCustomerId}/{$dailySequenceNumber}";
+            // Generate nomor invoice unik (retry jika duplikat karena race condition).
+            $invoiceNumber = $this->generateUniqueInvoiceNumber($currentTime, $loggedInUser, (int) $validated['customer_id']);
 
             $order->invoice_number = $invoiceNumber;
 
-            // Proses produk/item yang dipesan
-            $products = json_decode($validated['products'], true);
+            // Proses produk/item yang dipesan.
+            // Harga SELALU diambil ulang dari database (ProductVariant) — harga
+            // kiriman klien diabaikan agar tidak bisa dimanipulasi via DevTools.
             $totalAmount = 0;
             $orderItems = [];
 
-            foreach ($products as $product) {
-                $subtotal = $product['quantity'] * $product['price'];
+            foreach ($products as $index => $product) {
+                $row = $index + 1;
+                $quantity = filter_var($product['quantity'] ?? null, FILTER_VALIDATE_INT);
+                if ($quantity === false || $quantity < 1) {
+                    DB::rollBack();
+                    return response()->json(['message' => "Baris {$row}: jumlah harus bilangan bulat minimal 1."], 422);
+                }
+
+                $dbProduct = Product::where('is_active', true)->find($product['product_id'] ?? null);
+                if (!$dbProduct) {
+                    DB::rollBack();
+                    return response()->json(['message' => "Baris {$row}: produk tidak ditemukan atau sudah nonaktif."], 422);
+                }
+
+                // Produk harus terlihat oleh region kurir (milik region / global).
+                if (!is_null($dbProduct->region_id) && !is_null($loggedInUserRegion)
+                    && (int) $dbProduct->region_id !== (int) $loggedInUserRegion) {
+                    DB::rollBack();
+                    return response()->json(['message' => "Baris {$row}: produk tidak tersedia di wilayah Anda."], 422);
+                }
+
+                $variantId = $product['variant_id'] ?? null;
+                if (empty($variantId)) {
+                    DB::rollBack();
+                    return response()->json(['message' => "Baris {$row} ({$dbProduct->name}): pilih varian/ukuran dulu."], 422);
+                }
+
+                $dbVariant = $dbProduct->variants()->where('is_active', true)->find($variantId);
+                if (!$dbVariant) {
+                    DB::rollBack();
+                    return response()->json(['message' => "Baris {$row} ({$dbProduct->name}): varian tidak valid atau sudah nonaktif."], 422);
+                }
+
+                $price = (int) $dbVariant->price;
+                $subtotal = $quantity * $price;
                 $totalAmount += $subtotal;
 
                 $orderItems[] = new OrderItem([
-                    'product_id' => $product['product_id'],
-                    'product_name' => $product['product_name'],
-                    'variant_id' => $product['variant_id'] ?? null,
-                    'variant_name' => $product['variant_name'] ?? null,
-                    'quantity' => $product['quantity'],
-                    'price' => $product['price'],
+                    'product_id' => $dbProduct->id,
+                    'product_name' => $dbProduct->name,
+                    'variant_id' => $dbVariant->id,
+                    'variant_name' => $dbVariant->name,
+                    'quantity' => $quantity,
+                    'price' => $price,
                     'subtotal' => $subtotal,
                 ]);
             }

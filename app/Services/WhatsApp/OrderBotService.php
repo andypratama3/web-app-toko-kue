@@ -519,6 +519,30 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
     {
         $lower = strtolower(trim($text));
 
+        // Produk dulu: "kue ijo" / "tumpeng mini" langsung ke detail, bukan
+        // tersedot intent kategori ("kue" → Produk, "tumpeng" → Tumpeng).
+        $candidates = $this->searchProductsByKeyword($conversation, $this->extractProductQuery($lower));
+        if ($candidates->count() === 1) {
+            $product = $candidates->first();
+            $conversation->setContext('selected_product_name', $product->name);
+            $conversation->setContext('selected_category', $product->category->name ?? null);
+            $this->advanceState($conversation, OrderBotConversationState::PRODUCT_BROWSING);
+            $this->sendProductDetail($conversation, $product);
+
+            return;
+        }
+        if ($candidates->count() > 1
+            && $candidates->pluck('category.name')->filter()->unique()->count() === 1
+        ) {
+            // Mis. "mix" → semua di kategori Produk: tampilkan kategorinya.
+            $categoryName = $candidates->first()->category->name;
+            $this->sendProductsByCategory($conversation, $categoryName);
+            $this->advanceState($conversation, OrderBotConversationState::PRODUCT_BROWSING);
+            $conversation->setContext('selected_category', $categoryName);
+
+            return;
+        }
+
         if ($this->matchesIntent($lower, ['tumpeng'])) {
             $this->sendProductsByCategory($conversation, 'Tumpeng');
             $this->advanceState($conversation, OrderBotConversationState::PRODUCT_BROWSING);
@@ -611,6 +635,13 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
     protected function handleOrderForm(WhatsAppConversation $conversation, string $text): void
     {
+        // Prioritas: user sedang memilih dari daftar bernomor (produk/varian).
+        if (! empty($conversation->getContext('pending_options'))) {
+            $this->processOptionStep($conversation, $text);
+
+            return;
+        }
+
         $context = $conversation->context ?? [];
         $formStep = $context['form_step'] ?? 0;
 
@@ -623,6 +654,10 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
     /**
      * Langkah 1/2: nama produk (+ jumlah opsional, mis. "2x Tumpeng Mini").
+     *
+     * Produk divalidasi LANGSUNG di sini (tidak menunggu akhir alur) agar
+     * salah ketik langsung ketahuan. Bila cocok >1 produk / >1 varian,
+     * user diminta memilih dari daftar bernomor.
      */
     protected function processProductNameStep(WhatsAppConversation $conversation, string $text): void
     {
@@ -636,14 +671,240 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             return;
         }
 
-        $conversation->setContext('order_form', ['product_name' => $productName]);
+        $candidates = $this->searchProductsByKeyword($conversation, $productName);
+
+        if (count($candidates) === 0) {
+            $this->metaService->sendText($conversation->phone_number,
+                "❌ Produk *{$productName}* tidak ditemukan.\n".
+                "Coba ketik nama lain (mis. *Kue Ijo*, *Hampers B*), atau ketik *PRODUK* untuk melihat katalog."
+            );
+
+            return;
+        }
+
+        if (count($candidates) > 1) {
+            $options = $candidates->map(fn ($p) => [
+                'type' => 'product',
+                'id' => $p->id,
+                'label' => $p->name,
+                'price' => $this->resolveCheapestVariant($p)?->price,
+            ])->values()->all();
+            $conversation->setContext('pending_options', $options);
+            $conversation->setContext('product_quantity', $quantity);
+            $this->sendOptionList($conversation, 'Ditemukan beberapa produk yang cocok. Pilih salah satu:',
+                'Ketik *BATAL* untuk membatalkan.');
+
+            return;
+        }
+
+        $this->selectProductFlow($conversation, $candidates->first(), $quantity);
+    }
+
+    /**
+     * Cari kandidat produk (aktif, sesuai region) untuk kata kunci.
+     * Urut: nama persis dulu, lalu nama terpendek (paling spesifik).
+     *
+     * @return \Illuminate\Support\Collection<int, Product>
+     */
+    protected function searchProductsByKeyword(WhatsAppConversation $conversation, string $keyword)
+    {
+        $regionId = $conversation->region_id;
+        $keyword = trim($keyword);
+
+        if ($keyword === '') {
+            return collect();
+        }
+
+        // Hindari wildcard LIKE dari input user (%/_) agar tak cocok ke semua produk.
+        $escaped = addcslashes($keyword, '%_\\');
+        $lowerKeyword = strtolower($keyword);
+
+        $base = Product::where('is_active', true)
+            ->where(function ($q) use ($regionId) {
+                $q->where('region_id', $regionId)->orWhereNull('region_id');
+            })
+            ->with(['variants' => fn ($q) => $q->where('is_active', true)->orderBy('price')]);
+
+        $exact = (clone $base)
+            ->where(function ($q) use ($lowerKeyword) {
+                $q->whereRaw('LOWER(name) = ?', [$lowerKeyword])
+                  ->orWhereRaw('LOWER(tag) = ?', [$lowerKeyword]);
+            })
+            ->get();
+
+        if ($exact->isNotEmpty()) {
+            return $exact->take(6);
+        }
+
+        return (clone $base)
+            ->where(function ($q) use ($lowerKeyword) {
+                $q->whereRaw('LOWER(name) LIKE ?', ["%{$lowerKeyword}%"])
+                  ->orWhereRaw('LOWER(tag) LIKE ?', ["%{$lowerKeyword}%"]);
+            })
+            ->orderByRaw('LENGTH(name) ASC')
+            ->orderBy('id')
+            ->limit(6)
+            ->get();
+    }
+
+    /**
+     * Produk sudah pasti ada: simpan pilihan, lalu minta pilih varian
+     * bila variannya lebih dari 1. Selalu set ulang jumlah (anti-bocor
+     * sisa qty dari produk sebelumnya).
+     */
+    protected function selectProductFlow(WhatsAppConversation $conversation, Product $product, int $quantity = 1): void
+    {
+        $quantity = max(1, min(100, $quantity));
+        $conversation->setContext('selected_product_id', $product->id);
+        $conversation->setContext('selected_product_name', $product->name);
         $conversation->setContext('product_quantity', $quantity);
+        // Pilihan varian lama (produk sebelumnya) tidak berlaku lagi.
+        $conversation->forgetContext('selected_variant_id');
+
+        $variants = $product->variants->where('is_active', true)->sortBy('price')->values();
+
+        if ($variants->isEmpty()) {
+            $this->metaService->sendText($conversation->phone_number,
+                "❌ Produk *{$product->name}* sedang tidak tersedia (tidak ada varian aktif).\n".
+                'Silakan pilih produk lain, atau ketik *PRODUK* untuk melihat katalog.'
+            );
+
+            return;
+        }
+
+        if ($variants->count() > 1) {
+            $options = $variants->map(fn ($v) => [
+                'type' => 'variant',
+                'id' => $v->id,
+                'label' => $v->name,
+                'price' => $v->price,
+            ])->all();
+            $conversation->setContext('pending_options', $options);
+            $qtyText = $quantity > 1 ? " ({$quantity} buah)" : '';
+            $this->sendOptionList($conversation, "✅ Produk: *{$product->name}*{$qtyText}\nPilih ukuran/varian:",
+                'Ketik angka pilihan Anda.');
+
+            return;
+        }
+
+        $variant = $variants->first();
+        $conversation->setContext('selected_variant_id', $variant->id);
+        $this->askCombinedForm($conversation, $product->name, $quantity);
+    }
+
+    /**
+     * Prompt langkah 2/2 (data penerima) — satu pintu agar pesannya konsisten.
+     */
+    protected function askCombinedForm(WhatsAppConversation $conversation, string $productName, int $quantity): void
+    {
+        $conversation->setContext('order_form', ['product_name' => $productName]);
         $conversation->setContext('form_step', 1);
 
         $qtyText = $quantity > 1 ? " ({$quantity} buah)" : '';
         $this->metaService->sendText($conversation->phone_number,
-            "✅ Produk: {$productName}{$qtyText}\n\nSilakan isi semua data pesanan dalam 1 pesan (pisahkan dengan |):\nNama Penerima | Alamat Lengkap | Tanggal Kirim (10 Sept 2026) | Jam Tiba (10:00)"
+            "✅ Produk: *{$productName}*{$qtyText}\n\nSilakan isi semua data pesanan dalam 1 pesan (pisahkan dengan |):\nNama Penerima | Alamat Lengkap | Tanggal Kirim ({$this->orderExampleDate()}) | Jam Tiba (10:00)"
         );
+    }
+
+    /**
+     * Contoh tanggal kirim dinamis (lusa) agar tidak basi.
+     */
+    protected function orderExampleDate(): string
+    {
+        return now()->addDays(2)->format('d M Y');
+    }
+
+    /**
+     * Kirim daftar bernomor dari pending_options.
+     */
+    protected function sendOptionList(WhatsAppConversation $conversation, string $header, string $footer): void
+    {
+        $options = $conversation->getContext('pending_options') ?? [];
+        $text = $header."\n\n";
+        foreach ($options as $i => $opt) {
+            $n = $i + 1;
+            $price = isset($opt['price']) && $opt['price'] !== null
+                ? ' — Rp '.number_format($opt['price'], 0, ',', '.')
+                : '';
+            $text .= "{$n}. {$opt['label']}{$price}\n";
+        }
+        $text .= "\n".$footer;
+        $this->metaService->sendText($conversation->phone_number, $text);
+    }
+
+    /**
+     * Proses jawaban angka atas pending_options (produk atau varian).
+     */
+    protected function processOptionStep(WhatsAppConversation $conversation, string $text): void
+    {
+        $options = $conversation->getContext('pending_options') ?? [];
+        $choice = 0;
+        // Terima "3", "3.", "3 - Isi 12", dst.
+        if (preg_match('/^(\d{1,2})(?:[\s.\-)]|$)/u', trim($text), $m)) {
+            $choice = (int) $m[1];
+        }
+
+        if ($choice < 1 || $choice > count($options)) {
+            $this->metaService->sendText($conversation->phone_number,
+                'Pilih angka 1–'.count($options).' sesuai daftar di atas, atau ketik *BATAL* untuk membatalkan.'
+            );
+
+            return;
+        }
+
+        $opt = $options[$choice - 1];
+        $conversation->forgetContext('pending_options');
+        $quantity = max(1, (int) ($conversation->getContext('product_quantity') ?? 1));
+
+        if ($opt['type'] === 'product') {
+            $product = Product::where('is_active', true)->with(['variants' => fn ($q) => $q->where('is_active', true)])->find($opt['id']);
+            if (! $product) {
+                $this->metaService->sendText($conversation->phone_number,
+                    'Produk tersebut sudah tidak tersedia. Silakan ketik nama produk lain atau *PRODUK* untuk katalog.'
+                );
+
+                return;
+            }
+            $this->selectProductFlow($conversation, $product, $quantity);
+
+            return;
+        }
+
+        // Pilihan varian: validasi ulang ke DB (aktif & milik produk terpilih).
+        $productId = $conversation->getContext('selected_product_id');
+        $variant = ProductVariant::where('is_active', true)
+            ->where('id', $opt['id'])
+            ->when($productId, fn ($q) => $q->where('product_id', $productId))
+            ->first();
+
+        if (! $variant) {
+            $this->metaService->sendText($conversation->phone_number,
+                'Varian tersebut sudah tidak tersedia. Silakan ketik *PESAN* untuk mengulang.'
+            );
+
+            return;
+        }
+
+        $conversation->setContext('selected_variant_id', $variant->id);
+        $productName = $conversation->getContext('selected_product_name') ?? $variant->product->name ?? 'Produk';
+        $this->askCombinedForm($conversation, $productName, $quantity);
+    }
+
+    /**
+     * Varian yang ditagihkan: pilihan user bila masih aktif, fallback termurah.
+     * Satu-satunya pintu resolve varian untuk ringkasan & penagihan.
+     */
+    protected function resolveSelectedVariant(WhatsAppConversation $conversation, ?Product $product): ?ProductVariant
+    {
+        $selectedId = $conversation->getContext('selected_variant_id');
+        if ($selectedId && $product) {
+            $chosen = $product->variants->where('is_active', true)->firstWhere('id', (int) $selectedId);
+            if ($chosen) {
+                return $chosen;
+            }
+        }
+
+        return $this->resolveCheapestVariant($product);
     }
 
     /**
@@ -1033,11 +1294,13 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             OrderBotConversationState::WELCOME_SENT => $conversation->getContext('awaiting_branch')
                 ? 'Pilih cabang pengiriman (ketik angka / nama cabang).'
                 : 'Ketik *PESAN* untuk mulai order, atau *PRODUK* untuk melihat katalog.',
-            OrderBotConversationState::AWAITING_ORDER_FORM => match ($formStep) {
-                0 => 'Isi nama produk yang ingin dipesan (contoh: Tumpeng Mini, atau 2x Tumpeng Mini).',
-                1 => 'Isi semua dalam 1 pesan dipisah | : Nama Penerima | Alamat Lengkap | Tanggal Kirim | Jam Tiba.',
-                default => 'Pilih metode pengiriman (1 Diambil Sendiri / 2 Grab/GoSend / 3 Kurir Internal).',
-            },
+            OrderBotConversationState::AWAITING_ORDER_FORM => $conversation->getContext('pending_options')
+                ? 'Pilih nomor dari daftar yang ditampilkan (atau ketik *BATAL* untuk membatalkan).'
+                : match ($formStep) {
+                    0 => 'Isi nama produk yang ingin dipesan (contoh: Tumpeng Mini, atau 2x Tumpeng Mini).',
+                    1 => 'Isi semua dalam 1 pesan dipisah | : Nama Penerima | Alamat Lengkap | Tanggal Kirim | Jam Tiba.',
+                    default => 'Pilih metode pengiriman (1 Diambil Sendiri / 2 Grab/GoSend / 3 Kurir Internal).',
+                },
             OrderBotConversationState::MENU_SELECTION => 'Pilih kategori (Tumpeng / Hampers / Ala Carte) atau ketik nama produk.',
             OrderBotConversationState::PRODUCT_BROWSING => 'Ketik angka / nama produk untuk detail, *PESAN* untuk order, atau *MENU* untuk kategori.',
             OrderBotConversationState::AWAITING_DELIVERY_METHOD => 'Pilih metode pengiriman (1 Diambil Sendiri / 2 Grab/GoSend / 3 Kurir Internal).',
@@ -1264,15 +1527,27 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $selectedProduct = $conversation->getContext('selected_product_name');
 
         if ($selectedProduct) {
-            // Produk sudah dipilih (via angka atau keyword) — langsung gabungan
-            $conversation->setContext('order_form', ['product_name' => $selectedProduct]);
-            $conversation->setContext('form_step', 1);
+            // Produk sudah dipilih (via angka katalog / keyword) — validasi ulang
+            // ke DB lalu lanjut ke pilih varian / formulir gabungan.
+            $product = $this->resolveProduct($conversation, $selectedProduct);
+            if (! $product) {
+                $conversation->forgetContext('selected_product_name');
+                $conversation->forgetContext('selected_product_id');
+                $conversation->forgetContext('selected_variant_id');
+                $conversation->forgetContext('pending_options');
+                $conversation->setContext('form_step', 0);
+                $conversation->setContext('order_form', []);
+                $this->metaService->sendText($conversation->phone_number,
+                    "Produk *{$selectedProduct}* sudah tidak tersedia.\n\n".
+                    "📝 *FORMULIR PESANAN*\n\n".
+                    "Langkah 1/2: Nama produk yang ingin dipesan?\n".
+                    '(tambah jumlah di depan bila >1, contoh: *2x Tumpeng Mini*)'
+                );
 
-            $this->metaService->sendText($conversation->phone_number,
-                "✅ Produk: *{$selectedProduct}*\n\n".
-                "Langkah 2/2 — isi semua data pesanan dalam 1 pesan (pisahkan dengan |):\n".
-                "Nama Penerima | Alamat Lengkap | Tanggal Kirim (10 Sept 2026) | Jam Tiba (10:00)"
-            );
+                return;
+            }
+            $quantity = max(1, (int) ($conversation->getContext('product_quantity') ?? 1));
+            $this->selectProductFlow($conversation, $product, $quantity);
         } else {
             $conversation->setContext('form_step', 0);
             $conversation->setContext('order_form', []);
@@ -1398,12 +1673,13 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $method = $context['delivery_method'] ?? '-';
         $ongkir = $context['ongkir'] ?? 0;
 
-        // Resolve harga live dari database (selalu varian termurah — sama seperti penagihan)
+        // Resolve harga live dari database: varian pilihan user bila masih
+        // aktif, fallback varian termurah — SAMA PERSIS dengan penagihan.
         $productPrice = $context['product_price'] ?? null;
         $resolvedVariantName = null;
         if ($productPrice === null && $productName !== '-') {
             $resolvedProduct = $this->resolveProduct($conversation, $productName);
-            $resolvedVariant = $this->resolveCheapestVariant($resolvedProduct);
+            $resolvedVariant = $this->resolveSelectedVariant($conversation, $resolvedProduct);
             $productPrice = $resolvedVariant?->price ?? 0;
             $resolvedVariantName = $resolvedVariant?->name;
         }
@@ -1427,7 +1703,10 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $text .= "Qty: {$quantity}\n";
         $text .= 'Harga: Rp '.number_format($productPrice, 0, ',', '.')."\n";
         $text .= 'Subtotal Produk: Rp '.number_format($totalProduct, 0, ',', '.')."\n";
-        $text .= "Ongkir ({$methodText}): Rp ".number_format($ongkir, 0, ',', '.')."\n";
+        // Grab/GoSend dibayar langsung ke driver — jangan tampil "Rp 0" yang menyesatkan.
+        $text .= $method === 'grab_gosend'
+            ? "Ongkir ({$methodText}): dibayar langsung ke driver\n"
+            : "Ongkir ({$methodText}): Rp ".number_format($ongkir, 0, ',', '.')."\n";
         $text .= "─────────────────\n";
         $text .= '*TOTAL: Rp '.number_format($totalAll, 0, ',', '.')."*\n\n";
         $text .= "Penerima: {$recipientName}\n";
@@ -1482,7 +1761,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                     $conversation->update(['context' => array_merge($conversation->context ?? [], ['_pending_msg' => "❌ Produk *{$form['product_name']}* tidak ditemukan.\nSilakan ketik *MENU* untuk memilih kategori ulang, atau ketik nama produk yang tersedia."]) ]);
                     return null;
                 }
-                $variant = $this->resolveCheapestVariant($product);
+                $variant = $this->resolveSelectedVariant($conversation, $product);
 
                 // M4 FIX: reject orders with no active variant (would bill Rp 0)
                 if (! $variant) {

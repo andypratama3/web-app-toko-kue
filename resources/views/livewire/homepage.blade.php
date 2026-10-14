@@ -796,7 +796,8 @@
                         <div x-data="{ open: false }">
                             <p class="mb-3 text-sm text-justify text-gray-600" :class="open ? '' : 'line-clamp-2'">
                                 Kue Ubi Nanas Adalah Kue yang terbuat dari Singkong atau ubi kayu yang empuk dan
-                                dikombinasi dengan buah nanas serta ditaburi parutan kelapa.
+                                dikombinasi dengan buah nanas serta ditaburi parutan kelapa. Kue Dengan rasa manis
+                                gurih serta terdapat rasa asam sedikit sehingga cocok dinikmati pada suasana kapanpun.
                             </p>
                             <button @click="open = !open"
                                 class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
@@ -831,7 +832,10 @@
                         <div x-data="{ open: false }">
                             <p class="mb-3 text-sm text-justify text-gray-600" :class="open ? '' : 'line-clamp-2'">
                                 Kue Koci Ketan Hitam Adalah Kue yang terbuat dari ketan hitam pilihan yang telah
-                                dihaluskan. Dengan isian kelapa parut dan gula merah. Berbentuk segitiga kerucut.
+                                dihaluskan. Dengan isian kelapa parut dan gula merah dan dilengkapi santan yang telah
+                                dikukus bagian luar kue yang membuat kue ini terasa manis gurih dan bertekstur kenyal.
+                                Berbentuk segitiga kerucut sehingga memudahkan konsumen saat menggigit kue dan merasakan
+                                sensasi rasa dan tekstur kue.
                             </p>
                             <button @click="open = !open"
                                 class="text-[#8BA870] text-xs font-semibold focus:outline-none hover:underline mb-2">
@@ -858,7 +862,7 @@
                             class="object-cover w-full h-48 transition-transform duration-300 hover:scale-105 cursor-zoom-in zoomable">
                         <div
                             class="absolute px-2 py-1 text-xs font-medium text-white bg-orange-500 rounded-full top-3 right-3">
-                            Ala Carte
+                            Kue Mix
                         </div>
                     </div>
                     <div class="p-5">
@@ -892,7 +896,7 @@
                             class="object-cover w-full h-48 transition-transform duration-300 hover:scale-105 cursor-zoom-in zoomable">
                         <div
                             class="absolute px-2 py-1 text-xs font-medium text-white bg-orange-500 rounded-full top-3 right-3">
-                            Ala Carte
+                            Kue Mix
                         </div>
                     </div>
                     <div class="p-5">
@@ -987,8 +991,10 @@
                     </div>
                     <div class="p-5">
                         <h3 class="font-bold text-lg text-[#2C3E50] mb-2">Hampers C (Cantik)</h3>
-                        <p class="mb-3 text-sm text-justify text-gray-600 line-clamp-2">Kue Ijo (5 pcs), Kue
-                            Ongol-ongol (12 pcs), Kue Pulut Srikaya (4 pcs), Kue Ubi Nanas (8 pcs).</p>
+                        <p class="mb-3 text-sm text-justify text-gray-600 line-clamp-2">Kenalkan kelezatan kue
+                            tradisional melalui Hampers C (Cantik), paket pilihan dengan variasi rasa dan tekstur yang
+                            menggugah selera. Berisi: Kue Ijo (5 pcs), Kue Ongol-ongol (12 pcs), Kue Pulut Srikaya
+                            (4 pcs), Kue Ubi Nanas (8 pcs).</p>
                         <div class="flex items-center justify-between">
                             <span class="text-[#8BA870] font-bold text-lg">Rp 65.000</span>
                         </div>

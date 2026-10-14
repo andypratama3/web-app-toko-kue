@@ -83,6 +83,13 @@ class WhatsAppConversation extends Model
         $this->update(['context' => null]);
     }
 
+    public function forgetContext(string $key): void
+    {
+        $context = $this->context ?? [];
+        data_forget($context, $key);
+        $this->update(['context' => $context]);
+    }
+
     public function incrementMessageCount(): void
     {
         $this->increment('message_count');
