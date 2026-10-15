@@ -48,6 +48,12 @@
             @endif
         </td>
         <td data-label="Aksi" class="px-4 py-2">
+            {{-- Lihat rincian (read-only): selalu tersedia agar bukti bisa dicek kapan pun --}}
+            <button
+                class="px-3 py-1 text-xs font-bold text-white bg-gray-600 rounded js-open-modal-btn hover:bg-gray-700"
+                data-target-modal="verifyOrderModal" data-order-id="{{ $order->id }}" data-readonly="1">
+                Lihat
+            </button>
             @if ($order->status == 'baru' && is_null($order->created_by_user_id))
                 {{-- Order bot belum bertuan: tugaskan ke kurir se-region --}}
                 <div class="flex items-center gap-1">

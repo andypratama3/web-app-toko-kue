@@ -156,6 +156,9 @@
                     const modalId = target.dataset.targetModal;
                     if (modalId === 'verifyOrderModal') {
                         currentOrderId = target.dataset.orderId;
+                        window.verifyReadOnly = target.dataset.readonly === '1';
+                        document.getElementById('btnVerifyOrder').classList.toggle('hidden', window.verifyReadOnly);
+                        document.getElementById('btnOpenRejectModal').classList.toggle('hidden', window.verifyReadOnly);
                         openVerifyModal(currentOrderId);
                     }
                     if (modalId === 'viewNoteModal') {
@@ -241,7 +244,7 @@
             // Reset state
             loader.classList.remove('hidden');
             content.classList.add('hidden');
-            modalTitle.textContent = "Verifikasi Rincian Pesanan";
+            modalTitle.textContent = window.verifyReadOnly ? "Rincian Pesanan" : "Verifikasi Rincian Pesanan";
             returnedProductsSection.classList.add('hidden');
             proofImageContainer.classList.add('hidden');
             noProofContainer.classList.add('hidden');
@@ -296,7 +299,7 @@
 
                 if (data.return_details) {
                     // --- TAMPILAN JIKA ADA RETUR ---
-                    modalTitle.textContent = "Verifikasi Pesanan dengan Retur";
+                    modalTitle.textContent = window.verifyReadOnly ? "Rincian Pesanan (Retur)" : "Verifikasi Pesanan dengan Retur";
                     proofTitle.textContent = "✅ Bukti Retur";
                     proofUrl = data.return_details.return_proof;
 
@@ -326,7 +329,7 @@
 
                 } else {
                     // --- TAMPILAN NORMAL (TANPA RETUR) ---
-                    modalTitle.textContent = "Verifikasi Rincian Pesanan";
+                    modalTitle.textContent = window.verifyReadOnly ? "Rincian Pesanan" : "Verifikasi Rincian Pesanan";
                     proofTitle.textContent = "✅ Bukti Pembayaran";
                     proofUrl = data.payment_proof;
                     document.getElementById('verifyModalTotalAmount').innerHTML =

@@ -76,6 +76,18 @@
                         ? 'bg-blue-600 text-white rounded-l-xl rounded-tr-xl'
                         : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white border dark:border-gray-600 rounded-r-xl rounded-tl-xl'
                     }} px-4 py-2 shadow-sm">
+                        @php
+                            $mediaUrl = $message->media_url
+                                ? asset('storage/' . ltrim(preg_replace('#^(storage/|public/)#', '', $message->media_url), '/'))
+                                : null;
+                        @endphp
+                        @if($mediaUrl && in_array($message->message_type, ['image'], true))
+                            <a href="{{ $mediaUrl }}" target="_blank" rel="noopener">
+                                <img src="{{ $mediaUrl }}" alt="Gambar terlampir"
+                                    class="object-cover w-48 h-auto mb-1 rounded-lg cursor-zoom-in hover:opacity-90"
+                                    loading="lazy">
+                            </a>
+                        @endif
                         <div class="text-sm">{{ $message->content }}</div>
                         <div class="text-xs {{ $outgoing ? 'text-blue-200' : 'text-gray-400' }} mt-1 text-right">
                             {{ $message->created_at->format('H:i') }}
