@@ -28,6 +28,9 @@ class HistoryOrderController extends Controller
         if ($user->hasRole('kurir') && $order->created_by_user_id !== $user->id) {
             return response()->json(['message' => 'Akses ditolak.'], 403);
         }
+        if (!$user->hasRole('admin') && !$user->hasRole('kurir')) {
+            return response()->json(['message' => 'Akses ditolak.'], 403);
+        }
 
         try {
             // Eager load semua relasi yang dibutuhkan untuk modal

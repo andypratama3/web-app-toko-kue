@@ -224,7 +224,9 @@ Route::middleware([
                     // PERBAIKAN: Gunakan Storage::url() untuk menghasilkan URL yang benar
                     // Produk katalog memakai path public/assets/..., bukan storage.
                     'image' => $p->image_path
-                        ? (str_starts_with($p->image_path, 'assets/') ? asset($p->image_path) : Storage::url($p->image_path))
+                        ? (str_starts_with($p->image_path, 'assets/') || str_starts_with($p->image_path, 'http') || str_starts_with($p->image_path, 'public/')
+                            ? asset(ltrim(preg_replace('#^public/#', '', $p->image_path), '/'))
+                            : Storage::url($p->image_path))
                         : null,
                     'variants' => $p->variants->map(fn($v) => ['id' => $v->id, 'name' => $v->name, 'price' => $v->price]),
                 ]);

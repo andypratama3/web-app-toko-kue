@@ -97,4 +97,15 @@ class ReturnOwnershipTest extends TestCase
         $response->assertOk();
         $this->assertEquals('menunggu_retur', $this->orderA->fresh()->status);
     }
+
+    public function test_retur_melebihi_qty_ditolak_422_bukan_500(): void
+    {
+        $response = $this->actingAs($this->kurirA)->postJson(
+            route('kurir.pesanan.requestReturn', $this->orderA->id),
+            ['return_quantities' => [$this->itemKey => 99], 'reason' => 'Alasan retur cukup panjang']
+        );
+
+        $response->assertStatus(422);
+        $this->assertEquals('diterima_pembeli', $this->orderA->fresh()->status);
+    }
 }

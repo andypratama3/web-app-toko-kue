@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\QueryException;
+use Illuminate\Validation\ValidationException;
 
 class ProductController extends Controller
 {
@@ -130,14 +131,17 @@ class ProductController extends Controller
                     // Ini adalah varian LAMA -> UPDATE. Wajib milik produk ini
                     // (cegah IDOR: timpa varian produk cabang lain via ID).
                     $variant = $product->variants()->find($variantData['id']);
-                    if ($variant) {
-                        $variant->update([
-                            'name' => $variantData['name'],
-                            'price' => $variantData['price'],
-                            'is_active' => true,
+                    if (!$variant) {
+                        throw ValidationException::withMessages([
+                            'variants' => 'ID varian tidak valid untuk produk ini.',
                         ]);
-                        $submittedVariantIds[] = (int)$variant->id;
                     }
+                    $variant->update([
+                        'name' => $variantData['name'],
+                        'price' => $variantData['price'],
+                        'is_active' => true,
+                    ]);
+                    $submittedVariantIds[] = (int)$variant->id;
                 } else {
                     // Ini adalah varian BARU -> CREATE
                     $newVariant = $product->variants()->create([

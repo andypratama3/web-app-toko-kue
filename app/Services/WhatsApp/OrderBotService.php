@@ -535,12 +535,14 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             && $candidates->pluck('category.name')->filter()->unique()->count() === 1
         ) {
             // Mis. "mix" → semua di kategori Produk: tampilkan kategorinya.
-            $categoryName = $candidates->first()->category->name;
-            $this->sendProductsByCategory($conversation, $categoryName);
-            $this->advanceState($conversation, OrderBotConversationState::PRODUCT_BROWSING);
-            $conversation->setContext('selected_category', $categoryName);
+            $categoryName = $candidates->first()->category?->name;
+            if ($categoryName) {
+                $this->sendProductsByCategory($conversation, $categoryName);
+                $this->advanceState($conversation, OrderBotConversationState::PRODUCT_BROWSING);
+                $conversation->setContext('selected_category', $categoryName);
 
-            return;
+                return;
+            }
         }
 
         if ($this->matchesIntent($lower, ['tumpeng'])) {
@@ -723,7 +725,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             ->where(function ($q) use ($regionId) {
                 $q->where('region_id', $regionId)->orWhereNull('region_id');
             })
-            ->with(['variants' => fn ($q) => $q->where('is_active', true)->orderBy('price')]);
+            ->with(['category', 'variants' => fn ($q) => $q->where('is_active', true)->orderBy('price')]);
 
         $exact = (clone $base)
             ->where(function ($q) use ($lowerKeyword) {
@@ -737,9 +739,9 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         }
 
         return (clone $base)
-            ->where(function ($q) use ($lowerKeyword) {
-                $q->whereRaw('LOWER(name) LIKE ?', ["%{$lowerKeyword}%"])
-                  ->orWhereRaw('LOWER(tag) LIKE ?', ["%{$lowerKeyword}%"]);
+            ->where(function ($q) use ($escaped) {
+                $q->whereRaw('LOWER(name) LIKE ?', ["%{$escaped}%"])
+                  ->orWhereRaw('LOWER(tag) LIKE ?', ["%{$escaped}%"]);
             })
             ->orderByRaw('LENGTH(name) ASC')
             ->orderBy('id')
@@ -764,6 +766,9 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $variants = $product->variants->where('is_active', true)->sortBy('price')->values();
 
         if ($variants->isEmpty()) {
+            // Bersihkan pilihan agar sesi tidak menunjuk produk mati.
+            $conversation->forgetContext('selected_product_id');
+            $conversation->forgetContext('selected_product_name');
             $this->metaService->sendText($conversation->phone_number,
                 "❌ Produk *{$product->name}* sedang tidak tersedia (tidak ada varian aktif).\n".
                 'Silakan pilih produk lain, atau ketik *PRODUK* untuk melihat katalog.'
@@ -782,7 +787,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             $conversation->setContext('pending_options', $options);
             $qtyText = $quantity > 1 ? " ({$quantity} buah)" : '';
             $this->sendOptionList($conversation, "✅ Produk: *{$product->name}*{$qtyText}\nPilih ukuran/varian:",
-                'Ketik angka pilihan Anda.');
+                'Ketik angka pilihan Anda, atau *BATAL* untuk membatalkan.');
 
             return;
         }
@@ -839,8 +844,11 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
     {
         $options = $conversation->getContext('pending_options') ?? [];
         $choice = 0;
-        // Terima "3", "3.", "3 - Isi 12", dst.
-        if (preg_match('/^(\d{1,2})(?:[\s.\-)]|$)/u', trim($text), $m)) {
+        // Terima "3", "3.", "3 - Isi 12", "pilihan 3", "nomor 3", "no 2".
+        $normalized = trim($text);
+        if (preg_match('/^(?:pilihan|nomor|no\.?)\s*(\d{1,2})/iu', $normalized, $m)) {
+            $choice = (int) $m[1];
+        } elseif (preg_match('/^(\d{1,2})(?:[\s.\-):]|$)/u', $normalized, $m)) {
             $choice = (int) $m[1];
         }
 
@@ -857,7 +865,13 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $quantity = max(1, (int) ($conversation->getContext('product_quantity') ?? 1));
 
         if ($opt['type'] === 'product') {
-            $product = Product::where('is_active', true)->with(['variants' => fn ($q) => $q->where('is_active', true)])->find($opt['id']);
+            $regionId = $conversation->region_id;
+            $product = Product::where('is_active', true)
+                ->where(function ($q) use ($regionId) {
+                    $q->where('region_id', $regionId)->orWhereNull('region_id');
+                })
+                ->with(['variants' => fn ($q) => $q->where('is_active', true)])
+                ->find($opt['id']);
             if (! $product) {
                 $this->metaService->sendText($conversation->phone_number,
                     'Produk tersebut sudah tidak tersedia. Silakan ketik nama produk lain atau *PRODUK* untuk katalog.'
@@ -1101,12 +1115,19 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
         // Jalur lokasi-dulu (cabang → lokasi → metode → slot) bisa sampai sini
         // TANPA produk. Minta produk dulu, jangan ringkasan pincang.
+        // Samakan definisi "ada produk" dengan hilir (order_form): bila hanya
+        // selected_* yang terisi (mis. dari browse katalog), tanam ke order_form.
         $orderForm = $conversation->getContext('order_form') ?? [];
-        if (empty($orderForm['product_name']) && empty($conversation->getContext('selected_product_name'))) {
-            $this->advanceState($conversation, OrderBotConversationState::AWAITING_ORDER_FORM);
-            $this->askOrderForm($conversation);
+        if (empty($orderForm['product_name'])) {
+            $selectedName = $conversation->getContext('selected_product_name');
+            if (empty($selectedName)) {
+                $this->advanceState($conversation, OrderBotConversationState::AWAITING_ORDER_FORM);
+                $this->askOrderForm($conversation);
 
-            return;
+                return;
+            }
+            $orderForm['product_name'] = $selectedName;
+            $conversation->setContext('order_form', $orderForm);
         }
 
         $this->advanceState($conversation, OrderBotConversationState::ORDER_SUMMARY);
@@ -1616,10 +1637,11 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $conversation->setContext('order_form', $formData);
         $conversation->setContext('form_step', 2); // done
 
-        // Jalur lokasi-dulu sudah punya metode+slot: langsung ringkasan,
-        // jangan tanya metode dua kali.
+        // Jalur lokasi-dulu sudah punya metode+slot: sinkronkan alamat &
+        // ongkir dulu (alamat form bisa beda dari pin GPS), lalu ringkasan.
         if (! empty($conversation->getContext('delivery_method'))
             && ! empty($conversation->getContext('delivery_slot'))) {
+            $this->refreshAddressAndOngkir($conversation, $formData);
             $this->advanceState($conversation, OrderBotConversationState::ORDER_SUMMARY);
             $this->sendOrderSummary($conversation);
 
@@ -1627,6 +1649,34 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         }
 
         $this->askDeliveryMethod($conversation);
+    }
+
+    /**
+     * Samakan delivery_address dengan alamat penerima form + hitung ulang
+     * ongkir kurir internal (hindari alamat Surabaya + ongkir Sidoarjo).
+     */
+    protected function refreshAddressAndOngkir(WhatsAppConversation $conversation, array $formData): void
+    {
+        $newAddress = trim($formData['recipient_address'] ?? '');
+        if ($newAddress === '') {
+            return;
+        }
+
+        $conversation->setContext('delivery_address', $newAddress);
+
+        if (($conversation->getContext('delivery_method') ?? null) !== 'internal_courier') {
+            return;
+        }
+
+        $distance = $this->deliveryZoneService->estimateDistanceByAddress($newAddress, $conversation->region_id);
+        $result = $this->deliveryZoneService->calculateOngkir($distance, $conversation->region_id);
+
+        if (! empty($result['needs_escalation'])) {
+            return; // Biarkan eskalasi ditangani alur normal berikutnya.
+        }
+
+        $conversation->setContext('distance_km', $distance);
+        $conversation->setContext('ongkir', $result['ongkir'] ?? 0);
     }
     protected function askDeliveryMethod(WhatsAppConversation $conversation): void
     {
@@ -1695,6 +1745,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             return;
         }
         if (empty($context['delivery_slot'])) {
+            $this->advanceState($conversation, OrderBotConversationState::AWAITING_DELIVERY_SLOT);
             $this->sendSlotOptions($conversation);
 
             return;
@@ -1796,8 +1847,9 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
         try {
             $order = DB::transaction(function () use ($conversation, $form, $context) {
-                // Kunci baris percakapan agar dua FIX bersamaan terserialisasi —
-                // yang kedua melihat confirmed_order_id dan memakai order yang sama.
+                // Kunci baris percakapan agar dua FIX bersamaan terserialisasi:
+                // transaksi kedua antre di row-lock, lalu membaca hasil commit
+                // pertama (ID order asli) dan memakai ulang order yang sama.
                 $locked = WhatsAppConversation::where('id', $conversation->id)->lockForUpdate()->first();
                 $lockedCtx = $locked?->context ?? [];
                 if (! empty($lockedCtx['confirmed_order_id'])
@@ -1874,6 +1926,13 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                         'subtotal' => $subtotal,
                     ]);
                 }
+
+                // ID asli ditulis DI DALAM transaksi yang sama (bukan sesudah
+                // commit) — inilah yang membuat row-lock di atas benar-benar
+                // menutup race double-FIX.
+                $conversation->update(['context' => array_merge(
+                    $lockedCtx, ['confirmed_order_id' => $order->id]
+                )]);
 
                 return $order;
             });

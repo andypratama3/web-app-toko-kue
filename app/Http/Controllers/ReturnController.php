@@ -43,14 +43,24 @@ class ReturnController extends Controller
 
     /**
      * Order retur hanya boleh dipegang kurir yang membuatnya
-     * (created_by_user_id) di region yang sama. Cegah IDOR lintas kurir/cabang.
+     * (created_by_user_id) di region yang sama. Order bot
+     * (created_by_user_id NULL) boleh dipegang kurir mana pun
+     * di region order — kalau tidak, retur order WA mustahil.
+     * Cegah IDOR lintas cabang.
      */
     private function authorizeOrderOwnership(Order $order): ?\Illuminate\Http\JsonResponse
     {
         $user = Auth::user();
-        if (!$user
-            || (int) $order->created_by_user_id !== (int) $user->id
-            || (!is_null($user->region_id) && (int) $order->region_id !== (int) $user->region_id)) {
+        if (!$user) {
+            return response()->json(['message' => 'Tidak terautentikasi.'], 401);
+        }
+
+        $isOwner = (int) $order->created_by_user_id === (int) $user->id;
+        $isSameRegionBotOrder = is_null($order->created_by_user_id)
+            && !is_null($user->region_id)
+            && (int) $order->region_id === (int) $user->region_id;
+
+        if (!$isOwner && !$isSameRegionBotOrder) {
             return response()->json(['message' => 'Pesanan tidak ditemukan.'], 404);
         }
 
@@ -161,6 +171,9 @@ class ReturnController extends Controller
                 'message' => 'Pengajuan pengembalian produk berhasil dikirim.',
                 'order' => $this->formatOrderDetails($order)
             ]);
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Validasi gagal.', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             DB::rollBack();
             \Illuminate\Support\Facades\Log::error('requestReturn failed: ' . $e->getMessage());
@@ -240,8 +253,9 @@ class ReturnController extends Controller
             $file = $request->file('payment_proof');
 
             // 1. Hapus bukti retur lama jika ada (LOGIKA REPLACE)
-            if ($orderReturn->return_proof) {
-                Storage::disk('public')->delete($orderReturn->return_proof);
+            $oldProof = $orderReturn->return_proof;
+            if ($oldProof) {
+                Storage::disk('public')->delete($oldProof);
             }
 
             // 2. Buat nama file baru yang unik dengan timestamp
@@ -254,14 +268,24 @@ class ReturnController extends Controller
             // 3. Simpan file baru menggunakan storeAs
             $path = $file->storeAs($directory, $fileName, 'public');
 
-            // 4. Simpan path file yang benar ke tabel order_returns
-            $orderReturn->return_proof = $path;
-            $orderReturn->save();
+            DB::beginTransaction();
+            try {
+                // 4. Simpan path file yang benar ke tabel order_returns
+                $orderReturn->return_proof = $path;
+                $orderReturn->save();
 
-            // Ubah status di tabel orders.
-            // CATATAN: paid_at TIDAK disentuh — upload bukti retur bukan pelunasan.
-            $order->status = 'menunggu_verifikasi_admin';
-            $order->save();
+                // Ubah status di tabel orders.
+                // CATATAN: paid_at TIDAK disentuh — upload bukti retur bukan pelunasan.
+                $order->status = 'menunggu_verifikasi_admin';
+                $order->save();
+
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+                // Kompensasi: hapus file yatim agar storage tidak menumpuk.
+                Storage::disk('public')->delete($path);
+                throw $e;
+            }
 
             return response()->json([
                 'message' => 'Bukti retur berhasil diunggah.',
@@ -379,11 +403,17 @@ class ReturnController extends Controller
                 'message' => 'Pengajuan retur berhasil diperbarui.',
                 'order' => $this->formatOrderDetails($order)
             ]);
+        } catch (ValidationException $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Validasi gagal.', 'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
             DB::rollBack();
 
             return response()->json([
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan internal. Silakan coba lagi.'
             ], 500);
         }
     }

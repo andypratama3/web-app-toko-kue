@@ -224,6 +224,9 @@ class PesananController extends Controller
                 'customer_id' => 'required|exists:customers,id',
                 'phone' => 'required|string|max:20',
                 'address' => 'required|string',
+                // CATATAN QRIS: bila opsi QRIS diaktifkan lagi di UI (create.blade),
+                // pakai data-value="qris" (bukan "qr") agar lolos whitelist ini.
+                // Bot WA memakai 'qris' juga.
                 'payment_method' => 'required|string|in:cash,tf,qris',
                 'note' => 'nullable|string',
                 'products' => 'required|json',
@@ -240,9 +243,13 @@ class PesananController extends Controller
 
         // Customer harus milik region kurir yang login (sama seperti daftar di create()).
         // Mencegah order atas customer cabang lain via manipulasi customer_id.
+        // Kurir tanpa region tidak boleh checkout sama sekali.
         $loggedInUserId = Auth::id();
         $loggedInUserRegion = Auth::user()->region_id;
-        if (!is_null($loggedInUserRegion) && (int) $customer->region_id !== (int) $loggedInUserRegion) {
+        if (is_null($loggedInUserRegion)) {
+            return response()->json(['message' => 'Akun Anda belum terdaftar di wilayah mana pun. Hubungi admin.'], 422);
+        }
+        if ((int) $customer->region_id !== (int) $loggedInUserRegion) {
             return response()->json(['message' => 'Customer bukan dari wilayah Anda.'], 422);
         }
 
@@ -307,8 +314,15 @@ class PesananController extends Controller
             // Proses produk/item yang dipesan.
             // Harga SELALU diambil ulang dari database (ProductVariant) — harga
             // kiriman klien diabaikan agar tidak bisa dimanipulasi via DevTools.
+            // Produk+varian di-batch SEKALI di luar loop (hindari N+1 dalam transaksi).
             $totalAmount = 0;
             $orderItems = [];
+
+            $wantedProductIds = collect($products)->pluck('product_id')->filter()->unique()->values()->all();
+            $catalog = Product::where('is_active', true)
+                ->whereIn('id', $wantedProductIds)
+                ->with(['variants' => fn ($q) => $q->where('is_active', true)])
+                ->get()->keyBy('id');
 
             foreach ($products as $index => $product) {
                 $row = $index + 1;
@@ -318,7 +332,7 @@ class PesananController extends Controller
                     return response()->json(['message' => "Baris {$row}: jumlah harus bilangan bulat minimal 1."], 422);
                 }
 
-                $dbProduct = Product::where('is_active', true)->find($product['product_id'] ?? null);
+                $dbProduct = $catalog->get($product['product_id'] ?? null);
                 if (!$dbProduct) {
                     DB::rollBack();
                     return response()->json(['message' => "Baris {$row}: produk tidak ditemukan atau sudah nonaktif."], 422);
@@ -337,7 +351,7 @@ class PesananController extends Controller
                     return response()->json(['message' => "Baris {$row} ({$dbProduct->name}): pilih varian/ukuran dulu."], 422);
                 }
 
-                $dbVariant = $dbProduct->variants()->where('is_active', true)->find($variantId);
+                $dbVariant = $dbProduct->variants->firstWhere('id', (int) $variantId);
                 if (!$dbVariant) {
                     DB::rollBack();
                     return response()->json(['message' => "Baris {$row} ({$dbProduct->name}): varian tidak valid atau sudah nonaktif."], 422);
@@ -370,6 +384,18 @@ class PesananController extends Controller
                 'order_id' => $order->id,
                 'invoice_number' => $invoiceNumber,
             ], 200);
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Validasi gagal.', 'errors' => $e->errors()], 422);
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollBack();
+            Log::error('Checkout failed: ' . $e->getMessage());
+            // Tabrakan unique (umumnya invoice duplikat karena race):
+            // cart frontend TIDAK di-reset, user cukup tekan lagi.
+            if (in_array($e->getCode(), ['23000', '1062'], true)) {
+                return response()->json(['message' => 'Pesanan bertabrakan dengan transaksi lain. Silakan tekan simpan sekali lagi.'], 409);
+            }
+            return response()->json(['message' => 'Gagal menyimpan pesanan. Terjadi kesalahan internal.'], 500);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Checkout failed: ' . $e->getMessage());
@@ -668,6 +694,11 @@ class PesananController extends Controller
             $newStatus = $validated['new_status'];
             $updateData = ['status' => $newStatus];
             $currentTime = $this->nowInUserTimezone();
+
+            // Idempoten: retry double-tap setelah sukses bukan error.
+            if ($order->status === $newStatus) {
+                return response()->json(['message' => 'Status pesanan sudah sesuai.'], 200);
+            }
 
             // Logika untuk mencatat timestamp setiap perubahan status.
             // Rantai maju yang diizinkan: baru/dikemas → diambil → diantar → diterima_pembeli.

@@ -371,7 +371,14 @@
                 const response = await fetch(`{{ url('/kurir/customer') }}/${customerId}/last-order`);
 
                 if (!response.ok) {
-                    throw new Error('Gagal mengambil data pesanan terakhir.');
+                    // JANGAN wipe cart: 404 kepemilikan/region bukan berarti cart salah.
+                    // Biarkan isi cart user, cukup beri tahu.
+                    if (response.status === 404) {
+                        showToast('Tidak ada pesanan sebelumnya yang bisa dimuat untuk customer ini.', 'info');
+                    } else {
+                        throw new Error('Gagal mengambil data pesanan terakhir.');
+                    }
+                    return;
                 }
 
                 const data = await response.json();
