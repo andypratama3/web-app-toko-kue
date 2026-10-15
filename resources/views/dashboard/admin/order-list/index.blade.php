@@ -386,6 +386,34 @@
             }
         }
 
+        // Tugaskan order bot (baru, tanpa kurir) ke kurir se-region.
+        async function assignOrder(orderId) {
+            const select = document.getElementById(`assign-courier-${orderId}`);
+            const courierId = select ? select.value : '';
+            if (!courierId) {
+                dispatchToast('Pilih kurir dulu sebelum menugaskan.', 'error');
+                return;
+            }
+            try {
+                const response = await fetch(`/admin/orders/${orderId}/assign`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content'),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ courier_id: courierId })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || 'Terjadi kesalahan');
+
+                dispatchToast(data.message || 'Pesanan ditugaskan.', 'success');
+                setTimeout(() => window.location.reload(), 1200);
+            } catch (error) {
+                dispatchToast(`Gagal menugaskan: ${error.message}`, 'error');
+            }
+        }
+
         // Fungsi untuk menghapus pesanan
         async function deleteOrder(orderId) {
             const modalElement = document.getElementById('deleteConfirmModal');

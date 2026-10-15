@@ -28,7 +28,20 @@ class OrderController extends Controller
         $search = $request->input('search');
 
         $newOrdersCount = Order::where('region_id', $admin->region_id)
-            ->where('status', 'pending')->count();
+            ->where('status', 'baru')->count();
+
+        $orders = $orders->when($search, function ($query, $searchTerm) {
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('invoice_number', 'like', "%{$searchTerm}%")
+                    ->orWhereHas('customer', function ($sub) use ($searchTerm) {
+                        $sub->where('name', 'like', "%{$searchTerm}%")
+                            ->orWhere('company_name', 'like', "%{$searchTerm}%");
+                    })
+                    ->orWhereHas('createdBy', function ($sub) use ($searchTerm) {
+                        $sub->where('name', 'like', "%{$searchTerm}%");
+                    });
+            });
+        })->latest()->get();
 
         foreach ($orders as $order) {
             $order->show_warning = false;
@@ -49,23 +62,45 @@ class OrderController extends Controller
             }
         }
 
-        $orders->when($search, function ($query, $searchTerm) {
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('invoice_number', 'like', "%{$searchTerm}%")
-                    ->orWhereHas('customer', function ($sub) use ($searchTerm) {
-                        $sub->where('name', 'like', "%{$searchTerm}%")
-                            ->orWhere('company_name', 'like', "%{$searchTerm}%");
-                    })
-                    ->orWhereHas('createdBy', function ($sub) use ($searchTerm) {
-                        $sub->where('name', 'like', "%{$searchTerm}%");
-                    });
-            });
-        });
+        // Kurir se-region untuk fitur tugaskan order bot (status baru).
+        $couriers = User::role('kurir')->where('region_id', $admin->region_id)
+            ->orderBy('name')->get(['id', 'name']);
 
+        return view('dashboard.admin.order-list.index', compact('orders', 'newOrdersCount', 'couriers'));
+    }
 
-        $orders = $orders->latest()->get();
+    /**
+     * Tugaskan order bot (status baru, tanpa kurir) ke kurir se-region.
+     * Kurir lalu memprosesnya via alur normal (dikemas → diambil → ...).
+     */
+    public function assign(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'courier_id' => 'required|integer|exists:users,id',
+        ]);
 
-        return view('dashboard.admin.order-list.index', compact('orders', 'newOrdersCount'));
+        $admin = Auth::user();
+        $order = Order::where('region_id', $admin->region_id)
+            ->where('status', 'baru')
+            ->whereNull('created_by_user_id')
+            ->findOrFail($id);
+
+        $courier = User::role('kurir')
+            ->where('id', $validated['courier_id'])
+            ->where('region_id', $admin->region_id)
+            ->first();
+        if (!$courier) {
+            return response()->json(['message' => 'Kurir tidak valid untuk wilayah ini.'], 422);
+        }
+
+        $order->created_by_user_id = $courier->id;
+        $order->status = 'dikemas';
+        $order->save();
+
+        return response()->json([
+            'message' => "Pesanan ditugaskan ke {$courier->name}.",
+            'order_id' => $order->id,
+        ]);
     }
 
     /**

@@ -48,6 +48,23 @@
             @endif
         </td>
         <td data-label="Aksi" class="px-4 py-2">
+            @if ($order->status == 'baru' && is_null($order->created_by_user_id))
+                {{-- Order bot belum bertuan: tugaskan ke kurir se-region --}}
+                <div class="flex items-center gap-1">
+                    <select id="assign-courier-{{ $order->id }}"
+                        class="px-2 py-1 text-xs border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                        <option value="">Pilih kurir…</option>
+                        @foreach (($couriers ?? []) as $courier)
+                            <option value="{{ $courier->id }}">{{ $courier->name }}</option>
+                        @endforeach
+                    </select>
+                    <button type="button"
+                        class="px-3 py-1 text-xs font-bold text-white bg-emerald-600 rounded hover:bg-emerald-700"
+                        onclick="assignOrder({{ $order->id }})">
+                        Tugaskan
+                    </button>
+                </div>
+            @endif
             {{-- Tombol ini akan membuka modal verifikasi --}}
             @if ($order->status == 'selesai' || $order->status == 'menunggu_verifikasi_admin')
                 <button
