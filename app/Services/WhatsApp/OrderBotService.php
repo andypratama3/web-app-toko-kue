@@ -931,6 +931,14 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
     {
         $form = $conversation->getContext('order_form') ?? [];
 
+        // Produk belum ada (mis. sesi basi): mulai dari langkah produk.
+        if (empty($form['product_name']) && empty($conversation->getContext('selected_product_name'))) {
+            $conversation->setContext('form_step', 0);
+            $this->askOrderForm($conversation);
+
+            return;
+        }
+
         $complete = ! empty($form['product_name'])
             && ! empty($form['recipient_name'])
             && ! empty($form['recipient_address'])
@@ -1090,6 +1098,17 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         ];
 
         $conversation->setContext('delivery_slot', $slots[$slot]);
+
+        // Jalur lokasi-dulu (cabang → lokasi → metode → slot) bisa sampai sini
+        // TANPA produk. Minta produk dulu, jangan ringkasan pincang.
+        $orderForm = $conversation->getContext('order_form') ?? [];
+        if (empty($orderForm['product_name']) && empty($conversation->getContext('selected_product_name'))) {
+            $this->advanceState($conversation, OrderBotConversationState::AWAITING_ORDER_FORM);
+            $this->askOrderForm($conversation);
+
+            return;
+        }
+
         $this->advanceState($conversation, OrderBotConversationState::ORDER_SUMMARY);
         $this->sendOrderSummary($conversation);
     }
@@ -1596,6 +1615,17 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $formData['delivery_time'] = $parts[3];
         $conversation->setContext('order_form', $formData);
         $conversation->setContext('form_step', 2); // done
+
+        // Jalur lokasi-dulu sudah punya metode+slot: langsung ringkasan,
+        // jangan tanya metode dua kali.
+        if (! empty($conversation->getContext('delivery_method'))
+            && ! empty($conversation->getContext('delivery_slot'))) {
+            $this->advanceState($conversation, OrderBotConversationState::ORDER_SUMMARY);
+            $this->sendOrderSummary($conversation);
+
+            return;
+        }
+
         $this->askDeliveryMethod($conversation);
     }
     protected function askDeliveryMethod(WhatsAppConversation $conversation): void
@@ -1653,6 +1683,12 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $form = $context['order_form'] ?? [];
 
         // Jangan render/tagihkan ringkasan pincang — kembalikan ke langkah yang hilang.
+        if (empty($form['product_name']) && empty($context['selected_product_name'])) {
+            $this->advanceState($conversation, OrderBotConversationState::AWAITING_ORDER_FORM);
+            $this->askOrderForm($conversation);
+
+            return;
+        }
         if (empty($context['delivery_method'])) {
             $this->askDeliveryMethod($conversation);
 
@@ -1723,8 +1759,18 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $context = $conversation->context ?? [];
         $form = $context['order_form'] ?? [];
 
-        // Guard: konteks tak lengkap (mis. data basi) — jangan buat order pincang.
-        if (empty($context['delivery_method']) || empty($context['delivery_slot']) || empty($form['product_name'])) {
+        // Guard: konteks tak lengkap (mis. data basi) — kembalikan ke
+        // langkah yang hilang, JANGAN lempar balik ke metode membabi buta.
+        if (empty($form['product_name']) && empty($context['selected_product_name'])) {
+            $this->metaService->sendText($conversation->phone_number,
+                'Produk pesanan belum dipilih. Mari pilih produknya dulu.'
+            );
+            $this->advanceState($conversation, OrderBotConversationState::AWAITING_ORDER_FORM);
+            $this->askOrderForm($conversation);
+
+            return;
+        }
+        if (empty($context['delivery_method']) || empty($context['delivery_slot'])) {
             $this->metaService->sendText($conversation->phone_number,
                 'Data pesanan belum lengkap. Mari ulangi dari metode pengiriman.'
             );
@@ -1733,8 +1779,34 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             return;
         }
 
+        // Idempotensi FIX ganda (double-tap / retry Meta): kalau order untuk
+        // sesi ini sudah terbuat, kirim ulang konfirmasinya, JANGAN buat baru.
+        $preConfirmedId = $context['confirmed_order_id'] ?? null;
+        if ($preConfirmedId && ($preOrder = Order::find($preConfirmedId))) {
+            $this->advanceState($conversation, OrderBotConversationState::AWAITING_PAYMENT_PROOF);
+            $this->metaService->sendText($conversation->phone_number,
+                "✅ Pesanan Anda sudah tercatat.\n\n".
+                "Nomor Invoice: *{$preOrder->invoice_number}*\n".
+                'Total: *Rp '.number_format($preOrder->total_amount, 0, ',', '.')."*\n\n".
+                "Silakan kirim bukti pembayaran di sini, atau ketik *SKIP* untuk lanjut."
+            );
+
+            return;
+        }
+
         try {
             $order = DB::transaction(function () use ($conversation, $form, $context) {
+                // Kunci baris percakapan agar dua FIX bersamaan terserialisasi —
+                // yang kedua melihat confirmed_order_id dan memakai order yang sama.
+                $locked = WhatsAppConversation::where('id', $conversation->id)->lockForUpdate()->first();
+                $lockedCtx = $locked?->context ?? [];
+                if (! empty($lockedCtx['confirmed_order_id'])
+                    && ($dup = Order::find($lockedCtx['confirmed_order_id']))) {
+                    $conversation->update(['context' => array_merge($lockedCtx, ['_was_duplicate' => true])]);
+
+                    return $dup;
+                }
+
                 $customer = $this->findOrCreateCustomer($conversation);
 
                 // Check customer category quota
@@ -1814,6 +1886,21 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             }
 
             if (! $order) {
+                return;
+            }
+
+            // Duplikat dari race (terdeteksi di dalam transaksi): jangan
+            // notif ganda, cukup kirim ulang konfirmasi yang sudah ada.
+            if ($conversation->getContext('_was_duplicate')) {
+                $conversation->setContext('_was_duplicate', null);
+                $this->advanceState($conversation, OrderBotConversationState::AWAITING_PAYMENT_PROOF);
+                $this->metaService->sendText($conversation->phone_number,
+                    "✅ Pesanan Anda sudah tercatat (tidak ganda).\n\n".
+                    "Nomor Invoice: *{$order->invoice_number}*\n".
+                    'Total: *Rp '.number_format($order->total_amount, 0, ',', '.')."*\n\n".
+                    "Silakan kirim bukti pembayaran di sini, atau ketik *SKIP* untuk lanjut."
+                );
+
                 return;
             }
 

@@ -51,7 +51,7 @@ class ProductController extends Controller
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'variants' => 'required|array|min:1',
             'variants.*.name' => 'required|string|max:255',
-            'variants.*.price' => 'required|integer|min:0',
+            'variants.*.price' => 'required|integer|min:1|max:100000000',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -105,7 +105,7 @@ class ProductController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'variants' => 'required|array|min:1',
             'variants.*.name' => 'required|string|max:255',
-            'variants.*.price' => 'required|integer|min:0',
+            'variants.*.price' => 'required|integer|min:1|max:100000000',
         ]);
 
         DB::transaction(function () use ($product, $request) {
@@ -127,8 +127,9 @@ class ProductController extends Controller
 
             foreach ($request->variants as $variantData) {
                 if (!empty($variantData['id'])) {
-                    // Ini adalah varian LAMA -> UPDATE
-                    $variant = ProductVariant::find($variantData['id']);
+                    // Ini adalah varian LAMA -> UPDATE. Wajib milik produk ini
+                    // (cegah IDOR: timpa varian produk cabang lain via ID).
+                    $variant = $product->variants()->find($variantData['id']);
                     if ($variant) {
                         $variant->update([
                             'name' => $variantData['name'],

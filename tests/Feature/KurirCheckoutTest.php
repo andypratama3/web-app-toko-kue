@@ -70,7 +70,7 @@ class KurirCheckoutTest extends TestCase
             'customer_id' => $this->customer->id,
             'phone' => $this->customer->phone,
             'address' => $this->customer->address,
-            'payment_method' => 'COD',
+            'payment_method' => 'cash',
             'products' => json_encode($products),
         ], $overrides);
     }
@@ -185,5 +185,75 @@ class KurirCheckoutTest extends TestCase
         )->assertOk();
 
         $this->assertEquals(2, Order::distinct('invoice_number')->count('invoice_number'));
+    }
+
+    public function test_payment_method_tidak_valid_ditolak(): void
+    {
+        $response = $this->actingAs($this->kurir)->postJson(
+            route('kurir.orders.checkout'),
+            $this->checkoutPayload([$this->item(1, 9000)], ['payment_method' => 'bon'])
+        );
+
+        $response->assertStatus(422);
+        $this->assertEquals(0, Order::count());
+    }
+
+    public function test_status_harus_maju_berurutan(): void
+    {
+        $this->actingAs($this->kurir)->postJson(
+            route('kurir.orders.checkout'), $this->checkoutPayload([$this->item(1, 9000)])
+        )->assertOk();
+        $order = Order::first();
+
+        // Lompat baru -> diantar ditolak
+        $this->actingAs($this->kurir)->postJson(
+            route('kurir.pesanan.updateStatus', $order->id), ['new_status' => 'diantar']
+        )->assertStatus(400);
+
+        // Rantai benar lolos
+        $this->actingAs($this->kurir)->postJson(
+            route('kurir.pesanan.updateStatus', $order->id), ['new_status' => 'diambil']
+        )->assertOk();
+        $this->actingAs($this->kurir)->postJson(
+            route('kurir.pesanan.updateStatus', $order->id), ['new_status' => 'diantar']
+        )->assertOk();
+        $this->actingAs($this->kurir)->postJson(
+            route('kurir.pesanan.updateStatus', $order->id), ['new_status' => 'diterima_pembeli']
+        )->assertOk();
+
+        // Mundur ditolak
+        $this->actingAs($this->kurir)->postJson(
+            route('kurir.pesanan.updateStatus', $order->id), ['new_status' => 'diambil']
+        )->assertStatus(400);
+    }
+
+    public function test_last_order_customer_kurir_lain_ditolak(): void
+    {
+        $kurirB = User::create([
+            'name' => 'Kurir B', 'email' => 'kurirb@test.com',
+            'password' => bcrypt('password'), 'region_id' => $this->region->id,
+        ]);
+        $kurirB->assignRole('kurir');
+        $customerB = Customer::create([
+            'name' => 'Milik B', 'address' => 'Jl. X', 'phone' => '0812000009',
+            'region_id' => $this->region->id, 'added_by_user_id' => $kurirB->id,
+        ]);
+
+        $this->actingAs($this->kurir)->getJson(
+            route('kurir.customer.lastOrder', $customerB->id)
+        )->assertStatus(404);
+    }
+
+    public function test_last_order_customer_sendiri_boleh(): void
+    {
+        $this->actingAs($this->kurir)->postJson(
+            route('kurir.orders.checkout'), $this->checkoutPayload([$this->item(1, 9000)])
+        )->assertOk();
+
+        $response = $this->actingAs($this->kurir)->getJson(
+            route('kurir.customer.lastOrder', $this->customer->id)
+        );
+        $response->assertOk();
+        $this->assertCount(1, $response->json('items'));
     }
 }

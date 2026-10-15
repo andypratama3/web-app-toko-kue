@@ -41,9 +41,43 @@ class ReturnController extends Controller
     }
     // [!code block:end]
 
+    /**
+     * Order retur hanya boleh dipegang kurir yang membuatnya
+     * (created_by_user_id) di region yang sama. Cegah IDOR lintas kurir/cabang.
+     */
+    private function authorizeOrderOwnership(Order $order): ?\Illuminate\Http\JsonResponse
+    {
+        $user = Auth::user();
+        if (!$user
+            || (int) $order->created_by_user_id !== (int) $user->id
+            || (!is_null($user->region_id) && (int) $order->region_id !== (int) $user->region_id)) {
+            return response()->json(['message' => 'Pesanan tidak ditemukan.'], 404);
+        }
+
+        return null;
+    }
+
+    /**
+     * Validasi key "product_id-variant_id" dari payload retur.
+     *
+     * @return array{0: string, 1: string}|null
+     */
+    private function parseReturnKey(string $key): ?array
+    {
+        if (!preg_match('/^(\d+)-(\d+)$/', $key, $m)) {
+            return null;
+        }
+
+        return [$m[1], $m[2]];
+    }
+
 
     public function requestReturn(Request $request, Order $order)
     {
+        if ($denied = $this->authorizeOrderOwnership($order)) {
+            return $denied;
+        }
+
         $validated = $request->validate([
             'return_quantities' => 'required|array|min:1',
             'return_quantities.*' => 'required|integer|min:1',
@@ -81,7 +115,8 @@ class ReturnController extends Controller
             foreach ($validated['return_quantities'] as $key => $quantity) {
                 if ($quantity <= 0) continue;
 
-                if (!isset($orderItems[$key])) {
+                $parsed = $this->parseReturnKey((string) $key);
+                if (!$parsed || !isset($orderItems[$key])) {
                     throw ValidationException::withMessages(['return_quantities' => "Produk dengan key '{$key}' tidak ditemukan."]);
                 }
 
@@ -93,7 +128,7 @@ class ReturnController extends Controller
                     throw ValidationException::withMessages(['return_quantities' => "Jumlah retur untuk '{$orderItem->product_name}' melebihi jumlah pembelian."]);
                 }
 
-                list($productId, $variantId) = explode('-', $key);
+                [$productId, $variantId] = $parsed;
 
                 // DIUBAH: Mengambil harga dari $orderItem
                 $price = $orderItem->price;
@@ -128,7 +163,8 @@ class ReturnController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
+            \Illuminate\Support\Facades\Log::error('requestReturn failed: ' . $e->getMessage());
+            return response()->json(['message' => 'Terjadi kesalahan internal. Silakan coba lagi.'], 500);
         }
     }
 
@@ -183,6 +219,10 @@ class ReturnController extends Controller
     // Fungsi untuk mengunggah bukti retur
     public function uploadReturnProof(Request $request, Order $order)
     {
+        if ($denied = $this->authorizeOrderOwnership($order)) {
+            return $denied;
+        }
+
         $request->validate([
             // Nama 'payment_proof' berasal dari input form HTML, jadi tidak perlu diubah
             'payment_proof' => 'required|file|mimes:jpg,jpeg,png|max:2048',
@@ -218,11 +258,8 @@ class ReturnController extends Controller
             $orderReturn->return_proof = $path;
             $orderReturn->save();
 
-            // Ubah status di tabel orders
-            // [!code block:start]
-            // PERBAIKAN: Menggunakan helper untuk mendapatkan waktu regional
-            $order->paid_at = $this->nowInUserTimezone();
-            // [!code block:end]
+            // Ubah status di tabel orders.
+            // CATATAN: paid_at TIDAK disentuh — upload bukti retur bukan pelunasan.
             $order->status = 'menunggu_verifikasi_admin';
             $order->save();
 
@@ -239,6 +276,9 @@ class ReturnController extends Controller
 
     public function editReturn(Request $request, Order $order)
     {
+        if ($denied = $this->authorizeOrderOwnership($order)) {
+            return $denied;
+        }
 
         $validated = $request->validate([
             'order_return_id' => 'required|exists:order_returns,id',
@@ -269,11 +309,13 @@ class ReturnController extends Controller
                 ->keyBy(fn($item) => $item->product_id . '-' . ($item->variant_id ?? 0));
 
             $totalAmountReturned = 0;
+            $wantedKeys = [];
 
             foreach ($validated['return_quantities'] as $key => $quantity) {
                 if ($quantity <= 0) continue;
 
-                if (!isset($orderItems[$key])) {
+                $parsed = $this->parseReturnKey((string) $key);
+                if (!$parsed || !isset($orderItems[$key])) {
                     throw ValidationException::withMessages([
                         'return_quantities' => "Produk dengan key '{$key}' tidak ditemukan."
                     ]);
@@ -288,7 +330,9 @@ class ReturnController extends Controller
                     ]);
                 }
 
-                [$productId, $variantId] = explode('-', $key);
+                [$productId, $variantId] = $parsed;
+                $variantKey = $variantId === '0' ? null : $variantId;
+                $wantedKeys[] = $productId . '-' . ($variantKey ?? 'null');
 
                 $price = $orderItem->price;
                 $subtotal = $price * $quantity;
@@ -298,7 +342,7 @@ class ReturnController extends Controller
                 $orderReturn->returnedProducts()->updateOrCreate(
                     [
                         'product_id' => $productId,
-                        'product_variant_id' => $variantId == '0' ? null : $variantId,
+                        'product_variant_id' => $variantKey,
                     ],
                     [
                         'quantity' => $quantity,
@@ -307,6 +351,15 @@ class ReturnController extends Controller
                     ]
                 );
             }
+
+            // Hapus baris retur yang dikeluarkan user saat edit agar
+            // SUM(baris) selalu sama dengan total_amount_returned.
+            $orderReturn->returnedProducts()->get()->each(function ($row) use ($wantedKeys) {
+                $rowKey = $row->product_id . '-' . ($row->product_variant_id ?? 'null');
+                if (!in_array($rowKey, $wantedKeys, true)) {
+                    $row->delete();
+                }
+            });
 
             // ================= UPDATE TOTAL =================
             $orderReturn->update([

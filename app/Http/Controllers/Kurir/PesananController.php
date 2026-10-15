@@ -224,7 +224,7 @@ class PesananController extends Controller
                 'customer_id' => 'required|exists:customers,id',
                 'phone' => 'required|string|max:20',
                 'address' => 'required|string',
-                'payment_method' => 'required|string',
+                'payment_method' => 'required|string|in:cash,tf,qris',
                 'note' => 'nullable|string',
                 'products' => 'required|json',
                 'payment_proof' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -669,26 +669,26 @@ class PesananController extends Controller
             $updateData = ['status' => $newStatus];
             $currentTime = $this->nowInUserTimezone();
 
-            // Logika untuk mencatat timestamp setiap perubahan status
+            // Logika untuk mencatat timestamp setiap perubahan status.
+            // Rantai maju yang diizinkan: baru/dikemas → diambil → diantar → diterima_pembeli.
+            // Status retur/admin/terminal TIDAK boleh diubah kurir dari sini.
+            $allowedFrom = [
+                'diambil' => ['baru', 'dikemas'],
+                'diantar' => ['diambil'],
+                'diterima_pembeli' => ['diantar'],
+            ];
+            if (!in_array($order->status, $allowedFrom[$newStatus] ?? [], true)) {
+                return response()->json(['message' => "Status \"{$order->status}\" tidak dapat diubah ke \"{$newStatus}\". Ikuti alur pengiriman yang benar."], 400);
+            }
             switch ($newStatus) {
                 case 'diambil':
-                    // Mencegah status diubah mundur
-                    if (in_array($order->status, ['diantar', 'diterima_pembeli', 'selesai'])) {
-                        return response()->json(['message' => 'Status tidak dapat diubah kembali ke "Diambil".'], 400);
-                    }
                     if (is_null($order->picked_up_at)) $updateData['picked_up_at'] = $currentTime;
                     break;
                 case 'diantar':
-                    if (in_array($order->status, ['diterima_pembeli', 'selesai'])) {
-                        return response()->json(['message' => 'Status tidak dapat diubah kembali ke "Diantar".'], 400);
-                    }
                     if (is_null($order->picked_up_at)) $updateData['picked_up_at'] = $currentTime;
                     if (is_null($order->delivered_at)) $updateData['delivered_at'] = $currentTime;
                     break;
                 case 'diterima_pembeli':
-                    if ($order->status === 'selesai') {
-                        return response()->json(['message' => 'Status sudah "Selesai".'], 400);
-                    }
                     if (is_null($order->picked_up_at)) $updateData['picked_up_at'] = $currentTime;
                     if (is_null($order->delivered_at)) $updateData['delivered_at'] = $currentTime;
                     if (is_null($order->received_by_buyer_at)) $updateData['received_by_buyer_at'] = $currentTime;
@@ -730,6 +730,20 @@ class PesananController extends Controller
      */
     public function getLastOrder($id)
     {
+        if (!Auth::check()) {
+            return response()->json(['message' => 'Tidak terautentikasi'], 401);
+        }
+
+        // Customer harus milik kurir ini (region + yang mendaftarkan) —
+        // cegah intip riwayat belanja customer kurir/cabang lain.
+        $customer = Customer::where('id', $id)
+            ->where('region_id', Auth::user()->region_id)
+            ->where('added_by_user_id', Auth::id())
+            ->first();
+        if (!$customer) {
+            return response()->json(['message' => 'Customer tidak ditemukan.'], 404);
+        }
+
         // Cari pesanan terakhir berdasarkan customer ID
         $lastOrder = Order::where('customer_id', $id)->latest()->first();
 

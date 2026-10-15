@@ -104,9 +104,13 @@ class HistoryOrderController extends Controller
         }
     }
 
-    public function downloadInvoice($orderId)
+    /**
+     * Scope invoice ke region admin / milik kurir — sama seperti details().
+     */
+    private function findScopedOrder($orderId)
     {
-        $order = \App\Models\Order::with([
+        $user = Auth::user();
+        $query = \App\Models\Order::with([
             'customer',
             'createdBy',
             'items',
@@ -115,7 +119,21 @@ class HistoryOrderController extends Controller
             },
             'returns.returnedProducts.product',
             'returns.returnedProducts.variant',
-        ])->findOrFail($orderId);
+        ]);
+        if ($user && $user->hasRole('admin')) {
+            $query->where('region_id', $user->region_id);
+        } elseif ($user && $user->hasRole('kurir')) {
+            $query->where('created_by_user_id', $user->id);
+        } else {
+            abort(403, 'Akses ditolak.');
+        }
+
+        return $query->findOrFail($orderId);
+    }
+
+    public function downloadInvoice($orderId)
+    {
+        $order = $this->findScopedOrder($orderId);
         $isPdf = true;
         $pdf = \PDF::loadView('dashboard.admin.historys.invoice', compact('order', 'isPdf'))
             ->setPaper('A4', 'portrait')
@@ -170,16 +188,7 @@ class HistoryOrderController extends Controller
 
     public function invoice($orderId)
     {
-        $order = \App\Models\Order::with([
-            'customer',
-            'createdBy',
-            'items',
-            'returns' => function ($query) {
-                $query->where('status', '!=', 'ditolak')->latest();
-            },
-            'returns.returnedProducts.product',
-            'returns.returnedProducts.variant',
-        ])->findOrFail($orderId);
+        $order = $this->findScopedOrder($orderId);
         $isPdf = false;
         return view('dashboard.admin.historys.invoice', compact('order', 'isPdf'));
     }

@@ -261,7 +261,9 @@ class OrderController extends Controller
     {
         $start = $request->input('start');
         $end = $request->input('end');
-        $order = Order::with('items','customer')->findOrFail($id);
+        $order = Order::with('items','customer')
+            ->where('region_id', Auth::user()->region_id)
+            ->findOrFail($id);
         if ($order->channel !== 'whatsapp' || $order->status !== 'diverifikasi_admin') {
             abort(403, 'Rekap hanya untuk pesanan bot yang sudah diverifikasi.');
         }

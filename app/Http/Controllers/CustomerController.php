@@ -263,7 +263,9 @@ class CustomerController extends Controller
             return redirect()->route($routeName)->withErrors($validator)->withInput()->with('error', 'Gagal memperbarui data. ' . $validator->errors()->first());
         }
 
-        $customer->update($request->all());
+        // Hanya kolom yang divalidasi — region_id/added_by_user_id TIDAK boleh
+        // diubah via mass assignment (cegah pindah cabang/pemilik).
+        $customer->update($validator->validated());
         return redirect()->route($routeName)->with('success', 'Data customer "' . $customer->name . '" berhasil diperbarui.');
     }
 
