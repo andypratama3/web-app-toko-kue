@@ -100,7 +100,7 @@ class OrderBotLocationFirstFlowTest extends TestCase
         // Langkah produk (satu varian → langsung form gabungan)
         $this->bot->handleMessage($conversation, 'Kue Ijo');
         // Langkah data penerima
-        $this->bot->handleMessage($conversation, 'Shinta | Jl. Mawar 10 | 20 Okt 2026 | 10:00');
+        $this->bot->handleMessage($conversation, 'Shinta | Jl. Mawar 10 | 20 Okt 2026');
 
         $conversation->refresh();
         $this->assertEquals(
@@ -119,7 +119,7 @@ class OrderBotLocationFirstFlowTest extends TestCase
         $conversation->update(['current_state' => OrderBotConversationState::AWAITING_ORDER_FORM->value]);
 
         $this->bot->handleMessage($conversation, 'Kue Ijo');
-        $this->bot->handleMessage($conversation, 'Shinta | Jl. Mawar 10 | 20 Okt 2026 | 10:00');
+        $this->bot->handleMessage($conversation, 'Shinta | Jl. Mawar 10 | 20 Okt 2026');
         $this->bot->handleMessage($conversation, 'FIX');
 
         $this->assertEquals(1, Order::count());
@@ -138,7 +138,7 @@ class OrderBotLocationFirstFlowTest extends TestCase
         $conversation->update(['current_state' => OrderBotConversationState::AWAITING_ORDER_FORM->value]);
 
         $this->bot->handleMessage($conversation, 'Kue Ijo');
-        $this->bot->handleMessage($conversation, 'Shinta | Jl. Mawar 10 | 20 Okt 2026 | 10:00');
+        $this->bot->handleMessage($conversation, 'Shinta | Jl. Mawar 10 | 20 Okt 2026');
         $this->bot->handleMessage($conversation, 'FIX');
 
         // Simulasi double-tap / retry: kembali ke summary lalu FIX lagi.

@@ -165,6 +165,8 @@ class OrderController extends Controller
 
     /**
      * Verifikasi pesanan (ubah status menjadi diverifikasi_admin).
+     * Disertai bukti: retur wajib ada return_proof, non-retur wajib
+     * ada payment_proof (termasuk cash — kurir wajib foto bukti terima).
      */
     public function verify($id)
     {
@@ -173,6 +175,15 @@ class OrderController extends Controller
         $order = Order::where('region_id', $admin->region_id)
             ->whereIn('status', ['selesai', 'menunggu_verifikasi_admin']) // Perbaikan di sini
             ->findOrFail($id);
+
+        $activeReturn = $order->returns()->where('status', '!=', 'ditolak')->latest()->first();
+        if ($activeReturn) {
+            if (empty($activeReturn->return_proof)) {
+                return response()->json(['message' => 'Belum ada bukti retur. Minta kurir mengunggah bukti retur dulu.'], 422);
+            }
+        } elseif (empty($order->payment_proof)) {
+            return response()->json(['message' => 'Belum ada bukti pembayaran. Minta kurir mengunggah bukti dulu.'], 422);
+        }
 
         $order->status = 'diverifikasi_admin';
         $order->save();

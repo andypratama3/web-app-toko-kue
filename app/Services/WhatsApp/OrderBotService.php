@@ -655,7 +655,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
     }
 
     /**
-     * Langkah 1/2: nama produk (+ jumlah opsional, mis. "2x Tumpeng Mini").
+     * Langkah 1: nama produk (+ jumlah opsional, mis. "2x Tumpeng Mini").
      *
      * Produk divalidasi LANGSUNG di sini (tidak menunggu akhir alur) agar
      * salah ketik langsung ketahuan. Bila cocok >1 produk / >1 varian,
@@ -798,7 +798,8 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
     }
 
     /**
-     * Prompt langkah 2/2 (data penerima) — satu pintu agar pesannya konsisten.
+     * Prompt langkah 2 (data penerima) — satu pintu agar pesannya konsisten.
+     * Hanya 3 isian; jam pengiriman diatur lewat pilihan slot (tidak dobel tanya).
      */
     protected function askCombinedForm(WhatsAppConversation $conversation, string $productName, int $quantity): void
     {
@@ -807,7 +808,11 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
         $qtyText = $quantity > 1 ? " ({$quantity} buah)" : '';
         $this->metaService->sendText($conversation->phone_number,
-            "✅ Produk: *{$productName}*{$qtyText}\n\nSilakan isi semua data pesanan dalam 1 pesan (pisahkan dengan |):\nNama Penerima | Alamat Lengkap | Tanggal Kirim ({$this->orderExampleDate()}) | Jam Tiba (10:00)"
+            "✅ Produk: *{$productName}*{$qtyText}\n\n".
+            "Langkah 2 — balas dalam 1 pesan (pisahkan dengan | ):\n".
+            "Nama Penerima | Alamat Lengkap | Tanggal Kirim\n\n".
+            "Contoh:\nShinta | Jl. Mawar No 10 Surabaya | {$this->orderExampleDate()}\n\n".
+            "Jam pengiriman dipilih setelah ini lewat slot waktu."
         );
     }
 
@@ -956,8 +961,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $complete = ! empty($form['product_name'])
             && ! empty($form['recipient_name'])
             && ! empty($form['recipient_address'])
-            && ! empty($form['delivery_date'])
-            && ! empty($form['delivery_time']);
+            && ! empty($form['delivery_date']);
 
         if ($complete) {
             $this->askDeliveryMethod($conversation);
@@ -967,7 +971,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
         $conversation->setContext('form_step', 1);
         $this->metaService->sendText($conversation->phone_number,
-            "Data pesanan belum lengkap. Silakan isi semua dalam 1 pesan (pisahkan dengan |):\nNama Penerima | Alamat Lengkap | Tanggal Kirim | Jam Tiba"
+            "Data pesanan belum lengkap. Balas dalam 1 pesan (pisahkan dengan | ):\nNama Penerima | Alamat Lengkap | Tanggal Kirim"
         );
     }
 
@@ -1338,7 +1342,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                 ? 'Pilih nomor dari daftar yang ditampilkan (atau ketik *BATAL* untuk membatalkan).'
                 : match ($formStep) {
                     0 => 'Isi nama produk yang ingin dipesan (contoh: Tumpeng Mini, atau 2x Tumpeng Mini).',
-                    1 => 'Isi semua dalam 1 pesan dipisah | : Nama Penerima | Alamat Lengkap | Tanggal Kirim | Jam Tiba.',
+                    1 => 'Balas dalam 1 pesan dipisah | : Nama Penerima | Alamat Lengkap | Tanggal Kirim. (Jam diatur via slot waktu.)',
                     default => 'Pilih metode pengiriman (1 Diambil Sendiri / 2 Grab/GoSend / 3 Kurir Internal).',
                 },
             OrderBotConversationState::MENU_SELECTION => 'Pilih kategori (Tumpeng / Hampers / Ala Carte) atau ketik nama produk.',
@@ -1580,7 +1584,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                 $this->metaService->sendText($conversation->phone_number,
                     "Produk *{$selectedProduct}* sudah tidak tersedia.\n\n".
                     "📝 *FORMULIR PESANAN*\n\n".
-                    "Langkah 1/2: Nama produk yang ingin dipesan?\n".
+                    "Langkah 1: Nama produk yang ingin dipesan?\n".
                     '(tambah jumlah di depan bila >1, contoh: *2x Tumpeng Mini*)'
                 );
 
@@ -1594,7 +1598,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
             $this->metaService->sendText($conversation->phone_number,
                 "📝 *FORMULIR PESANAN*\n\n".
-                "Langkah 1/2: Nama produk yang ingin dipesan?\n".
+                "Langkah 1: Nama produk yang ingin dipesan?\n".
                 '(tambah jumlah di depan bila >1, contoh: *2x Tumpeng Mini*)'
             );
         }
@@ -1606,23 +1610,24 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $parts = array_map('trim', explode('|', $text));
 
         // Kelebihan segmen (mis. "|" di dalam alamat) digabung ke alamat.
-        if (count($parts) > 4) {
-            $parts = [$parts[0], implode(' | ', array_slice($parts, 1, -2)), $parts[count($parts) - 2], $parts[count($parts) - 1]];
+        // Format: Nama | Alamat | Tanggal (jam diatur via pilihan slot).
+        if (count($parts) > 3) {
+            $parts = [$parts[0], implode(' | ', array_slice($parts, 1, -1)), $parts[count($parts) - 1]];
         }
 
-        $labels = ['Nama Penerima', 'Alamat Lengkap', 'Tanggal Kirim', 'Jam Tiba'];
-        if (count($parts) < 4) {
+        $labels = ['Nama Penerima', 'Alamat Lengkap', 'Tanggal Kirim'];
+        if (count($parts) < 3) {
             $this->metaService->sendText($conversation->phone_number,
-                "❌ Format belum lengkap (butuh 4 bagian). Contoh:\nShinta | Jl. Mawar No 10 Surabaya | 12 Okt 2026 | 10:00"
+                "❌ Format belum lengkap (butuh 3 bagian dipisah | ). Contoh:\nShinta | Jl. Mawar No 10 Surabaya | {$this->orderExampleDate()}"
             );
 
             return;
         }
 
-        foreach (array_slice($parts, 0, 4) as $i => $value) {
+        foreach (array_slice($parts, 0, 3) as $i => $value) {
             if ($value === '') {
                 $this->metaService->sendText($conversation->phone_number,
-                    "❌ *{$labels[$i]}* masih kosong. Contoh lengkap:\nShinta | Jl. Mawar No 10 Surabaya | 12 Okt 2026 | 10:00"
+                    "❌ *{$labels[$i]}* masih kosong. Contoh lengkap:\nShinta | Jl. Mawar No 10 Surabaya | {$this->orderExampleDate()}"
                 );
 
                 return;
@@ -1633,7 +1638,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $formData['recipient_name'] = $parts[0];
         $formData['recipient_address'] = $parts[1];
         $formData['delivery_date'] = $parts[2];
-        $formData['delivery_time'] = $parts[3];
+        unset($formData['delivery_time']); // Jam diatur via slot, bukan form.
         $conversation->setContext('order_form', $formData);
         $conversation->setContext('form_step', 2); // done
 
@@ -1714,7 +1719,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
     {
         $this->metaService->sendReplyButtons(
             $conversation->phone_number,
-            "🕐 *Pilih Slot Waktu Pengiriman*\n\n".
+            "🕐 *Pilih Jam Pengiriman*\n\n".
             "1️⃣ 09:00 - 11:00\n".
             "2️⃣ 11:00 - 13:00\n".
             '3️⃣ 13:00 - 17:00',
@@ -1755,7 +1760,6 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $recipientName = $form['recipient_name'] ?? '-';
         $address = $form['recipient_address'] ?? $context['delivery_address'] ?? '-';
         $date = $form['delivery_date'] ?? '-';
-        $time = $form['delivery_time'] ?? '-';
         $slot = $context['delivery_slot'] ?? '-';
         $method = $context['delivery_method'] ?? '-';
         $ongkir = $context['ongkir'] ?? 0;
@@ -1799,7 +1803,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $text .= "Penerima: {$recipientName}\n";
         $text .= "Alamat: {$address}\n";
         $text .= "Tanggal: {$date}\n";
-        $text .= "Jam: {$time} (slot {$slot})\n\n";
+        $text .= "Jam pengiriman: slot {$slot}\n\n";
         $text .= 'Ketik *FIX* untuk konfirmasi, atau *BATAL* untuk membatalkan.';
 
         $this->metaService->sendText($conversation->phone_number, $text);
@@ -1904,7 +1908,6 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                     'payment_method' => 'qris',
                     'note' => 'Penerima: ' . ($form['recipient_name'] ?? '-') . "\n".
                               'Tanggal kirim: ' . ($form['delivery_date'] ?? '-') . "\n".
-                              'Jam kirim: ' . ($form['delivery_time'] ?? '-') . "\n".
                               'Slot: ' . ($context['delivery_slot'] ?? '-') . "\n".
                               'Metode: ' . ($context['delivery_method'] ?? '-') . "\n".
                               (isset($context['distance_km']) ? "Jarak: {$context['distance_km']}km\n" : ''),

@@ -245,6 +245,10 @@
             returnedProductsSection.classList.add('hidden');
             proofImageContainer.classList.add('hidden');
             noProofContainer.classList.add('hidden');
+            const btnVerifyReset = document.getElementById('btnVerifyOrder');
+            btnVerifyReset.disabled = false;
+            btnVerifyReset.classList.remove('opacity-50', 'cursor-not-allowed');
+            btnVerifyReset.title = '';
 
             try {
                 const response = await fetch(`/admin/orders/${orderId}/details`);
@@ -330,13 +334,21 @@
                 }
 
                 // Tampilkan gambar jika URL ada, jika tidak, tampilkan pesan "Tidak ada bukti"
+                // + kunci tombol verifikasi: tanpa bukti, tombol DISABLED (server juga menolak).
+                const btnVerify = document.getElementById('btnVerifyOrder');
                 if (proofUrl) {
                     proofImage.src = proofUrl; // Langsung gunakan URL dari backend
                     proofImage.alt = data.return_details ? 'Bukti Retur' : 'Bukti Pembayaran';
                     proofImageContainer.classList.remove('hidden');
                     proofImage.onclick = () => showVerifyModalZoom(proofUrl);
+                    btnVerify.disabled = false;
+                    btnVerify.classList.remove('opacity-50', 'cursor-not-allowed');
+                    btnVerify.title = '';
                 } else {
                     noProofContainer.classList.remove('hidden');
+                    btnVerify.disabled = true;
+                    btnVerify.classList.add('opacity-50', 'cursor-not-allowed');
+                    btnVerify.title = 'Belum ada bukti — minta kurir mengunggah dulu';
                 }
 
                 loader.classList.add('hidden');
