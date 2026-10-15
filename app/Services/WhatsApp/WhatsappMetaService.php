@@ -110,6 +110,24 @@ class WhatsappMetaService
 
     public function sendReplyButtons(string $to, string $bodyText, array $buttons, ?string $footerText = null, ?string $phoneNumberId = null): ?string
     {
+        // Meta menolak 0 atau >3 tombol (error 131009). Fallback ke teks
+        // bernomor agar user tidak stuck tanpa balasan.
+        if (count($buttons) < 1 || count($buttons) > 3) {
+            $lines = [];
+            foreach (array_slice($buttons, 0, 20) as $i => $btn) {
+                $lines[] = ($i + 1) . '. ' . ($btn['title'] ?? $btn['id']);
+            }
+            $fallback = $bodyText;
+            if ($lines !== []) {
+                $fallback .= "\n\n" . implode("\n", $lines);
+            }
+            if ($footerText) {
+                $fallback .= "\n\n" . $footerText;
+            }
+
+            return $this->sendText($to, $fallback, true, $phoneNumberId);
+        }
+
         $payload = [
             'messaging_product' => 'whatsapp',
             'to' => $to,
