@@ -385,6 +385,25 @@ $isPdf = request()->routeIs('admin.historys.download');
         @endif
         @endif
 
+        @php
+            $proofPath = $order->payment_proof ? preg_replace('#^(storage/|public/)#', '', $order->payment_proof) : null;
+            $proofExists = $proofPath && file_exists(public_path('storage/' . $proofPath));
+        @endphp
+        <div style="margin-top:10px;">
+            <div style="font-weight:bold;font-size:10px;margin-bottom:4px;">Bukti Pembayaran ({{ ucfirst($order->payment_method ?? '-') }}):</div>
+            @if($proofExists)
+                @if($isPdf)
+                    <img src="{{ public_path('storage/' . $proofPath) }}" style="max-width:320px;border:1px solid #000;" alt="Bukti Pembayaran">
+                @else
+                    <a href="{{ asset('storage/' . $proofPath) }}" target="_blank" rel="noopener">
+                        <img src="{{ asset('storage/' . $proofPath) }}" style="max-width:320px;border:1px solid #ccc;border-radius:8px;" alt="Bukti Pembayaran">
+                    </a>
+                @endif
+            @else
+                <div style="font-size:10px;color:#888;">Belum ada bukti pembayaran terlampir.</div>
+            @endif
+        </div>
+
         <!-- Footer -->
         <div @if($isPdf) class="footer-signature text-left" @else class="mt-6 text-left" @endif>
             <p>Hormat Kami,<br>Dian</p>
