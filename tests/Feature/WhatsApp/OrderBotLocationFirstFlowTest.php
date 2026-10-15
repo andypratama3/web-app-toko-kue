@@ -147,4 +147,48 @@ class OrderBotLocationFirstFlowTest extends TestCase
 
         $this->assertEquals(1, Order::count());
     }
+
+    public function test_tanggal_lewat_ditolak_diminta_ulang(): void
+    {
+        $conversation = $this->makeConversation([]);
+        $conversation->update(['current_state' => OrderBotConversationState::AWAITING_ORDER_FORM->value]);
+
+        $this->bot->handleMessage($conversation, 'Kue Ijo');
+        $this->bot->handleMessage($conversation, 'Shinta | Jl. Mawar 10 | kemarin');
+
+        $conversation->refresh();
+        // Tetap di form (tidak lanjut), tanggal tidak tersimpan.
+        $this->assertEquals(1, $conversation->getContext('form_step'));
+        $this->assertArrayNotHasKey('recipient_name', $conversation->getContext('order_form') ?? []);
+    }
+
+    public function test_bahasa_natural_metode_dan_slot_diterima(): void
+    {
+        $conversation = $this->makeConversation([]);
+        $conversation->update(['current_state' => OrderBotConversationState::AWAITING_DELIVERY_METHOD->value]);
+
+        $this->bot->handleMessage($conversation, 'kurir internal');
+
+        $conversation->refresh();
+        $this->assertEquals('internal_courier', $conversation->getContext('delivery_method'));
+    }
+
+    public function test_batal_pasca_fix_membatalkan_ghost_order(): void
+    {
+        $conversation = $this->makeConversation([
+            'delivery_method' => 'self_pickup',
+            'delivery_slot' => '09:00-11:00',
+            'ongkir' => 0,
+        ]);
+        $conversation->update(['current_state' => OrderBotConversationState::AWAITING_ORDER_FORM->value]);
+
+        $this->bot->handleMessage($conversation, 'Kue Ijo');
+        $this->bot->handleMessage($conversation, 'Shinta | Jl. Mawar 10 | 20 Okt 2026');
+        $this->bot->handleMessage($conversation, 'FIX');
+        $this->assertEquals('baru', Order::first()->status);
+
+        $this->bot->handleMessage($conversation, 'BATAL');
+
+        $this->assertEquals('dibatalkan', Order::first()->fresh()->status);
+    }
 }

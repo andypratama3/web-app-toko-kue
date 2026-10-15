@@ -118,12 +118,6 @@
                             class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
                             required>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-300">Format: JPG, PNG, JPEG. Maks 2MB.</p>
-                        <a id="compress-link" href="https://gentle-druid-f8b395.netlify.app/" target="_blank"
-                            rel="noopener noreferrer"
-                            class="items-center hidden gap-2 text-sm text-blue-600 hover:underline dark:text-blue-400">
-                            <i class="w-4 h-4 fas fa-compress"></i>
-                            <span>Kompres gambar</span>
-                        </a>
                         <button type="submit"
                             class="inline-flex items-center justify-center w-full px-5 py-2.5 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 disabled:opacity-50 transition-colors">
                             <span id="uploadButtonText">Unggah Bukti</span>

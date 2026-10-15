@@ -211,7 +211,7 @@ $isPdf = request()->routeIs('admin.historys.download');
             <div class="header-left">
                 <h1 class="invoice-title">INVOICE</h1>
                 <div class="invoice-number">{{ $order->invoice_number }}</div>
-                <div class="invoice-date">Tanggal: {{ $order->created_at->setTimezone('Asia/Jakarta')->format('d/m/Y H:i') }} WIB</div>
+                <div class="invoice-date">Tanggal: {{ $order->created_at->setTimezone(($order->region && $order->region->name === 'Denpasar') ? 'Asia/Makassar' : 'Asia/Jakarta')->format('d/m/Y H:i') }} {{ ($order->region && $order->region->name === 'Denpasar') ? 'WITA' : 'WIB' }}</div>
             </div>
             <div class="header-right">
                 <div class="brand-kue">Kue Ijo</div>
@@ -224,7 +224,7 @@ $isPdf = request()->routeIs('admin.historys.download');
             <div class="flex flex-col items-start">
                 <h1 class="text-3xl font-bold leading-tight mb-1">INVOICE</h1>
                 <div class="text-base text-gray-500 font-mono mb-0.5">{{ $order->invoice_number }}</div>
-                <div class="text-base text-gray-500 font-mono">Tanggal: {{ $order->created_at->setTimezone('Asia/Jakarta')->format('d/m/Y H:i') }} WIB</div>
+                <div class="text-base text-gray-500 font-mono">Tanggal: {{ $order->created_at->setTimezone(($order->region && $order->region->name === 'Denpasar') ? 'Asia/Makassar' : 'Asia/Jakarta')->format('d/m/Y H:i') }} {{ ($order->region && $order->region->name === 'Denpasar') ? 'WITA' : 'WIB' }}</div>
             </div>
             <div class="flex flex-col items-end text-right">
                 <span class="text-lg font-normal leading-tight" style="color:#97b67d; font-family:serif;">Kue Ijo</span>
@@ -302,7 +302,12 @@ $isPdf = request()->routeIs('admin.historys.download');
                         <tr class="bg-gray-100 font-bold">
                             <td colspan="4" class="border px-3 py-2 text-right">Subtotal Final</td>
                             <td class="border px-3 py-2 text-right text-green-700">
-                                Rp {{ number_format($order->total_amount - $activeReturn->total_amount_returned, 0, ',', '.') }}
+                                @if($order->status === 'diverifikasi_admin')
+                                    Rp {{ number_format($order->total_amount - $activeReturn->total_amount_returned, 0, ',', '.') }}
+                                @else
+                                    Rp {{ number_format($order->total_amount, 0, ',', '.') }}
+                                    <span class="block text-xs font-normal text-gray-500">(retur menunggu persetujuan)</span>
+                                @endif
                             </td>
                         </tr>
                     </tfoot>
@@ -376,10 +381,17 @@ $isPdf = request()->routeIs('admin.historys.download');
             </table>
             <div style="width:100%;text-align:right;margin-top:4px;">
                 <span style="font-weight:bold;">Subtotal:</span>
+                @if($order->status === 'diverifikasi_admin')
                 <span style="font-weight:bold;color:#15803d;">
                     Rp {{ number_format($order->total_amount - $activeReturn->total_amount_returned, 0, ',', '.') }}
                 </span>
                 <span style="display:block;font-size:8px;color:#888;margin-top:2px;">(Total Awal Rp {{ number_format($order->total_amount, 0, ',', '.') }} - Retur Rp {{ number_format($activeReturn->total_amount_returned, 0, ',', '.') }})</span>
+                @else
+                <span style="font-weight:bold;">
+                    Rp {{ number_format($order->total_amount, 0, ',', '.') }}
+                </span>
+                <span style="display:block;font-size:8px;color:#888;margin-top:2px;">(retur menunggu persetujuan admin)</span>
+                @endif
             </div>
         </div>
         @endif

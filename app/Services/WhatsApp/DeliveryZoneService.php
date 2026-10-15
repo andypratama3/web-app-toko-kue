@@ -77,10 +77,11 @@ class DeliveryZoneService
 
     /**
      * Estimasi jarak dari teks alamat memakai tabel delivery_zones milik cabang:
-     * cocokkan keyword landmark / nama area (yang cocok paling panjang menang),
-     * pakai distance_km zona tersebut. Tanpa kecocokan → default 5.0km.
+     * cocokkan keyword landmark / nama area (yang cocok paling panjang menang).
+     * Tanpa kecocokan → NULL (pemanggil WAJIB minta pin GPS, jangan diam-diam
+     * memakai default agar tak undercharge sistemik).
      */
-    public function estimateDistanceByAddress(string $address, ?int $regionId): float
+    public function estimateDistanceByAddress(string $address, ?int $regionId): ?float
     {
         // Normalisasi tanda baca jadi spasi agar "Gubeng," tetap cocok "gubeng".
         $normalized = trim((string) preg_replace('/[^a-z0-9\s]+/i', ' ', strtolower($address)));
@@ -110,7 +111,7 @@ class DeliveryZoneService
             }
         }
 
-        return $bestDistance ?? 5.0;
+        return $bestDistance;
     }
 
     protected function splitZoneKeywords(?string $raw): array

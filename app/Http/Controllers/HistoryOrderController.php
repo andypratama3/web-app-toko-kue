@@ -116,6 +116,7 @@ class HistoryOrderController extends Controller
         $query = \App\Models\Order::with([
             'customer',
             'createdBy',
+            'region',
             'items',
             'returns' => function ($query) {
                 $query->where('status', '!=', 'ditolak')->latest();

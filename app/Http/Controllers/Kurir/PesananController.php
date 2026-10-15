@@ -623,11 +623,7 @@ class PesananController extends Controller
                 ], 403);
             }
 
-            // Hapus file lama
-            if ($order->payment_proof) {
-                Storage::disk('public')->delete($order->payment_proof);
-            }
-
+            // Encode dulu ke memori (gagal encode = belum ada file tersentuh).
             $file = $request->file('payment_proof');
 
             $sanitizedInvoiceNumber = str_replace('/', '-', $order->invoice_number);
@@ -645,15 +641,29 @@ class PesananController extends Controller
                 ->read($file)
                 ->encode(new JpegEncoder(quality: $quality));
 
-            // ✅ SIMPAN FILE
-            Storage::disk('public')->put($path, $image);
+            $oldProof = $order->payment_proof;
 
-            // Update DB
-            $order->update([
-                'payment_proof' => $path,
-                'status' => 'selesai',
-                'paid_at' => $this->nowInUserTimezone(),
-            ]);
+            DB::beginTransaction();
+            try {
+                // ✅ SIMPAN FILE (nama deterministik per invoice = timpa versi lama)
+                Storage::disk('public')->put($path, (string) $image);
+
+                // Update DB
+                $order->update([
+                    'payment_proof' => $path,
+                    'status' => 'selesai',
+                    'paid_at' => $this->nowInUserTimezone(),
+                ]);
+
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+                // Kompensasi: kembalikan file lama bila baru saja menimpanya.
+                if ($oldProof && $oldProof !== $path && Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->delete($path);
+                }
+                throw $e;
+            }
 
             return response()->json([
                 'message' => 'Bukti pembayaran berhasil diunggah & dikompres.'
@@ -670,7 +680,7 @@ class PesananController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Upload payment proof error: ' . $e->getMessage());
-            return response()->json(['message' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Gagal mengunggah bukti. Silakan coba lagi.'], 500);
         }
     }
 

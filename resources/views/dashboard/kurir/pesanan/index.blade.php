@@ -498,14 +498,12 @@
             const paymentUploadBlocker = document.getElementById('paymentUploadBlocker');
             const proofImage = document.getElementById('proofImage');
             const proofUploadedTitle = document.getElementById('proofUploadedTitle');
-            const compressLink = document.getElementById('compress-link');
             const paymentProofTitle = document.getElementById('paymentProofTitle');
 
             // Sembunyikan semua elemen terkait bukti unggahan terlebih dahulu
             paymentUploadForm.classList.add('hidden');
             paymentProofUploaded.classList.add('hidden');
             paymentUploadBlocker.classList.add('hidden');
-            compressLink.classList.add('hidden');
 
             // Helper untuk mendapatkan URL gambar yang benar
             const getImageUrl = (path) => {
@@ -540,7 +538,6 @@
                     handleProofUpload(order.id, order.status);
                 };
                 paymentUploadForm.classList.remove('hidden');
-                compressLink.classList.remove('hidden');
 
                 // Logika 4: Jika status tidak memungkinkan upload
             } else {

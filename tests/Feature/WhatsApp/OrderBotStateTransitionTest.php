@@ -485,7 +485,7 @@ class OrderBotStateTransitionTest extends TestCase
             'context' => ['form_step' => 1, 'order_form' => ['product_name' => 'Tumpeng Mini Mix']],
         ]);
 
-        $this->botService->handleMessage($this->conversation, 'Shinta | Jl. Batalyon No 10 Surabaya | 12 Okt 2026');
+        $this->botService->handleMessage($this->conversation, 'Shinta | Jl. Batalyon No 10 Surabaya | ' . now()->addDays(5)->format('d M Y'));
 
         $this->conversation->refresh();
         $this->assertEquals(OrderBotConversationState::AWAITING_DELIVERY_METHOD->value, $this->conversation->current_state);
@@ -499,7 +499,7 @@ class OrderBotStateTransitionTest extends TestCase
             'context' => ['form_step' => 1, 'order_form' => ['product_name' => 'Tumpeng Mini Mix']],
         ]);
 
-        $this->botService->handleMessage($this->conversation, 'Budi | Jl. Menunggu No 1 | 12 Okt 2026');
+        $this->botService->handleMessage($this->conversation, 'Budi | Jl. Menunggu No 1 | ' . now()->addDays(5)->format('d M Y'));
 
         $this->conversation->refresh();
         $this->assertEquals(OrderBotConversationState::AWAITING_DELIVERY_METHOD->value, $this->conversation->current_state);
@@ -575,7 +575,7 @@ class OrderBotStateTransitionTest extends TestCase
             'context' => ['form_step' => 1, 'order_form' => ['product_name' => 'Tumpeng Mini Mix']],
         ]);
 
-        $this->botService->handleMessage($this->conversation, 'Shinta |  | 12 Okt 2026');
+        $this->botService->handleMessage($this->conversation, 'Shinta |  | ' . now()->addDays(5)->format('d M Y'));
 
         $this->conversation->refresh();
         $this->assertEquals(OrderBotConversationState::AWAITING_ORDER_FORM->value, $this->conversation->current_state);
@@ -589,7 +589,7 @@ class OrderBotStateTransitionTest extends TestCase
             'context' => ['form_step' => 1, 'order_form' => ['product_name' => 'Tumpeng Mini Mix']],
         ]);
 
-        $this->botService->handleMessage($this->conversation, 'Shinta | Toko A | Cabang B | 12 Okt 2026');
+        $this->botService->handleMessage($this->conversation, 'Shinta | Toko A | Cabang B | ' . now()->addDays(5)->format('d M Y'));
 
         $this->conversation->refresh();
         $this->assertEquals(OrderBotConversationState::AWAITING_DELIVERY_METHOD->value, $this->conversation->current_state);

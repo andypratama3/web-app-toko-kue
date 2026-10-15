@@ -79,7 +79,7 @@ class OrderBotService
             OrderBotConversationState::AWAITING_DELIVERY_SLOT => $this->handleDeliverySlot($conversation, $messageText),
             OrderBotConversationState::ORDER_SUMMARY => $this->handleOrderSummary($conversation, $messageText),
             OrderBotConversationState::AWAITING_PAYMENT_PROOF => $this->handlePaymentProof($conversation, $messageText, $messageData),
-            OrderBotConversationState::ORDER_CONFIRMED, OrderBotConversationState::CLOSED, OrderBotConversationState::ESCALATED_TO_HUMAN => $this->handleClosedConversation($conversation, $messageText),
+            OrderBotConversationState::ORDER_CONFIRMED, OrderBotConversationState::CLOSED, OrderBotConversationState::ESCALATED_TO_HUMAN => $this->handleClosedConversation($conversation, $messageText, $messageData),
         };
     }
 
@@ -124,6 +124,7 @@ class OrderBotService
         $result = $this->deliveryZoneService->calculateOngkir($distance, $conversation->region_id);
 
         if ($result['needs_escalation']) {
+            $snapshot = $this->snapshotOrderDetails($conversation);
             $conversation->clearContext();
             $conversation->update(['current_state' => OrderBotConversationState::ESCALATED_TO_HUMAN->value]);
             $regionName = $conversation->region?->name ?? config('services.whatsapp.default_region', 'cabang kami');
@@ -132,7 +133,7 @@ class OrderBotService
                 "Untuk jarak di atas 14km, silakan hubungi admin kami untuk detail pengiriman.\n\n".
                 "WA Admin: hubungi admin terdekat di cabang {$regionName}"
             );
-            $this->notifyAdminOfEscalation($conversation, $distance, $regionName);
+            $this->notifyAdminOfEscalation($conversation, $distance, $regionName, $snapshot ?? '');
 
             return;
         }
@@ -176,6 +177,9 @@ class OrderBotService
         if (in_array($state, array_merge($orderFlowStates, [OrderBotConversationState::PRODUCT_BROWSING]), true)
             && $this->matchesCommand($lower, ['batal', 'cancel', 'batalkan', 'batalin'])
         ) {
+            // Anti ghost order: batal pasca-FIX membatalkan order 'baru' yang
+            // belum dibayar (kalau sudah diproses kurir/admin, biarkan).
+            $this->cancelFreshUnpaidOrder($conversation);
             $conversation->clearContext();
             $this->advanceState($conversation, OrderBotConversationState::MENU_SELECTION);
             $this->metaService->sendText(
@@ -817,6 +821,68 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
     }
 
     /**
+     * Parse tanggal kirim ala chat Indonesia → 'd M Y'.
+     * Terima: 25 12 2026, 25/12/2026, 25-12-2026, 25 Des 2026, 25 Desember 2026.
+     * Tolak: teks bebas & tanggal lewat. Null bila tak valid.
+     */
+    protected function parseDeliveryDate(string $input): ?string
+    {
+        $input = trim($input);
+        if ($input === '') {
+            return null;
+        }
+
+        $months = [
+            'jan' => '01', 'januari' => '01', 'january' => '01',
+            'feb' => '02', 'februari' => '02', 'february' => '02',
+            'mar' => '03', 'maret' => '03', 'march' => '03',
+            'apr' => '04', 'april' => '04',
+            'mei' => '05', 'may' => '05',
+            'jun' => '06', 'juni' => '06', 'june' => '06',
+            'jul' => '07', 'juli' => '07', 'july' => '07',
+            'agu' => '08', 'agustus' => '08', 'aug' => '08', 'august' => '08',
+            'sep' => '09', 'sept' => '09', 'september' => '09',
+            'okt' => '10', 'oktober' => '10', 'oct' => '10', 'october' => '10',
+            'nov' => '11', 'november' => '11',
+            'des' => '12', 'desember' => '12', 'dec' => '12', 'december' => '12',
+        ];
+
+        $day = $month = $year = null;
+        if (preg_match('/^(\d{1,2})[\s\/\-.]+(\d{1,2})[\s\/\-.]+(\d{2,4})$/u', $input, $m)) {
+            $day = (int) $m[1];
+            $month = (int) $m[2];
+            $year = (int) $m[3];
+            if ($year < 100) {
+                $year += 2000;
+            }
+        } elseif (preg_match('/^(\d{1,2})\s+([a-zA-Z]+)\s+(\d{2,4})$/u', $input, $m)) {
+            $key = strtolower($m[2]);
+            if (! isset($months[$key])) {
+                return null;
+            }
+            $day = (int) $m[1];
+            $month = (int) $months[$key];
+            $year = (int) $m[3];
+            if ($year < 100) {
+                $year += 2000;
+            }
+        } else {
+            return null;
+        }
+
+        if (! checkdate($month, $day, $year)) {
+            return null;
+        }
+
+        $date = \Carbon\Carbon::create($year, $month, $day)->startOfDay();
+        if ($date->lt(now()->startOfDay())) {
+            return null;
+        }
+
+        return $date->format('d M Y');
+    }
+
+    /**
      * Contoh tanggal kirim dinamis (lusa) agar tidak basi.
      */
     protected function orderExampleDate(): string
@@ -977,10 +1043,19 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
     protected function handleDeliveryMethod(WhatsAppConversation $conversation, string $text): void
     {
-        // Terima "1", "1.", "1 - Diambil Sendiri", dst.
+        // Terima "1", "1.", "1 - Diambil Sendiri", dst. + bahasa natural.
         $choice = trim($text);
         if (preg_match('/^([123])[\s.\-)].*/u', $choice, $m)) {
             $choice = $m[1];
+        } else {
+            $lowerChoice = strtolower($choice);
+            if (preg_match('/\b(ambil|sendiri|diambil|datang|toko)\b/iu', $lowerChoice)) {
+                $choice = '1';
+            } elseif (preg_match('/\b(grab|gosend|go-send|gojek|ojek|driver|online)\b/iu', $lowerChoice)) {
+                $choice = '2';
+            } elseif (preg_match('/\b(kurir|internal|antar|diantar|toko.*antar)\b/iu', $lowerChoice)) {
+                $choice = '3';
+            }
         }
 
         match ($choice) {
@@ -1052,9 +1127,23 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $conversation->setContext('delivery_address', $address);
 
         $distance = $this->deliveryZoneService->estimateDistanceByAddress($address, $conversation->region_id);
+
+        // Alamat tak dikenali zona mana pun: JANGAN default diam-diam —
+        // minta pin GPS agar ongkir dihitung akurat.
+        if ($distance === null) {
+            $this->advanceState($conversation, OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS);
+            $this->metaService->sendLocationRequest($conversation->phone_number,
+                "Alamat *{$address}* belum kami kenali areanya. 📍\n\n".
+                'Agar ongkir tepat, silakan kirim pin GPS lokasi Anda, atau tulis alamat dengan patokan yang lebih jelas (mis. nama jalan + kecamatan).'
+            );
+
+            return;
+        }
+
         $result = $this->deliveryZoneService->calculateOngkir($distance, $conversation->region_id);
 
         if ($result['needs_escalation']) {
+            $snapshot = $this->snapshotOrderDetails($conversation);
             $conversation->clearContext();
             $conversation->update(['current_state' => OrderBotConversationState::ESCALATED_TO_HUMAN->value]);
             $regionName = $conversation->region?->name ?? config('services.whatsapp.default_region', 'cabang kami');
@@ -1064,7 +1153,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                 "WA Admin: hubungi admin terdekat di cabang {$regionName}"
             );
             // M1 FIX: notify admin after escalation is committed
-            $this->notifyAdminOfEscalation($conversation, $distance, $regionName);
+            $this->notifyAdminOfEscalation($conversation, $distance, $regionName, $snapshot ?? '');
 
             return;
         }
@@ -1086,9 +1175,16 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
     protected function handleDeliverySlot(WhatsAppConversation $conversation, string $text): void
     {
-        // Terima "1", "1.", "slot_1", "09:00", dst. Angka polos tidak diubah.
+        // Terima "1", "1.", "slot_1", "09:00", dst. + bahasa natural + angka polos.
         $slot = trim($text);
-        if (! in_array($slot, ['1', '2', '3'], true)) {
+        $lowerSlot = strtolower($slot);
+        if (preg_match('/\b(pagi|morning)\b/iu', $lowerSlot)) {
+            $slot = '1';
+        } elseif (preg_match('/\b(siang|tengah hari|midday)\b/iu', $lowerSlot)) {
+            $slot = '2';
+        } elseif (preg_match('/\b(sore|malam|evening|petang)\b/iu', $lowerSlot)) {
+            $slot = '3';
+        } elseif (! in_array($slot, ['1', '2', '3'], true)) {
             if (preg_match('/^slot_([123])$/', $slot, $m)) {
                 $slot = $m[1];
             } elseif (preg_match('/^([123])[\s.\-)].+/u', $slot, $m)) {
@@ -1201,6 +1297,16 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         // Ongkir mengikuti alamat baru untuk kurir internal.
         if (($conversation->getContext('delivery_method') ?? null) === 'internal_courier') {
             $distance = $this->deliveryZoneService->estimateDistanceByAddress($newAddress, $conversation->region_id);
+
+            if ($distance === null) {
+                $this->metaService->sendText($conversation->phone_number,
+                    "Alamat baru belum kami kenali areanya, jadi ongkir belum bisa dihitung ulang. 📍\n\n".
+                    'Silakan kirim pin GPS lokasi Anda.'
+                );
+
+                return;
+            }
+
             $result = $this->deliveryZoneService->calculateOngkir($distance, $conversation->region_id);
 
             if ($result['needs_escalation']) {
@@ -1212,7 +1318,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                     "Silakan hubungi admin kami.\n\n" .
                     "WA Admin: hubungi admin terdekat di cabang {$regionName}"
                 );
-                $this->notifyAdminOfEscalation($conversation, $distance, $regionName);
+                $this->notifyAdminOfEscalation($conversation, $distance, $regionName, $snapshot ?? '');
 
                 return;
             }
@@ -1273,6 +1379,14 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             }
         } else {
             $lower = strtolower(trim($text));
+            // Tautan bukti telat via nomor invoice: "INV/..." → sambungkan sesi.
+            if ($linked = $this->linkOrderByInvoiceText($conversation, $text)) {
+                $this->metaService->sendText($conversation->phone_number,
+                    "✅ Pesanan *{$linked->invoice_number}* tersambung.\nSilakan kirim *gambar* bukti pembayarannya."
+                );
+
+                return;
+            }
             if ($this->matchesCommand($lower, ['sudah transfer', 'transfer', 'bukti', 'bayar', 'pembayaran'])) {
                 $this->metaService->sendText($conversation->phone_number,
                     'Silakan kirim *gambar* bukti transfer/pembayaran.'
@@ -1292,27 +1406,115 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         }
     }
 
-    protected function notifyAdminOfEscalation(WhatsAppConversation $conversation, float $distance, string $regionName): void
+    /**
+     * Ringkasan progres order untuk notifikasi eskalasi. Panggil SEBELUM
+     * clearContext agar detail tidak hilang.
+     */
+    protected function snapshotOrderDetails(WhatsAppConversation $conversation): string
+    {
+        $ctx = $conversation->context ?? [];
+        $form = $ctx['order_form'] ?? [];
+
+        return 'Produk: ' . ($form['product_name'] ?? $ctx['selected_product_name'] ?? '-')
+            . ' | Penerima: ' . ($form['recipient_name'] ?? '-')
+            . ' | Alamat: ' . ($form['recipient_address'] ?? $ctx['delivery_address'] ?? '-');
+    }
+
+    protected function notifyAdminOfEscalation(WhatsAppConversation $conversation, float $distance, string $regionName, string $details = ''): void
     {
         try {
-            $router = new AdminNotificationRouterService(app(WhatsappMetaService::class));
-            // AdminNotificationRouterService has notifyNewOrder / notifyOrderStatusUpdate; 
-            // escalation uses direct DB insert into admin_notifications (simplest correct path)
+            if ($details === '') {
+                $details = $this->snapshotOrderDetails($conversation);
+            }
+
             \App\Models\AdminNotification::create([
                 'user_id' => null,
                 'region_id' => $conversation->region_id,
                 'title' => 'Eskalasi jarak kirim (>14km)',
-                'message' => "⚠️ Pesanan dari {$conversation->phone_number} dibatalkan (jarak {$distance}km > 14km). Cabang: {$regionName}.",
+                'message' => "⚠️ Pesanan dari {$conversation->phone_number} butuh penanganan (jarak {$distance}km > 14km). Cabang: {$regionName}. {$details}",
                 'is_read' => false,
                 'type' => 'escalated',
             ]);
+
+            // WA ke owner agar eskalasi tidak menggantung sunyi.
+            $this->notificationRouter->forwardEscalationToOwner(
+                $conversation->region_id,
+                "🚨 *Eskalasi Jarak*\nNo: {$conversation->phone_number}\nJarak: {$distance}km\n{$details}\nSegera hubungi customer ya."
+            );
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::channel('whatsapp')->warning('Admin escalation notify failed', ['error' => $e->getMessage()]);
         }
     }
 
-    protected function handleClosedConversation(WhatsAppConversation $conversation, string $text): void
+    /**
+     * Batalkan order bot yang masih 'baru' + belum ada bukti (ghost order)
+     * saat user membatalkan. Order yang sudah diproses TIDAK disentuh.
+     */
+    protected function cancelFreshUnpaidOrder(WhatsAppConversation $conversation): void
     {
+        try {
+            $orderId = $conversation->getContext('confirmed_order_id');
+            if (! $orderId) {
+                return;
+            }
+            $order = Order::find($orderId);
+            if (! $order || $order->status !== 'baru' || ! empty($order->payment_proof)) {
+                return;
+            }
+            $order->update(['status' => 'dibatalkan']);
+            Log::channel('whatsapp')->info('🚫 Ghost order dibatalkan via BATAL', [
+                'phone' => $conversation->phone_number,
+                'order_id' => $order->id,
+                'invoice' => $order->invoice_number,
+            ]);
+        } catch (\Throwable $e) {
+            Log::channel('whatsapp')->warning('Gagal auto-batal order', ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Cari order milik nomor ini dari teks berisi nomor invoice (mis. "INV/1210/...").
+     * Bila ketemu + belum ada bukti → sambungkan sebagai confirmed_order_id.
+     */
+    protected function linkOrderByInvoiceText(WhatsAppConversation $conversation, string $text): ?Order
+    {
+        if (! preg_match('/INV\/[\w\/-]{3,60}/i', $text, $m)) {
+            return null;
+        }
+        $order = Order::where('invoice_number', $m[0])
+            ->where(function ($q) use ($conversation) {
+                $q->where('phone', $conversation->phone_number)
+                  ->orWhere('customer_id', $conversation->customer_id);
+            })
+            ->latest('id')
+            ->first();
+
+        if (! $order || ! empty($order->payment_proof)) {
+            return null;
+        }
+
+        $conversation->setContext('confirmed_order_id', $order->id);
+
+        return $order;
+    }
+
+    protected function handleClosedConversation(WhatsAppConversation $conversation, string $text, ?array $messageData = null): void
+    {
+        // Bukti telat (setelah SKIP/konfirmasi): tempelkan ke order, jangan abaikan.
+        $mediaPath = $messageData['media_path'] ?? null;
+        if ($mediaPath) {
+            $this->attachLateProof($conversation, $mediaPath);
+
+            return;
+        }
+        // Tautan via nomor invoice yang diketik.
+        if ($linked = $this->linkOrderByInvoiceText($conversation, $text)) {
+            $this->metaService->sendText($conversation->phone_number,
+                "✅ Pesanan *{$linked->invoice_number}* tersambung.\nSilakan kirim *gambar* bukti pembayarannya."
+            );
+
+            return;
+        }
         // Restart PESAN/ORDER dari ESCALATED/ORDER_CONFIRMED ditangani global escape
         // (checkGlobalEscape) sebelum sampai sini — satu jalur kanonis, satu pesan.
         $this->metaService->sendText($conversation->phone_number,
@@ -1320,6 +1522,50 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             'Ada yang bisa kami bantu? Ketik *PESAN* untuk membuat pesanan baru.'
         );
         $this->advanceState($conversation, OrderBotConversationState::WELCOME_SENT);
+    }
+
+    /**
+     * Tempelkan bukti susulan ke order milik nomor ini yang belum ada bukti.
+     */
+    protected function attachLateProof(WhatsAppConversation $conversation, string $mediaPath): void
+    {
+        $orderId = $conversation->getContext('confirmed_order_id');
+        $order = $orderId ? Order::find($orderId) : null;
+
+        if (! $order || ! empty($order->payment_proof)) {
+            $order = Order::where(function ($q) use ($conversation) {
+                $q->where('phone', $conversation->phone_number)
+                  ->orWhere('customer_id', $conversation->customer_id);
+            })
+                ->whereNull('payment_proof')
+                ->whereNotIn('status', ['dibatalkan', 'selesai', 'diverifikasi_admin'])
+                ->latest('id')
+                ->first();
+        }
+
+        if (! $order) {
+            Log::channel('whatsapp')->warning('⚠️ Bukti susulan tanpa order cocok', [
+                'phone' => $conversation->phone_number,
+                'media_path' => $mediaPath,
+            ]);
+            $this->metaService->sendText($conversation->phone_number,
+                "Bukti kami terima, tapi tidak ada pesanan aktif tanpa bukti di nomor ini.\n".
+                'Balas dengan nomor invoice Anda (mis. INV/...) agar bisa ditempelkan.'
+            );
+
+            return;
+        }
+
+        $order->update(['payment_proof' => $mediaPath]);
+        $conversation->setContext('confirmed_order_id', $order->id);
+        $this->metaService->sendText($conversation->phone_number,
+            "✅ *Bukti susulan diterima* dan ditempelkan ke *{$order->invoice_number}*.\nTerima kasih! 🙏"
+        );
+        try {
+            $this->notificationRouter->forwardPaymentProof($order, $mediaPath);
+        } catch (\Throwable $e) {
+            Log::channel('whatsapp')->warning('Forward bukti susulan gagal', ['error' => $e->getMessage()]);
+        }
     }
 
     // ========== MESSAGE BUILDERS ==========
@@ -1637,7 +1883,19 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $formData = $conversation->getContext('order_form') ?? [];
         $formData['recipient_name'] = $parts[0];
         $formData['recipient_address'] = $parts[1];
-        $formData['delivery_date'] = $parts[2];
+
+        // Tanggal harus valid & tidak lewat (tolak "kemarin"/"asdf").
+        $parsedDate = $this->parseDeliveryDate($parts[2]);
+        if (! $parsedDate) {
+            $this->metaService->sendText($conversation->phone_number,
+                "❌ Tanggal *{$parts[2]}* tidak valid atau sudah lewat.\n".
+                "Contoh format: 25 12 2026, 25/12/2026, atau 25 Des 2026.\n".
+                "Coba kirim ulang 3 bagian:\nNama Penerima | Alamat Lengkap | Tanggal Kirim"
+            );
+
+            return;
+        }
+        $formData['delivery_date'] = $parsedDate;
         unset($formData['delivery_time']); // Jam diatur via slot, bukan form.
         $conversation->setContext('order_form', $formData);
         $conversation->setContext('form_step', 2); // done
@@ -1646,7 +1904,9 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         // ongkir dulu (alamat form bisa beda dari pin GPS), lalu ringkasan.
         if (! empty($conversation->getContext('delivery_method'))
             && ! empty($conversation->getContext('delivery_slot'))) {
-            $this->refreshAddressAndOngkir($conversation, $formData);
+            if (! $this->refreshAddressAndOngkir($conversation, $formData)) {
+                return; // Alamat tak dikenali / kosong: user diminta pin GPS.
+            }
             $this->advanceState($conversation, OrderBotConversationState::ORDER_SUMMARY);
             $this->sendOrderSummary($conversation);
 
@@ -1659,29 +1919,43 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
     /**
      * Samakan delivery_address dengan alamat penerima form + hitung ulang
      * ongkir kurir internal (hindari alamat Surabaya + ongkir Sidoarjo).
+     * Return false bila alamat tak dikenali (pemanggil batalkan ringkasan).
      */
-    protected function refreshAddressAndOngkir(WhatsAppConversation $conversation, array $formData): void
+    protected function refreshAddressAndOngkir(WhatsAppConversation $conversation, array $formData): bool
     {
         $newAddress = trim($formData['recipient_address'] ?? '');
         if ($newAddress === '') {
-            return;
+            return false;
         }
 
         $conversation->setContext('delivery_address', $newAddress);
 
         if (($conversation->getContext('delivery_method') ?? null) !== 'internal_courier') {
-            return;
+            return true;
         }
 
         $distance = $this->deliveryZoneService->estimateDistanceByAddress($newAddress, $conversation->region_id);
+
+        if ($distance === null) {
+            $this->advanceState($conversation, OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS);
+            $this->metaService->sendLocationRequest($conversation->phone_number,
+                "Alamat *{$newAddress}* belum kami kenali areanya. 📍\n\n".
+                'Agar ongkir tepat, silakan kirim pin GPS lokasi Anda.'
+            );
+
+            return false;
+        }
+
         $result = $this->deliveryZoneService->calculateOngkir($distance, $conversation->region_id);
 
         if (! empty($result['needs_escalation'])) {
-            return; // Biarkan eskalasi ditangani alur normal berikutnya.
+            return true; // Biarkan eskalasi ditangani alur normal berikutnya.
         }
 
         $conversation->setContext('distance_km', $distance);
         $conversation->setContext('ongkir', $result['ongkir'] ?? 0);
+
+        return true;
     }
     protected function askDeliveryMethod(WhatsAppConversation $conversation): void
     {
@@ -1972,13 +2246,31 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             // Notify admin immediately so the new order is never missed
             $this->notificationRouter->notifyNewOrder($order->id);
 
-            $this->metaService->sendText($conversation->phone_number,
+            $sentId = $this->metaService->sendText($conversation->phone_number,
                 "✅ *Pesanan Berhasil Dibuat!*\n\n".
                 "Nomor Invoice: *{$order->invoice_number}*\n".
                 'Total: *Rp '.number_format($order->total_amount, 0, ',', '.')."*\n\n".
                 "Silakan lakukan pembayaran melalui QRIS, lalu kirim bukti transfer di sini.\n".
                 'Atau ketik *SKIP* untuk melanjutkan tanpa mengirim bukti.'
             );
+
+            // Instruksi bayar TAK SAMPAI tapi order sudah jadi: jangan diam —
+            // catat agar admin follow-up manual (telpon/chat).
+            if (! $sentId) {
+                try {
+                    \App\Models\AdminNotification::create([
+                        'user_id' => null,
+                        'region_id' => $order->region_id,
+                        'order_id' => $order->id,
+                        'type' => 'system',
+                        'title' => 'Instruksi bayar gagal terkirim',
+                        'message' => "Order {$order->invoice_number} ({$conversation->phone_number}) tercatat, tapi pesan QRIS gagal dikirim Meta. Segera hubungi customer manual.",
+                        'is_read' => false,
+                    ]);
+                } catch (\Throwable $e) {
+                    Log::channel('whatsapp')->warning('Gagal catat notif kirim-gagal', ['error' => $e->getMessage()]);
+                }
+            }
 
         } catch (\Exception $e) {
             Log::channel('whatsapp')->error('❌ Failed to confirm order', [
@@ -2247,15 +2539,13 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                 'added_by_user_id' => null,
             ]);
         } else {
-            // Pelanggan lama: segarkan alamat + cabang dari pesanan terbaru
-            // (nama dipertahankan — identitas pemesan via nomor WA).
+            // Pelanggan lama: segarkan alamat SAJA. Region TIDAK ditimpa —
+            // satu order kado ke kota lain tidak boleh meracuni atribusi
+            // cabang untuk semua order berikutnya (katalog/ongkir/notif).
             $form = $conversation->context['order_form'] ?? [];
             $updates = [];
             if (! empty($form['recipient_address']) && $form['recipient_address'] !== $customer->address) {
                 $updates['address'] = $form['recipient_address'];
-            }
-            if ($conversation->region_id && $conversation->region_id !== $customer->region_id) {
-                $updates['region_id'] = $conversation->region_id;
             }
             if ($updates !== []) {
                 $customer->update($updates);

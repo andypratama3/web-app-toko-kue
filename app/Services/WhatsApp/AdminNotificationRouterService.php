@@ -109,6 +109,37 @@ class AdminNotificationRouterService
     }
 
     /**
+     * Teruskan eskalasi (mis. jarak >14km) ke WA owner cabang agar tidak sunyi.
+     */
+    public function forwardEscalationToOwner(?int $regionId, string $text): void
+    {
+        try {
+            $region = $regionId ? \App\Models\Region::find($regionId) : null;
+            $ownerPhone = $region?->owner_phone ? Phone::normalize($region->owner_phone) : null;
+
+            if (! $ownerPhone) {
+                Log::channel('whatsapp')->info('⏭️ Skip forward eskalasi (owner_phone cabang belum diisi)', [
+                    'region_id' => $regionId,
+                ]);
+
+                return;
+            }
+
+            $this->metaService->sendText($ownerPhone, $text);
+
+            Log::channel('whatsapp')->info('📲 Eskalasi diteruskan ke owner', [
+                'region_id' => $regionId,
+                'owner' => $ownerPhone,
+            ]);
+        } catch (\Throwable $e) {
+            Log::channel('whatsapp')->warning('⚠️ Forward eskalasi ke owner gagal', [
+                'region_id' => $regionId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
      * Teruskan bukti bayar customer ke WA owner cabang (gambar + caption invoice).
      */
     public function forwardPaymentProof(Order $order, ?string $mediaPath = null): void
