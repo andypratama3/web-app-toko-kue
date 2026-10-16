@@ -202,13 +202,15 @@ class OrderController extends Controller
      * Verifikasi pesanan (ubah status menjadi diverifikasi_admin).
      * Disertai bukti: retur wajib ada return_proof, non-retur wajib
      * ada payment_proof (termasuk cash — kurir wajib foto bukti terima).
+     * Order 'baru' bayar-di-depan (mis. via bot + bukti) bisa langsung
+     * diverifikasi owner TANPA kurir — pengiriman menyusul alur kurir.
      */
     public function verify($id)
     {
         $admin = Auth::user();
-        // DIUBAH: Mencari pesanan dalam dua kemungkinan status
+        // DIUBAH: Mencari pesanan dalam tiga kemungkinan status
         $order = Order::where('region_id', $admin->region_id)
-            ->whereIn('status', ['selesai', 'menunggu_verifikasi_admin']) // Perbaikan di sini
+            ->whereIn('status', ['baru', 'selesai', 'menunggu_verifikasi_admin']) // Perbaikan di sini
             ->findOrFail($id);
 
         $activeReturn = $order->returns()->where('status', '!=', 'ditolak')->latest()->first();

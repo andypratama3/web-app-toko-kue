@@ -101,6 +101,28 @@ class AdminAssignOrderTest extends TestCase
         $response->assertStatus(404);
     }
 
+    public function test_verify_baru_bayar_di_depan_tanpa_kurir(): void
+    {
+        $this->botOrder->update(['payment_proof' => 'payment_proofs/test.jpg']);
+
+        $response = $this->actingAs($this->admin)->postJson(
+            route('admin.orders.verify', $this->botOrder->id)
+        );
+
+        $response->assertOk();
+        $this->assertEquals('diverifikasi_admin', $this->botOrder->fresh()->status);
+    }
+
+    public function test_verify_baru_tanpa_bukti_ditolak(): void
+    {
+        $response = $this->actingAs($this->admin)->postJson(
+            route('admin.orders.verify', $this->botOrder->id)
+        );
+
+        $response->assertStatus(422);
+        $this->assertEquals('baru', $this->botOrder->fresh()->status);
+    }
+
     public function test_admin_melihat_produk_global_dan_region_sendiri(): void
     {
         $cat = \App\Models\Category::create(['name' => 'Produk', 'slug' => 'produk']);

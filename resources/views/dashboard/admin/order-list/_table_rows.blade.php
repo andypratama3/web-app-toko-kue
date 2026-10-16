@@ -71,8 +71,10 @@
                     </button>
                 </div>
             @endif
-            {{-- Tombol ini akan membuka modal verifikasi --}}
-            @if ($order->status == 'selesai' || $order->status == 'menunggu_verifikasi_admin')
+            {{-- Tombol ini akan membuka modal verifikasi.
+                Order 'baru' bayar-di-depan juga bisa dibuka — server yang
+                memutuskan boleh/tidaknya (bukti wajib). --}}
+            @if ($order->status == 'baru' || $order->status == 'selesai' || $order->status == 'menunggu_verifikasi_admin')
                 <button
                     class="px-3 py-1 text-xs font-bold text-white bg-blue-600 rounded js-open-modal-btn hover:bg-blue-700"
                     data-target-modal="verifyOrderModal" data-order-id="{{ $order->id }}">
