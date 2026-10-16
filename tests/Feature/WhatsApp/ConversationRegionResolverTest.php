@@ -128,7 +128,7 @@ class ConversationRegionResolverTest extends TestCase
         );
     }
 
-    public function test_it_reads_address_from_order_form(): void
+    public function test_it_reads_address_from_order_customer(): void
     {
         $malang = $this->makeRegion('Malang', 'malang');
         $denpasar = $this->makeRegion('Denpasar', 'denpasar');
@@ -144,7 +144,7 @@ class ConversationRegionResolverTest extends TestCase
 
         $conversation = $this->makeConversation([
             'region_id' => $malang->id,
-            'context' => ['order_form' => ['recipient_address' => 'Jl. Raya Ubud No. 5']],
+            'context' => ['order_customer' => ['address' => 'Jl. Raya Ubud No. 5']],
         ]);
 
         $resolver = app(ConversationRegionResolver::class);

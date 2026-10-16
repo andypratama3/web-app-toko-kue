@@ -140,7 +140,7 @@ class ConversationRegionResolver
 
         $candidates = [
             data_get($context, 'delivery_address'),
-            data_get($context, 'order_form.recipient_address'),
+            data_get($context, 'order_customer.address'),
             data_get($context, 'address'),
         ];
 
