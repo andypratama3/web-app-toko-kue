@@ -26,6 +26,7 @@ class CustomerQuotaTest extends TestCase
     protected CustomerCategory $resellerCategory;
     protected Customer $customer;
     protected OrderBotService $botService;
+    protected array $cartRow;
 
     protected function setUp(): void
     {
@@ -60,12 +61,19 @@ class CustomerQuotaTest extends TestCase
             'description' => 'Tumpeng',
             'is_active' => true,
         ]);
-        ProductVariant::create([
+        $variant = ProductVariant::create([
             'product_id' => $product->id,
             'name' => 'Paket',
             'price' => 250000,
             'is_active' => true,
         ]);
+        $this->cartRow = [
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'variant_id' => $variant->id,
+            'variant_name' => $variant->name,
+            'qty' => 1,
+        ];
 
         $this->customer = Customer::create([
             'name' => 'Reseller Test',
@@ -104,14 +112,11 @@ class CustomerQuotaTest extends TestCase
                 'delivery_method' => 'self_pickup',
                 'delivery_slot' => '09:00-11:00',
                 'ongkir' => 0,
-                'product_price' => 250000,
-                'product_quantity' => 1,
-                'order_form' => [
-                    'product_name' => 'Tumpeng Mini',
-                    'recipient_name' => 'Test',
-                    'recipient_address' => 'Test Address',
-                    'delivery_date' => '10 Sep',
-                    'delivery_time' => '10:00',
+                'cart' => [$this->cartRow],
+                'order_customer' => [
+                    'name' => 'Test',
+                    'address' => 'Test Address Denpasar',
+                    'date' => now()->addDays(5)->format('d M Y'),
                 ],
             ],
         ]);
@@ -148,14 +153,11 @@ class CustomerQuotaTest extends TestCase
                 'delivery_method' => 'self_pickup',
                 'delivery_slot' => '09:00-11:00',
                 'ongkir' => 0,
-                'product_price' => 250000,
-                'product_quantity' => 1,
-                'order_form' => [
-                    'product_name' => 'Tumpeng Mini',
-                    'recipient_name' => 'Test',
-                    'recipient_address' => 'Test Address',
-                    'delivery_date' => '10 Sep',
-                    'delivery_time' => '10:00',
+                'cart' => [$this->cartRow],
+                'order_customer' => [
+                    'name' => 'Test',
+                    'address' => 'Test Address Denpasar',
+                    'date' => now()->addDays(5)->format('d M Y'),
                 ],
             ],
         ]);
@@ -193,14 +195,11 @@ class CustomerQuotaTest extends TestCase
                 'delivery_method' => 'self_pickup',
                 'delivery_slot' => '09:00-11:00',
                 'ongkir' => 0,
-                'product_price' => 250000,
-                'product_quantity' => 1,
-                'order_form' => [
-                    'product_name' => 'Tumpeng Mini',
-                    'recipient_name' => 'Test',
-                    'recipient_address' => 'Test Address',
-                    'delivery_date' => '10 Sep',
-                    'delivery_time' => '10:00',
+                'cart' => [$this->cartRow],
+                'order_customer' => [
+                    'name' => 'Test',
+                    'address' => 'Test Address Denpasar',
+                    'date' => now()->addDays(5)->format('d M Y'),
                 ],
             ],
         ]);

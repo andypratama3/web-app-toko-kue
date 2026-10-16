@@ -165,19 +165,11 @@ class OrderBotStateTransitionTest extends TestCase
 
         $this->conversation->update([
             'current_state' => OrderBotConversationState::ORDER_SUMMARY->value,
-            'context' => [
+            'context' => array_merge($this->cartContext(), [
                 'delivery_method' => 'self_pickup',
                 'delivery_slot' => '09:00-11:00',
                 'ongkir' => 0,
-                'product_quantity' => 1,
-                'order_form' => [
-                    'product_name' => 'Tumpeng Mini',
-                    'recipient_name' => 'Budi',
-                    'recipient_address' => 'Jl. Test No.1',
-                    'delivery_date' => '10 September 2026',
-                    'delivery_time' => '10:00',
-                ],
-            ],
+            ]),
         ]);
 
         $this->botService->handleMessage($this->conversation, 'FIX');
@@ -279,23 +271,32 @@ class OrderBotStateTransitionTest extends TestCase
         $this->assertEquals(0, $this->conversation->getContext('ongkir'));
     }
 
+    protected function cartContext(): array
+    {
+        $product = Product::where('name', 'Tumpeng Mini Mix')->first();
+        $variant = $product->variants()->first();
+        return [
+            'cart' => [[
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'variant_id' => $variant->id,
+                'variant_name' => $variant->name,
+                'qty' => 1,
+            ]],
+            'order_customer' => [
+                'name' => 'Budi',
+                'address' => 'Jl. Test No.1 Denpasar',
+                'date' => now()->addDays(5)->format('d M Y'),
+            ],
+        ];
+    }
+
     public function test_delivery_slot_to_order_summary(): void
     {
+        $ctx = $this->cartContext();
         $this->conversation->update([
             'current_state' => OrderBotConversationState::AWAITING_DELIVERY_SLOT->value,
-            'context' => [
-                'delivery_method' => 'self_pickup',
-                'ongkir' => 0,
-                'product_price' => 250000,
-                'product_quantity' => 1,
-                'order_form' => [
-                    'product_name' => 'Tumpeng Mini',
-                    'recipient_name' => 'Budi',
-                    'recipient_address' => 'Jl. Test No.1',
-                    'delivery_date' => '10 September 2026',
-                    'delivery_time' => '10:00',
-                ],
-            ],
+            'context' => array_merge($ctx, ['delivery_method' => 'self_pickup', 'ongkir' => 0]),
         ]);
 
         $this->botService->handleMessage($this->conversation, '1');
@@ -307,22 +308,14 @@ class OrderBotStateTransitionTest extends TestCase
 
     public function test_order_summary_fix_creates_order(): void
     {
+        $ctx = $this->cartContext();
         $this->conversation->update([
             'current_state' => OrderBotConversationState::ORDER_SUMMARY->value,
-            'context' => [
+            'context' => array_merge($ctx, [
                 'delivery_method' => 'self_pickup',
                 'delivery_slot' => '09:00-11:00',
                 'ongkir' => 0,
-                'product_price' => 250000,
-                'product_quantity' => 1,
-                'order_form' => [
-                    'product_name' => 'Tumpeng Mini',
-                    'recipient_name' => 'Budi',
-                    'recipient_address' => 'Jl. Test No.1',
-                    'delivery_date' => '10 September 2026',
-                    'delivery_time' => '10:00',
-                ],
-            ],
+            ]),
         ]);
 
         $this->botService->handleMessage($this->conversation, 'FIX');
@@ -345,10 +338,7 @@ class OrderBotStateTransitionTest extends TestCase
     {
         $this->conversation->update([
             'current_state' => OrderBotConversationState::ORDER_SUMMARY->value,
-            'context' => [
-                'delivery_method' => 'self_pickup',
-                'order_form' => ['product_name' => 'Test'],
-            ],
+            'context' => ['delivery_method' => 'self_pickup'],
         ]);
 
         $this->botService->handleMessage($this->conversation, 'BATAL');
@@ -362,22 +352,15 @@ class OrderBotStateTransitionTest extends TestCase
     {
         $this->assertDatabaseCount('customers', 0);
 
+        $ctx = $this->cartContext();
+        $ctx['order_customer']['name'] = 'Budi Santoso';
         $this->conversation->update([
             'current_state' => OrderBotConversationState::ORDER_SUMMARY->value,
-            'context' => [
+            'context' => array_merge($ctx, [
                 'delivery_method' => 'self_pickup',
                 'delivery_slot' => '09:00-11:00',
                 'ongkir' => 0,
-                'product_price' => 250000,
-                'product_quantity' => 1,
-                'order_form' => [
-                    'product_name' => 'Tumpeng Mini',
-                    'recipient_name' => 'Budi Santoso',
-                    'recipient_address' => 'Jl. Test No.1 Denpasar',
-                    'delivery_date' => '10 September 2026',
-                    'delivery_time' => '10:00',
-                ],
-            ],
+            ]),
         ]);
 
         $this->botService->handleMessage($this->conversation, 'fix');
@@ -394,20 +377,11 @@ class OrderBotStateTransitionTest extends TestCase
     {
         $this->conversation->update([
             'current_state' => OrderBotConversationState::ORDER_SUMMARY->value,
-            'context' => [
+            'context' => array_merge($this->cartContext(), [
                 'delivery_method' => 'self_pickup',
                 'delivery_slot' => '09:00-11:00',
                 'ongkir' => 0,
-                'product_price' => 250000,
-                'product_quantity' => 1,
-                'order_form' => [
-                    'product_name' => 'Tumpeng Mini',
-                    'recipient_name' => 'Test',
-                    'recipient_address' => 'Test Address',
-                    'delivery_date' => '10 September 2026',
-                    'delivery_time' => '10:00',
-                ],
-            ],
+            ]),
         ]);
 
         $this->botService->handleMessage($this->conversation, 'FIX');
@@ -418,37 +392,31 @@ class OrderBotStateTransitionTest extends TestCase
 
     public function test_pesan_during_form_restarts_order_form(): void
     {
-        // Simulasi user yang "nyangkut" di tengah form (state AWAITING_LOCATION_OR_ADDRESS)
-        // lalu mengetik "PESAN" — harus memulai ulang formulir, bukan ditelan sebagai alamat.
+        // Simulasi user yang "nyangkut" lalu mengetik "PESAN" — mulai ulang
+        // dari lokasi (satu cabang → langsung minta lokasi), cart dikosongkan.
         $this->conversation->update([
             'current_state' => OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS->value,
-            'context' => [
+            'context' => array_merge($this->cartContext(), [
                 'delivery_method' => 'kurir_internal',
-                'order_form' => [
-                    'product_name' => 'Tumpeng Mini',
-                    'recipient_name' => 'Budi',
-                    'recipient_address' => 'Jl. Lama No.1',
-                    'delivery_date' => '10 September 2026',
-                    'delivery_time' => '10:00',
-                ],
-            ],
+            ]),
         ]);
 
         $this->botService->handleMessage($this->conversation, 'PESAN');
 
         $this->conversation->refresh();
-        $this->assertEquals(OrderBotConversationState::AWAITING_ORDER_FORM->value, $this->conversation->current_state);
-        $this->assertEquals(0, $this->conversation->getContext('form_step'));
-        $this->assertSame([], $this->conversation->getContext('order_form'));
+        $this->assertEquals(OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS->value, $this->conversation->current_state);
+        $this->assertNull($this->conversation->getContext('cart'));
     }
 
     public function test_pesan_during_form_step_does_not_swallow_as_field(): void
     {
         // Dari log asli: user berada di form step delivery_date lalu mengetik "halo"/"pesan".
         // Kedua kata itu tidak boleh tersimpan sebagai isi field.
+        $ctx = $this->cartContext();
+        unset($ctx['order_customer']['date']);
         $this->conversation->update([
             'current_state' => OrderBotConversationState::AWAITING_ORDER_FORM->value,
-            'context' => ['form_step' => 3, 'order_form' => ['product_name' => 'Tumpeng Mini']],
+            'context' => array_merge($ctx, ['form_step' => 3]),
         ]);
 
         $this->botService->handleMessage($this->conversation, 'halo');
@@ -456,13 +424,13 @@ class OrderBotStateTransitionTest extends TestCase
         $this->conversation->refresh();
         $this->assertEquals(OrderBotConversationState::AWAITING_ORDER_FORM->value, $this->conversation->current_state);
         $this->assertEquals(3, $this->conversation->getContext('form_step'));
-        $this->assertNull($this->conversation->getContext('order_form.delivery_date'));
+        $this->assertNull($this->conversation->getContext('order_customer.date'));
 
         $this->botService->handleMessage($this->conversation, 'PESAN');
 
         $this->conversation->refresh();
-        $this->assertEquals(OrderBotConversationState::AWAITING_ORDER_FORM->value, $this->conversation->current_state);
-        $this->assertEquals(0, $this->conversation->getContext('form_step'));
+        $this->assertEquals(OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS->value, $this->conversation->current_state);
+        $this->assertNull($this->conversation->getContext('cart'));
     }
 
     public function test_halo_during_form_shows_guidance_without_leaving_form(): void
@@ -482,45 +450,38 @@ class OrderBotStateTransitionTest extends TestCase
     {
         $this->conversation->update([
             'current_state' => OrderBotConversationState::AWAITING_ORDER_FORM->value,
-            'context' => ['form_step' => 1, 'order_form' => ['product_name' => 'Tumpeng Mini Mix']],
+            'context' => array_merge($this->cartContext(), ['form_step' => 2, 'order_customer' => ['name' => 'Shinta']]),
         ]);
 
-        $this->botService->handleMessage($this->conversation, 'Shinta | Jl. Batalyon No 10 Surabaya | ' . now()->addDays(5)->format('d M Y'));
+        $this->botService->handleMessage($this->conversation, 'Jl. Batalyon No 10 Surabaya');
 
         $this->conversation->refresh();
-        $this->assertEquals(OrderBotConversationState::AWAITING_DELIVERY_METHOD->value, $this->conversation->current_state);
-        $this->assertEquals('Jl. Batalyon No 10 Surabaya', $this->conversation->getContext('order_form.recipient_address'));
+        $this->assertEquals(3, $this->conversation->getContext('form_step'));
+        $this->assertEquals('Jl. Batalyon No 10 Surabaya', $this->conversation->getContext('order_customer.address'));
     }
 
     public function test_menunggu_word_does_not_escape_to_menu(): void
     {
         $this->conversation->update([
             'current_state' => OrderBotConversationState::AWAITING_ORDER_FORM->value,
-            'context' => ['form_step' => 1, 'order_form' => ['product_name' => 'Tumpeng Mini Mix']],
+            'context' => array_merge($this->cartContext(), ['form_step' => 2, 'order_customer' => ['name' => 'Budi']]),
         ]);
 
-        $this->botService->handleMessage($this->conversation, 'Budi | Jl. Menunggu No 1 | ' . now()->addDays(5)->format('d M Y'));
+        $this->botService->handleMessage($this->conversation, 'Jl. Menunggu No 1 Surabaya');
 
         $this->conversation->refresh();
-        $this->assertEquals(OrderBotConversationState::AWAITING_DELIVERY_METHOD->value, $this->conversation->current_state);
+        $this->assertEquals(3, $this->conversation->getContext('form_step'));
     }
 
     public function test_confirm_with_yes_word_creates_order(): void
     {
         $this->conversation->update([
             'current_state' => OrderBotConversationState::ORDER_SUMMARY->value,
-            'context' => [
+            'context' => array_merge($this->cartContext(), [
                 'delivery_method' => 'self_pickup',
                 'delivery_slot' => '09:00-11:00',
                 'ongkir' => 0,
-                'order_form' => [
-                    'product_name' => 'Tumpeng Mini',
-                    'recipient_name' => 'Budi',
-                    'recipient_address' => 'Jl. Test No.1',
-                    'delivery_date' => '10 September 2026',
-                    'delivery_time' => '10:00',
-                ],
-            ],
+            ]),
         ]);
 
         $this->botService->handleMessage($this->conversation, 'Ya, oke');
@@ -530,12 +491,11 @@ class OrderBotStateTransitionTest extends TestCase
 
     public function test_lanjut_phrase_and_price_question_do_not_confirm(): void
     {
-        $context = [
+        $context = array_merge($this->cartContext(), [
             'delivery_method' => 'self_pickup',
             'delivery_slot' => '09:00-11:00',
             'ongkir' => 0,
-            'order_form' => ['product_name' => 'Tumpeng Mini'],
-        ];
+        ]);
 
         $this->conversation->update([
             'current_state' => OrderBotConversationState::ORDER_SUMMARY->value,
@@ -572,28 +532,28 @@ class OrderBotStateTransitionTest extends TestCase
     {
         $this->conversation->update([
             'current_state' => OrderBotConversationState::AWAITING_ORDER_FORM->value,
-            'context' => ['form_step' => 1, 'order_form' => ['product_name' => 'Tumpeng Mini Mix']],
+            'context' => array_merge($this->cartContext(), ['form_step' => 2, 'order_customer' => ['name' => 'Shinta']]),
         ]);
 
-        $this->botService->handleMessage($this->conversation, 'Shinta |  | ' . now()->addDays(5)->format('d M Y'));
+        $this->botService->handleMessage($this->conversation, 'Jl');
 
         $this->conversation->refresh();
         $this->assertEquals(OrderBotConversationState::AWAITING_ORDER_FORM->value, $this->conversation->current_state);
-        $this->assertEquals(1, $this->conversation->getContext('form_step'));
+        $this->assertEquals(2, $this->conversation->getContext('form_step'));
     }
 
     public function test_combined_form_joins_extra_pipes_into_address(): void
     {
         $this->conversation->update([
             'current_state' => OrderBotConversationState::AWAITING_ORDER_FORM->value,
-            'context' => ['form_step' => 1, 'order_form' => ['product_name' => 'Tumpeng Mini Mix']],
+            'context' => array_merge($this->cartContext(), ['form_step' => 3, 'order_customer' => ['name' => 'Shinta', 'address' => 'Jl. X Surabaya']]),
         ]);
 
-        $this->botService->handleMessage($this->conversation, 'Shinta | Toko A | Cabang B | ' . now()->addDays(5)->format('d M Y'));
+        $this->botService->handleMessage($this->conversation, 'bulan depan ya');
 
         $this->conversation->refresh();
-        $this->assertEquals(OrderBotConversationState::AWAITING_DELIVERY_METHOD->value, $this->conversation->current_state);
-        $this->assertEquals('Toko A | Cabang B', $this->conversation->getContext('order_form.recipient_address'));
+        $this->assertEquals(OrderBotConversationState::AWAITING_ORDER_FORM->value, $this->conversation->current_state);
+        $this->assertEquals(3, $this->conversation->getContext('form_step'));
     }
 
     public function test_quantity_prefix_flows_to_order_item(): void
@@ -606,25 +566,20 @@ class OrderBotStateTransitionTest extends TestCase
         $this->botService->handleMessage($this->conversation, '2x Tumpeng Mini Mix');
 
         $this->conversation->refresh();
-        $this->assertEquals(1, $this->conversation->getContext('form_step'));
-        $this->assertEquals(2, $this->conversation->getContext('product_quantity'));
-        $this->assertEquals('Tumpeng Mini Mix', $this->conversation->getContext('order_form.product_name'));
+        $cart = $this->conversation->getContext('cart');
+        $this->assertCount(1, $cart);
+        $this->assertEquals(2, $cart[0]['qty']);
+        $this->assertEquals(4, $this->conversation->getContext('form_step'));
 
+        $ctx = $this->cartContext();
+        $ctx['cart'][0]['qty'] = 2;
         $this->conversation->update([
             'current_state' => OrderBotConversationState::ORDER_SUMMARY->value,
-            'context' => [
+            'context' => array_merge($ctx, [
                 'delivery_method' => 'self_pickup',
                 'delivery_slot' => '09:00-11:00',
                 'ongkir' => 0,
-                'product_quantity' => 2,
-                'order_form' => [
-                    'product_name' => 'Tumpeng Mini Mix',
-                    'recipient_name' => 'Budi',
-                    'recipient_address' => 'Jl. Test No.1',
-                    'delivery_date' => '10 September 2026',
-                    'delivery_time' => '10:00',
-                ],
-            ],
+            ]),
         ]);
         $this->botService->handleMessage($this->conversation, 'FIX');
 
@@ -638,18 +593,11 @@ class OrderBotStateTransitionTest extends TestCase
     {
         $this->conversation->update([
             'current_state' => OrderBotConversationState::ORDER_SUMMARY->value,
-            'context' => [
+            'context' => array_merge($this->cartContext(), [
                 'delivery_method' => 'self_pickup',
                 'delivery_slot' => '09:00-11:00',
                 'ongkir' => 0,
-                'order_form' => [
-                    'product_name' => 'Tumpeng Mini Mix',
-                    'recipient_name' => 'Budi',
-                    'recipient_address' => 'Jl. Lama No.1',
-                    'delivery_date' => '10 September 2026',
-                    'delivery_time' => '10:00',
-                ],
-            ],
+            ]),
         ]);
 
         $this->botService->handleMessage($this->conversation, 'ubah alamat');
@@ -660,7 +608,7 @@ class OrderBotStateTransitionTest extends TestCase
         $this->botService->handleMessage($this->conversation, 'Jl. Baru No 9 Surabaya');
         $this->conversation->refresh();
         $this->assertNull($this->conversation->getContext('editing_address'));
-        $this->assertEquals('Jl. Baru No 9 Surabaya', $this->conversation->getContext('order_form.recipient_address'));
+        $this->assertEquals('Jl. Baru No 9 Surabaya', $this->conversation->getContext('order_customer.address'));
         $this->assertEquals(OrderBotConversationState::ORDER_SUMMARY->value, $this->conversation->current_state);
         $this->assertDatabaseCount('orders', 0);
     }

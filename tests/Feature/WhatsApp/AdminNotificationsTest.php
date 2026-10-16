@@ -126,7 +126,7 @@ class AdminNotificationsTest extends TestCase
             'description' => 'Tumpeng',
             'is_active' => true,
         ]);
-        ProductVariant::create([
+        $variant = ProductVariant::create([
             'product_id' => $product->id,
             'name' => 'Paket',
             'price' => 250000,
@@ -142,13 +142,17 @@ class AdminNotificationsTest extends TestCase
                 'delivery_method' => 'self_pickup',
                 'delivery_slot' => '09:00-11:00',
                 'ongkir' => 0,
-                'product_quantity' => 1,
-                'order_form' => [
-                    'product_name' => 'Tumpeng Mini',
-                    'recipient_name' => 'Budi',
-                    'recipient_address' => 'Jalan Langgar',
-                    'delivery_date' => '10 September 2026',
-                    'delivery_time' => '10:00',
+                'cart' => [[
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'variant_id' => $variant->id,
+                    'variant_name' => $variant->name,
+                    'qty' => 1,
+                ]],
+                'order_customer' => [
+                    'name' => 'Budi',
+                    'address' => 'Jalan Langgar Denpasar',
+                    'date' => now()->addDays(5)->format('d M Y'),
                 ],
             ],
         ]);
