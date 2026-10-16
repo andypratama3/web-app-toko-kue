@@ -47,6 +47,8 @@ class OrderItem extends Model
      */
     public function variant(): BelongsTo
     {
-        return $this->belongsTo(ProductVariant::class);
+        // FK eksplisit: default Laravel ("product_variant_id") salah —
+        // kolomnya variant_id.
+        return $this->belongsTo(ProductVariant::class, 'variant_id');
     }
 }

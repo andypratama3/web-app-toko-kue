@@ -30,7 +30,9 @@ class WhatsAppBroadcastRecipient extends Model
 
     public function broadcast(): BelongsTo
     {
-        return $this->belongsTo(WhatsAppBroadcast::class);
+        // FK eksplisit: default Laravel ("whats_app_broadcast_id") salah
+        // untuk model WhatsAppBroadcast — kolomnya broadcast_id.
+        return $this->belongsTo(WhatsAppBroadcast::class, 'broadcast_id');
     }
 
     public function customer(): BelongsTo
