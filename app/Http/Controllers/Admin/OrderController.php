@@ -228,6 +228,27 @@ class OrderController extends Controller
     }
 
     /**
+     * Verifikasi PEMBAYARAN saja (bayar di depan): tandai lunas tanpa
+     * mengubah status pengiriman — alur kurir tetap jalan. Syarat: ada bukti.
+     */
+    public function verifyPayment($id)
+    {
+        $admin = Auth::user();
+        $order = Order::where('region_id', $admin->region_id)->findOrFail($id);
+
+        if (empty($order->payment_proof)) {
+            return response()->json(['message' => 'Belum ada bukti pembayaran.'], 422);
+        }
+
+        if (empty($order->paid_at)) {
+            $order->paid_at = now();
+            $order->save();
+        }
+
+        return response()->json(['message' => 'Pembayaran terverifikasi (Lunas). Pengiriman tetap lanjut.']);
+    }
+
+    /**
      * Tolak verifikasi pesanan (kembalikan status ke diterima_pembeli).
      */
     public function reject(Request $request, $id)

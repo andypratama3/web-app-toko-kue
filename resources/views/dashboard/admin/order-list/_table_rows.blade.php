@@ -54,6 +54,16 @@
                 data-target-modal="verifyOrderModal" data-order-id="{{ $order->id }}" data-readonly="1">
                 Lihat
             </button>
+            @if ($order->payment_proof && !$order->paid_at)
+                {{-- Verifikasi bayar di depan: lunas tanpa ganggu alur kirim --}}
+                <button type="button"
+                    class="px-3 py-1 text-xs font-bold text-white bg-emerald-600 rounded hover:bg-emerald-700"
+                    onclick="verifyPayment({{ $order->id }})" title="Tandai lunas, pengiriman tetap lanjut">
+                    ✓ Bayar
+                </button>
+            @elseif($order->paid_at)
+                <span class="px-3 py-1 text-xs font-bold text-emerald-700 bg-emerald-100 rounded">Lunas</span>
+            @endif
             @if ($order->status == 'baru' && is_null($order->created_by_user_id))
                 {{-- Order bot belum bertuan: tugaskan ke kurir se-region --}}
                 <div class="flex items-center gap-1">

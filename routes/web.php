@@ -121,6 +121,7 @@ Route::middleware([
         Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
         Route::get('orders/{id}/details', [AdminOrderController::class, 'details']);
         Route::post('orders/{id}/verify', [AdminOrderController::class, 'verify'])->name('orders.verify');
+        Route::post('orders/{id}/verify-payment', [AdminOrderController::class, 'verifyPayment'])->name('orders.verifyPayment');
         Route::post('orders/{id}/reject', [AdminOrderController::class, 'reject']);
         Route::post('orders/{id}/assign', [AdminOrderController::class, 'assign'])->name('orders.assign');
         Route::delete('orders/{id}', [AdminOrderController::class, 'destroy'])->name('orders.destroy');

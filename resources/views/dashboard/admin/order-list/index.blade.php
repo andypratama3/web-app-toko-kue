@@ -417,6 +417,27 @@
             }
         }
 
+        // Verifikasi pembayaran di depan (tandai lunas, alur kirim tetap jalan).
+        async function verifyPayment(orderId) {
+            try {
+                const response = await fetch(`/admin/orders/${orderId}/verify-payment`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content'),
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || 'Terjadi kesalahan');
+
+                dispatchToast(data.message || 'Pembayaran terverifikasi.', 'success');
+                setTimeout(() => window.location.reload(), 1200);
+            } catch (error) {
+                dispatchToast(`Gagal: ${error.message}`, 'error');
+            }
+        }
+
         // Fungsi untuk menghapus pesanan
         async function deleteOrder(orderId) {
             const modalElement = document.getElementById('deleteConfirmModal');

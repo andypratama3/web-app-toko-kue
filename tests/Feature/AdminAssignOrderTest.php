@@ -123,6 +123,33 @@ class AdminAssignOrderTest extends TestCase
         $this->assertEquals('baru', $this->botOrder->fresh()->status);
     }
 
+    public function test_verify_payment_tandai_lunas_tanpa_ubah_status(): void
+    {
+        $this->botOrder->update([
+            'payment_proof' => 'payment_proofs/test.jpg',
+            'status' => 'dikemas',
+            'created_by_user_id' => $this->kurir->id,
+        ]);
+
+        $response = $this->actingAs($this->admin)->postJson(
+            route('admin.orders.verifyPayment', $this->botOrder->id)
+        );
+
+        $response->assertOk();
+        $fresh = $this->botOrder->fresh();
+        $this->assertNotNull($fresh->paid_at);
+        $this->assertEquals('dikemas', $fresh->status);
+    }
+
+    public function test_verify_payment_tanpa_bukti_ditolak(): void
+    {
+        $response = $this->actingAs($this->admin)->postJson(
+            route('admin.orders.verifyPayment', $this->botOrder->id)
+        );
+
+        $response->assertStatus(422);
+    }
+
     public function test_admin_melihat_produk_global_dan_region_sendiri(): void
     {
         $cat = \App\Models\Category::create(['name' => 'Produk', 'slug' => 'produk']);
