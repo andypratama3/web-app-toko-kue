@@ -972,7 +972,9 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
     {
         $lower = strtolower(trim($text));
 
-        if ($this->matchesCommand($lower, ['lanjut', 'lanjutkan', 'selesai', 'cukup', 'sudah', 'udah', 'checkout'])) {
+        // LANJUT/HAPUS hanya bila PESAN PERSIS perintahnya — "1x selesai
+        // serikaya" mengandung kata "selesai" tapi itu BUKAN perintah lanjut.
+        if (in_array($lower, ['lanjut', 'lanjutkan', 'selesai', 'cukup', 'sudah', 'udah', 'checkout'], true)) {
             $cart = $conversation->getContext('cart') ?? [];
             if ($cart === []) {
                 $conversation->setContext('form_step', 0);
@@ -988,15 +990,16 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             return;
         }
 
-        if ($this->matchesCommand($lower, ['hapus', 'batalkan terakhir', 'kurangi'])) {
+        // HAPUS [n]: perintah persis ("hapus" / "hapus 2"). Teks lain yang
+        // mengandung kata hapus tetap dianggap nama produk.
+        if ($lower === 'hapus' || preg_match('/^hapus\s+(\d{1,2})$/iu', $lower, $hm)) {
             $cart = $conversation->getContext('cart') ?? [];
             $target = null;
-            if (preg_match('/(\d{1,2})/', $lower, $m)) {
-                $idx = (int) $m[1] - 1;
+            if (isset($hm[1])) {
+                $idx = (int) $hm[1] - 1;
                 if (isset($cart[$idx])) {
-                    $removed = $cart[$idx];
+                    $target = $cart[$idx];
                     array_splice($cart, $idx, 1);
-                    $target = $removed;
                 }
             }
             if ($target === null) {
@@ -1034,10 +1037,13 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
     {
         $name = trim($text);
         $lower = strtolower($name);
-        // Tolak yang jelas-jelas bukan nama: angka, perintah bot, sapaan pendek.
+        // Tolak yang jelas-jelas bukan nama: terlalu pendek, angka saja,
+        // atau TEPAT berupa perintah/sapaan ("fix", "halo"). Kalimat yang
+        // MENGANDUNG kata itu ("Halo, saya Budi") tetap diterima.
+        $commandWords = ['lanjut', 'lanjutkan', 'selesai', 'cukup', 'sudah', 'udah', 'checkout', 'fix', 'hapus', 'batal', 'menu', 'pesan', 'produk', 'skip', 'ya', 'ok', 'oke', 'halo', 'hai', 'pagi', 'siang', 'sore', 'malam'];
         if (mb_strlen($name) < 2
             || ctype_digit(str_replace([' ', '.', '-'], '', $name))
-            || $this->matchesCommand($lower, ['lanjut', 'fix', 'hapus', 'batal', 'menu', 'pesan', 'produk', 'skip', 'ya', 'ok', 'oke', 'halo', 'hai', 'pagi', 'siang', 'sore', 'malam'])
+            || in_array($lower, $commandWords, true)
         ) {
             $this->metaService->sendText($conversation->phone_number,
                 "*Siapa nama penerimanya?*\nTulis nama orangnya ya (mis. Budi Santoso), bukan angka/perintah."
@@ -1311,14 +1317,15 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
     }
 
     /**
-     * Parse awalan jumlah "2x " / "2X " / "2× ". Batas 1–100 DITERAPKAN
+     * Parse awalan jumlah "2x ", "2 ", "2X ", "2× ". Batas 1–100 DITERAPKAN
      * pemanggil (agar bisa memberi tahu user bila dibatasi).
+     * Angka polos ("3") dikembalikan utuh sebagai nama (nomor katalog).
      *
      * @return array{0: int, 1: string} [quantity mentah, nama produk bersih]
      */
     protected function extractQuantity(string $text): array
     {
-        if (preg_match('/^(-?\d{1,4})\s*[x×]\s+(.+)$/iu', trim($text), $m)) {
+        if (preg_match('/^(-?\d{1,4})\s*[x×]?\s+(.+)$/iu', trim($text), $m)) {
             return [(int) $m[1], trim($m[2])];
         }
 

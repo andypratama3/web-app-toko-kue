@@ -206,6 +206,43 @@ class OrderBotSimpleFlowTest extends TestCase
         $this->assertEquals(0, $c->getContext('form_step'));
     }
 
+    public function test_jumlah_tanpa_x_dimengerti(): void
+    {
+        $c = $this->newConversation();
+        $this->bot->handleMessage($c, '2 kue ijo');
+
+        $c->refresh();
+        $this->assertNotEmpty($c->getContext('pending_options'));
+        $this->assertEquals(2, $c->getContext('product_quantity'));
+    }
+
+    public function test_teks_mengandung_selesai_bukan_perintah_lanjut(): void
+    {
+        // Regresi chat asli: "1x selesai serikaya" mental ke data penerima.
+        $c = $this->newConversation();
+        $this->bot->handleMessage($c, 'Kue Ijo');
+        $this->bot->handleMessage($c, '1');
+        $this->bot->handleMessage($c, '1x selesai serikaya');
+
+        $c->refresh();
+        // Tetap di langkah tambah (4), BUKAN melompat ke nama penerima (1).
+        $this->assertEquals(4, $c->getContext('form_step'));
+        $this->assertNull($c->getContext('order_customer')['name'] ?? null);
+    }
+
+    public function test_nama_mengandung_sapaan_diterima(): void
+    {
+        $c = $this->newConversation();
+        $this->bot->handleMessage($c, 'Kue Ijo');
+        $this->bot->handleMessage($c, '1');
+        $this->bot->handleMessage($c, 'LANJUT');
+        $this->bot->handleMessage($c, 'Halo, saya Budi Santoso');
+
+        $c->refresh();
+        $this->assertEquals(2, $c->getContext('form_step'));
+        $this->assertEquals('Halo, saya Budi Santoso', $c->getContext('order_customer')['name']);
+    }
+
     public function test_batal_pasca_fix_membatalkan_ghost_order(): void
     {
         $c = $this->newConversation();
