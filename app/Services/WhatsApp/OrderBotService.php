@@ -37,7 +37,32 @@ class OrderBotService
 
     public function handleMessage(WhatsAppConversation $conversation, string $messageText, ?array $messageData = null): void
     {
-        $state = OrderBotConversationState::from($conversation->current_state);
+        // Jaring pengaman terakhir anti-putus: error apa pun TIDAK BOLEH
+        // membuat user tidak dapat balasan sama sekali.
+        try {
+            $this->routeMessage($conversation, $messageText, $messageData);
+        } catch (\Throwable $e) {
+            Log::channel('whatsapp')->error('❌ handleMessage gagal (fallback terkirim)', [
+                'phone' => $conversation->phone_number,
+                'state' => $conversation->current_state,
+                'error' => $e->getMessage(),
+            ]);
+            try {
+                $this->metaService->sendText($conversation->phone_number,
+                    "Maaf, ada gangguan sesaat. 🙏\n\n" .
+                    "Pesanan Anda aman. Ketik *PESAN* untuk lanjut, atau *BATAL* untuk mulai ulang."
+                );
+            } catch (\Throwable $ignored) {
+                // Meta API ikut gagal: pasrah, sudah tercatat di log.
+            }
+        }
+    }
+
+    protected function routeMessage(WhatsAppConversation $conversation, string $messageText, ?array $messageData = null): void
+    {
+        // State korup/asing → anggap sapaan awal, jangan 500.
+        $state = OrderBotConversationState::tryFrom((string) $conversation->current_state)
+            ?? OrderBotConversationState::WELCOME_SENT;
 
         Log::channel('whatsapp')->info('🤖 Processing message', [
             'phone' => $conversation->phone_number,
@@ -85,7 +110,7 @@ class OrderBotService
 
     public function handleLocationMessage(WhatsAppConversation $conversation, array $locationData): void
     {
-        $state = OrderBotConversationState::from($conversation->current_state);
+        $state = OrderBotConversationState::tryFrom((string) $conversation->current_state) ?? OrderBotConversationState::WELCOME_SENT;
 
         if ($state === OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS) {
             $lat = $locationData['latitude'] ?? null;
@@ -153,11 +178,17 @@ class OrderBotService
         $conversation->setContext('pending_location', null);
         $conversation->setContext('location_done', true);
 
-        // Kembali ke pilih produk bila lokasi diminta di tengah order.
-        if ($conversation->getContext('after_location') === 'product') {
+        // Kembali ke pilih produk / keranjang bila lokasi diminta di tengah order.
+        if (in_array($conversation->getContext('after_location'), ['product', 'cart'], true)) {
+            $backToCart = $conversation->getContext('after_location') === 'cart'
+                && ($conversation->getContext('cart') ?? []) !== [];
             $conversation->setContext('after_location', null);
             $this->advanceState($conversation, OrderBotConversationState::AWAITING_ORDER_FORM);
-            $this->askOrderForm($conversation);
+            if ($backToCart) {
+                $this->askAddMore($conversation);
+            } else {
+                $this->askOrderForm($conversation);
+            }
 
             return;
         }
@@ -180,7 +211,7 @@ class OrderBotService
      */
     protected function checkGlobalEscape(WhatsAppConversation $conversation, string $text): bool
     {
-        $state = OrderBotConversationState::from($conversation->current_state);
+        $state = OrderBotConversationState::tryFrom((string) $conversation->current_state) ?? OrderBotConversationState::WELCOME_SENT;
         $lower = strtolower(trim($text));
 
         $orderFlowStates = [
@@ -257,12 +288,31 @@ class OrderBotService
             && (! $isFormFieldAnswer || $isExactRestart)
             && $this->matchesCommand($lower, ['mau pesan', 'pesan', 'order', 'ordering', 'mau order'])
         ) {
+            // Anti-putus: keranjang + data penerima dipertahankan (harga
+            // selalu live). Lokasi/cabang diverifikasi ulang, lalu kembali
+            // ke tawaran tambah bila keranjang sudah ada isi.
+            $keptCart = $conversation->getContext('cart') ?? [];
+            $keptCustomer = $conversation->getContext('order_customer') ?? [];
             $conversation->clearContext();
+            if ($keptCart !== []) {
+                $conversation->update(['context' => [
+                    'cart' => $keptCart,
+                    'order_customer' => $keptCustomer,
+                    'after_location' => 'cart',
+                ]]);
+            }
             $this->advanceState($conversation, OrderBotConversationState::AWAITING_ORDER_FORM);
-            $this->metaService->sendText(
-                $conversation->phone_number,
-                "📝 Oke, kita mulai ulang formulir pesanannya ya 😊"
-            );
+            if ($keptCart !== []) {
+                $this->metaService->sendText(
+                    $conversation->phone_number,
+                    "📝 Oke, kita lanjutkan pesananmu ya 😊\n\nPertama pastikan cabang & lokasi dulu."
+                );
+            } else {
+                $this->metaService->sendText(
+                    $conversation->phone_number,
+                    "📝 Oke, kita mulai ulang formulir pesanannya ya 😊"
+                );
+            }
             $this->askOrderForm($conversation);
 
             return true;
@@ -337,7 +387,7 @@ class OrderBotService
             return false;
         }
 
-        $state = OrderBotConversationState::from($conversation->current_state);
+        $state = OrderBotConversationState::tryFrom((string) $conversation->current_state) ?? OrderBotConversationState::WELCOME_SENT;
         $intermediateStates = [
             OrderBotConversationState::WELCOME_SENT,
             OrderBotConversationState::MENU_SELECTION,
@@ -355,14 +405,34 @@ class OrderBotService
             return false;
         }
 
-        $this->metaService->sendText(
-            $conversation->phone_number,
-            "Halo" . ($conversation->profile_name ? " *{$conversation->profile_name}*" : "") . " 👋\n\n".
-            'Sepertinya obrolan sebelumnya sudah lama. Mari mulai dari awal lagi 😊'."\n\n".
-            "Ketik *PESAN* untuk mulai order,\n".
-            'atau ketik *PRODUK* untuk melihat katalog.'
-        );
-        $conversation->clearContext();
+        // Anti-putus: keranjang + data penerima DIPERTAHANKAN melewati reset
+        // (harga selalu di-resolve ulang live, jadi aman dari harga basi).
+        $keptCart = $conversation->getContext('cart') ?? [];
+        $keptCustomer = $conversation->getContext('order_customer') ?? [];
+
+        if ($keptCart !== []) {
+            $this->metaService->sendText(
+                $conversation->phone_number,
+                "Halo" . ($conversation->profile_name ? " *{$conversation->profile_name}*" : "") . " 👋\n\n".
+                'Sepertinya obrolan sebelumnya sudah lama. Keranjangmu kami simpan, harga ikut katalog terbaru 😊'."\n\n".
+                "Ketik *PESAN* untuk lanjutkan order,\n".
+                'atau ketik *PRODUK* untuk melihat katalog.'
+            );
+            $conversation->update(['context' => [
+                'cart' => $keptCart,
+                'order_customer' => $keptCustomer,
+                'form_step' => 4,
+            ]]);
+        } else {
+            $this->metaService->sendText(
+                $conversation->phone_number,
+                "Halo" . ($conversation->profile_name ? " *{$conversation->profile_name}*" : "") . " 👋\n\n".
+                'Sepertinya obrolan sebelumnya sudah lama. Mari mulai dari awal lagi 😊'."\n\n".
+                "Ketik *PESAN* untuk mulai order,\n".
+                'atau ketik *PRODUK* untuk melihat katalog.'
+            );
+            $conversation->clearContext();
+        }
         $conversation->update([
             'current_state' => OrderBotConversationState::WELCOME_SENT->value,
             'status' => 'active',
@@ -480,9 +550,12 @@ class OrderBotService
             return;
         }
 
-        // Hanya 1 cabang terdaftar — langsung ke langkah lokasi
+        // Hanya 1 cabang terdaftar — langsung ke langkah lokasi.
+        // Jangan timpa after_location yang sudah ada (mis. 'cart' dari PESAN).
         $conversation->setContext('awaiting_branch', null);
-        $conversation->setContext('after_location', 'product');
+        if (empty($conversation->getContext('after_location'))) {
+            $conversation->setContext('after_location', 'product');
+        }
         $this->requestDeliveryLocation($conversation);
     }
 
@@ -546,8 +619,11 @@ class OrderBotService
         $this->metaService->sendText($conversation->phone_number,
             "✅ Cabang *{$chosen->name}* dipilih.\n\nKetik *PRODUK* untuk lihat katalog cabang ini, atau lanjut 👇"
         );
-        // Lokasi harus dipilih dulu saat chat agar tidak salah arah
-        $conversation->setContext('after_location', 'product');
+        // Lokasi harus dipilih dulu saat chat agar tidak salah arah.
+        // Jangan timpa after_location yang sudah ada (mis. 'cart' dari PESAN).
+        if (empty($conversation->getContext('after_location'))) {
+            $conversation->setContext('after_location', 'product');
+        }
         $this->requestDeliveryLocation($conversation);
     }
 
@@ -1650,11 +1726,17 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $conversation->setContext('delivery_address', $address);
         $conversation->setContext('location_done', true);
 
-        // Kembali ke pilih produk bila lokasi diminta di tengah order.
-        if ($conversation->getContext('after_location') === 'product') {
+        // Kembali ke pilih produk / keranjang bila lokasi diminta di tengah order.
+        if (in_array($conversation->getContext('after_location'), ['product', 'cart'], true)) {
+            $backToCart = $conversation->getContext('after_location') === 'cart'
+                && ($conversation->getContext('cart') ?? []) !== [];
             $conversation->setContext('after_location', null);
             $this->advanceState($conversation, OrderBotConversationState::AWAITING_ORDER_FORM);
-            $this->askOrderForm($conversation);
+            if ($backToCart) {
+                $this->askAddMore($conversation);
+            } else {
+                $this->askOrderForm($conversation);
+            }
 
             return;
         }
@@ -2151,7 +2233,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
     {
         $context = $conversation->context ?? [];
         $formStep = $context['form_step'] ?? 0;
-        $state = OrderBotConversationState::from($conversation->current_state);
+        $state = OrderBotConversationState::tryFrom((string) $conversation->current_state) ?? OrderBotConversationState::WELCOME_SENT;
 
         return match ($state) {
             OrderBotConversationState::WELCOME_SENT => $conversation->getContext('awaiting_branch')
@@ -2401,9 +2483,11 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
     protected function askOrderForm(WhatsAppConversation $conversation): void
     {
         // Lokasi WAJIB duluan (cabang benar): belum ada lokasi → cabang + pin dulu,
-        // lalu kembali ke pilih produk.
+        // lalu kembali ke pilih produk (atau keranjang bila PESAN dari sesi berisi).
         if (! $conversation->getContext('location_done')) {
-            $conversation->setContext('after_location', 'product');
+            if (empty($conversation->getContext('after_location'))) {
+                $conversation->setContext('after_location', 'product');
+            }
             $this->askBranchSelection($conversation);
 
             return;

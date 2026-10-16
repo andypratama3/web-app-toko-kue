@@ -405,7 +405,9 @@ class OrderBotStateTransitionTest extends TestCase
 
         $this->conversation->refresh();
         $this->assertEquals(OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS->value, $this->conversation->current_state);
-        $this->assertNull($this->conversation->getContext('cart'));
+        // Keranjang dipertahankan (anti-putus), lokasi diverifikasi ulang.
+        $this->assertNotEmpty($this->conversation->getContext('cart'));
+        $this->assertEquals('cart', $this->conversation->getContext('after_location'));
     }
 
     public function test_pesan_during_form_step_does_not_swallow_as_field(): void
@@ -430,7 +432,9 @@ class OrderBotStateTransitionTest extends TestCase
 
         $this->conversation->refresh();
         $this->assertEquals(OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS->value, $this->conversation->current_state);
-        $this->assertNull($this->conversation->getContext('cart'));
+        // Keranjang dipertahankan (anti-putus), lokasi diverifikasi ulang.
+        $this->assertNotEmpty($this->conversation->getContext('cart'));
+        $this->assertEquals('cart', $this->conversation->getContext('after_location'));
     }
 
     public function test_halo_during_form_shows_guidance_without_leaving_form(): void

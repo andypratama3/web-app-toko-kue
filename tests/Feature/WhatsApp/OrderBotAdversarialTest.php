@@ -105,8 +105,9 @@ class OrderBotAdversarialTest extends TestCase
     {
         // Siapkan cart dulu via API internal: satu produk single-varian.
         // 'x','1' bukan nama (terlalu pendek/angka) -> tetap; 'BATALYON'
-        // adalah nama sah -> lanjut; 'PESAN' persis = restart disengaja.
-        foreach ([['x', 1], ['1', 1], ['BATALYON', 2], ['PESAN', null]] as $i => [$input, $expectedStep]) {
+        // adalah nama sah -> lanjut; 'PESAN' persis = restart TAPI keranjang
+        // dipertahankan (anti-putus) + lokasi diverifikasi ulang.
+        foreach ([['x', 1], ['1', 1], ['BATALYON', 2]] as $i => [$input, $expectedStep]) {
             $c = $this->convo();
             $this->bot->handleMessage($c, 'Kue Ijo'); // masuk keranjang (1 varian)
             $this->bot->handleMessage($c, 'LANJUT');
@@ -114,12 +115,16 @@ class OrderBotAdversarialTest extends TestCase
             $this->assertEquals(1, $c->getContext('form_step'), "setup#$i");
             $this->bot->handleMessage($c, $input);
             $c->refresh();
-            if ($expectedStep === null) {
-                $this->assertNull($c->getContext('cart'), "input#$i");
-            } else {
-                $this->assertEquals($expectedStep, $c->getContext('form_step'), "input#$i: $input");
-            }
+            $this->assertEquals($expectedStep, $c->getContext('form_step'), "input#$i: $input");
         }
+        // PESAN persis: restart, keranjang TETAP ADA, lokasi dicek ulang.
+        $c = $this->convo();
+        $this->bot->handleMessage($c, 'Kue Ijo');
+        $this->bot->handleMessage($c, 'LANJUT');
+        $this->bot->handleMessage($c, 'PESAN');
+        $c->refresh();
+        $this->assertCount(1, $c->getContext('cart') ?? []);
+        $this->assertEquals('cart', $c->getContext('after_location'));
         // 'Jl. Mawar No 10' sebagai NAMA juga sah (bebas, tanggung jawab user).
         $c = $this->convo();
         $this->bot->handleMessage($c, 'Kue Ijo');
