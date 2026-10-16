@@ -1736,7 +1736,15 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         // Kirim foto produk dulu bila tersedia (gagal kirim gambar tidak menggagalkan teks detail)
         if ($product->image_path) {
             try {
-                $imageUrl = rtrim((string) config('app.url'), '/') . Storage::url($product->image_path);
+                // Produk katalog memakai path public/assets/..., bukan storage.
+                $imagePath = $product->image_path;
+                if (str_starts_with($imagePath, 'assets/') || str_starts_with($imagePath, 'http')) {
+                    $imageUrl = str_starts_with($imagePath, 'http')
+                        ? $imagePath
+                        : rtrim((string) config('app.url'), '/') . '/' . ltrim($imagePath, '/');
+                } else {
+                    $imageUrl = rtrim((string) config('app.url'), '/') . Storage::url($imagePath);
+                }
                 $cheapest = $this->resolveCheapestVariant($product);
                 $caption = "*{$product->name}*"
                     . ($cheapest ? "\nMulai Rp " . number_format($cheapest->price, 0, ',', '.') : '');
@@ -1766,7 +1774,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
     }
 
     /**
-     * Pricelist ringkas (nama — varian termurah) dikelompokkan per kategori,
+     * Pricelist lengkap (semua varian + harga) dikelompokkan per kategori,
      * di-scope per cabang percakapan. Tidak mengubah state.
      */
     protected function sendPricelist(WhatsAppConversation $conversation): void
@@ -1776,7 +1784,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             ->where(function ($q) use ($regionId) {
                 $q->where('region_id', $regionId)->orWhereNull('region_id');
             })
-            ->with(['category', 'variants' => fn ($q) => $q->where('is_active', true)])
+            ->with(['category', 'variants' => fn ($q) => $q->where('is_active', true)->orderBy('price')])
             ->get();
 
         $regionName = $conversation->region->name ?? config('services.whatsapp.default_region');
@@ -1787,11 +1795,13 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         foreach ($grouped as $category => $items) {
             $text .= "*{$category}*\n";
             foreach ($items as $product) {
-                $cheapest = $this->resolveCheapestVariant($product);
-                $priceText = $cheapest
-                    ? 'Rp ' . number_format($cheapest->price, 0, ',', '.') . " ({$cheapest->name})"
-                    : 'Harga menyusul';
-                $text .= "• {$product->name} — {$priceText}\n";
+                $text .= "• {$product->name}\n";
+                if ($product->variants->isEmpty()) {
+                    $text .= "  Harga menyusul\n";
+                }
+                foreach ($product->variants as $variant) {
+                    $text .= '  - ' . $variant->name . ': Rp ' . number_format($variant->price, 0, ',', '.') . "\n";
+                }
             }
             $text .= "\n";
         }
