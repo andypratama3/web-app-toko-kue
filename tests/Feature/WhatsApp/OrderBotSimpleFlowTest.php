@@ -272,6 +272,62 @@ class OrderBotSimpleFlowTest extends TestCase
         $this->assertEquals(OrderBotConversationState::ORDER_SUMMARY->value, $c->current_state);
     }
 
+    public function test_bahasa_pembeli_varian_otomatis(): void
+    {
+        // "Kue ijo isi 3, 2 pcs" → produk Kue Ijo + varian Isi 3 + qty 2, langsung keranjang.
+        $c = $this->newConversation();
+        $this->bot->handleMessage($c, 'Kue ijo isi 3, 2 pcs');
+
+        $c->refresh();
+        $cart = $c->getContext('cart') ?? [];
+        $this->assertCount(1, $cart);
+        $this->assertEquals(2, $cart[0]['qty']);
+        $variant = ProductVariant::find($cart[0]['variant_id']);
+        $this->assertEquals('Isi 3', $variant->name);
+        $this->assertEmpty($c->getContext('pending_options') ?? []);
+    }
+
+    public function test_tempel_format_lama_langsung_dipakai(): void
+    {
+        $c = $this->newConversation();
+        $this->bot->handleMessage($c, 'Kue Ijo');
+        $this->bot->handleMessage($c, '1');
+        $this->bot->handleMessage($c, 'LANJUT');
+
+        $date = now()->addDays(6)->format('d M Y');
+        $this->bot->handleMessage($c, "Rahma | Jl Kawi no 8 Malang | {$date}");
+
+        $c->refresh();
+        $customer = $c->getContext('order_customer');
+        $this->assertEquals('Rahma', $customer['name']);
+        $this->assertEquals('Jl Kawi no 8 Malang', $customer['address']);
+        $this->assertEquals($date, $customer['date']);
+    }
+
+    public function test_fxi_diterima_sebagai_fix(): void
+    {
+        $c = $this->newConversation();
+        $this->driveToSummary($c);
+        $this->bot->handleMessage($c, 'FXI');
+
+        $this->assertEquals(1, Order::count());
+    }
+
+    public function test_jawaban_jam_di_langkah_tanggal_diarahkan(): void
+    {
+        $c = $this->newConversation();
+        $this->bot->handleMessage($c, 'Kue Ijo');
+        $this->bot->handleMessage($c, '1');
+        $this->bot->handleMessage($c, 'LANJUT');
+        $this->bot->handleMessage($c, 'Budi');
+        $this->bot->handleMessage($c, 'Jl. Mawar No 10 Surabaya');
+        $this->bot->handleMessage($c, 'Jam 9 pagi');
+
+        $c->refresh();
+        $this->assertEquals(3, $c->getContext('form_step'));
+        $this->assertNull($c->getContext('order_customer')['date'] ?? null);
+    }
+
     public function test_slot_tanpa_produk_minta_produk_dulu(): void
     {
         $c = WhatsAppConversation::create([

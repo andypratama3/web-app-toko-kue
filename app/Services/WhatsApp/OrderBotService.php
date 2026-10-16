@@ -733,7 +733,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
      */
     protected function processProductNameStep(WhatsAppConversation $conversation, string $text): void
     {
-        [$rawQty, $productName] = $this->extractQuantity($text);
+        [$rawQty, $productName, $variantHint] = $this->extractQuantityAndVariant($text);
 
         if ($productName === '') {
             $this->metaService->sendText($conversation->phone_number,
@@ -777,6 +777,19 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
         $candidates = $this->searchProductsByKeyword($conversation, $productName);
 
+        // Bahasa pembeli sering menempel varian ("Kue ijo isi 3"):
+        // bila tak cocok, pangkas kata dari belakang sampai cocok.
+        $trimmed = $productName;
+        $tries = 0;
+        while (count($candidates) === 0 && $tries < 4 && str_contains($trimmed, ' ')) {
+            $trimmed = trim(substr($trimmed, 0, strrpos($trimmed, ' ')));
+            $tries++;
+            if ($trimmed === '') {
+                break;
+            }
+            $candidates = $this->searchProductsByKeyword($conversation, $trimmed);
+        }
+
         if (count($candidates) === 0) {
             $this->metaService->sendText($conversation->phone_number,
                 "❌ Produk *{$productName}* tidak ditemukan.\n".
@@ -801,7 +814,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             return;
         }
 
-        $this->selectProductFlow($conversation, $candidates->first(), $quantity);
+        $this->selectProductFlow($conversation, $candidates->first(), $quantity, $variantHint);
     }
 
     /**
@@ -854,9 +867,10 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
     /**
      * Produk sudah pasti ada: simpan pilihan, lalu minta pilih varian
      * bila variannya lebih dari 1. Selalu set ulang jumlah (anti-bocor
-     * sisa qty dari produk sebelumnya).
+     * sisa qty dari produk sebelumnya). $variantHint (mis. "isi 3")
+     * dipakai untuk memilih varian otomatis bila cocok TEPAT SATU.
      */
-    protected function selectProductFlow(WhatsAppConversation $conversation, Product $product, int $quantity = 1): void
+    protected function selectProductFlow(WhatsAppConversation $conversation, Product $product, int $quantity = 1, string $variantHint = ''): void
     {
         $quantity = max(1, min(100, $quantity));
         $conversation->setContext('selected_product_id', $product->id);
@@ -880,6 +894,16 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         }
 
         if ($variants->count() > 1) {
+            // Coba cocokkan hint ("isi 3") ke TEPAT SATU varian via angka
+            // utuh (\b3\b cocok "Isi 3", bukan "Isi 12").
+            $autoMatched = $this->matchVariantByHint($variants, $variantHint);
+            if ($autoMatched) {
+                $conversation->setContext('qty_note', null);
+                $this->addToCart($conversation, $product, $autoMatched, $quantity);
+
+                return;
+            }
+
             $options = $variants->map(fn ($v) => [
                 'type' => 'variant',
                 'id' => $v->id,
@@ -896,6 +920,37 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
         $variant = $variants->first();
         $this->addToCart($conversation, $product, $variant, $quantity);
+    }
+
+    /**
+     * Cocokkan hint teks ke tepat satu varian (berdasar angka utuh).
+     * Null bila tidak cocok / cocok lebih dari satu (user pilih manual).
+     */
+    protected function matchVariantByHint($variants, string $hint): ?ProductVariant
+    {
+        if (trim($hint) === '' || $variants->count() < 2) {
+            return null;
+        }
+
+        if (! preg_match_all('/\d+/', $hint, $m)) {
+            return null;
+        }
+
+        $matched = [];
+        foreach (array_unique($m[0]) as $num) {
+            foreach ($variants as $variant) {
+                if (preg_match('/\b' . preg_quote($num, '/') . '\b/u', $variant->name)) {
+                    $matched[$variant->id] = $variant;
+                }
+            }
+            // Satu angka hanya boleh menunjuk satu varian; kalau angka ini
+            // cocok ke banyak varian, hint ambigu → serahkan ke user.
+            if (count($matched) > 1) {
+                return null;
+            }
+        }
+
+        return count($matched) === 1 ? array_values($matched)[0] : null;
     }
 
     /**
@@ -1032,9 +1087,18 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
     /**
      * Langkah 1 data penerima: NAMA (satu pertanyaan).
+     * Kompatibel format lama ber-pipa ("Rahma | Jl Kawi | 29 Okt"):
+     * dipecah, yang valid langsung dipakai, kurangnya ditanya satu-satu.
      */
     protected function processNameStep(WhatsAppConversation $conversation, string $text): void
     {
+        // Migrasi dari format lama: "Nama | Alamat | Tanggal".
+        if (str_contains($text, '|')) {
+            $this->adoptPipedInput($conversation, $text);
+
+            return;
+        }
+
         $name = trim($text);
         $lower = strtolower($name);
         // Tolak yang jelas-jelas bukan nama: terlalu pendek, angka saja,
@@ -1062,8 +1126,71 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
     }
 
     /**
-     * Langkah 2 data penerima: ALAMAT (satu pertanyaan).
+     * Terima tempelan format lama "Nama | Alamat | Tanggal" di langkah nama:
+     * isi yang valid langsung dipakai, yang kosong/tak valid ditanyakan
+     * satu per satu. Tanpa pemisah koma (",") juga diterima.
      */
+    protected function adoptPipedInput(WhatsAppConversation $conversation, string $text): void
+    {
+        $sep = str_contains($text, '|') ? '|' : ',';
+        $parts = array_map('trim', explode($sep, $text));
+
+        $customer = $conversation->getContext('order_customer') ?? [];
+
+        if (! empty($parts[0]) && mb_strlen($parts[0]) >= 2) {
+            $customer['name'] = mb_substr($parts[0], 0, 100);
+        }
+        if (! empty($parts[1]) && mb_strlen($parts[1]) >= 10) {
+            $customer['address'] = mb_substr($parts[1], 0, 500);
+        }
+        if (! empty($parts[2])) {
+            $parsed = $this->parseDeliveryDate($parts[2]);
+            if ($parsed) {
+                $customer['date'] = $parsed;
+            }
+        }
+        $conversation->setContext('order_customer', $customer);
+
+        if (empty($customer['name'])) {
+            $conversation->setContext('form_step', 1);
+            $this->metaService->sendText($conversation->phone_number,
+                "*Siapa nama penerimanya?*"
+            );
+
+            return;
+        }
+        if (empty($customer['address'])) {
+            $conversation->setContext('form_step', 2);
+            $this->metaService->sendText($conversation->phone_number,
+                "Terima kasih, *{$customer['name']}*.\n\n*Apa alamat lengkapnya?*"
+            );
+
+            return;
+        }
+        if (empty($customer['date'])) {
+            $conversation->setContext('form_step', 3);
+            $this->metaService->sendText($conversation->phone_number,
+                "*Mau dikirim tanggal berapa?*\nContoh: {$this->orderExampleDate()}"
+            );
+
+            return;
+        }
+
+        $conversation->setContext('form_step', 5);
+        if (! empty($conversation->getContext('delivery_method'))
+            && ! empty($conversation->getContext('delivery_slot'))) {
+            if (! $this->refreshAddressAndOngkir($conversation)) {
+                return;
+            }
+            $this->advanceState($conversation, OrderBotConversationState::ORDER_SUMMARY);
+            $this->sendOrderSummary($conversation);
+
+            return;
+        }
+
+        $this->askDeliveryMethod($conversation);
+    }
+
     protected function processAddressStep(WhatsAppConversation $conversation, string $text): void
     {
         $address = trim($text);
@@ -1089,6 +1216,18 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
      */
     protected function processDateStep(WhatsAppConversation $conversation, string $text): void
     {
+        // Jawaban jam saja ("Jam 9 pagi") = user mendahului slot: jelaskan,
+        // tetap minta tanggal (jangan dianggap tanggal).
+        if (preg_match('/\b(jam|pukul|pkl)\b/iu', $text)
+            && ! preg_match('/\d{1,2}[\s\/\-.]/u', trim($text))) {
+            $this->metaService->sendText($conversation->phone_number,
+                "Siap, jamnya dipilih lewat *slot waktu* setelah ini.\n\n".
+                "*Mau dikirim tanggal berapa?*\nContoh: {$this->orderExampleDate()}"
+            );
+
+            return;
+        }
+
         $parsed = $this->parseDeliveryDate($text);
         if (! $parsed) {
             $this->metaService->sendText($conversation->phone_number,
@@ -1330,6 +1469,33 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         }
 
         return [1, trim($text)];
+    }
+
+    /**
+     * Parse gaya bahasa pembeli: "2x Kue Ijo", "2 Kue Ijo",
+     * "Kue ijo isi 3, 2 pcs", "Pulut srikaya 4 pcs", "Kue ijo x2".
+     *
+     * @return array{0: int, 1: string, 2: string} [qty, nama bersih, hint varian]
+     */
+    protected function extractQuantityAndVariant(string $text): array
+    {
+        [$qty, $rest] = $this->extractQuantity($text);
+        $explicitX = (bool) preg_match('/^\d{1,4}\s*[x×]/iu', trim($text));
+
+        // Jumlah di BELAKANG: ", 2 pcs" / " 4 pcs" / " x2".
+        if (preg_match('/[,\s]+(\d{1,3})\s*(pcs|pc|biji|buah|bungkus|pack)\s*$/iu', $rest, $m)) {
+            if (! $explicitX) {
+                $qty = (int) $m[1];
+            }
+            $rest = trim(substr($rest, 0, -strlen($m[0])));
+        } elseif (preg_match('/\s*x\s*(\d{1,3})\s*$/iu', $rest, $m)) {
+            if (! $explicitX) {
+                $qty = (int) $m[1];
+            }
+            $rest = trim(substr($rest, 0, -strlen($m[0])));
+        }
+
+        return [$qty, trim($rest), trim($rest)];
     }
 
     /**
@@ -1616,7 +1782,8 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         }
 
         // Konfirmasi kata-utuh; abaikan bila pesan mengandung pertanyaan ("ya, berapa harganya?").
-        $isConfirm = $this->matchesCommand($lower, ['fix', 'konfirmasi', 'confirm', 'ya', 'oke', 'ok', 'setuju', 'betul', 'benar', 'siap', 'deal'])
+        // 'fxi' = typo umum FIX di keyboard HP.
+        $isConfirm = $this->matchesCommand($lower, ['fix', 'fxi', 'konfirmasi', 'confirm', 'ya', 'oke', 'ok', 'setuju', 'betul', 'benar', 'siap', 'deal'])
             && ! $this->matchesCommand($lower, ['berapa', 'harga', 'ongkir', 'jam', 'tanggal']);
         if ($isConfirm) {
             $this->confirmOrder($conversation);
