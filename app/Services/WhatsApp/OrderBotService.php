@@ -73,7 +73,7 @@ class OrderBotService
             OrderBotConversationState::WELCOME_SENT => $this->handleAfterWelcome($conversation, $messageText),
             OrderBotConversationState::MENU_SELECTION => $this->handleMenuSelection($conversation, $messageText),
             OrderBotConversationState::PRODUCT_BROWSING => $this->handleProductBrowsing($conversation, $messageText),
-            OrderBotConversationState::AWAITING_ORDER_FORM => $this->handleOrderForm($conversation, $messageText),
+            OrderBotConversationState::AWAITING_ORDER_FORM => $this->handleOrderForm($conversation, $messageText, $messageData),
             OrderBotConversationState::AWAITING_DELIVERY_METHOD => $this->handleDeliveryMethod($conversation, $messageText),
             OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS => $this->handleLocationOrAddress($conversation, $messageText, $messageData),
             OrderBotConversationState::AWAITING_DELIVERY_SLOT => $this->handleDeliverySlot($conversation, $messageText),
@@ -688,8 +688,20 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         }
     }
 
-    protected function handleOrderForm(WhatsAppConversation $conversation, string $text): void
+    protected function handleOrderForm(WhatsAppConversation $conversation, string $text, ?array $messageData = null): void
     {
+        // Foto di tengah form (mis. foto kue yang diinginkan) tidak bisa
+        // dikenali — arahkan baik-baik, jangan telan diam-diam.
+        if (! empty($messageData['media_id'])) {
+            $this->metaService->sendText($conversation->phone_number,
+                "Maaf, foto tidak bisa kami kenali isinya. 🙏\n\n".
+                $this->buildCurrentStepGuide($conversation)
+            );
+
+            return;
+        }
+
+        $context = $conversation->context ?? [];
         // Prioritas: user sedang memilih dari daftar bernomor (produk/varian).
         if (! empty($conversation->getContext('pending_options'))) {
             $this->processOptionStep($conversation, $text);
@@ -697,7 +709,6 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             return;
         }
 
-        $context = $conversation->context ?? [];
         $formStep = $context['form_step'] ?? 0;
 
         // Alur sederhana (ramah 30+): 0 produk → 1 nama → 2 alamat → 3 tanggal → 4 tambah/LANJUT.
