@@ -218,6 +218,23 @@ class OrderBotSimpleFlowTest extends TestCase
         $this->assertEquals('dibatalkan', Order::first()->fresh()->status);
     }
 
+    public function test_ubah_alamat_via_pin_gps(): void
+    {
+        $c = $this->newConversation();
+        $this->driveToSummary($c);
+        $this->bot->handleMessage($c, 'ubah alamat');
+        $c->refresh();
+        $this->assertTrue((bool) $c->getContext('editing_address'));
+
+        $this->bot->handleLocationMessage($c, ['latitude' => -8.67, 'longitude' => 115.21]);
+        $c->refresh();
+        $this->assertNull($c->getContext('editing_address'));
+        $this->assertStringContainsString(
+            'Lokasi GPS', $c->getContext('order_customer')['address'] ?? ''
+        );
+        $this->assertEquals(OrderBotConversationState::ORDER_SUMMARY->value, $c->current_state);
+    }
+
     public function test_slot_tanpa_produk_minta_produk_dulu(): void
     {
         $c = WhatsAppConversation::create([

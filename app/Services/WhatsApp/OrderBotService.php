@@ -104,6 +104,15 @@ class OrderBotService
                 "📍 Lokasi diterima dan disimpan.\n\nSilakan pilih dulu metode pengirimannya:"
             );
             $this->sendDeliveryMethodOptions($conversation);
+        } elseif ($state === OrderBotConversationState::ORDER_SUMMARY
+            && $conversation->getContext('editing_address')
+            && isset($locationData['latitude'], $locationData['longitude'])
+            && is_numeric($locationData['latitude']) && is_numeric($locationData['longitude'])
+        ) {
+            // Koreksi alamat via pin GPS saat UBAH ALAMAT (bukan teks).
+            $this->saveEditedPinAddress(
+                $conversation, (float) $locationData['latitude'], (float) $locationData['longitude']
+            );
         } else {
             // H2 FIX: never swallow a location message silently — reply with current step guide
             $this->metaService->sendText($conversation->phone_number,
@@ -645,6 +654,10 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
                     return;
                 }
+
+                // Pilihan angka polos = qty 1 (reset sisa qty dari pilihan sebelumnya).
+                $conversation->setContext('product_quantity', 1);
+                $conversation->forgetContext('qty_note');
             } else {
                 // Dukung "2x Tumpeng Mini" + pertanyaan bebas ("apa itu ...", "info ...").
                 [$rawBrowsingQty, $browsingQuery] = $this->extractQuantity($this->extractProductQuery($lower));
@@ -1611,6 +1624,39 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
      * Simpan alamat koreksi dari ORDER_SUMMARY, hitung ulang ongkir bila
      * memakai kurir internal, lalu tampilkan ringkasan terbaru.
      */
+    /**
+     * Koreksi alamat via pin GPS (dipakai saat UBAH ALAMAT + kirim pin).
+     */
+    protected function saveEditedPinAddress(WhatsAppConversation $conversation, float $lat, float $lng): void
+    {
+        $distance = $this->deliveryZoneService->estimateDistance($lat, $lng, $conversation->region_id);
+        $result = $this->deliveryZoneService->calculateOngkir($distance, $conversation->region_id);
+
+        if (! empty($result['needs_escalation'])) {
+            $snapshot = $this->snapshotOrderDetails($conversation);
+            $conversation->clearContext();
+            $conversation->update(['current_state' => OrderBotConversationState::ESCALATED_TO_HUMAN->value]);
+            $regionName = $conversation->region?->name ?? config('services.whatsapp.default_region', 'cabang kami');
+            $this->metaService->sendText($conversation->phone_number,
+                "Mohon maaf, lokasi baru di luar jangkauan (sekitar {$distance}km).\nSilakan hubungi admin kami."
+            );
+            $this->notifyAdminOfEscalation($conversation, $distance, $regionName, $snapshot);
+
+            return;
+        }
+
+        $customer = $conversation->getContext('order_customer') ?? [];
+        $customer['address'] = "Lokasi GPS ({$lat}, {$lng})";
+        $conversation->setContext('order_customer', $customer);
+        $conversation->setContext('editing_address', null);
+        $conversation->setContext('delivery_address', $customer['address']);
+        $conversation->setContext('distance_km', $distance);
+        $conversation->setContext('ongkir', $result['ongkir'] ?? 0);
+
+        $this->metaService->sendText($conversation->phone_number, '✅ Alamat diperbarui dari pin GPS.');
+        $this->sendOrderSummary($conversation);
+    }
+
     protected function saveEditedAddress(WhatsAppConversation $conversation, string $newAddress): void
     {
         if ($newAddress === '' || $this->matchesCommand($newAddress, ['batal', 'cancel'])) {
