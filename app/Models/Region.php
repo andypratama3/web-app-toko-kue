@@ -9,7 +9,16 @@ class Region extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'slug', 'meta_phone_number_id', 'owner_phone'];
+    protected $fillable = ['name', 'slug', 'meta_phone_number_id', 'owner_phone', 'is_active'];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
 
     public function users()
     {

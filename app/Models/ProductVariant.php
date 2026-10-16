@@ -21,6 +21,10 @@ class ProductVariant extends Model
         'is_active' // Tambahkan ini
     ];
 
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
     /**
      * Get the product that owns the variant.
      */

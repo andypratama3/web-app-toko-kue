@@ -424,7 +424,8 @@ class OrderBotService
      */
     protected function branchOptions()
     {
-        return Region::orderBy('name')->get();
+        // Hanya cabang aktif (Denpasar dinonaktifkan).
+        return Region::active()->orderBy('name')->get();
     }
 
     /**
@@ -453,7 +454,7 @@ class OrderBotService
 
     protected function askBranchSelection(WhatsAppConversation $conversation): void
     {
-        $regions = Region::orderBy('name')->get();
+        $regions = Region::active()->orderBy('name')->get();
         $conversation->setContext('awaiting_branch', true);
 
         if ($regions->count() > 1) {
@@ -500,7 +501,7 @@ class OrderBotService
             return;
         }
 
-        $regions = Region::orderBy('name')->get();
+        $regions = Region::active()->orderBy('name')->get();
 
         $chosen = null;
 
@@ -2052,7 +2053,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             ->where(function ($q) use ($regionId) {
                 $q->where('region_id', $regionId)->orWhereNull('region_id');
             })
-            ->with(['variants' => fn ($q) => $q->where('is_active', true)])
+            ->with(['category', 'variants' => fn ($q) => $q->where('is_active', true)])
             ->get();
 
         $text = "📋 *KATALOG PRODUK*\n\n";
@@ -2792,7 +2793,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             }
         }
 
-        foreach (Region::all() as $region) {
+        foreach (Region::active()->get() as $region) {
             foreach ([$region->slug, $region->name] as $needle) {
                 if ($this->containsWholeWord($text, (string) $needle)) {
                     return (string) $region->name;

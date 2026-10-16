@@ -25,9 +25,13 @@ class ProductController extends Controller
         $userRegionId = $user->region_id;
 
         $categories = Category::whereHas('products', function ($query) use ($userRegionId) {
-            $query->where('region_id', $userRegionId);
+            $query->where(function ($q) use ($userRegionId) {
+                $q->where('region_id', $userRegionId)->orWhereNull('region_id');
+            });
         })->with(['products' => function ($query) use ($userRegionId) {
-            $query->where('region_id', $userRegionId)
+            $query->where(function ($q) use ($userRegionId) {
+                $q->where('region_id', $userRegionId)->orWhereNull('region_id');
+            })
                 ->with(['variants' => function ($q) {
                     $q->where('is_active', true);
                 }]);
@@ -85,7 +89,8 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         // Pastikan admin hanya bisa melihat produk di regionnya sendiri
-        if ($product->region_id !== Auth::user()->region_id) {
+        // Produk global (region NULL, katalog resmi) boleh dikelola semua admin.
+        if (! is_null($product->region_id) && (int) $product->region_id !== (int) Auth::user()->region_id) {
             abort(403);
         }
 
@@ -95,7 +100,8 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
-        if ($product->region_id !== Auth::user()->region_id) {
+        // Produk global (region NULL, katalog resmi) boleh dikelola semua admin.
+        if (! is_null($product->region_id) && (int) $product->region_id !== (int) Auth::user()->region_id) {
             abort(403);
         }
 
@@ -169,7 +175,8 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
-        if ($product->region_id !== Auth::user()->region_id) {
+        // Produk global (region NULL, katalog resmi) boleh dikelola semua admin.
+        if (! is_null($product->region_id) && (int) $product->region_id !== (int) Auth::user()->region_id) {
             abort(403);
         }
 

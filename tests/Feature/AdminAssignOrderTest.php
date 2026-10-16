@@ -100,4 +100,23 @@ class AdminAssignOrderTest extends TestCase
 
         $response->assertStatus(404);
     }
+
+    public function test_admin_melihat_produk_global_dan_region_sendiri(): void
+    {
+        $cat = \App\Models\Category::create(['name' => 'Produk', 'slug' => 'produk']);
+        \App\Models\Product::create([
+            'category_id' => $cat->id, 'region_id' => null,
+            'name' => 'Global', 'description' => 'g', 'is_active' => true,
+        ]);
+        \App\Models\Product::create([
+            'category_id' => $cat->id, 'region_id' => $this->region->id,
+            'name' => 'Lokal', 'description' => 'l', 'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->admin)->get(route('admin.products.index'));
+
+        $response->assertOk();
+        $response->assertSee('Global');
+        $response->assertSee('Lokal');
+    }
 }
