@@ -152,6 +152,39 @@ class ConversationRegionResolverTest extends TestCase
         $this->assertSame($denpasar->id, $resolver->apply($conversation->refresh()));
     }
 
+    public function test_prefix_hanya_untuk_keyword_panjang(): void
+    {
+        $malang = $this->makeRegion('Malang', 'malang');
+        $denpasar = $this->makeRegion('Denpasar', 'denpasar');
+
+        DeliveryZone::create([
+            'region_id' => $malang->id,
+            'distance_km' => 10.0,
+            'ongkir' => 15000,
+            'area_name' => 'Batu',
+            'landmark_keyword' => 'batu',
+            'is_active' => true,
+        ]);
+        DeliveryZone::create([
+            'region_id' => $denpasar->id,
+            'distance_km' => 12.0,
+            'ongkir' => 15000,
+            'area_name' => 'Gianyar Panjang',
+            'landmark_keyword' => 'gianyar',
+            'is_active' => true,
+        ]);
+
+        $resolver = app(ConversationRegionResolver::class);
+
+        // "Batubara" BUKAN Batu (keyword pendek = kata utuh saja).
+        $c1 = $this->makeConversation(['phone_number' => '6281000000101', 'context' => ['delivery_address' => 'Jl. Batubara No 2']]);
+        $this->assertNotSame($malang->id, $resolver->apply($c1->refresh()));
+
+        // Typo gabung pada keyword panjang tetap dikenali.
+        $c2 = $this->makeConversation(['phone_number' => '6281000000102', 'context' => ['delivery_address' => 'Jl. GianyarPANJANG No 1']]);
+        $this->assertSame($denpasar->id, $resolver->apply($c2->refresh()));
+    }
+
     public function test_it_matches_short_place_names_on_word_boundaries(): void
     {
         $malang = $this->makeRegion('Malang', 'malang');

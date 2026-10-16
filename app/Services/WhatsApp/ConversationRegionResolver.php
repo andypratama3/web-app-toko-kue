@@ -223,10 +223,9 @@ class ConversationRegionResolver
     }
 
     /**
-     * Cocok pada awal kata, bukan di tengah kata. Alamat dari pelanggan
-     * sering salah ketik atau digabung ("GubengAYA", "SidoarjoWarok"),
-     * jadi keyword tetap dikenali selama jadi awalan kata. Hanya keyword
-     * >= 4 huruf agar tidak terlalu longgar.
+     * Cocok kata utuh; awalan kata hanya untuk keyword panjang (>=6 huruf)
+     * agar "batu" tak cocok "batubara" (salah cabang), tapi typo gabung
+     * seperti "GubengAYA" pada keyword panjang tetap dikenali.
      */
     protected function matchesTerm(string $haystack, string $term): bool
     {
@@ -234,10 +233,14 @@ class ConversationRegionResolver
             return false;
         }
 
-        return (bool) preg_match(
+        if ((bool) preg_match(
             '/(^|\s)' . preg_quote($term, '/') . '(\s|$)/u',
             $haystack
-        ) || (bool) preg_match(
+        )) {
+            return true;
+        }
+
+        return mb_strlen($term) >= 6 && (bool) preg_match(
             '/(^|\s)' . preg_quote($term, '/') . '\S*/u',
             $haystack
         );

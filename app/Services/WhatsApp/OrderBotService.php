@@ -357,7 +357,7 @@ class OrderBotService
 
         $this->metaService->sendText(
             $conversation->phone_number,
-            "Halo *{$conversation->profile_name}* 👋\n\n".
+            "Halo" . ($conversation->profile_name ? " *{$conversation->profile_name}*" : "") . " 👋\n\n".
             'Sepertinya obrolan sebelumnya sudah lama. Mari mulai dari awal lagi 😊'."\n\n".
             "Ketik *PESAN* untuk mulai order,\n".
             'atau ketik *PRODUK* untuk melihat katalog.'
