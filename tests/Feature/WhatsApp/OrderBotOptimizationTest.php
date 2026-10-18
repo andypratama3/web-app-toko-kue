@@ -153,11 +153,35 @@ class OrderBotOptimizationTest extends TestCase
 
     public function test_forward_owner_job_tidak_retry_bila_owner_kosong(): void
     {
-        $order = $this->makeOrder(); // region tanpa owner_phone
+        $order = $this->makeOrder();
 
-        // Tidak melempar → tidak retry (tak ada tujuan).
+        // Tanpa nomor owner, tak ada gunanya retry — cukup dilewati.
         (new ForwardOrderToOwnerJob($order->id))->handle(app(AdminNotificationRouterService::class));
         $this->assertTrue(true);
+    }
+
+    public function test_gagal_forward_owner_menampilkan_notifikasi_admin(): void
+    {
+        $this->region->update(['owner_phone' => '628999000111']);
+
+        // Admin cabang diperlukan agar notifyNewOrder tidak early-return.
+        $admin = \App\Models\User::create([
+            'name' => 'Admin Denpasar', 'email' => 'admin.fwd@test.com',
+            'password' => bcrypt('password'), 'region_id' => $this->region->id,
+        ]);
+        $admin->assignRole('admin');
+
+        // Meta selalu gagal → job (sync) gagal + fallback langsung gagal.
+        Http::fake(['graph.facebook.com/*' => Http::response('', 500)]);
+
+        $order = $this->makeOrder();
+
+        app(AdminNotificationRouterService::class)->notifyNewOrder($order->id);
+
+        $this->assertDatabaseHas('admin_notifications', [
+            'order_id' => $order->id,
+            'title' => 'Gagal meneruskan pesanan ke owner',
+        ]);
     }
 
     // ---- Recovery keranjang ----

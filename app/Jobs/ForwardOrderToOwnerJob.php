@@ -67,5 +67,25 @@ class ForwardOrderToOwnerJob implements ShouldQueue
             'order_id' => $this->orderId,
             'error' => $exception->getMessage(),
         ]);
+
+        // Pada driver "sync", exception job diteruskan ke pemanggil dan
+        // notifikasi kegagalan dibuat oleh notifyNewOrder — hindari dobel.
+        if (config('queue.default') === 'sync') {
+            return;
+        }
+
+        try {
+            $order = Order::find($this->orderId);
+
+            if ($order) {
+                app(AdminNotificationRouterService::class)
+                    ->notifyOwnerForwardFailure($order, 'queue retry habis');
+            }
+        } catch (\Throwable $e) {
+            Log::channel('whatsapp')->warning('⚠️ Gagal mencatat notif owner-forward failure', [
+                'order_id' => $this->orderId,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }

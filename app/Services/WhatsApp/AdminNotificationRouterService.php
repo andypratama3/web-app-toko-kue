@@ -75,12 +75,53 @@ class AdminNotificationRouterService
                 'order_id' => $orderId,
                 'error' => $e->getMessage(),
             ]);
-            // Fallback sinkron bila queue bermasalah (mis. driver tak siap).
+            // Fallback sinkron bila queue bermasalah (mis. driver sync/tak siap).
+            $sent = false;
             try {
-                $this->forwardOrderToOwner($order);
+                $sent = $this->forwardOrderToOwner($order);
             } catch (\Throwable $ignored) {
-                // Sudah dicatat upstream; order tetap tersimpan.
+                $sent = false;
             }
+
+            // Bila benar-benar gagal dan owner punya nomor, munculkan di
+            // dashboard admin agar order tak hilang diam-diam.
+            if (! $sent && $order->region?->owner_phone) {
+                $this->notifyOwnerForwardFailure($order, 'queue & kirim langsung gagal');
+            }
+        }
+    }
+
+    /**
+     * Catat kegagalan meneruskan pesanan ke owner sebagai notifikasi admin
+     * (idempoten per order) agar tidak hanya tenggelam di log.
+     */
+    public function notifyOwnerForwardFailure(Order $order, string $reason): void
+    {
+        try {
+            $alreadyNotified = AdminNotification::where('order_id', $order->id)
+                ->where('type', 'order')
+                ->where('title', 'Gagal meneruskan pesanan ke owner')
+                ->exists();
+
+            if ($alreadyNotified) {
+                return;
+            }
+
+            AdminNotification::create([
+                'user_id' => null,
+                'region_id' => $order->region_id,
+                'order_id' => $order->id,
+                'type' => 'order',
+                'title' => 'Gagal meneruskan pesanan ke owner',
+                'message' => "Invoice {$order->invoice_number} gagal diteruskan ke WA owner cabang ({$reason}). "
+                    . 'Cek koneksi Meta / nomor owner cabang, lalu teruskan manual bila perlu.',
+                'is_read' => false,
+            ]);
+        } catch (\Throwable $e) {
+            Log::channel('whatsapp')->warning('⚠️ Gagal mencatat notif owner-forward failure', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 
