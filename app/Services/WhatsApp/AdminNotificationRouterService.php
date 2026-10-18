@@ -66,14 +66,21 @@ class AdminNotificationRouterService
             'admins' => $admins->count(),
         ]);
 
-        // Forward format pesanan ke WA owner cabang (tidak menggagalkan alur bila gagal)
+        // Forward format pesanan ke WA owner cabang via queue dengan retry,
+        // agar gangguan sesaat Meta tak membuat notif order hilang diam-diam.
         try {
-            $this->forwardOrderToOwner($order);
+            \App\Jobs\ForwardOrderToOwnerJob::dispatch($order->id);
         } catch (\Throwable $e) {
-            Log::channel('whatsapp')->warning('⚠️ Forward ke owner gagal (order tetap tersimpan)', [
+            Log::channel('whatsapp')->warning('⚠️ Gagal enqueue forward ke owner (coba kirim langsung)', [
                 'order_id' => $orderId,
                 'error' => $e->getMessage(),
             ]);
+            // Fallback sinkron bila queue bermasalah (mis. driver tak siap).
+            try {
+                $this->forwardOrderToOwner($order);
+            } catch (\Throwable $ignored) {
+                // Sudah dicatat upstream; order tetap tersimpan.
+            }
         }
     }
 
@@ -81,8 +88,11 @@ class AdminNotificationRouterService
      * Kirim format pesanan + instruksi konfirmasi ke nomor WA owner cabang.
      * Nomor diambil dari `regions.owner_phone` (format 62…).
      * Bila kosong/belum diisi, hanya dicatat di log agar alur bot tidak terganggu.
+     *
+     * @return bool true bila terkirim; false bila tak ada owner / gagal kirim
+     *              (dipakai job retry agar notif order tak hilang diam-diam).
      */
-    public function forwardOrderToOwner(Order $order): void
+    public function forwardOrderToOwner(Order $order): bool
     {
         $order->loadMissing(['customer', 'region', 'items']);
 
@@ -96,16 +106,27 @@ class AdminNotificationRouterService
                 'region_id' => $order->region_id,
             ]);
 
-            return;
+            return false;
         }
 
-        $this->metaService->sendText($ownerPhone, $this->buildOwnerOrderFormat($order));
+        $sentId = $this->metaService->sendText($ownerPhone, $this->buildOwnerOrderFormat($order));
+
+        if ($sentId === null) {
+            Log::channel('whatsapp')->warning('⚠️ Forward format pesanan ke owner gagal terkirim', [
+                'order_id' => $order->id,
+                'owner' => $ownerPhone,
+            ]);
+
+            return false;
+        }
 
         Log::channel('whatsapp')->info('📲 Format pesanan diteruskan ke owner', [
             'order_id' => $order->id,
             'invoice' => $order->invoice_number,
             'owner' => $ownerPhone,
         ]);
+
+        return true;
     }
 
     /**

@@ -116,6 +116,10 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
         // Mark as read
         $metaService->markAsRead($messageId, $phoneNumberId ?? $this->phoneNumberId);
 
+        // Indikator "sedang mengetik" agar user tahu bot sedang memproses
+        // (terutama untuk pencarian produk / ringkasan order yang butuh query).
+        $metaService->sendTypingOn($messageId, $phoneNumberId ?? $this->phoneNumberId);
+
         // Determine message type and content
         $messageType = $message['type'] ?? 'text';
         $content = null;

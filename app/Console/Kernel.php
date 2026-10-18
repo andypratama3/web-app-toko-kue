@@ -19,6 +19,10 @@ class Kernel extends ConsoleKernel
         // Sinkronkan template broadcast dari Meta (approx/approved) tiap jam,
         // agar template PP yang baru di-approve otomatis masuk daftar.
         $schedule->command('broadcast:sync-templates')->hourly();
+
+        // Recovery keranjang ditinggalkan: kirim SATU pengingat ramah ke user
+        // yang berhenti di tengah alur dengan keranjang berisi (jendela < 24 jam).
+        $schedule->command('whatsapp:recover-carts')->everyThirtyMinutes();
     }
 
     /**

@@ -78,6 +78,22 @@ class WhatsAppConversation extends Model
         $this->update(['context' => $context]);
     }
 
+    /**
+     * Tulis banyak kunci konteks dalam SATU query UPDATE.
+     *
+     * Jalur form order menulis 5-8 kunci berurutan (order_customer,
+     * form_step, delivery_*, dst). Tanpa batching, tiap kunci = 1 UPDATE
+     * terpisah → 5-8 query hanya untuk konteks. Dengan method ini cukup 1.
+     */
+    public function setContextMany(array $pairs): void
+    {
+        $context = $this->context ?? [];
+        foreach ($pairs as $key => $value) {
+            data_set($context, $key, $value);
+        }
+        $this->update(['context' => $context]);
+    }
+
     public function clearContext(): void
     {
         $this->update(['context' => null]);

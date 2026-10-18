@@ -994,32 +994,54 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $escaped = addcslashes($keyword, '%_\\');
         $lowerKeyword = strtolower($keyword);
 
-        $base = Product::where('is_active', true)
+        // Cache hanya ID hasil pencarian (LIKE termahal), tapi muat ulang
+        // baris produk segar sehingga harga / is_active / varian terbaru
+        // tetap dipakai. TTL pendek aman untuk katalog kue yang jarang berubah.
+        $cacheKey = 'prod_search:' . ($regionId ?? 'all') . ':' . md5($lowerKeyword);
+        $ids = \Illuminate\Support\Facades\Cache::remember($cacheKey, 120, function () use ($regionId, $lowerKeyword, $escaped) {
+            $base = Product::where('is_active', true)
+                ->where(function ($q) use ($regionId) {
+                    $q->where('region_id', $regionId)->orWhereNull('region_id');
+                });
+
+            $exact = (clone $base)
+                ->where(function ($q) use ($lowerKeyword) {
+                    $q->whereRaw('LOWER(name) = ?', [$lowerKeyword])
+                      ->orWhereRaw('LOWER(tag) = ?', [$lowerKeyword]);
+                })
+                ->orderBy('id')
+                ->limit(6)
+                ->pluck('id');
+
+            if ($exact->isNotEmpty()) {
+                return $exact->all();
+            }
+
+            return (clone $base)
+                ->where(function ($q) use ($escaped) {
+                    $q->whereRaw('LOWER(name) LIKE ?', ["%{$escaped}%"])
+                      ->orWhereRaw('LOWER(tag) LIKE ?', ["%{$escaped}%"]);
+                })
+                ->orderByRaw('LENGTH(name) ASC')
+                ->orderBy('id')
+                ->limit(6)
+                ->pluck('id')
+                ->all();
+        });
+
+        if ($ids === []) {
+            return collect();
+        }
+
+        return Product::with(['category', 'variants' => fn ($q) => $q->where('is_active', true)->orderBy('price')])
+            ->where('is_active', true)
             ->where(function ($q) use ($regionId) {
                 $q->where('region_id', $regionId)->orWhereNull('region_id');
             })
-            ->with(['category', 'variants' => fn ($q) => $q->where('is_active', true)->orderBy('price')]);
-
-        $exact = (clone $base)
-            ->where(function ($q) use ($lowerKeyword) {
-                $q->whereRaw('LOWER(name) = ?', [$lowerKeyword])
-                  ->orWhereRaw('LOWER(tag) = ?', [$lowerKeyword]);
-            })
-            ->get();
-
-        if ($exact->isNotEmpty()) {
-            return $exact->take(6);
-        }
-
-        return (clone $base)
-            ->where(function ($q) use ($escaped) {
-                $q->whereRaw('LOWER(name) LIKE ?', ["%{$escaped}%"])
-                  ->orWhereRaw('LOWER(tag) LIKE ?', ["%{$escaped}%"]);
-            })
-            ->orderByRaw('LENGTH(name) ASC')
-            ->orderBy('id')
-            ->limit(6)
-            ->get();
+            ->whereIn('id', $ids)
+            ->get()
+            ->sortBy(fn ($p) => array_search($p->id, $ids))
+            ->values();
     }
 
     /**
@@ -1283,8 +1305,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
         $customer = $conversation->getContext('order_customer') ?? [];
         $customer['name'] = mb_substr($name, 0, 100);
-        $conversation->setContext('order_customer', $customer);
-        $conversation->setContext('form_step', 2);
+        $conversation->setContextMany(['order_customer' => $customer, 'form_step' => 2]);
         $this->metaService->sendText($conversation->phone_number,
             "Terima kasih, *{$customer['name']}*.\n\n*Apa alamat lengkapnya?*\nTulis jalan + nomor + patokan (mis. Jl. Mawar No 10, dekat pasar)."
         );
@@ -1369,8 +1390,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
         $customer = $conversation->getContext('order_customer') ?? [];
         $customer['address'] = mb_substr($address, 0, 500);
-        $conversation->setContext('order_customer', $customer);
-        $conversation->setContext('form_step', 3);
+        $conversation->setContextMany(['order_customer' => $customer, 'form_step' => 3]);
         $this->metaService->sendText($conversation->phone_number,
             "Alamat dicatat.\n\n*Mau dikirim tanggal berapa?*\nContoh: {$this->orderExampleDate()} (boleh juga 25/12/2026 atau 25 Des 2026)"
         );
@@ -1404,8 +1424,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
         $customer = $conversation->getContext('order_customer') ?? [];
         $customer['date'] = $parsed;
-        $conversation->setContext('order_customer', $customer);
-        $conversation->setContext('form_step', 5); // data penerima selesai
+        $conversation->setContextMany(['order_customer' => $customer, 'form_step' => 5]); // data penerima selesai
 
         // Jalur lokasi-dulu sudah punya metode+slot: sinkronkan alamat &
         // ongkir dulu (alamat form bisa beda dari pin GPS), lalu ringkasan.
@@ -2016,11 +2035,13 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
         $customer = $conversation->getContext('order_customer') ?? [];
         $customer['address'] = "Lokasi GPS ({$lat}, {$lng})";
-        $conversation->setContext('order_customer', $customer);
-        $conversation->setContext('editing_address', null);
-        $conversation->setContext('delivery_address', $customer['address']);
-        $conversation->setContext('distance_km', $distance);
-        $conversation->setContext('ongkir', $result['ongkir'] ?? 0);
+        $conversation->setContextMany([
+            'order_customer' => $customer,
+            'editing_address' => null,
+            'delivery_address' => $customer['address'],
+            'distance_km' => $distance,
+            'ongkir' => $result['ongkir'] ?? 0,
+        ]);
 
         $this->metaService->sendText($conversation->phone_number, '✅ Alamat diperbarui dari pin GPS.');
         $this->sendOrderSummary($conversation);
@@ -2051,8 +2072,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
         $customer = $conversation->getContext('order_customer') ?? [];
         $customer['address'] = $newAddress;
-        $conversation->setContext('order_customer', $customer);
-        $conversation->setContext('delivery_address', $newAddress);
+        $conversation->setContextMany(['order_customer' => $customer, 'delivery_address' => $newAddress]);
 
         // Ongkir mengikuti alamat baru untuk kurir internal.
         if (($conversation->getContext('delivery_method') ?? null) === 'internal_courier') {
@@ -2086,8 +2106,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                 return;
             }
 
-            $conversation->setContext('distance_km', $distance);
-            $conversation->setContext('ongkir', $result['ongkir']);
+            $conversation->setContextMany(['distance_km' => $distance, 'ongkir' => $result['ongkir']]);
         }
 
         $conversation->setContext('editing_address', null);
@@ -2728,8 +2747,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             return false;
         }
 
-        $conversation->setContext('distance_km', $distance);
-        $conversation->setContext('ongkir', $result['ongkir'] ?? 0);
+        $conversation->setContextMany(['distance_km' => $distance, 'ongkir' => $result['ongkir'] ?? 0]);
 
         return true;
     }
