@@ -24,7 +24,8 @@ class RecoverAbandonedCarts extends Command
 {
     protected $signature = 'whatsapp:recover-carts
                             {--min-minutes=30 : Jeda minimal sejak pesan terakhir (menit)}
-                            {--max-hours=6 : Jeda maksimal sejak pesan terakhir (jam, harus < 24)}';
+                            {--max-hours=6 : Jeda maksimal sejak pesan terakhir (jam, harus < 24)}
+                            {--dry-run : Tampilkan kandidat tanpa mengirim pesan}';
 
     protected $description = 'Kirim pengingat sekali ke user yang meninggalkan keranjang tanpa checkout';
 
@@ -49,9 +50,17 @@ class RecoverAbandonedCarts extends Command
             ->get();
 
         $sent = 0;
+        $dryRun = (bool) $this->option('dry-run');
 
         foreach ($candidates as $conversation) {
             if (! $this->shouldRemind($conversation)) {
+                continue;
+            }
+
+            if ($dryRun) {
+                $this->line("  • {$conversation->phone_number} ({$conversation->current_state})");
+                $sent++;
+
                 continue;
             }
 
@@ -64,6 +73,12 @@ class RecoverAbandonedCarts extends Command
 
             $conversation->setContext('cart_reminder_sent_at', now()->toIso8601String());
             $sent++;
+        }
+
+        if ($dryRun) {
+            $this->info("ℹ️ DRY-RUN: {$sent} kandidat akan diingatkan (dari {$candidates->count()} kandidat). Tidak ada pesan terkirim.");
+
+            return self::SUCCESS;
         }
 
         $this->info("✓ {$sent} pengingat keranjang terkirim (dari {$candidates->count()} kandidat).");

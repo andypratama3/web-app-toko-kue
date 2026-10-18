@@ -254,7 +254,23 @@ class OrderBotOptimizationTest extends TestCase
         Http::assertNotSent(fn ($req) => str_contains($req['text']['body'] ?? '', 'Keranjangmu masih tersimpan'));
     }
 
-    // ---- Retry Meta pada connection exception ----
+    public function test_recover_carts_dry_run_tidak_mengirim(): void
+    {
+        $this->silenceMeta();
+        $c = $this->makeConvo([
+            'cart' => [[
+                'product_id' => $this->kue->id, 'product_name' => 'Kue Ijo',
+                'variant_id' => $this->variant->id, 'variant_name' => 'Isi 3', 'qty' => 1,
+            ]],
+        ], 'PRODUCT_BROWSING');
+        $c->update(['last_message_at' => now()->subMinutes(45)]);
+
+        $this->artisan('whatsapp:recover-carts', ['--dry-run' => true])->assertSuccessful();
+
+        Http::assertNotSent(fn ($req) => str_contains($req['text']['body'] ?? '', 'Keranjangmu masih tersimpan'));
+        $c->refresh();
+        $this->assertNull($c->getContext('cart_reminder_sent_at'));
+    }
 
     public function test_meta_retry_pada_connection_exception(): void
     {
