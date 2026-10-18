@@ -1443,6 +1443,16 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
     }
 
     /**
+     * Waktu "sekarang" dalam zona waktu bisnis (mis. WIB/WITA) untuk logika
+     * tanggal & sapaan. DB tetap menyimpan UTC; ini hanya untuk perhitungan
+     * "hari ini/besok/lusa" dan sapaan waktu agar tidak meleset beberapa jam.
+     */
+    protected function localNow(): \Carbon\Carbon
+    {
+        return now()->setTimezone(config('services.whatsapp.timezone', 'Asia/Jakarta'));
+    }
+
+    /**
      * Parse tanggal kirim ala chat Indonesia → 'd M Y'.
      * Terima: besok/lusa/hari ini, 25 12 2026, 25/12/2026, 25-12-2026,
      * 25 Des 2026, 25 Desember 2026, 25 Des (tahun terdekat ke depan).
@@ -1455,7 +1465,8 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             return null;
         }
 
-        $today = now()->startOfDay();
+        $tz = config('services.whatsapp.timezone', 'Asia/Jakarta');
+        $today = $this->localNow()->startOfDay();
         $lower = strtolower($input);
         if (preg_match('/\b(hari\s+ini|sekarang)\b/iu', $lower)) {
             return $today->format('d M Y');
@@ -1504,7 +1515,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             if ($year === null) {
                 // Tanpa tahun: ambil tanggal terdekat ke depan.
                 $year = (int) $today->format('Y');
-                $candidate = \Carbon\Carbon::create($year, $month, $day);
+                $candidate = \Carbon\Carbon::create($year, $month, $day, 0, 0, 0, $tz);
                 if (! $candidate || $candidate->startOfDay()->lt($today)) {
                     $year++;
                 }
@@ -1517,8 +1528,8 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             return null;
         }
 
-        $date = \Carbon\Carbon::create($year, $month, $day)->startOfDay();
-        if ($date->lt(now()->startOfDay())) {
+        $date = \Carbon\Carbon::create($year, $month, $day, 0, 0, 0, $tz)->startOfDay();
+        if ($date->lt($today)) {
             return null;
         }
 
@@ -1530,7 +1541,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
      */
     protected function orderExampleDate(): string
     {
-        return now()->addDays(2)->format('d M Y');
+        return $this->localNow()->addDays(2)->format('d M Y');
     }
 
     /**
@@ -2412,7 +2423,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
     protected function sendWelcomeMessage(WhatsAppConversation $conversation): void
     {
         $regionName = $conversation->region->name ?? config('services.whatsapp.default_region');
-        $hour = (int) now()->format('H');
+        $hour = (int) $this->localNow()->format('H');
         $greeting = match (true) {
             $hour >= 5 && $hour < 11 => 'Selamat pagi',
             $hour >= 11 && $hour < 15 => 'Selamat siang',

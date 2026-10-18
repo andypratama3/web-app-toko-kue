@@ -130,7 +130,7 @@ return [
         'whatsapp' => [
             'driver' => 'daily',
             'path' => storage_path('logs/whatsapp.log'),
-            'level' => env('LOG_LEVEL', 'debug'),
+            'level' => env('WHATSAPP_LOG_LEVEL', env('LOG_LEVEL', 'debug')),
             'days' => 30,
             'replace_placeholders' => true,
         ],

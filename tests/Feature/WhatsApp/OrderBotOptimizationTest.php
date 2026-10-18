@@ -85,6 +85,32 @@ class OrderBotOptimizationTest extends TestCase
         $this->assertEquals('Jl. Mawar No 1', $c->getContext('delivery_address'));
     }
 
+    // ---- Zona waktu bisnis ----
+
+    public function test_parse_tanggal_memakai_zona_waktu_bisnis(): void
+    {
+        config(['services.whatsapp.timezone' => 'Asia/Jakarta']);
+
+        // 18:00 UTC = 01:00 WIB keesokan harinya (19 Okt 2026).
+        \Carbon\Carbon::setTestNow(\Carbon\Carbon::parse('2026-10-18 18:00:00', 'UTC'));
+
+        try {
+            $bot = app(OrderBotService::class);
+            $method = new \ReflectionMethod(OrderBotService::class, 'parseDeliveryDate');
+            $method->setAccessible(true);
+
+            $this->assertEquals('19 Oct 2026', $method->invoke($bot, 'hari ini'));
+            $this->assertEquals('20 Oct 2026', $method->invoke($bot, 'besok'));
+            $this->assertEquals('21 Oct 2026', $method->invoke($bot, 'lusa'));
+            // 18 Okt sudah lewat menurut WIB → ditolak.
+            $this->assertNull($method->invoke($bot, '18 okt 2026'));
+            // 19 Okt (hari ini WIB) tetap diterima.
+            $this->assertEquals('19 Oct 2026', $method->invoke($bot, '19/10/2026'));
+        } finally {
+            \Carbon\Carbon::setTestNow();
+        }
+    }
+
     // ---- Cache pencarian produk ----
 
     public function test_pencarian_produk_memakai_cache_id(): void
