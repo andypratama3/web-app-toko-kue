@@ -337,7 +337,29 @@ class WhatsappMetaService
     {
         try {
             $outboundId = $this->resolveOutboundNumber($recipientPhone, $phoneNumberId);
-            $response = $this->client()->post("{$this->url($outboundId)}/messages", $payload);
+            $response = null;
+            // Retry sekali untuk gangguan sesaat Meta (5xx / connection
+            // reset) — pesan bot yang hilang diam-diam membuat user
+            // mengira sudah dibalas.
+            foreach ([1, 2] as $attempt) {
+                try {
+                    $response = $this->client()->post("{$this->url($outboundId)}/messages", $payload);
+                } catch (\Throwable $connectionError) {
+                    if ($attempt === 2) {
+                        throw $connectionError;
+                    }
+                    usleep(300_000); // 0.3s sebelum coba lagi
+                    continue;
+                }
+                if ($response->successful()) {
+                    break;
+                }
+                // Hanya 5xx yang layak di-retry; 4xx (payload salah) tidak akan berubah.
+                if ($response->status() < 500 || $attempt === 2) {
+                    break;
+                }
+                usleep(300_000);
+            }
 
             if ($response->successful()) {
                 $messageId = $response->json('messages.0.id');
