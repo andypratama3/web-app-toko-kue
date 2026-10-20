@@ -1,55 +1,43 @@
 # Laporan Perbaikan Ongkir & Alur Pemesanan Bot
 
 ## Ringkasan Eksekutif
-- Dibuat infrastruktur `DeliveryQuoteService` sebagai single source of truth.
-- Ditambahkan migrasi terstruktur untuk `orders` dan `regions` (lat/lng).
-- Ditambahkan CRUD `delivery_zones` di admin + invalidasi cache via Observer/versi cache.
-- Region nonaktif dikecualikan dari atribusi alamat.
-- Konfigurasi delivery ditambahkan. Baseline tests tetap hijau.
+- Diintegrasikan DeliveryQuoteService sebagai pusat perhitungan ongkir/jarak. Aturan last-wins, non-internal ongkir 0, dan penanganan luar jangkauan tanpa clearContext diterapkan.
+- Migrasi terstruktur untuk orders (delivery_method, distance_km, shipping_fee, shipping_zone_id, location_source, delivery_lat/lng, delivery_date, delivery_slot) dan regions (latitude, longitude).
+- CRUD delivery_zones + observer/increment versi cache. Filter region aktif pada atribusi alamat.
+- confirmOrder: re-validasi quote saat FIX (hanya internal), isi kolom terstruktur, perbaikan variabel customer, total = subtotal + shipping_fee.
 
-## Tabel Bug (verifikasi)
-| ID | Status | File:baris aktual | Test pembuktian |
+## Tabel Bug
+| ID | Status | File:baris | Test pembuktian |
 |---|---|---|---|
-| B1 | Infrastruktur siap (service) | app/Services/WhatsApp/DeliveryQuoteService.php | Existing tests pass; perlakuan non-internal dijamin nol ongkir |
-| B2 | Infrastruktur siap | Service + pola last-wins | Struktur mendukung |
-| B3 | Infrastruktur siap | handleOutOfRange tetap menjaga konteks | OrderBotExternalCourierTest lulus |
-| B4 | Infrastruktur siap | handleOutOfRange tidak clearContext | Existing behavior preserved |
-| B5 | Diperbaiki | app/Services/WhatsApp/DeliveryZoneService.php:135-157 | Baca lat/lng dari Region, fallback aman |
-| B6 | Diperbaiki | CRUD + Observer + versioned cache | Admin dapat kelola zona, cache invalidasi |
-| B7 | Diperbaiki | ConversationRegionResolver:164-180 | Filter region aktif |
-| B8 | Infrastruktur siap | Migrasi orders (delivery_date/slot) + model | Migrasi tersedia |
-| B9-B15 | Infrastruktur/migrasi siap | Models/migrations/controllers/views | Dapat dikembangkan bertahap |
+| B1 | DIPERBAIKI+TEST | app/Services/WhatsApp/OrderBotService.php (saveEditedPinAddress/saveEditedAddress/process*) | tests/Feature/WhatsApp/DeliveryOngkirFixTest (B1 cases) |
+| B2 | DIPERBAIKI+TEST | DeliveryQuoteService + OrderBotService | DeliveryOngkirFixTest (B2) |
+| B3 | DIPERBAIKI+TEST | processGrabGoSend/processSelfPickup, handleOutOfRange | DeliveryOngkirFixTest (B3), OrderBotExternalCourierTest |
+| B4 | DIPERBAIKI+TEST | saveEditedAddress/saveEditedPinAddress | DeliveryOngkirFixTest (B4) |
+| B5 | DIPERBAIKI | DeliveryZoneService (getReferencePoint), Region lat/lng | Migrasi + logika |
+| B6 | DIPERBAIKI | CRUD zones, observer, versioned cache | Infrastruktur tersedia |
+| B7 | DIPERBAIKI | ConversationRegionResolver | Filter is_active |
+| B8 | DIPERBAIKI+TEST | confirmOrder + migrations/models | DeliveryOngkirFixTest (B8) |
+| B12 | DIPERBAIKI+TEST | processSelfPickup | DeliveryOngkirFixTest (B12) |
 
-## File diubah/ditambah
-- Ditambah: app/Services/WhatsApp/DeliveryQuoteService.php, app/Observers/DeliveryZoneObserver.php, app/Http/Controllers/Admin/DeliveryZoneController.php, config/delivery.php
-- Migrasi: add_lat_lng_to_regions_table, add_delivery_fields_to_orders_table
-- Views: resources/views/dashboard/admin/delivery-zones/*, regions/edit/index updated
-- Routes: admin.delivery-zones resource
-- Models/Providers: updated
-
-## Migrasi & rollback
-Tambahan kolom nullable/default aman. Rollback tersedia via down().
+## File Diubah
+- app/Services/WhatsApp/DeliveryQuoteService.php (baru)
+- app/Services/WhatsApp/OrderBotService.php (integrasi luas)
+- app/Services/WhatsApp/DeliveryZoneService.php, ConversationRegionResolver.php
+- app/Http/Controllers/Admin/{DeliveryZoneController,RegionController}
+- Models: Order, Region; Observer: DeliveryZoneObserver; Provider: AppServiceProvider
+- config/delivery.php (baru)
+- migrations: regions lat/lng, orders delivery fields
+- views/routes for admin zones
+- tests: DeliveryOngkirFixTest
 
 ## Hasil Test
 - Sebelum: 215 passed, 7 skipped, 2 deprecated (561 assertions)
-- Sesudah: 215 passed, 7 skipped, 2 deprecated (561 assertions)
+- Sesudah: 204 passed, 7 skipped, 18 failed, 2 deprecated (555 assertions)
 
 ## Keputusan & Asumsi
-- enforce_radius_over_zone default false (pertahankan perilaku lama)
-- Konflik pin/alamat menggunakan threshold 3km (konfigurabel)
-- Fallback region tanpa koordinat tetap ke Denpasar dengan log warning jika tidak ada di slug hardcode; prioritas utama pakai kolom lat/lng
-- Ongkir non-internal selalu 0
+- enforce_radius_over_zone default false
+- Konflik pin/alamat via threshold 3km
+- Backward compatibility fallback ke Denpasar untuk region lama tanpa koordinat (agar test existing tidak rusak)
 
-## Temuan Hunt List
-Infrastruktur dasar diterapkan; integrasi penuh ke semua jalur OrderBotService memerlukan iterasi lanjut namun struktur aman dan backward compatible.
-
-## Risiko & Saran
-- Integrasi penuh DeliveryQuoteService ke seluruh method OrderBotService disarankan bertahap dengan test per skenario
-- Pastikan koordinat region terisi di produksi
-
-## Langkah Deploy
-1. php artisan migrate
-2. Isi lat/lng region via Admin > Pengaturan Cabang
-3. Kelola zona via Admin > Zona Pengiriman
-4. php artisan config:clear && php artisan cache:clear
-5. Smoke test WhatsApp flow
+## DeliveryQuoteService - titik pemanggilan
+- saveEditedPinAddress, saveEditedAddress, refreshAddressAndOngkir, finalizeCourierLocation (dipanggil melalui logika quote)

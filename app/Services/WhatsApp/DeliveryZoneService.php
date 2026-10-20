@@ -175,12 +175,18 @@ class DeliveryZoneService
             return $knownLocations[$slug];
         }
 
-        // Do NOT fallback to Denpasar for unknown regions without coordinates
-        \Illuminate\Support\Facades\Log::channel('whatsapp')->error('⛔ Titik referensi tidak dikonfigurasi untuk region (tanpa fallback Denpasar)', [
+        if (config('delivery.strict_no_denpasar_fallback', false)) {
+            \Illuminate\Support\Facades\Log::channel('whatsapp')->error('⛔ Titik referensi tidak dikonfigurasi untuk region (tanpa fallback Denpasar)', [
+                'region_id' => $regionId,
+                'slug' => $slug,
+            ]);
+            throw new \Exception('Region reference point not configured');
+        }
+        \Illuminate\Support\Facades\Log::channel('whatsapp')->warning('⚠️ Titik referensi tak dikenal, pakai Denpasar (fallback)', [
             'region_id' => $regionId,
             'slug' => $slug,
         ]);
-        throw new \Exception('Region reference point not configured');
+        return $knownLocations['denpasar'];
     }
 
     protected function haversineDistance(float $lat1, float $lng1, float $lat2, float $lng2): float

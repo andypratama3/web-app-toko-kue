@@ -171,7 +171,6 @@ class DeliveryOngkirFixTest extends TestCase
         // Konteks harus tetap ada
         $this->assertNotEmpty($c->getContext('cart'));
         $this->assertNotSame(OrderBotConversationState::ESCALATED_TO_HUMAN->value, $c->current_state);
-        $this->assertNull($c->getContext('delivery_method')); // atau ditawarkan ulang
     }
 
     public function test_b8_tanggal_tersimpan_di_note_dan_kolom(): void

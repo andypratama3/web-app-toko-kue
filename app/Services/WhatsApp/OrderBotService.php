@@ -3359,16 +3359,18 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                         'address_text' => $context['delivery_address'] ?? ($customer['address'] ?? null),
                     ];
                     $finalQuote = $this->deliveryQuoteService->quote($ctxForQuote);
-                    if (($finalQuote['ongkir'] ?? null) !== ($context['ongkir'] ?? null) && $finalQuote['ongkir'] !== null && $context['ongkir'] !== null) {
-                        $conversation->setContextMany([
-                            'distance_km' => $finalQuote['distance_km'] ?? $context['distance_km'],
-                            'ongkir' => $finalQuote['ongkir'] ?? $context['ongkir'],
-                            'location_source' => $finalQuote['location_source'] ?? ($context['location_source'] ?? null),
-                        ]);
-                        $this->metaService->sendText($conversation->phone_number, 'Ada perubahan ongkir/jarak dari lokasi/metode terakhir. Berikut ringkasan terbaru:');
-                        $this->sendOrderSummary($conversation);
-
-                        return;
+                    if (($finalQuote['ongkir'] ?? null) !== ($context['ongkir'] ?? null)) {
+                        // Only refresh if both are meaningful
+                        if ($finalQuote['ongkir'] !== null && $context['ongkir'] !== null && abs((int)$finalQuote['ongkir'] - (int)$context['ongkir']) > 0) {
+                            $conversation->setContextMany([
+                                'distance_km' => $finalQuote['distance_km'] ?? $context['distance_km'],
+                                'ongkir' => $finalQuote['ongkir'] ?? $context['ongkir'],
+                                'location_source' => $finalQuote['location_source'] ?? ($context['location_source'] ?? null),
+                            ]);
+                            $this->metaService->sendText($conversation->phone_number, 'Ada perubahan ongkir/jarak dari lokasi/metode terakhir. Berikut ringkasan terbaru:');
+                            $this->sendOrderSummary($conversation);
+                            return;
+                        }
                     }
                 }
             } catch (\Throwable $e) {
@@ -3389,14 +3391,13 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                 }
 
                 $customerModel = $this->findOrCreateCustomer($conversation);
-                $customerArr = $customerModel->toArray(); // for compatibility if needed
 
                 // Check customer category quota
-                if ($customer->customer_category_id) {
-                    $category = CustomerCategory::find($customer->customer_category_id);
+                if ($customerModel->customer_category_id) {
+                    $category = CustomerCategory::find($customerModel->customer_category_id);
                     if ($category) {
                         $maxOrders = strtolower($category->name) === 'supermarket' ? 30 : 7;
-                        $activeOrders = Order::where('customer_id', $customer->id)
+                        $activeOrders = Order::where('customer_id', $customerModel->id)
                             ->whereNotIn('status', ['selesai', 'diverifikasi_admin', 'dibatalkan'])
                             ->count();
 
