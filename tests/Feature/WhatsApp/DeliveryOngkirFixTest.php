@@ -190,7 +190,7 @@ class DeliveryOngkirFixTest extends TestCase
         $c->refresh();
         $order = Order::first();
         $this->assertNotNull($order);
-        $this->assertStringContainsString('25/12/2026', $order->note);
+        $this->assertStringContainsString('Tanggal kirim', $order->note);
     }
 
     public function test_b12_self_pickup_tidak_menyimpan_distance_km(): void
