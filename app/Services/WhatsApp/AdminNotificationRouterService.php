@@ -4,6 +4,7 @@ namespace App\Services\WhatsApp;
 
 use App\Models\AdminNotification;
 use App\Models\Order;
+use App\Models\Region;
 use App\Models\User;
 use App\Support\Phone;
 use Illuminate\Support\Facades\Log;
@@ -22,11 +23,11 @@ class AdminNotificationRouterService
     {
         $order = Order::with(['customer', 'region', 'items.product'])->find($orderId);
 
-        if (!$order) {
+        if (! $order) {
             return;
         }
 
-        $admins = User::whereHas('roles', fn($q) => $q->where('name', 'admin'))
+        $admins = User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))
             ->where('region_id', $order->region_id)
             ->get();
 
@@ -35,11 +36,13 @@ class AdminNotificationRouterService
                 'region_id' => $order->region_id,
                 'order_id' => $orderId,
             ]);
+
             return;
         }
 
         $items = $order->items->map(function ($item) {
             $variant = $item->variant_name ?? '-';
+
             return "  • {$item->product_name} ({$variant}) x{$item->quantity}";
         })->implode("\n");
 
@@ -53,9 +56,9 @@ class AdminNotificationRouterService
                 'type' => 'new_order',
                 'title' => 'Pesanan baru via WhatsApp',
                 'message' => "Invoice: {$order->invoice_number}\n"
-                    . "Customer: {$customerName}\n"
-                    . "Total: Rp " . number_format($order->total_amount, 0, ',', '.') . "\n"
-                    . "Items:\n{$items}",
+                    ."Customer: {$customerName}\n"
+                    .'Total: Rp '.number_format($order->total_amount, 0, ',', '.')."\n"
+                    ."Items:\n{$items}",
             ]);
         }
 
@@ -114,7 +117,7 @@ class AdminNotificationRouterService
                 'type' => 'order',
                 'title' => 'Gagal meneruskan pesanan ke owner',
                 'message' => "Invoice {$order->invoice_number} gagal diteruskan ke WA owner cabang ({$reason}). "
-                    . 'Cek koneksi Meta / nomor owner cabang, lalu teruskan manual bila perlu.',
+                    .'Cek koneksi Meta / nomor owner cabang, lalu teruskan manual bila perlu.',
                 'is_read' => false,
             ]);
         } catch (\Throwable $e) {
@@ -150,7 +153,7 @@ class AdminNotificationRouterService
             return false;
         }
 
-        $sentId = $this->metaService->sendText($ownerPhone, $this->buildOwnerOrderFormat($order));
+        $sentId = $this->sendOwnerText($ownerPhone, $this->buildOwnerOrderFormat($order));
 
         if ($sentId === null) {
             Log::channel('whatsapp')->warning('⚠️ Forward format pesanan ke owner gagal terkirim', [
@@ -171,6 +174,71 @@ class AdminNotificationRouterService
     }
 
     /**
+     * Kirim teks ke nomor owner cabang.
+     *
+     * Bila template approved Meta sudah dikonfigurasi
+     * (`services.whatsapp.owner_notify_template`), pesan dikirim sebagai
+     * template (bisa menembus jendela 24 jam). Bila tidak, jatuh ke pesan
+     * teks biasa.
+     *
+     * Catatan: bila memakai template, template HARUS punya satu variabel di
+     * body ({{1}}) yang menerima seluruh teks ini.
+     */
+    protected function sendOwnerText(string $ownerPhone, string $text): ?string
+    {
+        $template = config('services.whatsapp.owner_notify_template');
+
+        if ($template) {
+            return $this->metaService->sendTemplate(
+                $ownerPhone,
+                $template,
+                config('services.whatsapp.owner_notify_template_lang', 'id'),
+                [[
+                    'type' => 'body',
+                    'parameters' => [
+                        ['type' => 'text', 'text' => $text],
+                    ],
+                ]]
+            );
+        }
+
+        return $this->metaService->sendText($ownerPhone, $text);
+    }
+
+    /**
+     * Kirim pesan tes ke nomor owner cabang untuk memverifikasi jalur
+     * pengiriman (dipakai tombol "Kirim Tes" di Pengaturan Cabang).
+     */
+    public function sendOwnerTestMessage(Region $region): bool
+    {
+        $ownerPhone = $region->owner_phone ? Phone::normalize($region->owner_phone) : null;
+
+        if (! $ownerPhone) {
+            return false;
+        }
+
+        try {
+            $now = now(config('services.whatsapp.timezone', 'Asia/Jakarta'));
+
+            $body = "✅ *Tes Notifikasi Owner*\n"
+                ."Cabang: {$region->name}\n"
+                .'Waktu: '.$now->isoFormat('D MMM YYYY HH:mm')."\n\n"
+                .'Jika pesan ini diterima, nomor owner cabang sudah benar dan '
+                .'notifikasi pesanan akan dikirim ke nomor ini.';
+
+            return $this->sendOwnerText($ownerPhone, $body) !== null;
+        } catch (\Throwable $e) {
+            Log::channel('whatsapp')->warning('⚠️ Kirim tes ke owner gagal', [
+                'region_id' => $region->id,
+                'owner' => $ownerPhone,
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
+    }
+
+    /**
      * Teruskan eskalasi (mis. jarak >14km) ke WA owner cabang agar tidak sunyi.
      */
     public function forwardEscalationToOwner(?int $regionId, string $text): void
@@ -187,7 +255,7 @@ class AdminNotificationRouterService
                 return;
             }
 
-            $this->metaService->sendText($ownerPhone, $text);
+            $this->sendOwnerText($ownerPhone, $text);
 
             Log::channel('whatsapp')->info('📲 Eskalasi diteruskan ke owner', [
                 'region_id' => $regionId,
@@ -235,10 +303,10 @@ class AdminNotificationRouterService
 
         $path = $mediaPath ?: $order->payment_proof;
         $caption = "🧾 *Bukti Bayar Masuk*\n"
-            . "Invoice: *{$order->invoice_number}*\n"
-            . 'Total: *Rp ' . number_format($order->total_amount, 0, ',', '.') . "*\n"
-            . "Customer: {$order->customer->name}\n\n"
-            . 'Mohon konfirmasi pembayaran. Balas via Chat Monitor / hubungi customer bila perlu.';
+            ."Invoice: *{$order->invoice_number}*\n"
+            .'Total: *Rp '.number_format($order->total_amount, 0, ',', '.')."*\n"
+            ."Customer: {$order->customer->name}\n\n"
+            .'Mohon konfirmasi pembayaran. Balas via Chat Monitor / hubungi customer bila perlu.';
 
         $imageUrl = $path ? $this->publicUrl($path) : null;
 
@@ -256,7 +324,7 @@ class AdminNotificationRouterService
         }
 
         // Fallback: tanpa gambar (file lokal / URL tak reachable) — owner tetap dapat notif teks
-        $this->metaService->sendText($ownerPhone, $caption . "\n\n(Catatan: gambar bukti tidak terlampir otomatis — cek di halaman verifikasi admin.)");
+        $this->metaService->sendText($ownerPhone, $caption."\n\n(Catatan: gambar bukti tidak terlampir otomatis — cek di halaman verifikasi admin.)");
     }
 
     protected function buildOwnerOrderFormat(Order $order): string
@@ -264,25 +332,25 @@ class AdminNotificationRouterService
         $items = $order->items->map(function ($item) {
             $variant = $item->variant_name ? " ({$item->variant_name})" : '';
 
-            return "• {$item->product_name}{$variant} x{$item->quantity} — Rp " . number_format($item->subtotal, 0, ',', '.');
+            return "• {$item->product_name}{$variant} x{$item->quantity} — Rp ".number_format($item->subtotal, 0, ',', '.');
         })->implode("\n");
 
         $customer = $order->customer;
 
         return "🧾 *PESANAN BARU via WhatsApp*\n"
-            . "Cabang: {$order->region->name}\n"
-            . "Invoice: *{$order->invoice_number}*\n"
-            . "─────────────────\n"
-            . "{$items}\n"
-            . "─────────────────\n"
-            . '*TOTAL: Rp ' . number_format($order->total_amount, 0, ',', '.') . "*\n\n"
-            . "Penerima: {$customer->name}\n"
-            . "HP customer: {$order->phone}\n"
-            . "Alamat: {$order->address}\n"
-            . "Bayar via: {$order->payment_method}\n"
-            . ($order->note ? "Catatan:\n{$order->note}\n" : '')
-            . "\nBukti bayar akan diteruskan menyusul di pesan berikutnya.\n"
-            . 'Konfirmasi di: Admin → Verifikasi Pesanan.';
+            ."Cabang: {$order->region->name}\n"
+            ."Invoice: *{$order->invoice_number}*\n"
+            ."─────────────────\n"
+            ."{$items}\n"
+            ."─────────────────\n"
+            .'*TOTAL: Rp '.number_format($order->total_amount, 0, ',', '.')."*\n\n"
+            ."Penerima: {$customer->name}\n"
+            ."HP customer: {$order->phone}\n"
+            ."Alamat: {$order->address}\n"
+            ."Bayar via: {$order->payment_method}\n"
+            .($order->note ? "Catatan:\n{$order->note}\n" : '')
+            ."\nBukti bayar akan diteruskan menyusul di pesan berikutnya.\n"
+            .'Konfirmasi di: Admin → Verifikasi Pesanan.';
     }
 
     protected function publicUrl(string $path): ?string
@@ -294,18 +362,18 @@ class AdminNotificationRouterService
 
         $relative = str_starts_with($path, '/') ? $path : Storage::url($path);
 
-        return rtrim(config('app.url'), '/') . $relative;
+        return rtrim(config('app.url'), '/').$relative;
     }
 
     public function notifyOrderStatusUpdate(int $orderId, string $oldStatus, string $newStatus): void
     {
         $order = Order::with(['customer', 'region'])->find($orderId);
 
-        if (!$order) {
+        if (! $order) {
             return;
         }
 
-        $admins = User::whereHas('roles', fn($q) => $q->where('name', 'admin'))
+        $admins = User::whereHas('roles', fn ($q) => $q->where('name', 'admin'))
             ->where('region_id', $order->region_id)
             ->get();
 
@@ -339,13 +407,13 @@ class AdminNotificationRouterService
 
         if ($conversation) {
             $statusMessages = [
-                'dikemas' => "📦 Pesanan Anda sedang dikemas.",
-                'diambil' => "🚚 Pesanan Anda sedang diambil kurir.",
-                'diantar' => "🚛 Pesanan Anda sedang dalam perjalanan!",
-                'diterima_pembeli' => "✅ Pesanan Anda telah diterima. Terima kasih!",
-                'selesai' => "🎉 Pesanan selesai! Semoga puas dengan produk kami.",
-                'menunggu_verifikasi_admin' => "🔎 Pesanan Anda sedang diverifikasi admin.",
-                'dibatalkan' => "❌ Pesanan Anda dibatalkan. Hubungi admin untuk info lebih lanjut.",
+                'dikemas' => '📦 Pesanan Anda sedang dikemas.',
+                'diambil' => '🚚 Pesanan Anda sedang diambil kurir.',
+                'diantar' => '🚛 Pesanan Anda sedang dalam perjalanan!',
+                'diterima_pembeli' => '✅ Pesanan Anda telah diterima. Terima kasih!',
+                'selesai' => '🎉 Pesanan selesai! Semoga puas dengan produk kami.',
+                'menunggu_verifikasi_admin' => '🔎 Pesanan Anda sedang diverifikasi admin.',
+                'dibatalkan' => '❌ Pesanan Anda dibatalkan. Hubungi admin untuk info lebih lanjut.',
             ];
 
             $message = $statusMessages[$newStatus] ?? null;

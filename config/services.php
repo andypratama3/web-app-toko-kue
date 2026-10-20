@@ -50,6 +50,12 @@ return [
         'broadcast_interval_seconds' => (int) env('BROADCAST_INTERVAL_SECONDS', 1),
         // Berapa recipient diproses per-batch pada job broadcast
         'broadcast_batch_size' => (int) env('BROADCAST_BATCH_SIZE', 50),
+        // Template approved Meta untuk notifikasi ke nomor owner cabang.
+        // Bila diisi, notifikasi owner dikirim via template (bisa menembus
+        // jendela 24 jam). Bila kosong, fallback ke pesan teks biasa.
+        // Isi 1 variabel body ({{1}}) dengan format pesanan.
+        'owner_notify_template' => env('META_OWNER_NOTIFY_TEMPLATE'),
+        'owner_notify_template_lang' => env('META_OWNER_NOTIFY_TEMPLATE_LANG', 'id'),
     ],
 
 ];

@@ -9,10 +9,12 @@ class Region extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'slug', 'meta_phone_number_id', 'owner_phone', 'is_active'];
+    protected $fillable = ['name', 'slug', 'meta_phone_number_id', 'owner_phone', 'is_active', 'latitude', 'longitude'];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'latitude' => 'float',
+        'longitude' => 'float',
     ];
 
     public function scopeActive($query)
@@ -27,7 +29,7 @@ class Region extends Model
 
     public static function findByPhoneNumberId(?string $phoneNumberId): ?self
     {
-        if (!$phoneNumberId) {
+        if (! $phoneNumberId) {
             return null;
         }
 

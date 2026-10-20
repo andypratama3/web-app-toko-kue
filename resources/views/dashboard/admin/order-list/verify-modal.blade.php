@@ -114,6 +114,22 @@
                                 diunggah.</p>
                         </div>
                     </div>
+
+                    {{-- Admin bisa mengunggah / mengganti bukti langsung dari sini
+                         (mis. pesanan luar kota / Grab-GoSend yang diatur manual). --}}
+                    <div id="verifyModalUploadProof" class="hidden mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <label for="verifyModalProofInput"
+                            class="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Unggah / Ganti Bukti
+                        </label>
+                        <input type="file" id="verifyModalProofInput" accept="image/*"
+                            class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none dark:text-gray-400 dark:bg-gray-700 dark:border-gray-600">
+                        <button type="button" id="btnUploadProof"
+                            class="mt-2 w-full px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:ring-4 focus:ring-green-300 dark:bg-green-500 dark:hover:bg-green-600">
+                            Unggah Bukti
+                        </button>
+                        <p id="verifyModalProofUploadMsg" class="mt-2 text-sm"></p>
+                    </div>
                 </div>
             </div>
         </div>

@@ -1,12 +1,13 @@
 <?php
 
-use App\Http\Controllers\Admin\BroadcastController;
-use App\Http\Controllers\Admin\CourierController;
-use App\Http\Controllers\Admin\ChatMonitorController;
 use App\Http\Controllers\Admin\AdminNotificationController;
+use App\Http\Controllers\Admin\BroadcastController;
+use App\Http\Controllers\Admin\ChatMonitorController;
+use App\Http\Controllers\Admin\CourierController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\PeformaCustomerController;
 use App\Http\Controllers\Admin\PeformaKurirController;
+use App\Http\Controllers\Admin\RegionController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\HistoryOrderController;
@@ -38,7 +39,7 @@ Route::get('/', function (Request $request) {
         ->whereDate('created_at', $today)
         ->exists();
 
-    if (!$exists) {
+    if (! $exists) {
         DB::table('visit_logs')->insert([
             'ip_address' => $ip,
             'created_at' => $today,
@@ -54,15 +55,14 @@ Route::get('privacy-policy', function () {
     return view('privacy-policy');
 })->name('privacy-policy');
 
-
 // Rute Logout manual
 Route::post('/logout', function (Request $request) {
     Auth::guard('web')->logout();
     $request->session()->invalidate();
     $request->session()->regenerateToken();
+
     return redirect('/login');
 })->name('logout');
-
 
 // Grup Rute yang Dilindungi (Memerlukan Login)
 Route::middleware([
@@ -71,13 +71,17 @@ Route::middleware([
     'verified',
 ])->group(function () {
 
-    //---------- PENGALIHAN DASHBOARD UTAMA ----------//
+    // ---------- PENGALIHAN DASHBOARD UTAMA ----------//
     Route::get('dashboard', function () {
         $user = auth()->user();
-        if (!$user) return redirect()->route('login');
+        if (! $user) {
+            return redirect()->route('login');
+        }
 
         $regionSlug = optional($user->region)->name ? strtolower($user->region->name) : null;
-        if (!$regionSlug) abort(403, 'User tidak memiliki region yang valid.');
+        if (! $regionSlug) {
+            abort(403, 'User tidak memiliki region yang valid.');
+        }
 
         if ($user->hasRole('admin')) {
             return redirect()->route('admin.dashboard', ['region' => $regionSlug]);
@@ -87,8 +91,7 @@ Route::middleware([
         abort(403, 'User tidak memiliki role yang valid.');
     })->name('dashboard');
 
-
-    //---------- RUTE ADMIN ----------//
+    // ---------- RUTE ADMIN ----------//
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
         Route::get('peforma-kurir/export/pdf', [PeformaKurirController::class, 'exportPdf'])->name('peforma-kurir.export.pdf');
         Route::get('peforma-kurir/export/{id}/pdf', [PeformaKurirController::class, 'exportPdfByCourier']);
@@ -122,6 +125,7 @@ Route::middleware([
         Route::get('orders/{id}/details', [AdminOrderController::class, 'details']);
         Route::post('orders/{id}/verify', [AdminOrderController::class, 'verify'])->name('orders.verify');
         Route::post('orders/{id}/verify-payment', [AdminOrderController::class, 'verifyPayment'])->name('orders.verifyPayment');
+        Route::post('orders/{id}/upload-proof', [AdminOrderController::class, 'uploadProof'])->name('orders.uploadProof');
         Route::post('orders/{id}/reject', [AdminOrderController::class, 'reject']);
         Route::post('orders/{id}/assign', [AdminOrderController::class, 'assign'])->name('orders.assign');
         Route::delete('orders/{id}', [AdminOrderController::class, 'destroy'])->name('orders.destroy');
@@ -158,6 +162,11 @@ Route::middleware([
         Route::post('notifications/read-all', [AdminNotificationController::class, 'markAllRead'])->name('notifications.read-all');
 
         // Broadcast WhatsApp (promosi dengan template approved Meta)
+        // Pengaturan Cabang (nomor owner untuk notifikasi pesanan)
+        Route::get('regions', [RegionController::class, 'index'])->name('regions.index');
+        Route::put('regions/{region}', [RegionController::class, 'update'])->name('regions.update');
+        Route::post('regions/{region}/test', [RegionController::class, 'sendTest'])->name('regions.sendTest');
+
         Route::get('broadcast', [BroadcastController::class, 'index'])->name('broadcast.index');
         Route::get('broadcast/create', [BroadcastController::class, 'create'])->name('broadcast.create');
         Route::get('broadcast/preview-count', [BroadcastController::class, 'previewCount'])->name('broadcast.preview-count');
@@ -168,7 +177,7 @@ Route::middleware([
         Route::post('broadcast/{broadcast}/cancel', [BroadcastController::class, 'cancel'])->name('broadcast.cancel');
     });
 
-    //---------- RUTE KURIR ----------//
+    // ---------- RUTE KURIR ----------//
     Route::prefix('kurir')->name('kurir.')->middleware('role:kurir')->group(function () {
         Route::get('dashboard/{region}', [KurirDashboardController::class, 'index'])->name('dashboard');
 
@@ -186,7 +195,7 @@ Route::middleware([
 
         // -- MANAJEMEN PESANAN (MENGGUNAKAN GROUP PREFIX) --
         Route::prefix('pesanan')->name('pesanan.')->group(function () {
-            Route::get('/', [PesananController::class, 'index'])->name('index'); //ini sebelumnya showFilteredOrders terus tak ganti index
+            Route::get('/', [PesananController::class, 'index'])->name('index'); // ini sebelumnya showFilteredOrders terus tak ganti index
             Route::get('/create', [PesananController::class, 'create'])->name('create');
             Route::get('/{id}/details', [PesananController::class, 'getOrderDetails'])->name('details');
             Route::post('/{id}/update-status', [PesananController::class, 'updateOrderStatus'])->name('updateStatus');
@@ -195,10 +204,10 @@ Route::middleware([
             // Rute untuk retur, sesuai controller-nya
             Route::post('/{order}/request-return', [ReturnController::class, 'requestReturn'])->name('requestReturn');
             Route::post('/{order}/upload-return-proof', [ReturnController::class, 'uploadReturnProof'])->name('uploadReturnProof');
-            
+
             Route::post('/{order}/request-return/edit', [ReturnController::class, 'editReturn'])->name('requestReturn.edit');
-            Route::get('/{order}/request-return/edit', function(){
-                return view("dashboard.kurir.pesanan.edit");
+            Route::get('/{order}/request-return/edit', function () {
+                return view('dashboard.kurir.pesanan.edit');
             })->name('requestReturn.edit.form');
         });
 
@@ -213,14 +222,15 @@ Route::middleware([
         // Endpoint JSON untuk data produk di halaman pesanan
         Route::get('produk/json', function () {
             $regionId = Auth::user()->region_id;
+
             return Product::where('is_active', true)
                 ->where(function ($q) use ($regionId) {
                     // Produk cabang sendiri + produk global (region NULL, mis. katalog resmi).
                     $q->where('region_id', $regionId)->orWhereNull('region_id');
                 })
-                ->with(['variants' => fn($q) => $q->where('is_active', true)->select('id', 'product_id', 'name', 'price')])
+                ->with(['variants' => fn ($q) => $q->where('is_active', true)->select('id', 'product_id', 'name', 'price')])
                 ->get(['id', 'name', 'image_path'])
-                ->map(fn($p) => [
+                ->map(fn ($p) => [
                     'id' => $p->id,
                     'name' => $p->name,
                     // PERBAIKAN: Gunakan Storage::url() untuk menghasilkan URL yang benar
@@ -230,8 +240,13 @@ Route::middleware([
                             ? asset(ltrim(preg_replace('#^public/#', '', $p->image_path), '/'))
                             : Storage::url($p->image_path))
                         : null,
-                    'variants' => $p->variants->map(fn($v) => ['id' => $v->id, 'name' => $v->name, 'price' => $v->price]),
+                    'variants' => $p->variants->map(fn ($v) => ['id' => $v->id, 'name' => $v->name, 'price' => $v->price]),
                 ]);
         })->name('produk.json');
     });
+});
+
+// Delivery Zones CRUD (admin)
+Route::middleware(['auth', 'role:admin|super_admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('delivery-zones', \App\Http\Controllers\Admin\DeliveryZoneController::class);
 });

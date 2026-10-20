@@ -2,10 +2,12 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\View;
-use Illuminate\Support\Facades\Auth;
+use App\Models\DeliveryZone;
 use App\Models\Order;
+use App\Observers\DeliveryZoneObserver;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,35 +24,26 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        DeliveryZone::observe(DeliveryZoneObserver::class);
         View::composer('layouts.partials.sidenav', function ($view) {
-            if (!Auth::check()) {
+            if (! Auth::check()) {
                 return; // Keluar jika pengguna tidak login
             }
 
             $user = Auth::user();
-            $newOrdersCount = 0;
-            $rejectedOrdersCount = 0;
 
-            // Logika untuk Admin
-            if ($user->hasRole('admin') && $user->region_id) {
-                $newOrdersCount = Order::where('region_id', $user->region_id)
-                    ->where('status', 'baru')->count();
-            }
+            $newOrdersCount = Order::where('region_id', $user->region_id)
+                ->where('status', 'baru')
+                ->count();
 
-            // Logika untuk Kurir
-            if ($user->hasRole('kurir')) {
-                // PERBAIKAN: Menghitung pesanan yang ditolak selama statusnya belum final.
-                // Ini akan mencakup penolakan pada status 'baru', 'diterima_pembeli', dll.
-                // selama pesanan tersebut belum selesai atau masuk histori.
-                $rejectedOrdersCount = Order::where('created_by_user_id', $user->id)
-                    ->whereNotNull('rejection_note')
-                    ->whereNotIn('status', ['selesai', 'diverifikasi_admin'])
-                    ->count();
-            }
+            $verifiedOrdersCount = Order::where('region_id', $user->region_id)
+                ->where('status', 'menunggu_verifikasi')
+                ->count();
 
-            // Kirim kedua variabel ke view sidenav
-            $view->with('newOrdersCount', $newOrdersCount)
-                ->with('rejectedOrdersCount', $rejectedOrdersCount);
+            $view->with([
+                'newOrdersCount' => $newOrdersCount,
+                'verifiedOrdersCount' => $verifiedOrdersCount,
+            ]);
         });
     }
 }

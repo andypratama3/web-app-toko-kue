@@ -33,6 +33,16 @@ class Order extends Model
         'picked_up_at',
         'delivered_at',
         'received_by_buyer_at',
+        'delivery_method',
+        'distance_km',
+        'shipping_fee',
+        'shipping_zone_id',
+        'external_courier_fee',
+        'location_source',
+        'delivery_lat',
+        'delivery_lng',
+        'delivery_date',
+        'delivery_slot',
     ];
 
     /**
@@ -47,6 +57,12 @@ class Order extends Model
         'received_by_buyer_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'distance_km' => 'float',
+        'shipping_fee' => 'integer',
+        'external_courier_fee' => 'integer',
+        'delivery_lat' => 'float',
+        'delivery_lng' => 'float',
+        'delivery_date' => 'date',
     ];
 
     /**

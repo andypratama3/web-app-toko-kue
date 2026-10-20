@@ -25,14 +25,18 @@ class OrderBotService
 
     protected AdminNotificationRouterService $notificationRouter;
 
+    protected DeliveryQuoteService $deliveryQuoteService;
+
     public function __construct(
         WhatsappMetaService $metaService,
         DeliveryZoneService $deliveryZoneService,
-        AdminNotificationRouterService $notificationRouter
+        AdminNotificationRouterService $notificationRouter,
+        DeliveryQuoteService $deliveryQuoteService
     ) {
         $this->metaService = $metaService;
         $this->deliveryZoneService = $deliveryZoneService;
         $this->notificationRouter = $notificationRouter;
+        $this->deliveryQuoteService = $deliveryQuoteService;
     }
 
     public function handleMessage(WhatsAppConversation $conversation, string $messageText, ?array $messageData = null): void
@@ -49,8 +53,8 @@ class OrderBotService
             ]);
             try {
                 $this->metaService->sendText($conversation->phone_number,
-                    "Maaf, ada gangguan sesaat. 🙏\n\n" .
-                    "Pesanan Anda aman. Ketik *PESAN* untuk lanjut, atau *BATAL* untuk mulai ulang."
+                    "Maaf, ada gangguan sesaat. 🙏\n\n".
+                    'Pesanan Anda aman. Ketik *PESAN* untuk lanjut, atau *BATAL* untuk mulai ulang.'
                 );
             } catch (\Throwable $ignored) {
                 // Meta API ikut gagal: pasrah, sudah tercatat di log.
@@ -131,8 +135,8 @@ class OrderBotService
             ]);
             try {
                 $this->metaService->sendText($conversation->phone_number,
-                    "Maaf, ada gangguan sesaat. 🙏\n\n" .
-                    "Pesanan Anda aman. Ketik *PESAN* untuk lanjut, atau *BATAL* untuk mulai ulang."
+                    "Maaf, ada gangguan sesaat. 🙏\n\n".
+                    'Pesanan Anda aman. Ketik *PESAN* untuk lanjut, atau *BATAL* untuk mulai ulang.'
                 );
             } catch (\Throwable $ignored) {
                 // Meta API ikut gagal: pasrah, sudah tercatat di log.
@@ -175,7 +179,7 @@ class OrderBotService
             $this->metaService->sendText($conversation->phone_number,
                 "📍 Lokasi diterima, tapi saat ini bot sedang menunggu:\n\n".
                 $this->buildCurrentStepGuide($conversation)."\n\n".
-                "Ketik *MENU* untuk mulai ulang, atau lanjutkan menjawab langkah yang sedang diminta."
+                'Ketik *MENU* untuk mulai ulang, atau lanjutkan menjawab langkah yang sedang diminta.'
             );
         }
     }
@@ -186,29 +190,60 @@ class OrderBotService
      */
     protected function finalizeCourierLocation(WhatsAppConversation $conversation, float $lat, float $lng): void
     {
-        $distance = $this->deliveryZoneService->estimateDistance($lat, $lng, $conversation->region_id);
-        $result = $this->deliveryZoneService->calculateOngkir($distance, $conversation->region_id);
+        $method = $conversation->getContext('delivery_method');
+        $isExternal = $method === 'grab_gosend';
 
-        if ($result['needs_escalation']) {
-            $snapshot = $this->snapshotOrderDetails($conversation);
-            $conversation->clearContext();
-            $conversation->update(['current_state' => OrderBotConversationState::ESCALATED_TO_HUMAN->value]);
-            $regionName = $conversation->region?->name ?? config('services.whatsapp.default_region', 'cabang kami');
-            $this->metaService->sendText($conversation->phone_number,
-                "Mohon maaf, jarak pengiriman Anda sekitar {$distance}km dari toko kami.\n".
-                "Untuk jarak di atas 14km, silakan hubungi admin kami untuk detail pengiriman.\n\n".
-                "WA Admin: hubungi admin terdekat di cabang {$regionName}"
-            );
-            $this->notifyAdminOfEscalation($conversation, $distance, $regionName, $snapshot ?? '');
+        if (in_array($method, ['self_pickup', 'grab_gosend'], true) || $isExternal) {
+            // Grab/GoSend & self_pickup: ongkir 0, konsumsi lokasi
+            $addr = "Lokasi GPS ({$lat}, {$lng})";
+            $customer = $conversation->getContext('order_customer') ?? [];
+            if (empty($customer['address'])) {
+                $customer['address'] = $addr;
+                $conversation->setContext('order_customer', $customer);
+            }
+            $conversation->setContextMany([
+                'delivery_address' => $addr,
+                'ongkir' => 0,
+                'distance_km' => null,
+                'pending_location' => null,
+                'location_done' => true,
+                'out_of_zone' => false,
+                'location_source' => 'pin',
+                'last_location_source' => 'pin',
+                'delivery_lat' => $lat,
+                'delivery_lng' => $lng,
+            ]);
+        } else {
+            $quote = $this->deliveryQuoteService->quote([
+                'region_id' => $conversation->region_id,
+                'delivery_method' => $method ?? 'internal_courier',
+                'location_source' => 'pin',
+                'last_location_source' => 'pin',
+                'pin_lat' => $lat,
+                'pin_lng' => $lng,
+                'address_text' => $conversation->getContext('delivery_address') ?? ($conversation->getContext('order_customer')['address'] ?? null),
+            ]);
 
-            return;
+            if (! empty($quote['needs_escalation']) || ! empty($quote['out_of_range'])) {
+                $this->handleOutOfRange($conversation, $quote['distance_km'] ?? 0,
+                    '📍 Jarak pengiriman Anda sekitar '.($quote['distance_km'] ?? '?').'km dari toko kami.',
+                    "Lokasi GPS ({$lat}, {$lng})");
+
+                return;
+            }
+
+            $conversation->setContextMany([
+                'distance_km' => $quote['distance_km'],
+                'ongkir' => $quote['ongkir'] ?? 0,
+                'delivery_address' => "Lokasi GPS ({$lat}, {$lng})",
+                'pending_location' => null,
+                'location_done' => true,
+                'location_source' => $quote['location_source'] ?? 'pin',
+                'last_location_source' => 'pin',
+                'delivery_lat' => $lat,
+                'delivery_lng' => $lng,
+            ]);
         }
-
-        $conversation->setContext('distance_km', $distance);
-        $conversation->setContext('ongkir', $result['ongkir']);
-        $conversation->setContext('delivery_address', "Lokasi GPS ({$lat}, {$lng})");
-        $conversation->setContext('pending_location', null);
-        $conversation->setContext('location_done', true);
 
         // Kembali ke pilih produk / keranjang bila lokasi diminta di tengah order.
         if (in_array($conversation->getContext('after_location'), ['product', 'cart'], true)) {
@@ -231,6 +266,14 @@ class OrderBotService
             $this->askDeliveryMethod($conversation);
 
             return;
+        }
+
+        if ($isExternal) {
+            $this->metaService->sendText($conversation->phone_number,
+                "📦 *Grab/GoSend*\n\n".
+                "Lokasi Anda sudah kami catat. Admin kami yang akan memesankan driver Grab/GoSend setelah pesanan dikonfirmasi.\n\n".
+                'Pilih slot waktu pengiriman:'
+            );
         }
 
         $this->advanceState($conversation, OrderBotConversationState::AWAITING_DELIVERY_SLOT);
@@ -359,7 +402,7 @@ class OrderBotService
             } else {
                 $this->metaService->sendText(
                     $conversation->phone_number,
-                    "📝 Oke, kita mulai ulang formulir pesanannya ya 😊"
+                    '📝 Oke, kita mulai ulang formulir pesanannya ya 😊'
                 );
             }
             $this->askOrderForm($conversation);
@@ -476,7 +519,7 @@ class OrderBotService
         if ($keptCart !== []) {
             $this->metaService->sendText(
                 $conversation->phone_number,
-                "Halo" . ($conversation->profile_name ? " *{$conversation->profile_name}*" : "") . " 👋\n\n".
+                'Halo'.($conversation->profile_name ? " *{$conversation->profile_name}*" : '')." 👋\n\n".
                 'Sepertinya obrolan sebelumnya sudah lama. Keranjangmu kami simpan, harga ikut katalog terbaru 😊'."\n\n".
                 "Ketik *PESAN* untuk lanjutkan order,\n".
                 'atau ketik *PRODUK* untuk melihat katalog.'
@@ -489,7 +532,7 @@ class OrderBotService
         } else {
             $this->metaService->sendText(
                 $conversation->phone_number,
-                "Halo" . ($conversation->profile_name ? " *{$conversation->profile_name}*" : "") . " 👋\n\n".
+                'Halo'.($conversation->profile_name ? " *{$conversation->profile_name}*" : '')." 👋\n\n".
                 'Sepertinya obrolan sebelumnya sudah lama. Mari mulai dari awal lagi 😊'."\n\n".
                 "Ketik *PESAN* untuk mulai order,\n".
                 'atau ketik *PRODUK* untuk melihat katalog.'
@@ -610,13 +653,13 @@ class OrderBotService
                 $lines[] = "{$num}. {$region->name}";
                 // Tombol hanya untuk 3 pertama (batas Meta); sisanya via angka/nama.
                 if ($i < 3) {
-                    $buttons[] = ['id' => 'branch_' . $region->id, 'title' => mb_substr($region->name, 0, 20)];
+                    $buttons[] = ['id' => 'branch_'.$region->id, 'title' => mb_substr($region->name, 0, 20)];
                 }
             }
 
             $this->metaService->sendReplyButtons(
                 $conversation->phone_number,
-                "📍 *Pilih Cabang Pengiriman*\n\n" . implode("\n", $lines) . "\n\nPesanan, ongkir & harga mengikuti cabang yang dipilih.",
+                "📍 *Pilih Cabang Pengiriman*\n\n".implode("\n", $lines)."\n\nPesanan, ongkir & harga mengikuti cabang yang dipilih.",
                 $buttons,
                 'Ketik angka atau nama cabang'
             );
@@ -706,9 +749,9 @@ class OrderBotService
     {
         $this->advanceState($conversation, OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS);
         $this->metaService->sendLocationRequest($conversation->phone_number,
-            "📍 *Pilih Lokasi Pengiriman Dulu*
+            '📍 *Pilih Lokasi Pengiriman Dulu*
 
-Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat lengkap."
+Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat lengkap.'
         );
     }
 
@@ -841,7 +884,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                 $this->advanceState($conversation, OrderBotConversationState::AWAITING_ORDER_FORM);
             } else {
                 $this->metaService->sendText($conversation->phone_number,
-                    "Produk tidak ditemukan. Ketik nama produk yang tersedia, *PESAN* untuk mulai order, atau *MENU* untuk kategori."
+                    'Produk tidak ditemukan. Ketik nama produk yang tersedia, *PESAN* untuk mulai order, atau *MENU* untuk kategori.'
                 );
             }
         }
@@ -951,7 +994,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         if (count($candidates) === 0) {
             $this->metaService->sendText($conversation->phone_number,
                 "❌ Produk *{$productName}* tidak ditemukan.\n".
-                "Coba ketik nama lain (mis. *Kue Ijo*, *Hampers B*), atau ketik *PRODUK* untuk melihat katalog."
+                'Coba ketik nama lain (mis. *Kue Ijo*, *Hampers B*), atau ketik *PRODUK* untuk melihat katalog.'
             );
 
             return;
@@ -997,7 +1040,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         // Cache hanya ID hasil pencarian (LIKE termahal), tapi muat ulang
         // baris produk segar sehingga harga / is_active / varian terbaru
         // tetap dipakai. TTL pendek aman untuk katalog kue yang jarang berubah.
-        $cacheKey = 'prod_search:' . ($regionId ?? 'all') . ':' . md5($lowerKeyword);
+        $cacheKey = 'prod_search:'.($regionId ?? 'all').':'.md5($lowerKeyword);
         $ids = \Illuminate\Support\Facades\Cache::remember($cacheKey, 120, function () use ($regionId, $lowerKeyword, $escaped) {
             $base = Product::where('is_active', true)
                 ->where(function ($q) use ($regionId) {
@@ -1007,7 +1050,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             $exact = (clone $base)
                 ->where(function ($q) use ($lowerKeyword) {
                     $q->whereRaw('LOWER(name) = ?', [$lowerKeyword])
-                      ->orWhereRaw('LOWER(tag) = ?', [$lowerKeyword]);
+                        ->orWhereRaw('LOWER(tag) = ?', [$lowerKeyword]);
                 })
                 ->orderBy('id')
                 ->limit(6)
@@ -1020,7 +1063,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             return (clone $base)
                 ->where(function ($q) use ($escaped) {
                     $q->whereRaw('LOWER(name) LIKE ?', ["%{$escaped}%"])
-                      ->orWhereRaw('LOWER(tag) LIKE ?', ["%{$escaped}%"]);
+                        ->orWhereRaw('LOWER(tag) LIKE ?', ["%{$escaped}%"]);
                 })
                 ->orderByRaw('LENGTH(name) ASC')
                 ->orderBy('id')
@@ -1119,7 +1162,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $matched = [];
         foreach (array_unique($m[0]) as $num) {
             foreach ($variants as $variant) {
-                if (preg_match('/\b' . preg_quote($num, '/') . '\b/u', $variant->name)) {
+                if (preg_match('/\b'.preg_quote($num, '/').'\b/u', $variant->name)) {
                     $matched[$variant->id] = $variant;
                 }
             }
@@ -1193,10 +1236,10 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $conversation->forgetContext('qty_note');
 
         $this->metaService->sendText($conversation->phone_number,
-            "✅ Masuk keranjang{$qtyNote}:\n" . implode("\n", $lines) . "\n\n" .
-            "Mau tambah produk lain? Ketik *nama/nomor* produknya (bisa pakai jumlah, mis. *2x Kue Ijo*).\n\n" .
-            "Kalau sudah cukup, ketik *LANJUT*.\n" .
-            "(Ketik *HAPUS* untuk keluarkan item terakhir.)"
+            "✅ Masuk keranjang{$qtyNote}:\n".implode("\n", $lines)."\n\n".
+            "Mau tambah produk lain? Ketik *nama/nomor* produknya (bisa pakai jumlah, mis. *2x Kue Ijo*).\n\n".
+            "Kalau sudah cukup, ketik *LANJUT*.\n".
+            '(Ketik *HAPUS* untuk keluarkan item terakhir.)'
         );
     }
 
@@ -1340,7 +1383,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         if (empty($customer['name'])) {
             $conversation->setContext('form_step', 1);
             $this->metaService->sendText($conversation->phone_number,
-                "*Siapa nama penerimanya?*"
+                '*Siapa nama penerimanya?*'
             );
 
             return;
@@ -1450,6 +1493,21 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
     protected function localNow(): \Carbon\Carbon
     {
         return now()->setTimezone(config('services.whatsapp.timezone', 'Asia/Jakarta'));
+    }
+
+    protected function parseDeliveryDateForStorage(?string $dateStr): ?string
+    {
+        if (! $dateStr) {
+            return null;
+        }
+        try {
+            if (preg_match('/^\d{2}\s+[A-Za-z]+\s+\d{4}$/', $dateStr)) {
+                return \Carbon\Carbon::createFromFormat('d M Y', $dateStr)->format('Y-m-d');
+            }
+        } catch (\Throwable $e) {
+        }
+
+        return null;
     }
 
     /**
@@ -1776,6 +1834,16 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             }
         }
 
+        if ($choice === '3' && $conversation->getContext('out_of_zone')) {
+            $this->metaService->sendText($conversation->phone_number,
+                "Kurir internal kami belum menjangkau area Anda. 🙏\n".
+                'Silakan pilih *Grab/GoSend* (admin kami yang memesankan driver) atau *Ambil Sendiri* di toko.'
+            );
+            $this->sendOutOfZoneDeliveryOptions($conversation);
+
+            return;
+        }
+
         match ($choice) {
             '1' => $this->processSelfPickup($conversation),
             '2' => $this->processGrabGoSend($conversation),
@@ -1786,27 +1854,73 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
     protected function processSelfPickup(WhatsAppConversation $conversation): void
     {
-        $conversation->setContext('delivery_method', 'self_pickup');
-        $conversation->setContext('ongkir', 0);
-        $conversation->setContext('pending_location', null);
+        // Konsumsi pending_location jika ada
+        $pending = $conversation->getContext('pending_location');
+        if (is_array($pending) && isset($pending['latitude'], $pending['longitude'])) {
+            $customer = $conversation->getContext('order_customer') ?? [];
+            if (empty($customer['address'])) {
+                $customer['address'] = "Lokasi GPS ({$pending['latitude']}, {$pending['longitude']})";
+                $conversation->setContext('order_customer', $customer);
+            }
+            $conversation->setContext('delivery_address', $customer['address'] ?? "Lokasi GPS ({$pending['latitude']}, {$pending['longitude']})");
+        }
+
+        $conversation->setContextMany([
+            'delivery_method' => 'self_pickup',
+            'ongkir' => 0,
+            'distance_km' => null,
+            'zone_id' => null,
+            'pending_location' => null,
+            'location_source' => null,
+        ]);
         $this->advanceState($conversation, OrderBotConversationState::AWAITING_DELIVERY_SLOT);
         $this->sendSlotOptions($conversation);
     }
 
     protected function processGrabGoSend(WhatsAppConversation $conversation): void
     {
-        $conversation->setContext('delivery_method', 'grab_gosend');
-        $conversation->setContext('ongkir', 0);
-        $conversation->setContext('pending_location', null);
-        $this->advanceState($conversation, OrderBotConversationState::AWAITING_DELIVERY_SLOT);
+        // Konsumsi pending_location jika ada (jangan buang)
+        $pending = $conversation->getContext('pending_location');
+        if (is_array($pending) && isset($pending['latitude'], $pending['longitude'])) {
+            $customer = $conversation->getContext('order_customer') ?? [];
+            $addr = "Lokasi GPS ({$pending['latitude']}, {$pending['longitude']})";
+            if (empty($customer['address'])) {
+                $customer['address'] = $addr;
+                $conversation->setContext('order_customer', $customer);
+            }
+            $conversation->setContext('delivery_address', $addr);
+        }
 
-        $this->metaService->sendText($conversation->phone_number,
+        $conversation->setContextMany([
+            'delivery_method' => 'grab_gosend',
+            'ongkir' => 0,
+            'distance_km' => null,
+            'external_courier' => true,
+            'out_of_zone' => false,
+            'location_source' => $pending ? 'pin' : ($conversation->getContext('location_source')),
+        ]);
+
+        // Alamat/lokasi wajib ada dulu — admin kami yang memesankan driver,
+        // jadi harus jelas titik jemput/antar.
+        if ($this->hasDeliveryAddress($conversation)) {
+            $conversation->setContext('pending_location', null);
+            $this->advanceState($conversation, OrderBotConversationState::AWAITING_DELIVERY_SLOT);
+            $this->metaService->sendText($conversation->phone_number,
+                "📦 *Grab/GoSend*\n\n".
+                "Alamat pengiriman sudah kami catat. Admin kami yang akan memesankan driver Grab/GoSend setelah pesanan dikonfirmasi (biaya dibayar langsung ke driver).\n\n".
+                'Pilih slot waktu pengiriman:'
+            );
+            $this->sendSlotOptions($conversation);
+
+            return;
+        }
+
+        $this->advanceState($conversation, OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS);
+        $this->metaService->sendLocationRequest($conversation->phone_number,
             "📦 *Grab/GoSend*\n\n".
-            "Biaya Grab/GoSend ditanggung langsung ke driver (estimasi Rp100.000–150.000 untuk zona 10–15km).\n".
-            "Silakan pesan driver sendiri setelah pesanan dikonfirmasi.\n\n".
-            'Pilih slot waktu pengiriman:'
+            "Silakan kirim *lokasi pengiriman* (pin GPS) atau ketik alamat lengkapnya.\n".
+            'Admin kami yang akan memesankan driver Grab/GoSend, jadi alamat harus jelas ya. 📍'
         );
-        $this->sendSlotOptions($conversation);
     }
 
     protected function processInternalCourier(WhatsAppConversation $conversation): void
@@ -1872,6 +1986,26 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             return;
         }
 
+        // Grab/GoSend: admin yang memesankan driver — tak perlu ongkir/eskalasi
+        // zona kurir internal, cukup catat alamat lalu pilih slot.
+        if (($conversation->getContext('delivery_method') ?? null) === 'grab_gosend') {
+            $conversation->setContextMany([
+                'ongkir' => 0,
+                'pending_location' => null,
+                'out_of_zone' => false,
+            ]);
+            $this->advanceState($conversation, OrderBotConversationState::AWAITING_DELIVERY_SLOT);
+            $this->metaService->sendText($conversation->phone_number,
+                "📦 *Grab/GoSend*\n\n".
+                "Alamat dicatat: {$address}\n".
+                "Admin kami yang akan memesankan driver Grab/GoSend setelah pesanan dikonfirmasi.\n\n".
+                'Pilih slot waktu pengiriman:'
+            );
+            $this->sendSlotOptions($conversation);
+
+            return;
+        }
+
         $distance = $this->deliveryZoneService->estimateDistanceByAddress($address, $conversation->region_id);
 
         // Alamat tak dikenali zona mana pun: JANGAN default diam-diam —
@@ -1889,17 +2023,8 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $result = $this->deliveryZoneService->calculateOngkir($distance, $conversation->region_id);
 
         if ($result['needs_escalation']) {
-            $snapshot = $this->snapshotOrderDetails($conversation);
-            $conversation->clearContext();
-            $conversation->update(['current_state' => OrderBotConversationState::ESCALATED_TO_HUMAN->value]);
-            $regionName = $conversation->region?->name ?? config('services.whatsapp.default_region', 'cabang kami');
-            $this->metaService->sendText($conversation->phone_number,
-                "Mohon maaf, jarak pengiriman Anda diperkirakan sekitar {$distance}km.\n".
-                "Untuk jarak di atas 14km, silakan hubungi admin kami.\n\n".
-                "WA Admin: hubungi admin terdekat di cabang {$regionName}"
-            );
-            // M1 FIX: notify admin after escalation is committed
-            $this->notifyAdminOfEscalation($conversation, $distance, $regionName, $snapshot ?? '');
+            $this->handleOutOfRange($conversation, $distance,
+                "📍 Jarak pengiriman Anda diperkirakan sekitar {$distance}km.", $address);
 
             return;
         }
@@ -1912,6 +2037,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         if (empty($context['delivery_method'])) {
             $this->advanceState($conversation, OrderBotConversationState::AWAITING_DELIVERY_METHOD);
             $this->askDeliveryMethod($conversation);
+
             return;
         }
 
@@ -2028,18 +2154,60 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
      */
     protected function saveEditedPinAddress(WhatsAppConversation $conversation, float $lat, float $lng): void
     {
-        $distance = $this->deliveryZoneService->estimateDistance($lat, $lng, $conversation->region_id);
-        $result = $this->deliveryZoneService->calculateOngkir($distance, $conversation->region_id);
+        $method = $conversation->getContext('delivery_method');
+        if (in_array($method, ['self_pickup', 'grab_gosend'], true)) {
+            $customer = $conversation->getContext('order_customer') ?? [];
+            $customer['address'] = "Lokasi GPS ({$lat}, {$lng})";
+            $conversation->setContextMany([
+                'order_customer' => $customer,
+                'editing_address' => null,
+                'delivery_address' => $customer['address'],
+                'distance_km' => null,
+                'ongkir' => 0,
+                'location_source' => 'pin',
+                'delivery_lat' => $lat,
+                'delivery_lng' => $lng,
+            ]);
+            $this->metaService->sendText($conversation->phone_number, '✅ Alamat diperbarui dari pin GPS.');
+            $this->sendOrderSummary($conversation);
 
-        if (! empty($result['needs_escalation'])) {
-            $snapshot = $this->snapshotOrderDetails($conversation);
-            $conversation->clearContext();
-            $conversation->update(['current_state' => OrderBotConversationState::ESCALATED_TO_HUMAN->value]);
-            $regionName = $conversation->region?->name ?? config('services.whatsapp.default_region', 'cabang kami');
+            return;
+        }
+
+        $quote = $this->deliveryQuoteService->quote([
+            'region_id' => $conversation->region_id,
+            'delivery_method' => $method,
+            'location_source' => 'pin',
+            'last_location_source' => 'pin',
+            'pin_lat' => $lat,
+            'pin_lng' => $lng,
+            'address_text' => $conversation->getContext('delivery_address') ?? ($conversation->getContext('order_customer')['address'] ?? null),
+        ]);
+
+        if (! empty($quote['needs_escalation']) || ! empty($quote['out_of_range'])) {
+            // Jangan clearContext - tawarkan alternatif
+            $conversation->setContextMany([
+                'out_of_zone' => true,
+                'distance_km' => $quote['distance_km'],
+                'ongkir' => 0,
+                'delivery_method' => null,
+                'delivery_slot' => null,
+                'location_done' => true,
+                'delivery_address' => "Lokasi GPS ({$lat}, {$lng})",
+                'editing_address' => null,
+            ]);
+            $customer = $conversation->getContext('order_customer') ?? [];
+            $customer['address'] = "Lokasi GPS ({$lat}, {$lng})";
+            $conversation->setContext('order_customer', $customer);
+
             $this->metaService->sendText($conversation->phone_number,
-                "Mohon maaf, lokasi baru di luar jangkauan (sekitar {$distance}km).\nSilakan hubungi admin kami."
+                '📍 Jarak pengiriman sekitar '.($quote['distance_km'] ?? '?')."km dari toko kami.\n\n".
+                "Area Anda di *luar jangkauan kurir internal* kami, tapi pesanan tetap bisa diproses 😊\n\n".
+                "Admin kami bisa memesankan *Grab/GoSend* untuk Anda (biaya dibayar langsung ke driver), atau Anda bisa *ambil sendiri* di toko.\n".
+                'Jika lokasi Anda salah, kirim ulang pin/alamat yang benar. Alamat/lokasi Anda sudah kami simpan.'
             );
-            $this->notifyAdminOfEscalation($conversation, $distance, $regionName, $snapshot);
+            $this->advanceState($conversation, OrderBotConversationState::AWAITING_DELIVERY_METHOD);
+            $this->sendOutOfZoneDeliveryOptions($conversation);
 
             return;
         }
@@ -2050,8 +2218,11 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             'order_customer' => $customer,
             'editing_address' => null,
             'delivery_address' => $customer['address'],
-            'distance_km' => $distance,
-            'ongkir' => $result['ongkir'] ?? 0,
+            'distance_km' => $quote['distance_km'],
+            'ongkir' => $quote['ongkir'] ?? 0,
+            'location_source' => $quote['location_source'] ?? 'pin',
+            'delivery_lat' => $lat,
+            'delivery_lng' => $lng,
         ]);
 
         $this->metaService->sendText($conversation->phone_number, '✅ Alamat diperbarui dari pin GPS.');
@@ -2081,15 +2252,41 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             return;
         }
 
+        $method = $conversation->getContext('delivery_method');
+        if (in_array($method, ['self_pickup', 'grab_gosend'], true)) {
+            $customer = $conversation->getContext('order_customer') ?? [];
+            $customer['address'] = $newAddress;
+            $conversation->setContextMany([
+                'order_customer' => $customer,
+                'delivery_address' => $newAddress,
+                'editing_address' => null,
+                'distance_km' => null,
+                'ongkir' => 0,
+                'location_source' => 'address',
+            ]);
+            $this->metaService->sendText($conversation->phone_number, '✅ Alamat diperbarui.');
+            $this->sendOrderSummary($conversation);
+
+            return;
+        }
+
         $customer = $conversation->getContext('order_customer') ?? [];
         $customer['address'] = $newAddress;
-        $conversation->setContextMany(['order_customer' => $customer, 'delivery_address' => $newAddress]);
+        $conversation->setContextMany(['order_customer' => $customer, 'delivery_address' => $newAddress, 'last_location_source' => 'address', 'location_source' => 'address']);
 
         // Ongkir mengikuti alamat baru untuk kurir internal.
-        if (($conversation->getContext('delivery_method') ?? null) === 'internal_courier') {
-            $distance = $this->deliveryZoneService->estimateDistanceByAddress($newAddress, $conversation->region_id);
+        if ($method === 'internal_courier') {
+            $quote = $this->deliveryQuoteService->quote([
+                'region_id' => $conversation->region_id,
+                'delivery_method' => 'internal_courier',
+                'location_source' => 'address',
+                'last_location_source' => 'address',
+                'address_text' => $newAddress,
+                'pin_lat' => $conversation->getContext('delivery_lat'),
+                'pin_lng' => $conversation->getContext('delivery_lng'),
+            ]);
 
-            if ($distance === null) {
+            if (! empty($quote['needs_pin'])) {
                 // Mode ubah BELUM ditutup: pin GPS berikutnya masih diterima
                 // sebagai koreksi alamat (saveEditedPinAddress).
                 $this->metaService->sendText($conversation->phone_number,
@@ -2100,24 +2297,34 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                 return;
             }
 
-            $result = $this->deliveryZoneService->calculateOngkir($distance, $conversation->region_id);
-
-            if ($result['needs_escalation']) {
-                $snapshot = $this->snapshotOrderDetails($conversation);
-                $conversation->clearContext();
-                $conversation->update(['current_state' => OrderBotConversationState::ESCALATED_TO_HUMAN->value]);
-                $regionName = $conversation->region?->name ?? config('services.whatsapp.default_region', 'cabang kami');
+            if (! empty($quote['needs_escalation']) || ! empty($quote['out_of_range'])) {
+                // JANGAN clearContext - tawarkan alternatif, pertahankan konteks
+                $conversation->setContextMany([
+                    'out_of_zone' => true,
+                    'distance_km' => $quote['distance_km'],
+                    'ongkir' => 0,
+                    'delivery_method' => null,
+                    'delivery_slot' => null,
+                    'location_done' => true,
+                    'editing_address' => null,
+                ]);
                 $this->metaService->sendText($conversation->phone_number,
-                    "Mohon maaf, alamat baru diperkirakan sekitar {$distance}km (di atas 14km).\n" .
-                    "Silakan hubungi admin kami.\n\n" .
-                    "WA Admin: hubungi admin terdekat di cabang {$regionName}"
+                    'Mohon maaf, alamat baru diperkirakan sekitar '.($quote['distance_km'] ?? '?')."km (di atas jangkauan).\n\n".
+                    "Area Anda di *luar jangkauan kurir internal* kami, tapi pesanan tetap bisa diproses 😊\n\n".
+                    "Admin kami bisa memesankan *Grab/GoSend* untuk Anda (biaya dibayar langsung ke driver), atau Anda bisa *ambil sendiri* di toko.\n".
+                    'Jika lokasi Anda salah, kirim ulang pin/alamat yang benar.'
                 );
-                $this->notifyAdminOfEscalation($conversation, $distance, $regionName, $snapshot);
+                $this->advanceState($conversation, OrderBotConversationState::AWAITING_DELIVERY_METHOD);
+                $this->sendOutOfZoneDeliveryOptions($conversation);
 
                 return;
             }
 
-            $conversation->setContextMany(['distance_km' => $distance, 'ongkir' => $result['ongkir']]);
+            $conversation->setContextMany([
+                'distance_km' => $quote['distance_km'],
+                'ongkir' => $quote['ongkir'] ?? 0,
+                'location_source' => $quote['location_source'] ?? 'address',
+            ]);
         }
 
         $conversation->setContext('editing_address', null);
@@ -2218,15 +2425,15 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $cart = $ctx['cart'] ?? [];
         $items = [];
         foreach ($cart as $row) {
-            $items[] = ($row['qty'] ?? 1) . 'x ' . ($row['product_name'] ?? '?');
+            $items[] = ($row['qty'] ?? 1).'x '.($row['product_name'] ?? '?');
         }
 
-        return 'Produk: ' . ($items !== [] ? implode(', ', $items) : '-')
-            . ' | Penerima: ' . ($customer['name'] ?? '-')
-            . ' | Alamat: ' . ($customer['address'] ?? $ctx['delivery_address'] ?? '-');
+        return 'Produk: '.($items !== [] ? implode(', ', $items) : '-')
+            .' | Penerima: '.($customer['name'] ?? '-')
+            .' | Alamat: '.($customer['address'] ?? $ctx['delivery_address'] ?? '-');
     }
 
-    protected function notifyAdminOfEscalation(WhatsAppConversation $conversation, float $distance, string $regionName, string $details = ''): void
+    protected function notifyAdminOfEscalation(WhatsAppConversation $conversation, float $distance, string $regionName, string $details = '', string $title = 'Eskalasi jarak kirim (>14km)'): void
     {
         try {
             if ($details === '') {
@@ -2236,7 +2443,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             \App\Models\AdminNotification::create([
                 'user_id' => null,
                 'region_id' => $conversation->region_id,
-                'title' => 'Eskalasi jarak kirim (>14km)',
+                'title' => $title,
                 'message' => "⚠️ Pesanan dari {$conversation->phone_number} butuh penanganan (jarak {$distance}km > 14km). Cabang: {$regionName}. {$details}",
                 'is_read' => false,
                 'type' => 'escalated',
@@ -2559,13 +2766,13 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                 if (str_starts_with($imagePath, 'assets/') || str_starts_with($imagePath, 'http')) {
                     $imageUrl = str_starts_with($imagePath, 'http')
                         ? $imagePath
-                        : rtrim((string) config('app.url'), '/') . '/' . ltrim($imagePath, '/');
+                        : rtrim((string) config('app.url'), '/').'/'.ltrim($imagePath, '/');
                 } else {
-                    $imageUrl = rtrim((string) config('app.url'), '/') . Storage::url($imagePath);
+                    $imageUrl = rtrim((string) config('app.url'), '/').Storage::url($imagePath);
                 }
                 $cheapest = $this->resolveCheapestVariant($product);
                 $caption = "*{$product->name}*"
-                    . ($cheapest ? "\nMulai Rp " . number_format($cheapest->price, 0, ',', '.') : '');
+                    .($cheapest ? "\nMulai Rp ".number_format($cheapest->price, 0, ',', '.') : '');
                 $sent = $this->metaService->sendImage($conversation->phone_number, $imageUrl, $caption);
                 if (! $sent) {
                     Log::channel('whatsapp')->warning('⚠️ Gagal kirim foto produk, lanjut teks saja', [
@@ -2618,7 +2825,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                     $text .= "  Harga menyusul\n";
                 }
                 foreach ($product->variants as $variant) {
-                    $text .= '  - ' . $variant->name . ': Rp ' . number_format($variant->price, 0, ',', '.') . "\n";
+                    $text .= '  - '.$variant->name.': Rp '.number_format($variant->price, 0, ',', '.')."\n";
                 }
             }
             $text .= "\n";
@@ -2701,15 +2908,14 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         foreach ($products->values() as $i => $product) {
             $catalogIds[] = $product->id;
             $cheapest = $this->resolveCheapestVariant($product);
-            $price = $cheapest ? 'Rp ' . number_format($cheapest->price, 0, ',', '.') : 'tanya admin';
-            $text .= ($i + 1) . ". {$product->name} — mulai {$price}\n";
+            $price = $cheapest ? 'Rp '.number_format($cheapest->price, 0, ',', '.') : 'tanya admin';
+            $text .= ($i + 1).". {$product->name} — mulai {$price}\n";
         }
         $conversation->setContext('catalog_ids', $catalogIds);
 
         $text .= "\nBalas *nomor / nama* produknya (boleh pakai jumlah, mis. *2x Kue Ijo*).";
         $this->metaService->sendText($conversation->phone_number, $text);
     }
-
 
     /**
      * Samakan delivery_address dengan alamat penerima + hitung ulang
@@ -2719,52 +2925,141 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
     protected function refreshAddressAndOngkir(WhatsAppConversation $conversation): bool
     {
         $customer = $conversation->getContext('order_customer') ?? [];
-        $newAddress = trim($customer['address'] ?? '');
+        $newAddress = trim($customer['address'] ?? $conversation->getContext('delivery_address') ?? '');
         if ($newAddress === '') {
             return false;
         }
 
         $conversation->setContext('delivery_address', $newAddress);
 
-        if (($conversation->getContext('delivery_method') ?? null) !== 'internal_courier') {
+        $method = $conversation->getContext('delivery_method');
+        if (in_array($method, ['self_pickup', 'grab_gosend'], true)) {
+            $conversation->setContextMany(['distance_km' => null, 'ongkir' => 0]);
+
             return true;
         }
 
-        $distance = $this->deliveryZoneService->estimateDistanceByAddress($newAddress, $conversation->region_id);
+        if ($method !== 'internal_courier') {
+            return true;
+        }
 
-        if ($distance === null) {
+        $quote = $this->deliveryQuoteService->quote([
+            'region_id' => $conversation->region_id,
+            'delivery_method' => 'internal_courier',
+            'location_source' => $conversation->getContext('location_source') ?? ($conversation->getContext('last_location_source') ?? 'address'),
+            'last_location_source' => $conversation->getContext('last_location_source') ?? $conversation->getContext('location_source'),
+            'address_text' => $newAddress,
+            'pin_lat' => $conversation->getContext('delivery_lat') ?? ($conversation->getContext('pending_location')['latitude'] ?? null),
+            'pin_lng' => $conversation->getContext('delivery_lng') ?? ($conversation->getContext('pending_location')['longitude'] ?? null),
+        ]);
+
+        if (! empty($quote['needs_pin'])) {
             $this->advanceState($conversation, OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS);
             $this->metaService->sendLocationRequest($conversation->phone_number,
                 "Alamat *{$newAddress}* belum kami kenali areanya. 📍\n\n".
-                'Agar ongkir tepat, silakan kirim pin GPS lokasi Anda.'
+                'Agar ongkir tepat, silakan kirim pin GPS lokasi Anda atau alamat lebih spesifik.'
             );
 
             return false;
         }
 
-        $result = $this->deliveryZoneService->calculateOngkir($distance, $conversation->region_id);
-
-        if (! empty($result['needs_escalation'])) {
-            $snapshot = $this->snapshotOrderDetails($conversation);
-            $conversation->clearContext();
-            $conversation->update(['current_state' => OrderBotConversationState::ESCALATED_TO_HUMAN->value]);
-            $regionName = $conversation->region?->name ?? config('services.whatsapp.default_region', 'cabang kami');
-            $this->metaService->sendText($conversation->phone_number,
-                "Mohon maaf, jarak pengiriman melebihi jangkauan kami (sekitar {$distance}km).\n".
-                "Admin kami akan menghubungimu untuk solusi pengiriman ya 🙏"
-            );
-            $this->notifyAdminOfEscalation($conversation, $distance, $regionName, $snapshot);
+        if (! empty($quote['needs_escalation']) || ! empty($quote['out_of_range'])) {
+            $this->handleOutOfRange($conversation, $quote['distance_km'] ?? 0,
+                '📍 Jarak pengiriman melebihi jangkauan kurir kami (sekitar '.($quote['distance_km'] ?? '?').'km).', $newAddress);
 
             return false;
         }
 
-        $conversation->setContextMany(['distance_km' => $distance, 'ongkir' => $result['ongkir'] ?? 0]);
+        $conversation->setContextMany([
+            'distance_km' => $quote['distance_km'],
+            'ongkir' => $quote['ongkir'] ?? 0,
+            'location_source' => $quote['location_source'] ?? 'address',
+        ]);
 
         return true;
     }
+
+    /**
+     * Apakah alamat/lokasi pengiriman sudah diketahui? Dipakai Grab/GoSend
+     * (admin yang memesankan driver, jadi alamat wajib jelas lebih dulu).
+     */
+    protected function hasDeliveryAddress(WhatsAppConversation $conversation): bool
+    {
+        $customer = $conversation->getContext('order_customer') ?? [];
+
+        return trim((string) ($customer['address'] ?? '')) !== ''
+            || (bool) $conversation->getContext('location_done')
+            || ! empty($conversation->getContext('delivery_address'));
+    }
+
+    /**
+     * Di luar jangkauan kurir internal (>14km). Alih-alih dead-end ke
+     * "hubungi admin", pesanan tetap lanjut: tawarkan Grab/GoSend (admin
+     * yang memesankan driver) atau ambil sendiri, dan beri tahu admin.
+     */
+    protected function handleOutOfRange(WhatsAppConversation $conversation, float $distance, string $lead = '', ?string $address = null): void
+    {
+        $conversation->setContextMany([
+            'out_of_zone' => true,
+            'distance_km' => $distance,
+            'ongkir' => 0,
+            'delivery_method' => null,
+            'delivery_slot' => null,
+            'location_done' => true,
+        ]);
+
+        // Simpan alamat/lokasi agar saat memilih Grab/GoSend nanti tetap ada.
+        if ($address !== null && trim($address) !== '') {
+            $conversation->setContext('delivery_address', $address);
+        }
+
+        $regionName = $conversation->region?->name ?? config('services.whatsapp.default_region', 'cabang kami');
+
+        $headline = $lead !== '' ? $lead : "📍 Jarak pengiriman dari toko kami sekitar {$distance}km.";
+
+        $this->metaService->sendText($conversation->phone_number,
+            "{$headline}\n\n".
+            "Area Anda di *luar jangkauan kurir internal* kami, tapi pesanan tetap bisa diproses 😊\n\n".
+            "Admin kami bisa memesankan *Grab/GoSend* untuk Anda (biaya dibayar langsung ke driver), atau Anda bisa *ambil sendiri* di toko.\n".
+            'Alamat/lokasi Anda sudah kami simpan.'
+        );
+
+        $this->advanceState($conversation, OrderBotConversationState::AWAITING_DELIVERY_METHOD);
+        $this->sendOutOfZoneDeliveryOptions($conversation);
+
+        $this->notifyAdminOfEscalation(
+            $conversation,
+            $distance,
+            $regionName,
+            '⚠️ Luar jangkauan — perlu atur kirim (Grab/GoSend) & unggah bukti. '.$this->snapshotOrderDetails($conversation),
+            'Pesanan luar area (>14km) — butuh Grab/GoSend'
+        );
+    }
+
+    protected function sendOutOfZoneDeliveryOptions(WhatsAppConversation $conversation): void
+    {
+        $this->metaService->sendReplyButtons(
+            $conversation->phone_number,
+            "🚚 *Pilih Pengiriman (Luar Area)*\n\n".
+            "2️⃣ Grab/GoSend — admin kami yang memesankan driver\n".
+            '1️⃣ Ambil sendiri di toko (gratis ongkir)',
+            [
+                ['id' => 'delivery_2', 'title' => '2. Grab/GoSend'],
+                ['id' => 'delivery_1', 'title' => '1. Ambil Sendiri'],
+            ],
+            'Pilih opsi pengiriman'
+        );
+    }
+
     protected function askDeliveryMethod(WhatsAppConversation $conversation): void
     {
         $this->advanceState($conversation, OrderBotConversationState::AWAITING_DELIVERY_METHOD);
+
+        if ($conversation->getContext('out_of_zone')) {
+            $this->sendOutOfZoneDeliveryOptions($conversation);
+
+            return;
+        }
 
         $this->metaService->sendReplyButtons(
             $conversation->phone_number,
@@ -2848,6 +3143,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                     'product_id' => $row['product_id'] ?? null,
                     'variant_id' => $row['variant_id'] ?? null,
                 ];
+
                 continue;
             }
 
@@ -2903,7 +3199,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             }
             $conversation->setContext('cart', $salvaged);
             $this->metaService->sendText($conversation->phone_number,
-                'Item berikut sudah tidak tersedia dan dikeluarkan: ' . implode(', ', $removed) . '.'
+                'Item berikut sudah tidak tersedia dan dikeluarkan: '.implode(', ', $removed).'.'
             );
             if ($salvaged === []) {
                 $this->advanceState($conversation, OrderBotConversationState::AWAITING_ORDER_FORM);
@@ -2955,15 +3251,15 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         foreach ($resolved['lines'] as $i => $line) {
             $n = $i + 1;
             $text .= "{$n}. {$line['qty']}x {$line['product_name']} ({$line['variant_name']})\n";
-            $text .= '   Rp ' . number_format($line['subtotal'], 0, ',', '.') . "\n";
+            $text .= '   Rp '.number_format($line['subtotal'], 0, ',', '.')."\n";
         }
-        $text .= 'Subtotal Produk: Rp ' . number_format($totalProduct, 0, ',', '.') . "\n";
+        $text .= 'Subtotal Produk: Rp '.number_format($totalProduct, 0, ',', '.')."\n";
         // Grab/GoSend dibayar langsung ke driver — jangan tampil "Rp 0" yang menyesatkan.
         $text .= $method === 'grab_gosend'
             ? "Ongkir ({$methodText}): dibayar langsung ke driver\n"
-            : "Ongkir ({$methodText}): Rp " . number_format($ongkir, 0, ',', '.') . "\n";
+            : "Ongkir ({$methodText}): Rp ".number_format($ongkir, 0, ',', '.')."\n";
         $text .= "─────────────────\n";
-        $text .= '*TOTAL: Rp ' . number_format($totalAll, 0, ',', '.') . "*\n\n";
+        $text .= '*TOTAL: Rp '.number_format($totalAll, 0, ',', '.')."*\n\n";
         $text .= "Penerima: {$recipientName}\n";
         $text .= "Alamat: {$address}\n";
         $text .= "Tanggal: {$date}\n";
@@ -3008,7 +3304,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             }
             $conversation->setContext('cart', $salvaged);
             $this->metaService->sendText($conversation->phone_number,
-                'Item berikut sudah tidak tersedia dan dikeluarkan: ' . implode(', ', $removed) . '.'
+                'Item berikut sudah tidak tersedia dan dikeluarkan: '.implode(', ', $removed).'.'
             );
             $this->advanceState($conversation, OrderBotConversationState::ORDER_SUMMARY);
             $this->sendOrderSummary($conversation);
@@ -3042,14 +3338,44 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                 "✅ Pesanan Anda sudah tercatat.\n\n".
                 "Nomor Invoice: *{$preOrder->invoice_number}*\n".
                 'Total: *Rp '.number_format($preOrder->total_amount, 0, ',', '.')."*\n\n".
-                "Silakan kirim bukti pembayaran di sini, atau ketik *SKIP* untuk lanjut."
+                'Silakan kirim bukti pembayaran di sini, atau ketik *SKIP* untuk lanjut.'
             );
 
             return;
         }
 
         try {
-            $order = DB::transaction(function () use ($conversation, $customer, $context, $resolved) {
+            // Re-validasi quote final (hanya untuk kasus internal yang jelas berubah)
+            $finalQuote = [];
+            try {
+                if (($context['delivery_method'] ?? null) === 'internal_courier') {
+                    $ctxForQuote = [
+                        'region_id' => $conversation->region_id,
+                        'delivery_method' => $context['delivery_method'] ?? null,
+                        'location_source' => $context['location_source'] ?? null,
+                        'last_location_source' => $context['last_location_source'] ?? null,
+                        'pin_lat' => $context['delivery_lat'] ?? ($context['pending_location']['latitude'] ?? null),
+                        'pin_lng' => $context['delivery_lng'] ?? ($context['pending_location']['longitude'] ?? null),
+                        'address_text' => $context['delivery_address'] ?? ($customer['address'] ?? null),
+                    ];
+                    $finalQuote = $this->deliveryQuoteService->quote($ctxForQuote);
+                    if (($finalQuote['ongkir'] ?? null) !== ($context['ongkir'] ?? null) && $finalQuote['ongkir'] !== null && $context['ongkir'] !== null) {
+                        $conversation->setContextMany([
+                            'distance_km' => $finalQuote['distance_km'] ?? $context['distance_km'],
+                            'ongkir' => $finalQuote['ongkir'] ?? $context['ongkir'],
+                            'location_source' => $finalQuote['location_source'] ?? ($context['location_source'] ?? null),
+                        ]);
+                        $this->metaService->sendText($conversation->phone_number, 'Ada perubahan ongkir/jarak dari lokasi/metode terakhir. Berikut ringkasan terbaru:');
+                        $this->sendOrderSummary($conversation);
+
+                        return;
+                    }
+                }
+            } catch (\Throwable $e) {
+                $finalQuote = [];
+            }
+
+            $order = DB::transaction(function () use ($conversation, $customer, $context, $resolved, $finalQuote) {
                 // Kunci baris percakapan agar dua FIX bersamaan terserialisasi:
                 // transaksi kedua antre di row-lock, lalu membaca hasil commit
                 // pertama (ID order asli) dan memakai ulang order yang sama.
@@ -3062,7 +3388,8 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                     return $dup;
                 }
 
-                $customer = $this->findOrCreateCustomer($conversation);
+                $customerModel = $this->findOrCreateCustomer($conversation);
+                $customerArr = $customerModel->toArray(); // for compatibility if needed
 
                 // Check customer category quota
                 if ($customer->customer_category_id) {
@@ -3078,27 +3405,44 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                             $quotaMsg = "⚠️ Kuota order aktif Anda sudah mencapai batas ({$maxOrders} order).\n".
                                 'Silakan tunggu pesanan sebelumnya selesai atau hubungi admin.';
                             $conversation->update(['context' => array_merge($conversation->context ?? [], ['_pending_msg' => $quotaMsg])]);
+
                             return null;
                         }
                     }
                 }
 
+                $shippingFee = (int) ($context['ongkir'] ?? $finalQuote['ongkir'] ?? 0);
+                if (in_array($context['delivery_method'] ?? null, ['self_pickup', 'grab_gosend'], true)) {
+                    $shippingFee = 0;
+                }
+                $totalAmount = $resolved['total'] + $shippingFee;
+
+                $orderCustomer = $context['order_customer'] ?? [];
+                $deliveryDateForNote = $orderCustomer['date'] ?? ($context['delivery_date'] ?? '-');
                 $order = Order::create([
                     'invoice_number' => $this->generateInvoiceNumber($conversation),
-                    'customer_id' => $customer->id,
+                    'customer_id' => $customerModel->id,
                     'phone' => $conversation->phone_number,
-                    'address' => $customer['address'] ?? $context['delivery_address'] ?? '',
-                    'total_amount' => $resolved['total'] + ($context['ongkir'] ?? 0),
+                    'address' => $orderCustomer['address'] ?? $context['delivery_address'] ?? '',
+                    'total_amount' => $totalAmount,
                     'payment_method' => 'qris',
-                    'note' => 'Penerima: ' . ($customer['name'] ?? '-') . "\n".
-                              'Tanggal kirim: ' . ($customer['date'] ?? '-') . "\n".
-                              'Slot: ' . ($context['delivery_slot'] ?? '-') . "\n".
-                              'Metode: ' . ($context['delivery_method'] ?? '-') . "\n".
+                    'note' => 'Penerima: '.($orderCustomer['name'] ?? '-')."\n".
+                              'Tanggal kirim: '.$deliveryDateForNote."\n".
+                              'Slot: '.($context['delivery_slot'] ?? '-')."\n".
+                              'Metode: '.($context['delivery_method'] ?? '-')."\n".
                               (isset($context['distance_km']) ? "Jarak: {$context['distance_km']}km\n" : ''),
                     'created_by_user_id' => null, // Bot system
                     'region_id' => $conversation->region_id,
                     'status' => 'baru',
                     'channel' => 'whatsapp',
+                    'delivery_method' => $context['delivery_method'] ?? null,
+                    'distance_km' => $context['distance_km'] ?? $finalQuote['distance_km'] ?? null,
+                    'shipping_fee' => $shippingFee,
+                    'location_source' => $context['location_source'] ?? $finalQuote['location_source'] ?? null,
+                    'delivery_lat' => $context['delivery_lat'] ?? null,
+                    'delivery_lng' => $context['delivery_lng'] ?? null,
+                    'delivery_date' => $this->parseDeliveryDateForStorage($orderCustomer['date'] ?? ($context['delivery_date'] ?? null)),
+                    'delivery_slot' => $context['delivery_slot'] ?? null,
                 ]);
 
                 foreach ($resolved['lines'] as $line) {
@@ -3144,7 +3488,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                     "✅ Pesanan Anda sudah tercatat (tidak ganda).\n\n".
                     "Nomor Invoice: *{$order->invoice_number}*\n".
                     'Total: *Rp '.number_format($order->total_amount, 0, ',', '.')."*\n\n".
-                    "Silakan kirim bukti pembayaran di sini, atau ketik *SKIP* untuk lanjut."
+                    'Silakan kirim bukti pembayaran di sini, atau ketik *SKIP* untuk lanjut.'
                 );
 
                 return;
@@ -3221,7 +3565,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             $keyword = strtolower(trim($keyword));
             // Use word boundaries for short keywords (greetings, commands) to avoid false positives
             if (strlen($keyword) <= 3) {
-                if (preg_match('/\b' . preg_quote($keyword, '/') . '\b/i', $text)) {
+                if (preg_match('/\b'.preg_quote($keyword, '/').'\b/i', $text)) {
                     return true;
                 }
             } else {
@@ -3250,7 +3594,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             }
             $words = preg_split('/\s+/', $keyword) ?: [];
             $quoted = array_map(fn ($w) => preg_quote($w, '/'), $words);
-            if (preg_match('/\b' . implode('\s+', $quoted) . '\b/iu', $text)) {
+            if (preg_match('/\b'.implode('\s+', $quoted).'\b/iu', $text)) {
                 return true;
             }
         }
@@ -3421,12 +3765,12 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
         // Prioritas: nama/tag persis dulu, baru partial
         $exactMatch = (clone $query)
-            ->where(function ($q) use ($regionId, $lowerKeyword) {
+            ->where(function ($q) use ($regionId) {
                 $q->where('region_id', $regionId)->orWhereNull('region_id');
             })
             ->where(function ($q) use ($lowerKeyword) {
-                $q->whereRaw("LOWER(name) = ?", [$lowerKeyword])
-                  ->orWhereRaw("LOWER(tag) = ?", [$lowerKeyword]);
+                $q->whereRaw('LOWER(name) = ?', [$lowerKeyword])
+                    ->orWhereRaw('LOWER(tag) = ?', [$lowerKeyword]);
             })
             ->first();
 
@@ -3436,9 +3780,9 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
         $partialMatch = $query
             ->where(function ($q) use ($escaped) {
-                $q->whereRaw("LOWER(name) LIKE ?", ["%{$escaped}%"])
-                  ->orWhereRaw("LOWER(tag) LIKE ?", ["%{$escaped}%"])
-                  ->orWhereRaw("LOWER(description) LIKE ?", ["%{$escaped}%"]);
+                $q->whereRaw('LOWER(name) LIKE ?', ["%{$escaped}%"])
+                    ->orWhereRaw('LOWER(tag) LIKE ?', ["%{$escaped}%"])
+                    ->orWhereRaw('LOWER(description) LIKE ?', ["%{$escaped}%"]);
             })
             ->first();
 
@@ -3504,7 +3848,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $exact = (clone $base)
             ->where(function ($q) use ($lowerKeyword) {
                 $q->whereRaw('LOWER(name) = ?', [$lowerKeyword])
-                  ->orWhereRaw('LOWER(tag) = ?', [$lowerKeyword]);
+                    ->orWhereRaw('LOWER(tag) = ?', [$lowerKeyword]);
             })
             ->first();
 
@@ -3515,7 +3859,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         return (clone $base)
             ->where(function ($q) use ($escaped) {
                 $q->where('name', 'like', "%{$escaped}%")
-                  ->orWhere('tag', 'like', "%{$escaped}%");
+                    ->orWhere('tag', 'like', "%{$escaped}%");
             })
             ->orderByRaw('LENGTH(name) ASC')
             ->orderBy('id')
@@ -3575,7 +3919,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                 $chunks[] = $current;
                 $current = '';
             }
-            $current .= ($current === '' ? '' : "\n") . $line;
+            $current .= ($current === '' ? '' : "\n").$line;
         }
         if ($current !== '') {
             $chunks[] = $current;

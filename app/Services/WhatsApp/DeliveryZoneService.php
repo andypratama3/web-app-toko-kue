@@ -9,7 +9,9 @@ class DeliveryZoneService
 {
     public function calculateOngkir(float $distanceKm, ?int $regionId): array
     {
-        $cacheKey = 'ongkir_' . ($regionId ?? 'null') . '_' . $distanceKm;
+        $distanceKm = round((float) $distanceKm, 2);
+        $version = Cache::get('delivery_zones_ver_'.($regionId ?? 'all'), 1);
+        $cacheKey = 'ongkir_'.($regionId ?? 'null').'_'.$distanceKm.'_v'.$version;
         $cached = Cache::get($cacheKey);
         if ($cached !== null) {
             return $cached;
@@ -29,6 +31,7 @@ class DeliveryZoneService
                 'needs_escalation' => false,
                 'distance_km' => $distanceKm,
                 'zone_name' => $zone->area_name,
+                'zone_id' => $zone->id,
             ];
             Cache::put($cacheKey, $result, now()->addHours(24));
 
@@ -36,10 +39,21 @@ class DeliveryZoneService
         }
 
         if ($distanceKm > 14) {
+            $enforce = config('delivery.enforce_radius_over_zone', false);
+            if ($enforce && $distanceKm > config('delivery.max_radius_km', 14)) {
+                return [
+                    'ongkir' => 0,
+                    'needs_escalation' => true,
+                    'message' => 'Jarak di atas batas radius, eskalasi ke admin.',
+                    'distance_km' => $distanceKm,
+                ];
+            }
+
             return [
                 'ongkir' => 0,
                 'needs_escalation' => true,
                 'message' => 'Jarak di atas 14km, eskalasi ke admin.',
+                'distance_km' => $distanceKm,
             ];
         }
 
@@ -57,7 +71,7 @@ class DeliveryZoneService
 
     protected function calculateTierOngkir(float $distanceKm): int
     {
-        return match(true) {
+        return match (true) {
             $distanceKm < 10 => 10000,
             $distanceKm <= 14 => 15000,
             default => 0,
@@ -86,9 +100,9 @@ class DeliveryZoneService
         // Normalisasi tanda baca jadi spasi agar "Gubeng," tetap cocok "gubeng".
         $normalized = trim((string) preg_replace('/[^a-z0-9\s]+/i', ' ', strtolower($address)));
         $normalized = (string) preg_replace('/\s+/', ' ', $normalized);
-        $haystack = ' ' . $normalized . ' ';
+        $haystack = ' '.$normalized.' ';
 
-        $zones = DeliveryZone::active()->forRegion($regionId)->get();
+        $zones = DeliveryZone::active()->forRegion($regionId)->orderBy('distance_km')->get();
 
         $bestDistance = null;
         $bestKeywordLength = 0;
@@ -104,14 +118,14 @@ class DeliveryZoneService
                     continue;
                 }
                 // Batas kata (haystack diapit spasi) agar "batu" tak cocok "batubara".
-                if (str_contains($haystack, ' ' . $keyword . ' ') && strlen($keyword) > $bestKeywordLength) {
+                if (str_contains($haystack, ' '.$keyword.' ') && strlen($keyword) > $bestKeywordLength) {
                     $bestKeywordLength = strlen($keyword);
                     $bestDistance = (float) $zone->distance_km;
                 }
             }
         }
 
-        return $bestDistance;
+        return $bestDistance === null ? null : round($bestDistance, 2);
     }
 
     protected function splitZoneKeywords(?string $raw): array
@@ -126,6 +140,7 @@ class DeliveryZoneService
             function ($p) {
                 $p = strtolower(trim((string) $p));
                 $p = trim((string) preg_replace('/[^a-z0-9\s]+/i', ' ', $p));
+
                 return trim((string) preg_replace('/\s+/', ' ', $p));
             },
             $parts
@@ -134,7 +149,7 @@ class DeliveryZoneService
 
     protected function getReferencePoint(?int $regionId): array
     {
-        // Resolve via slug agar tak bergantung urutan auto-increment id.
+        // Resolve via slug/DB agar tak bergantung urutan auto-increment id.
         $knownLocations = [
             'surabaya' => ['lat' => -7.2575, 'lng' => 112.7521],
             'malang' => ['lat' => -7.9666, 'lng' => 112.6326],
@@ -144,16 +159,28 @@ class DeliveryZoneService
         $region = $regionId ? \App\Models\Region::find($regionId) : null;
         $slug = strtolower((string) ($region->slug ?? ''));
 
-        if (isset($knownLocations[$slug])) {
+        if ($region && ! is_null($region->latitude) && ! is_null($region->longitude)) {
+            return ['lat' => (float) $region->latitude, 'lng' => (float) $region->longitude];
+        }
+
+        // Backfill known slugs into columns if present
+        if ($region && isset($knownLocations[$slug])) {
+            $region->latitude = $knownLocations[$slug]['lat'];
+            $region->longitude = $knownLocations[$slug]['lng'];
+            try {
+                $region->save();
+            } catch (\Throwable $e) {
+            }
+
             return $knownLocations[$slug];
         }
 
-        \Illuminate\Support\Facades\Log::channel('whatsapp')->warning('⚠️ Titik referensi tak dikenal, pakai Denpasar', [
+        // Do NOT fallback to Denpasar for unknown regions without coordinates
+        \Illuminate\Support\Facades\Log::channel('whatsapp')->error('⛔ Titik referensi tidak dikonfigurasi untuk region (tanpa fallback Denpasar)', [
             'region_id' => $regionId,
             'slug' => $slug,
         ]);
-
-        return $knownLocations['denpasar'];
+        throw new \Exception('Region reference point not configured');
     }
 
     protected function haversineDistance(float $lat1, float $lng1, float $lat2, float $lng2): float

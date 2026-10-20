@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use App\Models\Order;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class OrderController extends Controller
 {
@@ -89,7 +89,7 @@ class OrderController extends Controller
             ->where('id', $validated['courier_id'])
             ->where('region_id', $admin->region_id)
             ->first();
-        if (!$courier) {
+        if (! $courier) {
             return response()->json(['message' => 'Kurir tidak valid untuk wilayah ini.'], 422);
         }
 
@@ -118,7 +118,7 @@ class OrderController extends Controller
                 'items',
                 'returns',
                 'returns.returnedProducts.product',
-                'returns.returnedProducts.variant'
+                'returns.returnedProducts.variant',
             ])
                 ->where('region_id', $admin->region_id)
                 ->findOrFail($id);
@@ -131,8 +131,11 @@ class OrderController extends Controller
                 $paidAt = Carbon::parse($order->paid_at)->startOfDay();
                 $diffInDays = $createdAt->diffInDays($paidAt);
 
-                if ($diffInDays == 1) $paidAtLabel = ' (Harian)';
-                elseif ($diffInDays >= 2 && $diffInDays <= 7) $paidAtLabel = ' (Mingguan)';
+                if ($diffInDays == 1) {
+                    $paidAtLabel = ' (Harian)';
+                } elseif ($diffInDays >= 2 && $diffInDays <= 7) {
+                    $paidAtLabel = ' (Mingguan)';
+                }
 
                 $paidAtFormatted = Carbon::parse($order->paid_at)->isoFormat('D MMMM YYYY, HH:mm');
             }
@@ -149,7 +152,7 @@ class OrderController extends Controller
                 'paid_at' => $paidAtFormatted,
                 'paid_at_label' => $paidAtLabel,
                 // 'payment_proof' => $order->payment_proof,
-                'payment_proof' => $order->payment_proof ? asset('storage/' . preg_replace('#^(storage/|public/)#', '', $order->payment_proof)) : null,
+                'payment_proof' => $order->payment_proof ? asset('storage/'.preg_replace('#^(storage/|public/)#', '', $order->payment_proof)) : null,
                 'note' => $order->note,
                 'customer' => [
                     'name' => $order->customer->name ?? 'N/A',
@@ -158,7 +161,7 @@ class OrderController extends Controller
                     'address' => $order->customer->address ?? 'N/A',
                 ],
                 'kurir_name' => $order->createdBy->name ?? '-',
-                'items' => $order->items->map(fn($item) => [
+                'items' => $order->items->map(fn ($item) => [
                     'id' => $item->product_id,
                     'name' => $item->product_name,
                     'price' => $item->price,
@@ -169,7 +172,7 @@ class OrderController extends Controller
                 // Perbaikan pada bagian ini
                 'return_details' => $activeReturn ? [
                     // 'return_proof' => $activeReturn->return_proof,
-                    'return_proof' => $activeReturn->return_proof ? asset('storage/' . preg_replace('#^(storage/|public/)#', '', $activeReturn->return_proof)) : null,
+                    'return_proof' => $activeReturn->return_proof ? asset('storage/'.preg_replace('#^(storage/|public/)#', '', $activeReturn->return_proof)) : null,
                     'total_amount_returned' => $activeReturn->total_amount_returned,
                     'returned_products' => $activeReturn->returnedProducts->map(function ($p) {
                         // **PENGECEKAN AMAN**
@@ -182,9 +185,9 @@ class OrderController extends Controller
                             'name' => $productName,
                             'variant_name' => $variantName,
                             'quantity' => $p->quantity,
-                            'price' => $p->price
+                            'price' => $p->price,
                         ];
-                    })->toArray()
+                    })->toArray(),
                 ] : null,
             ];
 
@@ -193,7 +196,8 @@ class OrderController extends Controller
             return response()->json(['message' => 'Pesanan tidak ditemukan.'], 404);
         } catch (\Exception $e) {
             // Log error untuk debugging
-            \Log::error('Error fetching order details for order ID ' . $id . ' by admin: ' . $e->getMessage());
+            \Log::error('Error fetching order details for order ID '.$id.' by admin: '.$e->getMessage());
+
             return response()->json(['message' => 'Terjadi kesalahan internal.'], 500);
         }
     }
@@ -224,7 +228,51 @@ class OrderController extends Controller
 
         $order->status = 'diverifikasi_admin';
         $order->save();
+
         return response()->json(['message' => 'Pesanan berhasil diverifikasi.']);
+    }
+
+    /**
+     * Admin mengunggah bukti (pembayaran / pesanan Grab-GoSend / retur)
+     * langsung dari halaman verifikasi. Berguna saat kurir tak tersedia
+     * atau pesanan luar kota yang diatur manual oleh admin.
+     */
+    public function uploadProof(Request $request, $id)
+    {
+        $request->validate([
+            'payment_proof' => 'required|image|mimes:jpeg,png,jpg,webp|max:4096',
+        ]);
+
+        $admin = Auth::user();
+
+        try {
+            $order = Order::where('region_id', $admin->region_id)
+                ->whereIn('status', ['baru', 'selesai', 'menunggu_verifikasi_admin'])
+                ->findOrFail($id);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['message' => 'Pesanan tidak ditemukan.'], 404);
+        }
+
+        $oldProof = $order->payment_proof;
+
+        $path = $request->file('payment_proof')->store('payment_proofs', 'public');
+
+        if (! $path) {
+            return response()->json(['message' => 'Gagal mengunggah bukti. Coba lagi.'], 500);
+        }
+
+        $order->payment_proof = $path;
+        $order->save();
+
+        // Hapus file lama agar tak menumpuk (hanya setelah file baru tersimpan).
+        if ($oldProof && $oldProof !== $path) {
+            Storage::disk('public')->delete(preg_replace('#^(storage/|public/)#', '', $oldProof));
+        }
+
+        return response()->json([
+            'message' => 'Bukti berhasil diunggah.',
+            'payment_proof' => asset('storage/'.$path),
+        ]);
     }
 
     /**
@@ -319,18 +367,21 @@ class OrderController extends Controller
             $order->delete();
 
             DB::commit();
+
             return response()->json(['message' => 'Pesanan berhasil dihapus secara permanen.']);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Gagal menghapus pesanan ID ' . $id . ': ' . $e->getMessage());
+            Log::error('Gagal menghapus pesanan ID '.$id.': '.$e->getMessage());
+
             return response()->json(['message' => 'Terjadi kesalahan saat menghapus pesanan.'], 500);
         }
     }
+
     public function downloadBotRekap(Request $request, $id)
     {
         $start = $request->input('start');
         $end = $request->input('end');
-        $order = Order::with('items','customer')
+        $order = Order::with('items', 'customer')
             ->where('region_id', Auth::user()->region_id)
             ->findOrFail($id);
         if ($order->channel !== 'whatsapp' || $order->status !== 'diverifikasi_admin') {
@@ -343,7 +394,8 @@ class OrderController extends Controller
                 abort(403, 'Pesanan bot di luar range tanggal.');
             }
         }
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('dashboard.admin.orders.bot-rekap_pdf', compact('order','start','end'));
-        return $pdf->download('BotRekap_' . $order->invoice_number . '.pdf');
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('dashboard.admin.orders.bot-rekap_pdf', compact('order', 'start', 'end'));
+
+        return $pdf->download('BotRekap_'.$order->invoice_number.'.pdf');
     }
 }

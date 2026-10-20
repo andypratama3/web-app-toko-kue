@@ -184,6 +184,11 @@
                     return;
                 }
 
+                if (target.matches('#btnUploadProof')) {
+                    if (currentOrderId) uploadProof();
+                    return;
+                }
+
                 if (target.matches('#btnOpenRejectModal')) {
                     if (currentOrderId) {
                         // Close verify modal first, then open rejection modal
@@ -240,6 +245,14 @@
             const proofImageContainer = document.getElementById('verifyModalProofImageContainer');
             const proofImage = document.getElementById('verifyModalProofImage');
             const noProofContainer = document.getElementById('verifyModalNoProof');
+            const uploadProofContainer = document.getElementById('verifyModalUploadProof');
+            if (uploadProofContainer) {
+                uploadProofContainer.classList.toggle('hidden', window.verifyReadOnly);
+            }
+            const proofInput = document.getElementById('verifyModalProofInput');
+            if (proofInput) proofInput.value = '';
+            const uploadMsg = document.getElementById('verifyModalProofUploadMsg');
+            if (uploadMsg) uploadMsg.textContent = '';
 
             // Reset state
             loader.classList.remove('hidden');
@@ -364,6 +377,77 @@
             }
         }
         // [!code block:end]
+
+        // Fungsi untuk mengunggah bukti (pembayaran / pengiriman) dari modal verifikasi
+        async function uploadProof() {
+            const input = document.getElementById('verifyModalProofInput');
+            const msg = document.getElementById('verifyModalProofUploadMsg');
+            const btn = document.getElementById('btnUploadProof');
+
+            if (!currentOrderId) {
+                dispatchToast('Error: Order ID tidak ditemukan.', 'error');
+                return;
+            }
+            if (!input || !input.files || input.files.length === 0) {
+                if (msg) {
+                    msg.textContent = 'Pilih file gambar dulu.';
+                    msg.className = 'mt-2 text-sm text-red-600 dark:text-red-400';
+                }
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('payment_proof', input.files[0]);
+
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Mengunggah...';
+            }
+            if (msg) msg.textContent = '';
+
+            try {
+                const response = await fetch(`/admin/orders/${currentOrderId}/upload-proof`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute(
+                            'content'),
+                        'Accept': 'application/json'
+                    },
+                    body: formData
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(data.message || 'Gagal mengunggah bukti.');
+
+                const proofImage = document.getElementById('verifyModalProofImage');
+                proofImage.src = data.payment_proof;
+                document.getElementById('verifyModalProofImageContainer').classList.remove('hidden');
+                document.getElementById('verifyModalNoProof').classList.add('hidden');
+                proofImage.onclick = () => showVerifyModalZoom(data.payment_proof);
+
+                const btnVerify = document.getElementById('btnVerifyOrder');
+                btnVerify.disabled = false;
+                btnVerify.classList.remove('opacity-50', 'cursor-not-allowed');
+                btnVerify.title = '';
+
+                if (msg) {
+                    msg.textContent = '✅ Bukti berhasil diunggah.';
+                    msg.className = 'mt-2 text-sm text-green-600 dark:text-green-400';
+                }
+                dispatchToast('Bukti berhasil diunggah!', 'success');
+            } catch (error) {
+                if (msg) {
+                    msg.textContent = `Gagal: ${error.message}`;
+                    msg.className = 'mt-2 text-sm text-red-600 dark:text-red-400';
+                }
+                dispatchToast(`Gagal unggah bukti: ${error.message}`, 'error');
+            } finally {
+                if (input) input.value = '';
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = 'Unggah Bukti';
+                }
+            }
+        }
 
         // Fungsi untuk mengirim request verifikasi
         async function verifyOrder(orderId) {

@@ -13,8 +13,11 @@ class ConversationRegionResolver
      * 'default' = hanya tebakan region bawaan, boleh dikoreksi.
      */
     public const SOURCE_CUSTOMER = 'customer';
+
     public const SOURCE_ADDRESS = 'address';
+
     public const SOURCE_MANUAL = 'manual';
+
     public const SOURCE_DEFAULT = 'default';
 
     protected const LOCKED_SOURCES = [self::SOURCE_MANUAL, self::SOURCE_CUSTOMER];
@@ -162,12 +165,15 @@ class ConversationRegionResolver
         $haystack = $this->normalize($address);
 
         $zones = DeliveryZone::query()->where('is_active', true)->get();
-        $regions = Region::query()->get()->keyBy('id');
+        $regions = Region::query()->where('is_active', true)->get()->keyBy('id');
 
         $best = null;
         $bestScore = 0;
 
         foreach ($zones as $zone) {
+            if (! isset($regions[$zone->region_id])) {
+                continue;
+            }
             $score = $this->scoreZone($haystack, $zone, $regions->get($zone->region_id));
 
             if ($score > $bestScore) {
@@ -234,14 +240,14 @@ class ConversationRegionResolver
         }
 
         if ((bool) preg_match(
-            '/(^|\s)' . preg_quote($term, '/') . '(\s|$)/u',
+            '/(^|\s)'.preg_quote($term, '/').'(\s|$)/u',
             $haystack
         )) {
             return true;
         }
 
         return mb_strlen($term) >= 6 && (bool) preg_match(
-            '/(^|\s)' . preg_quote($term, '/') . '\S*/u',
+            '/(^|\s)'.preg_quote($term, '/').'\S*/u',
             $haystack
         );
     }
