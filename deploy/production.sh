@@ -130,7 +130,7 @@ db() {
   local q="$1" i=0 out
   while :; do
     if out=$(mysql --defaults-extra-file="$MYCNF" -N -B "$DB_NAME" -e "$q" 2>/dev/null); then
-      printf '%s' "$out"; return 0
+      printf '%s\n' "$out"; return 0
     fi
     i=$((i+1))
     if [ "$i" -ge 3 ]; then
@@ -263,8 +263,10 @@ snapshot_counts() {
   db "$q" > "$out"
 }
 snapshot_counts "$SNAP_BEFORE"
-TABLE_COUNT=$(wc -l < "$SNAP_BEFORE" | tr -dc '0-9')
+TABLE_COUNT=$(wc -l < "${SNAP_BEFORE%.tsv}.tbl" | tr -dc '0-9')
+ROWS_COUNT=$(wc -l < "$SNAP_BEFORE" | tr -dc '0-9')
 [ "${TABLE_COUNT:-0}" -gt 0 ] || die "Snapshot tabel kosong — abort."
+[ "$ROWS_COUNT" = "$TABLE_COUNT" ] || die "Snapshot baris tidak lengkap ($ROWS_COUNT/$TABLE_COUNT) — abort."
 ok "Snapshot baris $TABLE_COUNT tabel -> $SNAP_BEFORE"
 
 cp -a .env "$STATE_DIR/env-$RUN_ID.backup" && chmod 600 "$STATE_DIR/env-$RUN_ID.backup"
