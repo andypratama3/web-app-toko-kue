@@ -11,7 +11,16 @@ class DeliveryZoneService
     {
         $distanceKm = round((float) $distanceKm, 2);
         $version = Cache::get('delivery_zones_ver_'.($regionId ?? 'all'), 1);
-        $cacheKey = 'ongkir_'.($regionId ?? 'null').'_'.$distanceKm.'_v'.$version;
+        // Signature konfigurasi ongkir ikut masuk key: ubah tier/radius di .env
+        // langsung berlaku (tak perlu tunggu cache 24 jam kedaluwarsa).
+        $configSignature = substr(md5((string) json_encode([
+            $this->maxRadiusKm(),
+            config('delivery.fee_tier_1_max_km'),
+            config('delivery.fee_tier_2_max_km'),
+            config('delivery.fee_tier_1_amount'),
+            config('delivery.fee_tier_2_amount'),
+        ])), 0, 8);
+        $cacheKey = 'ongkir_'.($regionId ?? 'null').'_'.$distanceKm.'_v'.$version.'_c'.$configSignature;
         $cached = Cache::get($cacheKey);
         if ($cached !== null) {
             return $cached;
@@ -38,9 +47,9 @@ class DeliveryZoneService
             return $result;
         }
 
-        if ($distanceKm > 14) {
+        if ($distanceKm > $this->radiusLimitKm()) {
             $enforce = config('delivery.enforce_radius_over_zone', false);
-            if ($enforce && $distanceKm > config('delivery.max_radius_km', 14)) {
+            if ($enforce && $distanceKm > $this->maxRadiusKm()) {
                 return [
                     'ongkir' => 0,
                     'needs_escalation' => true,
@@ -52,7 +61,7 @@ class DeliveryZoneService
             return [
                 'ongkir' => 0,
                 'needs_escalation' => true,
-                'message' => 'Jarak di atas 14km, eskalasi ke admin.',
+                'message' => 'Jarak di atas '.$this->radiusLimitKm().'km, eskalasi ke admin.',
                 'distance_km' => $distanceKm,
             ];
         }
@@ -71,11 +80,29 @@ class DeliveryZoneService
 
     protected function calculateTierOngkir(float $distanceKm): int
     {
+        $tier1Max = (float) config('delivery.fee_tier_1_max_km', 10);
+        $tier2Max = (float) config('delivery.fee_tier_2_max_km', 14);
+
         return match (true) {
-            $distanceKm < 10 => 10000,
-            $distanceKm <= 14 => 15000,
+            $distanceKm < $tier1Max => (int) config('delivery.fee_tier_1_amount', 10000),
+            $distanceKm <= $tier2Max => (int) config('delivery.fee_tier_2_amount', 15000),
             default => 0,
         };
+    }
+
+    protected function maxRadiusKm(): float
+    {
+        return (float) config('delivery.max_radius_km', 14);
+    }
+
+    /**
+     * Batas eskalasi = min(radius layanan, batas tier termahal).
+     * Dipakai min() supaya tak ada celah ongkir 0-butuh-eskalasi
+     * saat radius dinaikkan tapi tier ongkir belum ikut dinaikkan.
+     */
+    protected function radiusLimitKm(): float
+    {
+        return min($this->maxRadiusKm(), (float) config('delivery.fee_tier_2_max_km', 14));
     }
 
     public function estimateDistance(float $lat, float $lng, ?int $regionId): float
@@ -186,6 +213,7 @@ class DeliveryZoneService
             'region_id' => $regionId,
             'slug' => $slug,
         ]);
+
         return $knownLocations['denpasar'];
     }
 

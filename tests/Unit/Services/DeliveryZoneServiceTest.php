@@ -2,8 +2,8 @@
 
 namespace Tests\Unit\Services;
 
-use App\Services\WhatsApp\DeliveryZoneService;
 use App\Models\Region;
+use App\Services\WhatsApp\DeliveryZoneService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -63,6 +63,53 @@ class DeliveryZoneServiceTest extends TestCase
         $result = $this->service->calculateOngkir(9.99, 3);
 
         $this->assertEquals(10000, $result['ongkir']);
+    }
+
+    public function test_tier_ongkir_dapat_dikonfigurasi_lewat_config(): void
+    {
+        config([
+            'delivery.max_radius_km' => 8,
+            'delivery.fee_tier_1_max_km' => 5,
+            'delivery.fee_tier_2_max_km' => 8,
+            'delivery.fee_tier_1_amount' => 7000,
+            'delivery.fee_tier_2_amount' => 9000,
+        ]);
+
+        $this->assertEquals(7000, $this->service->calculateOngkir(4.0, 3)['ongkir']);
+        $this->assertEquals(9000, $this->service->calculateOngkir(7.0, 3)['ongkir']);
+
+        $beyond = $this->service->calculateOngkir(9.0, 3);
+        $this->assertTrue($beyond['needs_escalation']);
+        $this->assertEquals(0, $beyond['ongkir']);
+    }
+
+    public function test_tier_kosong_tidak_pernah_memberi_ongkir_nol_tanpa_eskalasi(): void
+    {
+        // Radius dinaikkan tapi tier ongkir tidak ikut → harus eskalasi, bukan ongkir 0 diam-diam.
+        config([
+            'delivery.max_radius_km' => 20,
+            'delivery.fee_tier_1_max_km' => 10,
+            'delivery.fee_tier_2_max_km' => 14,
+        ]);
+
+        $result = $this->service->calculateOngkir(16.0, 3);
+
+        $this->assertTrue($result['needs_escalation']);
+        $this->assertEquals(0, $result['ongkir']);
+    }
+
+    public function test_ubah_tier_ongkir_langsung_berlaku_walau_cache_lama_ada(): void
+    {
+        $before = $this->service->calculateOngkir(4.5, 3);
+        $this->assertEquals(10000, $before['ongkir']);
+
+        config([
+            'delivery.fee_tier_1_max_km' => 6,
+            'delivery.fee_tier_1_amount' => 8000,
+        ]);
+
+        $after = $this->service->calculateOngkir(4.5, 3);
+        $this->assertEquals(8000, $after['ongkir']);
     }
 
     public function test_explicit_zone_wins_over_escalation(): void
