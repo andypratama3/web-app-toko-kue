@@ -85,6 +85,34 @@ class AdminOrderCrossBranchTest extends TestCase
         $this->assertCount(2, $response->viewData('orders'));
     }
 
+    public function test_tombol_verifikasi_aktif_untuk_super_admin_di_order_cabang_lain(): void
+    {
+        $this->admin->assignRole('super_admin');
+        $order = $this->makeOrder($this->malang, 'menunggu_verifikasi_admin');
+
+        $response = $this->actingAs($this->admin)->get('/admin/orders');
+
+        $response->assertOk();
+        $html = $response->getContent();
+        $this->assertStringContainsString('data-order-id="'.$order->id.'"', $html);
+        // Tombol aktif pakai kelas biru; yang disabled pakai kelas abu-abu.
+        $this->assertMatchesRegularExpression(
+            '/bg-blue-600[^>]*data-target-modal="verifyOrderModal"[^>]*data-order-id="'.$order->id.'"/s',
+            $html
+        );
+    }
+
+    public function test_tombol_verifikasi_nonaktif_untuk_admin_biasa_di_order_cabang_lain(): void
+    {
+        $order = $this->makeOrder($this->malang, 'menunggu_verifikasi_admin');
+
+        $response = $this->actingAs($this->admin)->get('/admin/orders');
+
+        $response->assertOk();
+        $html = $response->getContent();
+        $this->assertStringNotContainsString('data-order-id="'.$order->id.'"', $html);
+    }
+
     public function test_super_admin_bisa_verifikasi_order_cabang_lain(): void
     {
         Storage::fake('public');

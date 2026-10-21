@@ -84,8 +84,12 @@
             @endif
             {{-- Tombol ini akan membuka modal verifikasi.
                 Order 'baru' bayar-di-depan juga bisa dibuka — server yang
-                memutuskan boleh/tidaknya (bukti wajib). --}}
-            @if ($order->status == 'baru' || $order->status == 'selesai' || $order->status == 'menunggu_verifikasi_admin')
+                memutuskan boleh/tidaknya (bukti wajib).
+                Super admin boleh verifikasi lintas cabang; admin biasa
+                hanya cabangnya sendiri. --}}
+            @php($currentUser = auth()->user())
+            @php($canVerify = in_array($order->status, ['baru', 'selesai', 'menunggu_verifikasi_admin']) && $currentUser && ($currentUser->hasRole('super_admin') || $currentUser->hasRole('Super Admin') || $order->region_id == $currentUser->region_id))
+            @if ($canVerify)
                 <button
                     class="px-3 py-1 text-xs font-bold text-white bg-blue-600 rounded js-open-modal-btn hover:bg-blue-700"
                     data-target-modal="verifyOrderModal" data-order-id="{{ $order->id }}">
