@@ -19,6 +19,16 @@ use Illuminate\Support\Facades\Storage;
 
 class OrderBotService
 {
+    /**
+     * Nama bulan singkat bahasa Indonesia — dipakai untuk tampilan tanggal
+     * ke customer (chat WhatsApp berbahasa Indonesia).
+     */
+    public const MONTHS_INDO = [
+        1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr',
+        5 => 'Mei', 6 => 'Jun', 7 => 'Jul', 8 => 'Agu',
+        9 => 'Sep', 10 => 'Okt', 11 => 'Nov', 12 => 'Des',
+    ];
+
     protected WhatsappMetaService $metaService;
 
     protected DeliveryZoneService $deliveryZoneService;
@@ -224,6 +234,26 @@ class OrderBotService
                 'address_text' => $conversation->getContext('delivery_address') ?? ($conversation->getContext('order_customer')['address'] ?? null),
             ]);
 
+            if (! empty($quote['needs_pin'])) {
+                // Jarak tak terhitung → minta lokasi yang lebih jelas.
+                // JANGAN diam-diam menulis ongkir 0 (user mengira gratis).
+                $conversation->setContextMany([
+                    'pending_location' => null,
+                    'distance_km' => null,
+                    'location_source' => 'pin',
+                    'last_location_source' => 'pin',
+                    'delivery_lat' => $lat,
+                    'delivery_lng' => $lng,
+                ]);
+                $this->advanceState($conversation, OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS);
+                $this->metaService->sendLocationRequest($conversation->phone_number,
+                    "📍 Lokasi ini belum kami kenali areanya, jadi ongkir belum bisa dihitung.\n\n".
+                    'Silakan kirim ulang pin GPS, atau tulis alamat yang lebih lengkap (mis. nama jalan + kecamatan).'
+                );
+
+                return;
+            }
+
             if (! empty($quote['needs_escalation']) || ! empty($quote['out_of_range'])) {
                 $this->handleOutOfRange($conversation, $quote['distance_km'] ?? 0,
                     '📍 Jarak pengiriman Anda sekitar '.($quote['distance_km'] ?? '?').'km dari toko kami.',
@@ -243,6 +273,10 @@ class OrderBotService
                 'delivery_lat' => $lat,
                 'delivery_lng' => $lng,
             ]);
+
+            if (! empty($quote['needs_conflict_resolution'])) {
+                $this->notifyLocationConflict($conversation, $quote);
+            }
         }
 
         // Kembali ke pilih produk / keranjang bila lokasi diminta di tengah order.
@@ -1500,18 +1534,54 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         if (! $dateStr) {
             return null;
         }
-        try {
-            if (preg_match('/^\d{2}\s+[A-Za-z]+\s+\d{4}$/', $dateStr)) {
-                return \Carbon\Carbon::createFromFormat('d M Y', $dateStr)->format('Y-m-d');
-            }
-        } catch (\Throwable $e) {
+        $dateStr = trim($dateStr);
+        if (! preg_match('/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})$/u', $dateStr, $m)) {
+            return null;
         }
 
-        return null;
+        $day = (int) $m[1];
+        $month = $this->monthNumberFromName($m[2]);
+        $year = (int) $m[3];
+        if ($month === null || ! checkdate($month, $day, $year)) {
+            return null;
+        }
+
+        return sprintf('%04d-%02d-%02d', $year, $month, $day);
     }
 
     /**
-     * Parse tanggal kirim ala chat Indonesia → 'd M Y'.
+     * Angka bulan dari nama bulan (Indonesia maupun Inggris).
+     */
+    protected function monthNumberFromName(string $name): ?int
+    {
+        $months = [
+            'jan' => 1, 'januari' => 1, 'january' => 1,
+            'feb' => 2, 'februari' => 2, 'february' => 2,
+            'mar' => 3, 'maret' => 3, 'march' => 3,
+            'apr' => 4, 'april' => 4,
+            'mei' => 5, 'may' => 5,
+            'jun' => 6, 'juni' => 6, 'june' => 6,
+            'jul' => 7, 'juli' => 7, 'july' => 7,
+            'agu' => 8, 'agustus' => 8, 'aug' => 8, 'august' => 8,
+            'sep' => 9, 'sept' => 9, 'september' => 9,
+            'okt' => 10, 'oktober' => 10, 'oct' => 10, 'october' => 10,
+            'nov' => 11, 'november' => 11,
+            'des' => 12, 'desember' => 12, 'dec' => 12, 'december' => 12,
+        ];
+
+        return $months[strtolower(trim($name))] ?? null;
+    }
+
+    /**
+     * Format tanggal bahasa Indonesia: "25 Des 2026".
+     */
+    public static function formatDateIndo(\Carbon\Carbon $date): string
+    {
+        return sprintf('%02d %s %d', $date->day, self::MONTHS_INDO[$date->month], $date->year);
+    }
+
+    /**
+     * Parse tanggal kirim ala chat Indonesia → 'd {Bulan} Y' (Indonesia).
      * Terima: besok/lusa/hari ini, 25 12 2026, 25/12/2026, 25-12-2026,
      * 25 Des 2026, 25 Desember 2026, 25 Des (tahun terdekat ke depan).
      * Tolak: teks bebas & tanggal lewat. Null bila tak valid.
@@ -1527,29 +1597,14 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $today = $this->localNow()->startOfDay();
         $lower = strtolower($input);
         if (preg_match('/\b(hari\s+ini|sekarang)\b/iu', $lower)) {
-            return $today->format('d M Y');
+            return self::formatDateIndo($today);
         }
         if (preg_match('/\bbesok\b/iu', $lower)) {
-            return $today->copy()->addDay()->format('d M Y');
+            return self::formatDateIndo($today->copy()->addDay());
         }
         if (preg_match('/\blusa\b/iu', $lower)) {
-            return $today->copy()->addDays(2)->format('d M Y');
+            return self::formatDateIndo($today->copy()->addDays(2));
         }
-
-        $months = [
-            'jan' => '01', 'januari' => '01', 'january' => '01',
-            'feb' => '02', 'februari' => '02', 'february' => '02',
-            'mar' => '03', 'maret' => '03', 'march' => '03',
-            'apr' => '04', 'april' => '04',
-            'mei' => '05', 'may' => '05',
-            'jun' => '06', 'juni' => '06', 'june' => '06',
-            'jul' => '07', 'juli' => '07', 'july' => '07',
-            'agu' => '08', 'agustus' => '08', 'aug' => '08', 'august' => '08',
-            'sep' => '09', 'sept' => '09', 'september' => '09',
-            'okt' => '10', 'oktober' => '10', 'oct' => '10', 'october' => '10',
-            'nov' => '11', 'november' => '11',
-            'des' => '12', 'desember' => '12', 'dec' => '12', 'december' => '12',
-        ];
 
         $day = $month = $year = null;
         if (preg_match('/^(\d{1,2})[\s\/\-.]+(\d{1,2})[\s\/\-.]+(\d{2,4})$/u', $input, $m)) {
@@ -1560,12 +1615,11 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                 $year += 2000;
             }
         } elseif (preg_match('/^(\d{1,2})\s+([a-zA-Z]+)\s+(\d{2,4})?$/u', $input, $m)) {
-            $key = strtolower($m[2]);
-            if (! isset($months[$key])) {
+            $month = $this->monthNumberFromName($m[2]);
+            if ($month === null) {
                 return null;
             }
             $day = (int) $m[1];
-            $month = (int) $months[$key];
             $year = isset($m[3]) && $m[3] !== '' ? (int) $m[3] : null;
             if ($year !== null && $year < 100) {
                 $year += 2000;
@@ -1591,7 +1645,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             return null;
         }
 
-        return $date->format('d M Y');
+        return self::formatDateIndo($date);
     }
 
     /**
@@ -1599,7 +1653,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
      */
     protected function orderExampleDate(): string
     {
-        return $this->localNow()->addDays(2)->format('d M Y');
+        return self::formatDateIndo($this->localNow()->addDays(2));
     }
 
     /**
@@ -2325,6 +2379,10 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                 'ongkir' => $quote['ongkir'] ?? 0,
                 'location_source' => $quote['location_source'] ?? 'address',
             ]);
+
+            if (! empty($quote['needs_conflict_resolution'])) {
+                $this->notifyLocationConflict($conversation, $quote);
+            }
         }
 
         $conversation->setContext('editing_address', null);
@@ -2946,11 +3004,12 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $quote = $this->deliveryQuoteService->quote([
             'region_id' => $conversation->region_id,
             'delivery_method' => 'internal_courier',
-            'location_source' => $conversation->getContext('location_source') ?? ($conversation->getContext('last_location_source') ?? 'address'),
-            'last_location_source' => $conversation->getContext('last_location_source') ?? $conversation->getContext('location_source'),
+            // Alamat yang diketik user adalah input lokasi TERAKHIR.
+            'location_source' => 'address',
+            'last_location_source' => 'address',
             'address_text' => $newAddress,
-            'pin_lat' => $conversation->getContext('delivery_lat') ?? ($conversation->getContext('pending_location')['latitude'] ?? null),
-            'pin_lng' => $conversation->getContext('delivery_lng') ?? ($conversation->getContext('pending_location')['longitude'] ?? null),
+            'pin_lat' => $conversation->getContext('delivery_lat') ?? ((array) ($conversation->getContext('pending_location') ?? []))['latitude'] ?? null,
+            'pin_lng' => $conversation->getContext('delivery_lng') ?? ((array) ($conversation->getContext('pending_location') ?? []))['longitude'] ?? null,
         ]);
 
         if (! empty($quote['needs_pin'])) {
@@ -2974,7 +3033,12 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             'distance_km' => $quote['distance_km'],
             'ongkir' => $quote['ongkir'] ?? 0,
             'location_source' => $quote['location_source'] ?? 'address',
+            'last_location_source' => 'address',
         ]);
+
+        if (! empty($quote['needs_conflict_resolution'])) {
+            $this->notifyLocationConflict($conversation, $quote);
+        }
 
         return true;
     }
@@ -3034,6 +3098,43 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             '⚠️ Luar jangkauan — perlu atur kirim (Grab/GoSend) & unggah bukti. '.$this->snapshotOrderDetails($conversation),
             'Pesanan luar area (>14km) — butuh Grab/GoSend'
         );
+    }
+
+    /**
+     * Pin GPS & alamat ketik user berbeda jauh. Beri tahu ongkir dihitung
+     * dari sumber terakhir (last input wins) dan minta koreksi bila salah,
+     * supaya user tak pernah mendapat ongkir nol tanpa penjelasan.
+     */
+    protected function notifyLocationConflict(WhatsAppConversation $conversation, array $quote): void
+    {
+        $conflict = is_array($quote['conflict'] ?? null) ? $quote['conflict'] : [];
+        $source = $quote['location_source'] ?? 'address';
+        $sourceLabel = $source === 'pin' ? 'lokasi GPS (pin)' : 'alamat yang Anda tulis';
+        $pinDistance = isset($conflict['pin_distance']) ? round((float) $conflict['pin_distance'], 1) : '?';
+        $addressDistance = isset($conflict['address_distance']) ? round((float) $conflict['address_distance'], 1) : '?';
+
+        // Tandai konflik ini sudah diberitahukan, agar FIX berikutnya tak
+        // terjebak di loop "konfirmasi → peringatan → konfirmasi".
+        $conversation->setContext('conflict_notified_signature', $this->conflictSignature($quote));
+
+        $this->metaService->sendText($conversation->phone_number,
+            "⚠️ *Lokasi GPS dan alamat Anda berbeda jauh*\n\n".
+            "Jarak dari pin: {$pinDistance}km\n".
+            "Jarak dari alamat: {$addressDistance}km\n\n".
+            "Ongkir dihitung dari *{$sourceLabel}* — data terakhir yang Anda kirim.\n".
+            'Kalau belum sesuai, kirim ulang pin GPS atau ketik *UBAH ALAMAT*.'
+        );
+    }
+
+    /**
+     * Sidik jari konflik (jarak pin + jarak alamat) — dipakai supaya user
+     * cukup diberi tahu sekali per konflik yang sama.
+     */
+    protected function conflictSignature(array $quote): string
+    {
+        $conflict = is_array($quote['conflict'] ?? null) ? $quote['conflict'] : [];
+
+        return ($conflict['pin_distance'] ?? '-').'|'.($conflict['address_distance'] ?? '-');
     }
 
     protected function sendOutOfZoneDeliveryOptions(WhatsAppConversation $conversation): void
@@ -3354,14 +3455,56 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                         'delivery_method' => $context['delivery_method'] ?? null,
                         'location_source' => $context['location_source'] ?? null,
                         'last_location_source' => $context['last_location_source'] ?? null,
-                        'pin_lat' => $context['delivery_lat'] ?? ($context['pending_location']['latitude'] ?? null),
-                        'pin_lng' => $context['delivery_lng'] ?? ($context['pending_location']['longitude'] ?? null),
+                        'pin_lat' => $context['delivery_lat'] ?? ((array) ($context['pending_location'] ?? []))['latitude'] ?? null,
+                        'pin_lng' => $context['delivery_lng'] ?? ((array) ($context['pending_location'] ?? []))['longitude'] ?? null,
                         'address_text' => $context['delivery_address'] ?? ($customer['address'] ?? null),
                     ];
                     $finalQuote = $this->deliveryQuoteService->quote($ctxForQuote);
+
+                    // Jarak tak terhitung → jangan buat order dengan ongkir
+                    // yang tak diketahui. Minta lokasi yang lebih jelas dulu.
+                    if (! empty($finalQuote['needs_pin'])) {
+                        $this->advanceState($conversation, OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS);
+                        $this->metaService->sendLocationRequest($conversation->phone_number,
+                            "📍 Jarak pengiriman belum bisa dihitung dari data yang Anda kirim.\n\n".
+                            'Silakan kirim ulang pin GPS lokasi Anda, atau ketik *UBAH ALAMAT* untuk menulis alamat yang lebih lengkap.'
+                        );
+
+                        return;
+                    }
+
+                    // Di luar jangkauan → jangan buat order. Tawarkan
+                    // Grab/GoSend atau ambil sendiri, plus eskalasi ke admin.
+                    if (! empty($finalQuote['needs_escalation']) || ! empty($finalQuote['out_of_range'])) {
+                        $this->handleOutOfRange($conversation, (float) ($finalQuote['distance_km'] ?? 0),
+                            '📍 Jarak pengiriman dari toko kami sekitar '.($finalQuote['distance_km'] ?? '?').'km.',
+                            $context['delivery_address'] ?? ($customer['address'] ?? null));
+
+                        return;
+                    }
+
+                    // Konflik pin vs alamat → ongkir diambil dari sumber
+                    // terakhir; user diberi tahu sebelum order dibuat.
+                    if (! empty($finalQuote['needs_conflict_resolution'])) {
+                        $conversation->setContextMany([
+                            'distance_km' => $finalQuote['distance_km'] ?? $context['distance_km'],
+                            'ongkir' => $finalQuote['ongkir'] ?? ($context['ongkir'] ?? 0),
+                            'location_source' => $finalQuote['location_source'] ?? ($context['location_source'] ?? null),
+                        ]);
+
+                        // Konflik yang belum pernah diberitahukan → beri tahu
+                        // dulu, lalu minta konfirmasi ulang.
+                        if ($conversation->getContext('conflict_notified_signature') !== $this->conflictSignature($finalQuote)) {
+                            $this->notifyLocationConflict($conversation, $finalQuote);
+                            $this->sendOrderSummary($conversation);
+
+                            return;
+                        }
+                    }
+
                     if (($finalQuote['ongkir'] ?? null) !== ($context['ongkir'] ?? null)) {
                         // Only refresh if both are meaningful
-                        if ($finalQuote['ongkir'] !== null && $context['ongkir'] !== null && abs((int)$finalQuote['ongkir'] - (int)$context['ongkir']) > 0) {
+                        if ($finalQuote['ongkir'] !== null && $context['ongkir'] !== null && abs((int) $finalQuote['ongkir'] - (int) $context['ongkir']) > 0) {
                             $conversation->setContextMany([
                                 'distance_km' => $finalQuote['distance_km'] ?? $context['distance_km'],
                                 'ongkir' => $finalQuote['ongkir'] ?? $context['ongkir'],
@@ -3369,6 +3512,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                             ]);
                             $this->metaService->sendText($conversation->phone_number, 'Ada perubahan ongkir/jarak dari lokasi/metode terakhir. Berikut ringkasan terbaru:');
                             $this->sendOrderSummary($conversation);
+
                             return;
                         }
                     }
@@ -3377,7 +3521,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                 $finalQuote = [];
             }
 
-            $order = DB::transaction(function () use ($conversation, $customer, $context, $resolved, $finalQuote) {
+            $order = DB::transaction(function () use ($conversation, $context, $resolved, $finalQuote) {
                 // Kunci baris percakapan agar dua FIX bersamaan terserialisasi:
                 // transaksi kedua antre di row-lock, lalu membaca hasil commit
                 // pertama (ID order asli) dan memakai ulang order yang sama.

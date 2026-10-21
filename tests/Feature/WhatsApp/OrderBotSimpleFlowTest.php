@@ -26,8 +26,11 @@ class OrderBotSimpleFlowTest extends TestCase
     use RefreshDatabase;
 
     protected Region $region;
+
     protected OrderBotService $bot;
+
     protected Product $ijo;
+
     protected Product $tumpeng;
 
     protected function setUp(): void
@@ -294,7 +297,7 @@ class OrderBotSimpleFlowTest extends TestCase
         $this->bot->handleMessage($c, '1');
         $this->bot->handleMessage($c, 'LANJUT');
 
-        $date = now()->addDays(6)->format('d M Y');
+        $date = \App\Services\WhatsApp\OrderBotService::formatDateIndo(now()->addDays(6));
         $this->bot->handleMessage($c, "Rahma | Jl Kawi no 8 Malang | {$date}");
 
         $c->refresh();

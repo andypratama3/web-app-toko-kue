@@ -244,9 +244,9 @@ Route::middleware([
                 ]);
         })->name('produk.json');
     });
-});
 
-// Delivery Zones CRUD (admin)
-Route::middleware(['auth', 'role:admin|super_admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::resource('delivery-zones', \App\Http\Controllers\Admin\DeliveryZoneController::class);
+    // ---------- DELIVERY ZONES CRUD (admin/super admin) ----------//
+    Route::middleware(['role:admin|super_admin'])->prefix('admin')->name('admin.')->group(function () {
+        Route::resource('delivery-zones', \App\Http\Controllers\Admin\DeliveryZoneController::class);
+    });
 });

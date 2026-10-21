@@ -28,7 +28,9 @@ class OrderBotOptimizationTest extends TestCase
     use RefreshDatabase;
 
     protected Region $region;
+
     protected Product $kue;
+
     protected ProductVariant $variant;
 
     protected function setUp(): void
@@ -99,13 +101,16 @@ class OrderBotOptimizationTest extends TestCase
             $method = new \ReflectionMethod(OrderBotService::class, 'parseDeliveryDate');
             $method->setAccessible(true);
 
-            $this->assertEquals('19 Oct 2026', $method->invoke($bot, 'hari ini'));
-            $this->assertEquals('20 Oct 2026', $method->invoke($bot, 'besok'));
-            $this->assertEquals('21 Oct 2026', $method->invoke($bot, 'lusa'));
+            $this->assertEquals('19 Okt 2026', $method->invoke($bot, 'hari ini'));
+            $this->assertEquals('20 Okt 2026', $method->invoke($bot, 'besok'));
+            $this->assertEquals('21 Okt 2026', $method->invoke($bot, 'lusa'));
             // 18 Okt sudah lewat menurut WIB → ditolak.
             $this->assertNull($method->invoke($bot, '18 okt 2026'));
             // 19 Okt (hari ini WIB) tetap diterima.
-            $this->assertEquals('19 Oct 2026', $method->invoke($bot, '19/10/2026'));
+            $this->assertEquals('19 Okt 2026', $method->invoke($bot, '19/10/2026'));
+            // Nama bulan Indonesia & Inggris sama-sama diterima.
+            $this->assertEquals('19 Okt 2026', $method->invoke($bot, '19 Okt 2026'));
+            $this->assertEquals('19 Okt 2026', $method->invoke($bot, '19 Oct 2026'));
         } finally {
             \Carbon\Carbon::setTestNow();
         }
@@ -347,7 +352,7 @@ class OrderBotOptimizationTest extends TestCase
     protected function makeConvo(array $context = [], string $state = 'AWAITING_ORDER_FORM'): WhatsAppConversation
     {
         return WhatsAppConversation::create([
-            'phone_number' => '6281' . random_int(100000000, 999999999),
+            'phone_number' => '6281'.random_int(100000000, 999999999),
             'region_id' => $this->region->id,
             'status' => 'active',
             'current_state' => OrderBotConversationState::from($state)->value,
@@ -358,12 +363,12 @@ class OrderBotOptimizationTest extends TestCase
     protected function makeOrder(): Order
     {
         $customer = Customer::create([
-            'name' => 'Budi', 'phone' => '6289999' . random_int(1000, 9999),
+            'name' => 'Budi', 'phone' => '6289999'.random_int(1000, 9999),
             'address' => 'Jl. Test No 1', 'region_id' => $this->region->id,
         ]);
 
         return Order::create([
-            'invoice_number' => 'INV-' . random_int(100000, 999999), 'customer_id' => $customer->id,
+            'invoice_number' => 'INV-'.random_int(100000, 999999), 'customer_id' => $customer->id,
             'phone' => $customer->phone, 'address' => $customer->address,
             'total_amount' => 9000, 'payment_method' => 'qris', 'status' => 'baru',
             'region_id' => $this->region->id, 'channel' => 'whatsapp',

@@ -32,16 +32,30 @@ class AppServiceProvider extends ServiceProvider
 
             $user = Auth::user();
 
-            $newOrdersCount = Order::where('region_id', $user->region_id)
-                ->where('status', 'baru')
-                ->count();
+            $newOrdersCount = 0;
+            $rejectedOrdersCount = 0;
+            $verifiedOrdersCount = 0;
 
-            $verifiedOrdersCount = Order::where('region_id', $user->region_id)
-                ->where('status', 'menunggu_verifikasi')
-                ->count();
+            if ($user->hasRole('admin') && $user->region_id) {
+                $newOrdersCount = Order::where('region_id', $user->region_id)
+                    ->where('status', 'baru')
+                    ->count();
+
+                $verifiedOrdersCount = Order::where('region_id', $user->region_id)
+                    ->where('status', 'menunggu_verifikasi_admin')
+                    ->count();
+            }
+
+            if ($user->hasRole('kurir')) {
+                $rejectedOrdersCount = Order::where('created_by_user_id', $user->id)
+                    ->whereNotNull('rejection_note')
+                    ->whereNotIn('status', ['selesai', 'diverifikasi_admin'])
+                    ->count();
+            }
 
             $view->with([
                 'newOrdersCount' => $newOrdersCount,
+                'rejectedOrdersCount' => $rejectedOrdersCount,
                 'verifiedOrdersCount' => $verifiedOrdersCount,
             ]);
         });

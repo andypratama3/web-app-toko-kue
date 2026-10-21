@@ -17,7 +17,7 @@ class DeliveryZoneController extends Controller
         $ownRegionId = $user->region_id;
         $regions = Region::orderBy('name')->get();
         $zones = DeliveryZone::with('region')
-            ->when($user->role !== 'super_admin', function ($q) use ($ownRegionId) {
+            ->when(! $this->isSuperAdmin($user), function ($q) use ($ownRegionId) {
                 $q->where('region_id', $ownRegionId);
             })
             ->orderBy('region_id')
@@ -31,7 +31,7 @@ class DeliveryZoneController extends Controller
     {
         $user = Auth::user();
         $ownRegionId = $user->region_id;
-        $regions = $user->role === 'super_admin' ? Region::orderBy('name')->get() : Region::where('id', $ownRegionId)->get();
+        $regions = $this->isSuperAdmin($user) ? Region::orderBy('name')->get() : Region::where('id', $ownRegionId)->get();
 
         return view('dashboard.admin.delivery-zones.create', compact('regions'));
     }
@@ -51,7 +51,7 @@ class DeliveryZoneController extends Controller
             'is_active' => ['nullable', 'boolean'],
         ]);
 
-        if ($user->role !== 'super_admin' && $validated['region_id'] != $ownRegionId) {
+        if (! $this->isSuperAdmin($user) && $validated['region_id'] != $ownRegionId) {
             abort(403, 'AKSES DITOLAK');
         }
 
@@ -74,11 +74,11 @@ class DeliveryZoneController extends Controller
     {
         $user = Auth::user();
         $ownRegionId = $user->region_id;
-        if ($user->role !== 'super_admin' && $deliveryZone->region_id != $ownRegionId) {
+        if (! $this->isSuperAdmin($user) && $deliveryZone->region_id != $ownRegionId) {
             abort(403, 'AKSES DITOLAK');
         }
 
-        $regions = $user->role === 'super_admin' ? Region::orderBy('name')->get() : Region::where('id', $ownRegionId)->get();
+        $regions = $this->isSuperAdmin($user) ? Region::orderBy('name')->get() : Region::where('id', $ownRegionId)->get();
 
         return view('dashboard.admin.delivery-zones.edit', compact('deliveryZone', 'regions'));
     }
@@ -98,10 +98,10 @@ class DeliveryZoneController extends Controller
             'is_active' => ['nullable', 'boolean'],
         ]);
 
-        if ($user->role !== 'super_admin' && $deliveryZone->region_id != $ownRegionId) {
+        if (! $this->isSuperAdmin($user) && $deliveryZone->region_id != $ownRegionId) {
             abort(403, 'AKSES DITOLAK');
         }
-        if ($user->role !== 'super_admin' && $validated['region_id'] != $ownRegionId) {
+        if (! $this->isSuperAdmin($user) && $validated['region_id'] != $ownRegionId) {
             abort(403, 'AKSES DITOLAK');
         }
 
@@ -127,7 +127,7 @@ class DeliveryZoneController extends Controller
     {
         $user = Auth::user();
         $ownRegionId = $user->region_id;
-        if ($user->role !== 'super_admin' && $deliveryZone->region_id != $ownRegionId) {
+        if (! $this->isSuperAdmin($user) && $deliveryZone->region_id != $ownRegionId) {
             abort(403, 'AKSES DITOLAK');
         }
 
@@ -136,6 +136,15 @@ class DeliveryZoneController extends Controller
         $this->invalidateCache($regionId);
 
         return redirect()->route('admin.delivery-zones.index')->with('success', 'Zona pengiriman berhasil dihapus.');
+    }
+
+    /**
+     * Super admin sesiapa pun (Spatie role), bukan kolom `users.role`
+     * yang memang tidak ada di skema.
+     */
+    protected function isSuperAdmin(?\App\Models\User $user): bool
+    {
+        return $user !== null && $user->hasRole('super_admin');
     }
 
     protected function invalidateCache(?int $regionId): void
