@@ -122,11 +122,26 @@ setup_mysql() {
   DB_HOST=${DB_HOST:-127.0.0.1}; DB_PORT=${DB_PORT:-3306}
   MYCNF=$(mktemp /tmp/deploy-my.XXXXXX.cnf)
   chmod 600 "$MYCNF"
-  printf '[client]\nhost=%s\nport=%s\nuser=%s\npassword=%s\ndatabase=%s\n' \
-    "$DB_HOST" "$DB_PORT" "$DB_USER" "$pw" "$DB_NAME" > "$MYCNF"
+  printf '[client]\nhost=%s\nport=%s\nuser=%s\npassword=%s\n' \
+    "$DB_HOST" "$DB_PORT" "$DB_USER" "$pw" > "$MYCNF"
 }
 setup_mysql
-db() { mysql --defaults-extra-file="$MYCNF" -N -B -e "$1"; }
+db() {
+  local q="$1" i=0 out
+  while :; do
+    if out=$(mysql --defaults-extra-file="$MYCNF" -N -B "$DB_NAME" -e "$q" 2>/dev/null); then
+      printf '%s' "$out"; return 0
+    fi
+    i=$((i+1))
+    if [ "$i" -ge 3 ]; then
+      err "Koneksi DB gagal 3x: $q"
+      mysql --defaults-extra-file="$MYCNF" -N -B "$DB_NAME" -e "$q" 2>&1 | head -3
+      return 1
+    fi
+    warn "Koneksi DB gagal, retry $i/3..."
+    sleep 3
+  done
+}
 
 db "SELECT 1" >/dev/null 2>&1 || die "Tidak bisa konek ke database $DB_NAME di $DB_HOST:$DB_PORT"
 ok "Database terhubung: $DB_NAME @ $DB_HOST:$DB_PORT"
@@ -270,17 +285,40 @@ DUMP_TABLES=$(grep -c '^CREATE TABLE' "$TMP_SQL" || true)
 ok "Struktur dump lengkap: $DUMP_TABLES tabel."
 
 RESTORE_OK=1
-for t in orders customers whatsapp_conversations users products; do
-  grep -q "^CREATE TABLE \`$t\`" "$TMP_SQL" || continue
-  live_rows=$(db "SELECT COUNT(*) FROM \`$t\`")
-  live_sum=$(db "CHECKSUM TABLE \`$t\`" | awk '{print $2}')
-  db "DROP TABLE IF EXISTS \`__deploy_rt_$t\`" >/dev/null
-  db "CREATE TABLE \`__deploy_rt_$t\` LIKE \`$t\`" >/dev/null
-  sed "s/^INSERT INTO \`$t\` VALUES/INSERT INTO \`__deploy_rt_$t\` VALUES/" "$TMP_SQL" \
-    | grep "^INSERT INTO \`__deploy_rt_$t\`" \
-    | mysql --defaults-extra-file="$MYCNF" "$DB_NAME" >>"$LOG_FILE" 2>&1 || true
-  rt_rows=$(db "SELECT COUNT(*) FROM \`__deploy_rt_$t\`")
-  rt_sum=$(db "CHECKSUM TABLE \`__deploy_rt_$t\`" | awk '{print $2}')
+RT_TABLES="orders customers whatsapp_conversations users products"
+FILTER_SQL="$STATE_DIR/restore-$RUN_ID.sql"
+awk -v keep_list="$RT_TABLES" '
+BEGIN { n=split(keep_list, ks, " "); for (i=1;i<=n;i++) keep[ks[i]]=1; st=0 }
+{
+  if ($0 ~ /^INSERT INTO `[A-Za-z0-9_]+`/) {
+    match($0, /^INSERT INTO `[A-Za-z0-9_]+`/)
+    tbl = substr($0, RSTART+13, RLENGTH-14)
+    if (tbl in keep) { printf "INSERT INTO `__deploy_rt_%s`", tbl; print substr($0, RSTART+RLENGTH); st=1; next }
+    st=2; next
+  }
+  if (st==1) { print; if ($0 ~ /;[[:space:]]*$/) st=0; next }
+  if (st==2) { if ($0 ~ /;[[:space:]]*$/) st=0; next }
+}
+' "$TMP_SQL" > "$FILTER_SQL"
+
+CREATE_SQL=""
+DROP_SQL=""
+for t in $RT_TABLES; do
+  grep -q "^INSERT INTO \`$t\`" "$TMP_SQL" || continue
+  DROP_SQL="$DROP_SQL DROP TABLE IF EXISTS \`__deploy_rt_$t\`;"
+  CREATE_SQL="$CREATE_SQL CREATE TABLE \`__deploy_rt_$t\` LIKE \`$t\`;"
+done
+[ -n "$CREATE_SQL" ] && db "$DROP_SQL $CREATE_SQL" >/dev/null
+mysql --defaults-extra-file="$MYCNF" "$DB_NAME" < "$FILTER_SQL" >>"$LOG_FILE" 2>&1 || warn "Ada peringatan saat import restore-test (lihat log)."
+
+for t in $RT_TABLES; do
+  grep -q "^INSERT INTO \`$t\`" "$TMP_SQL" || continue
+  RES=$(db "SELECT (SELECT COUNT(*) FROM \`$t\`), (SELECT COUNT(*) FROM \`__deploy_rt_$t\`);
+CHECKSUM TABLE \`$t\`, \`__deploy_rt_$t\`;")
+  live_rows=$(printf '%s' "$RES" | awk 'NR==1{print $1}')
+  rt_rows=$(printf '%s' "$RES" | awk 'NR==1{print $2}')
+  live_sum=$(printf '%s' "$RES" | awk -v t="$DB_NAME.$t" '$1==t{print $2}')
+  rt_sum=$(printf '%s' "$RES" | awk -v t="$DB_NAME.__deploy_rt_$t" '$1==t{print $2}')
   if [ "$rt_rows" != "$live_rows" ]; then
     err "Restore test '$t' GAGAL: baris live=$live_rows hasil restore=$rt_rows"
     RESTORE_OK=0
@@ -289,10 +327,10 @@ for t in orders customers whatsapp_conversations users products; do
   else
     ok "Restore test '$t' identik (checksum $live_sum, $rt_rows baris)."
   fi
-  db "DROP TABLE IF EXISTS \`__deploy_rt_$t\`" >/dev/null
 done
+db "$DROP_SQL" >/dev/null
 [ "$RESTORE_OK" = "1" ] || die "Backup tidak terbukti bisa dipulihkan — deploy dibatalkan."
-rm -f "$TMP_SQL"
+rm -f "$TMP_SQL" "$FILTER_SQL"
 ok "Backup terbukti bisa dipulihkan."
 
 step "MAINTENANCE MODE"
