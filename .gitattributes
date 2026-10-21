@@ -1,5 +1,8 @@
 * text=auto eol=lf
 
+# .htaccess di server memakai CRLF -> jangan dinormalisasi agar identik dengan file server
+.htaccess -text
+
 *.blade.php diff=html
 *.css diff=css
 *.html diff=html
