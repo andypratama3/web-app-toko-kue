@@ -122,8 +122,8 @@ setup_mysql() {
   DB_HOST=${DB_HOST:-127.0.0.1}; DB_PORT=${DB_PORT:-3306}
   MYCNF=$(mktemp /tmp/deploy-my.XXXXXX.cnf)
   chmod 600 "$MYCNF"
-  printf '[client]\nhost=%s\nport=%s\nuser=%s\npassword=%s\n' \
-    "$DB_HOST" "$DB_PORT" "$DB_USER" "$pw" > "$MYCNF"
+  printf '[client]\nhost=%s\nport=%s\nuser=%s\npassword=%s\ndatabase=%s\n' \
+    "$DB_HOST" "$DB_PORT" "$DB_USER" "$pw" "$DB_NAME" > "$MYCNF"
 }
 setup_mysql
 db() { mysql --defaults-extra-file="$MYCNF" -N -B -e "$1"; }
@@ -242,8 +242,8 @@ snapshot_counts() {
   : > "$out"
   printf '%s\n' "$tables" | grep -v '^$' | sort > "${out%.tsv}.tbl"
   for t in $tables; do
-    [ -n "$q" ] && q="$q UNION ALL "
-    q="$qSELECT '$t' AS t, COUNT(*) AS c FROM \`$t\`"
+    [ -n "$q" ] && q="${q} UNION ALL "
+    q="${q}SELECT '$t' AS t, COUNT(*) AS c FROM \`$t\`"
   done
   db "$q" > "$out"
 }
