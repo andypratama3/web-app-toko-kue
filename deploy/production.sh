@@ -47,6 +47,11 @@ step(){ log ""; log "${c_b}=== $* ===${c_r}"; }
 die() { err "$*"; on_error 1 "die: $*"; }
 
 cleanup() {
+  if [ -n "$MYCNF" ] && [ -f "$MYCNF" ]; then
+    for t in orders customers whatsapp_conversations users products; do
+      mysql --defaults-extra-file="$MYCNF" -e "DROP TABLE IF EXISTS \`__deploy_rt_$t\`" >/dev/null 2>&1 || true
+    done
+  fi
   [ -n "$MYCNF" ] && rm -f "$MYCNF"
   rm -f "$LOCK_FILE" 2>/dev/null || true
 }
