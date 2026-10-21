@@ -144,22 +144,27 @@ fi
 if [ "$CLEAN_LEGACY" = "1" ]; then
   step "BERSIHKAN FILE LIAR (dipindah, tidak dihapus)"
   LEGACY_DIR="$WORK_DIR/legacy-bak/$RUN_ID"
-  mkdir -p "$LEGACY_DIR"
-  LEGACY_N=0
   FIND_OUT="$STATE_DIR/legacy-find-$RUN_ID.txt"
   find . -maxdepth 6 -type f \
       \( -name '*.bak-*' -o -name '*.bak_*' -o -name 'fix_migrations_records.php' -o -path './public/diag-payload.json' \) \
       -not -path './vendor/*' -not -path './.git/*' -not -path './node_modules/*' > "$FIND_OUT" 2>/dev/null || true
-  while IFS= read -r f; do
-    [ -n "$f" ] || continue
-    rel=$(echo "$f" | sed 's|^\./||; s|/|__|g')
-    if mv -f "$f" "$LEGACY_DIR/$rel" 2>/dev/null; then
-      LEGACY_N=$((LEGACY_N + 1))
-      printf '%s -> %s\n' "$f" "$LEGACY_DIR/$rel" >> "$LEGACY_DIR/MANIFEST.txt"
-    fi
-  done < "$FIND_OUT"
-  rm -f "$FIND_OUT"
-  ok "$LEGACY_N file liar dipindah ke $LEGACY_DIR (tidak dihapus, ada MANIFEST.txt)."
+  if [ "$DRY_RUN" = "1" ]; then
+    ok "DRY RUN: $(wc -l < "$FIND_OUT" | tr -dc '0-9') file akan dipindah ke $LEGACY_DIR (belum dipindah)."
+    rm -f "$FIND_OUT"
+  else
+    mkdir -p "$LEGACY_DIR"
+    LEGACY_N=0
+    while IFS= read -r f; do
+      [ -n "$f" ] || continue
+      rel=$(echo "$f" | sed 's|^\./||; s|/|__|g')
+      if mv -f "$f" "$LEGACY_DIR/$rel" 2>/dev/null; then
+        LEGACY_N=$((LEGACY_N + 1))
+        printf '%s -> %s\n' "$f" "$LEGACY_DIR/$rel" >> "$LEGACY_DIR/MANIFEST.txt"
+      fi
+    done < "$FIND_OUT"
+    rm -f "$FIND_OUT"
+    ok "$LEGACY_N file liar dipindah ke $LEGACY_DIR (tidak dihapus, ada MANIFEST.txt)."
+  fi
 fi
 
 git fetch origin "$BRANCH" >>"$LOG_FILE" 2>&1
@@ -191,6 +196,13 @@ else
 fi
 if printf '%s\n' "$CHANGED" | grep -qE '^package\.json$'; then
   warn "package.json berubah tapi node/npm tidak ada di server -> build frontend manual."
+fi
+HAS_PROC_OPEN=$(php -r 'echo function_exists("proc_open") ? "yes" : "no";' 2>/dev/null || echo "no")
+if [ "$HAS_PROC_OPEN" = "no" ]; then
+  warn "PHP server menonaktifkan proc_open/exec (hosting) -> composer tidak bisa dijalankan di server."
+  if [ "$NEED_COMPOSER" = "1" ]; then
+    die "composer berubah tapi server tidak bisa menjalankan composer. Jalankan 'composer install' di lokal lalu salin vendor/ secara manual."
+  fi
 fi
 
 step "CEK KEAMANAN MIGRASI (hanya method up())"
@@ -375,7 +387,8 @@ for path in / /login; do
 done
 ADMIN_CODE=$(curl -s -o /dev/null -w '%{http_code}' -m 25 "$BASE_URL/admin/regions" || echo 000)
 case "$ADMIN_CODE" in 200|302) ok "/admin/regions -> $ADMIN_CODE (butuh auth)" ;; *) warn "/admin/regions -> $ADMIN_CODE" ;; esac
-php artisan about --only=environment 2>&1 | tee -a "$LOG_FILE" | head -12
+php artisan --version 2>&1 | tee -a "$LOG_FILE" | head -3
+php artisan env 2>&1 | tee -a "$LOG_FILE" | grep -E "^APP_ENV|^APP_DEBUG|^APP_URL" | head -5 || true
 [ "$SMOKE_FAIL" = "0" ] || die "Smoke test gagal."
 
 if [ -f "$APP_DIR/deploy/production.sh" ]; then
