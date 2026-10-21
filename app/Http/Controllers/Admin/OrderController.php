@@ -14,6 +14,21 @@ use Illuminate\Support\Facades\Storage;
 
 class OrderController extends Controller
 {
+    private function isSuperAdmin($user): bool
+    {
+        return $user && method_exists($user, 'hasRole') && ($user->hasRole('super_admin') || $user->hasRole('Super Admin'));
+    }
+
+    private function ordersQueryForUser($user)
+    {
+        $query = Order::with(['customer.category', 'createdBy', 'region', 'items.product', 'items.variant', 'returns']);
+        if (! $this->isSuperAdmin($user)) {
+            $query->where('region_id', $user->region_id);
+        }
+
+        return $query;
+    }
+
     /**
      * Menampilkan daftar pesanan pada region admin.
      * Logika peringatan diperbarui sesuai kategori customer.
@@ -21,16 +36,17 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         $admin = Auth::user();
-        $orders = Order::with(['customer.category', 'createdBy'])
-            ->where('region_id', $admin->region_id)
+        $query = $this->ordersQueryForUser($admin)
             ->where('status', '!=', 'diverifikasi_admin');
 
         $search = $request->input('search');
 
-        $newOrdersCount = Order::where('region_id', $admin->region_id)
+        $newOrdersCount = Order::when(! $this->isSuperAdmin($admin), function ($q) use ($admin) {
+            $q->where('region_id', $admin->region_id);
+        })
             ->where('status', 'baru')->count();
 
-        $orders = $orders->when($search, function ($query, $searchTerm) {
+        $orders = $query->when($search, function ($query, $searchTerm) {
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('invoice_number', 'like', "%{$searchTerm}%")
                     ->orWhereHas('customer', function ($sub) use ($searchTerm) {
@@ -63,8 +79,12 @@ class OrderController extends Controller
         }
 
         // Kurir se-region untuk fitur tugaskan order bot (status baru).
-        $couriers = User::role('kurir')->where('region_id', $admin->region_id)
-            ->orderBy('name')->get(['id', 'name']);
+        // Super admin butuh semua kurir karena order lintas cabang bisa muncul.
+        $couriers = User::role('kurir')
+            ->when(! $this->isSuperAdmin($admin), function ($q) use ($admin) {
+                $q->where('region_id', $admin->region_id);
+            })
+            ->orderBy('name')->get(['id', 'name', 'region_id']);
 
         return view('dashboard.admin.order-list.index', compact('orders', 'newOrdersCount', 'couriers'));
     }
@@ -80,17 +100,18 @@ class OrderController extends Controller
         ]);
 
         $admin = Auth::user();
-        $order = Order::where('region_id', $admin->region_id)
+        $order = $this->ordersQueryForUser($admin)
             ->where('status', 'baru')
             ->whereNull('created_by_user_id')
             ->findOrFail($id);
 
+        // Kurir harus dari cabang pesanan itu sendiri (bukan cabang admin).
         $courier = User::role('kurir')
             ->where('id', $validated['courier_id'])
-            ->where('region_id', $admin->region_id)
+            ->where('region_id', $order->region_id)
             ->first();
         if (! $courier) {
-            return response()->json(['message' => 'Kurir tidak valid untuk wilayah ini.'], 422);
+            return response()->json(['message' => 'Kurir tidak valid untuk wilayah pesanan ini.'], 422);
         }
 
         $order->created_by_user_id = $courier->id;
@@ -120,7 +141,9 @@ class OrderController extends Controller
                 'returns.returnedProducts.product',
                 'returns.returnedProducts.variant',
             ])
-                ->where('region_id', $admin->region_id)
+                ->when(! $this->isSuperAdmin($admin), function ($q) use ($admin) {
+                    $q->where('region_id', $admin->region_id);
+                })
                 ->findOrFail($id);
 
             $paidAtLabel = '';
@@ -213,7 +236,7 @@ class OrderController extends Controller
     {
         $admin = Auth::user();
         // DIUBAH: Mencari pesanan dalam tiga kemungkinan status
-        $order = Order::where('region_id', $admin->region_id)
+        $order = $this->ordersQueryForUser($admin)
             ->whereIn('status', ['baru', 'selesai', 'menunggu_verifikasi_admin']) // Perbaikan di sini
             ->findOrFail($id);
 
@@ -246,9 +269,9 @@ class OrderController extends Controller
         $admin = Auth::user();
 
         try {
-            $order = Order::where('region_id', $admin->region_id)
-                ->whereIn('status', ['baru', 'selesai', 'menunggu_verifikasi_admin'])
-                ->findOrFail($id);
+            $orderQuery = $this->ordersQueryForUser($admin)
+                ->whereIn('status', ['baru', 'selesai', 'menunggu_verifikasi_admin']);
+            $order = $orderQuery->findOrFail($id);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['message' => 'Pesanan tidak ditemukan.'], 404);
         }
@@ -282,7 +305,7 @@ class OrderController extends Controller
     public function verifyPayment($id)
     {
         $admin = Auth::user();
-        $order = Order::where('region_id', $admin->region_id)->findOrFail($id);
+        $order = $this->ordersQueryForUser($admin)->findOrFail($id);
 
         if (empty($order->payment_proof)) {
             return response()->json(['message' => 'Belum ada bukti pembayaran.'], 422);
@@ -306,7 +329,7 @@ class OrderController extends Controller
         ]);
 
         $admin = Auth::user();
-        $order = Order::where('region_id', $admin->region_id)
+        $order = $this->ordersQueryForUser($admin)
             ->whereIn('status', ['selesai', 'menunggu_verifikasi_admin'])
             ->findOrFail($id);
 
@@ -348,7 +371,7 @@ class OrderController extends Controller
         DB::beginTransaction();
 
         try {
-            $order = Order::where('region_id', $admin->region_id)->with('returns')->findOrFail($id);
+            $order = $this->ordersQueryForUser($admin)->with('returns')->findOrFail($id);
 
             // 1. Hapus bukti pembayaran utama
             if ($order->payment_proof) {
@@ -382,7 +405,9 @@ class OrderController extends Controller
         $start = $request->input('start');
         $end = $request->input('end');
         $order = Order::with('items', 'customer')
-            ->where('region_id', Auth::user()->region_id)
+            ->when(! $this->isSuperAdmin(Auth::user()), function ($q) {
+                $q->where('region_id', Auth::user()->region_id);
+            })
             ->findOrFail($id);
         if ($order->channel !== 'whatsapp' || $order->status !== 'diverifikasi_admin') {
             abort(403, 'Rekap hanya untuk pesanan bot yang sudah diverifikasi.');

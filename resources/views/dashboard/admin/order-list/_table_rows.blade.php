@@ -71,6 +71,7 @@
                         class="px-2 py-1 text-xs border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                         <option value="">Pilih kurir…</option>
                         @foreach (($couriers ?? []) as $courier)
+                            @continue(isset($courier->region_id) && $courier->region_id !== $order->region_id)
                             <option value="{{ $courier->id }}">{{ $courier->name }}</option>
                         @endforeach
                     </select>
