@@ -32,7 +32,9 @@ NEW_SHA=""
 BACKUP_FILE=""
 ALLOW_DESTRUCTIVE=0
 DRY_RUN=0
+CLEAN_LEGACY=0
 NEED_COMPOSER=0
+MOVED_ASIDE=()
 DB_NAME=""; DB_USER=""; DB_HOST=""; DB_PORT=""
 
 c_r=$'\033[0m'; c_o=$'\033[32m'; c_w=$'\033[33m'; c_e=$'\033[31m'; c_c=$'\033[36m'; c_b=$'\033[1m'
@@ -53,6 +55,14 @@ trap cleanup EXIT
 on_error() {
   local code="${1:-1}" line="${2:-?}"
   err "Deploy GAGAL (exit $code, baris $line). Tidak ada data yang dihapus."
+  if [ "${#MOVED_ASIDE[@]}" -gt 0 ]; then
+    for f in "${MOVED_ASIDE[@]}"; do
+      [ -e "$f" ] || continue
+      mkdir -p "$(dirname "$f")"
+      mv -f "$WORK_DIR/untracked-$RUN_ID/$(echo "$f" | tr '/' '_')" "$f" 2>/dev/null \
+        && warn "File '$f' dikembalikan seperti semula."
+    done
+  fi
   if [ "$MAINT" = "1" ]; then
     (cd "$APP_DIR" && php artisan up >>"$LOG_FILE" 2>&1) || true
     ok "Maintenance mode dimatikan, situs online kembali."
@@ -75,6 +85,7 @@ while [ $# -gt 0 ]; do
   case "$1" in
     --dry-run) DRY_RUN=1 ;;
     --allow-destructive) ALLOW_DESTRUCTIVE=1 ;;
+    --clean-legacy) CLEAN_LEGACY=1 ;;
     --branch) BRANCH="$2"; shift ;;
     -h|--help) sed -n '2,18p' "$0"; exit 0 ;;
     *) die "Argumen tidak dikenal: $1" ;;
@@ -126,11 +137,27 @@ ok "Repo: branch $CUR_BRANCH @ $OLD_SHA"
 
 DIRTY=$(git status --porcelain | grep -v '^ D public/storage/.gitignore' | grep -v '^?? \.env\.bak' || true)
 if [ -n "$DIRTY" ]; then
-  err "Ada perubahan lokal di server (tidak akan dihapus/di-overwrite otomatis):"
+  warn "File tak terlacak / berubah lokal di server (dicek bentrok di bawah):"
   printf '%s\n' "$DIRTY" | head -20 | tee -a "$LOG_FILE" >&2
-  [ "$DRY_RUN" = "1" ] || die "Commit/stash dulu perubahan lokal, lalu deploy ulang."
 fi
-ok "Working tree aman (hanya symlink storage & .env.bak yang beda)."
+
+if [ "$CLEAN_LEGACY" = "1" ]; then
+  step "BERSIHKAN FILE LIAR (dipindah, tidak dihapus)"
+  LEGACY_DIR="$WORK_DIR/legacy-bak/$RUN_ID"
+  mkdir -p "$LEGACY_DIR"
+  LEGACY_N=0
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    rel=$(echo "$f" | sed 's|^\./||; s|/|__|g')
+    if mv -f "$f" "$LEGACY_DIR/$rel" 2>/dev/null; then
+      LEGACY_N=$((LEGACY_N + 1))
+      printf '%s -> %s\n' "$f" "$LEGACY_DIR/$rel" >> "$LEGACY_DIR/MANIFEST.txt"
+    fi
+  done < <(find . -maxdepth 6 -type f \
+      \( -name '*.bak-*' -o -name '*.bak_*' -o -name 'fix_migrations_records.php' -o -path './public/diag-payload.json' \) \
+      -not -path './vendor/*' -not -path './.git/*' -not -path './node_modules/*' 2>/dev/null || true)
+  ok "$LEGACY_N file liar dipindah ke $LEGACY_DIR (tidak dihapus, ada MANIFEST.txt)."
+fi
 
 git fetch origin "$BRANCH" >>"$LOG_FILE" 2>&1
 NEW_SHA=$(git rev-parse --short "origin/$BRANCH")
@@ -139,6 +166,20 @@ ok "Target: origin/$BRANCH @ $NEW_SHA ($N_COMMITS commit menunggu)"
 
 MERGE_BASE=$(git merge-base HEAD "origin/$BRANCH")
 CHANGED=$(git diff --name-only "$MERGE_BASE" "origin/$BRANCH" || true)
+
+MODIFIED=$(git diff --name-only | grep -v '^public/storage/.gitignore' || true)
+STAGED=$(git diff --cached --name-only | grep -v '^public/storage/.gitignore' || true)
+UNTRACKED=$(git ls-files --others --exclude-standard || true)
+CONFLICT=0
+for f in $MODIFIED $STAGED; do
+  if printf '%s\n' "$CHANGED" | grep -qxF "$f"; then
+    err "Konflik: '$f' diubah lokal dan juga berubah di commit baru."
+    CONFLICT=1
+  fi
+done
+[ "$CONFLICT" = "0" ] || die "Selesaikan konflik lokal (commit/stash) lalu deploy ulang."
+ok "Tidak ada bentrok antara perubahan lokal dan commit baru."
+
 if printf '%s\n' "$CHANGED" | grep -qE '^(composer\.json|composer\.lock)$'; then
   NEED_COMPOSER=1
   ok "composer berubah -> composer install akan dijalankan."
@@ -239,6 +280,21 @@ MAINT=1
 ok "Situs Mode Maintenance (503) sampai deploy selesai."
 
 step "TARIK KODE"
+CONFLICT2=0
+for f in $UNTRACKED; do
+  if git cat-file -e "origin/$BRANCH:$f" 2>/dev/null; then
+    if git show "origin/$BRANCH:$f" | cmp -s - "$f"; then
+      mkdir -p "$WORK_DIR/untracked-$RUN_ID"
+      mv -f "$f" "$WORK_DIR/untracked-$RUN_ID/$(echo "$f" | tr '/' '_')"
+      MOVED_ASIDE+=("$f")
+      ok "'$f' identik dengan versi repo -> dipindah aside (aman, tidak hilang)."
+    else
+      err "'$f' ada di server dan versi repo berbeda -> deploy diblokir, periksa manual."
+      CONFLICT2=1
+    fi
+  fi
+done
+[ "$CONFLICT2" = "0" ] || die "Ada file bentrok."
 git pull --ff-only origin "$BRANCH" 2>&1 | tee -a "$LOG_FILE"
 ok "Kode diperbarui: $OLD_SHA -> $(git rev-parse --short HEAD)"
 
