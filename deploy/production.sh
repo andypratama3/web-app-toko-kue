@@ -146,6 +146,10 @@ if [ "$CLEAN_LEGACY" = "1" ]; then
   LEGACY_DIR="$WORK_DIR/legacy-bak/$RUN_ID"
   mkdir -p "$LEGACY_DIR"
   LEGACY_N=0
+  FIND_OUT="$STATE_DIR/legacy-find-$RUN_ID.txt"
+  find . -maxdepth 6 -type f \
+      \( -name '*.bak-*' -o -name '*.bak_*' -o -name 'fix_migrations_records.php' -o -path './public/diag-payload.json' \) \
+      -not -path './vendor/*' -not -path './.git/*' -not -path './node_modules/*' > "$FIND_OUT" 2>/dev/null || true
   while IFS= read -r f; do
     [ -n "$f" ] || continue
     rel=$(echo "$f" | sed 's|^\./||; s|/|__|g')
@@ -153,9 +157,8 @@ if [ "$CLEAN_LEGACY" = "1" ]; then
       LEGACY_N=$((LEGACY_N + 1))
       printf '%s -> %s\n' "$f" "$LEGACY_DIR/$rel" >> "$LEGACY_DIR/MANIFEST.txt"
     fi
-  done < <(find . -maxdepth 6 -type f \
-      \( -name '*.bak-*' -o -name '*.bak_*' -o -name 'fix_migrations_records.php' -o -path './public/diag-payload.json' \) \
-      -not -path './vendor/*' -not -path './.git/*' -not -path './node_modules/*' 2>/dev/null || true)
+  done < "$FIND_OUT"
+  rm -f "$FIND_OUT"
   ok "$LEGACY_N file liar dipindah ke $LEGACY_DIR (tidak dihapus, ada MANIFEST.txt)."
 fi
 
@@ -220,6 +223,7 @@ snapshot_counts() {
   local out="$1" q="" t tables
   tables=$(db "SELECT table_name FROM information_schema.tables WHERE table_schema='$DB_NAME' AND table_type='BASE TABLE' ORDER BY table_name")
   : > "$out"
+  printf '%s\n' "$tables" | grep -v '^$' | sort > "${out%.tsv}.tbl"
   for t in $tables; do
     [ -n "$q" ] && q="$q UNION ALL "
     q="$qSELECT '$t' AS t, COUNT(*) AS c FROM \`$t\`"
@@ -325,7 +329,7 @@ while IFS=$'\t' read -r t c; do
   if [ -z "$c2" ]; then err "Tabel '$t' hilang setelah migrasi!"; FAIL=1; continue; fi
   if [ "$c2" -lt "$c" ]; then err "Baris tabel '$t' turun: $c -> $c2"; FAIL=1; fi
 done < "$SNAP_BEFORE"
-NEW_TABLES=$(comm -13 <(cut -f1 "$SNAP_BEFORE" | sort) <(cut -f1 "$SNAP_AFTER" | sort) | tr '\n' ' ')
+NEW_TABLES=$(comm -13 "$STATE_DIR/counts-before-$RUN_ID.tbl" "$STATE_DIR/counts-after-$RUN_ID.tbl" | tr '\n' ' ')
 [ -n "$(echo "$NEW_TABLES" | tr -d ' ')" ] && ok "Tabel baru: $NEW_TABLES"
 [ "$FAIL" = "0" ] || die "Verifikasi data gagal — ada data yang hilang/berkurang."
 ok "Jumlah baris semua tabel utuh (tidak ada data hilang)."
