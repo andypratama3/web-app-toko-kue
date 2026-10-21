@@ -62,10 +62,14 @@ on_error() {
   err "Deploy GAGAL (exit $code, baris $line). Tidak ada data yang dihapus."
   if [ "${#MOVED_ASIDE[@]}" -gt 0 ]; then
     for f in "${MOVED_ASIDE[@]}"; do
-      [ -e "$f" ] || continue
+      src="$WORK_DIR/untracked-$RUN_ID/$(echo "$f" | tr '/' '_')"
+      [ -f "$src" ] || continue
       mkdir -p "$(dirname "$f")"
-      mv -f "$WORK_DIR/untracked-$RUN_ID/$(echo "$f" | tr '/' '_')" "$f" 2>/dev/null \
-        && warn "File '$f' dikembalikan seperti semula."
+      if mv -f "$src" "$f" 2>/dev/null; then
+        warn "File '$f' dikembalikan seperti semula."
+      else
+        warn "Gagal mengembalikan '$f' — salinan ada di $src"
+      fi
     done
   fi
   if [ "$MAINT" = "1" ]; then
@@ -159,6 +163,11 @@ DIRTY=$(git status --porcelain | grep -v '^ D public/storage/.gitignore' | grep 
 if [ -n "$DIRTY" ]; then
   warn "File tak terlacak / berubah lokal di server (dicek bentrok di bawah):"
   printf '%s\n' "$DIRTY" | head -20 | tee -a "$LOG_FILE" >&2
+fi
+
+if [ -L public/storage ] && git ls-files --error-unmatch public/storage/.gitignore >/dev/null 2>&1; then
+  git update-index --skip-worktree public/storage/.gitignore 2>/dev/null \
+    && ok "public/storage = symlink -> public/storage/.gitignore ditandai skip-worktree (tidak akan ditimpa saat pull)."
 fi
 
 if [ "$CLEAN_LEGACY" = "1" ]; then
@@ -343,16 +352,16 @@ ok "Situs Mode Maintenance (503) sampai deploy selesai."
 step "TARIK KODE"
 CONFLICT2=0
 for f in $UNTRACKED; do
-  if git cat-file -e "origin/$BRANCH:$f" 2>/dev/null; then
-    if git show "origin/$BRANCH:$f" | cmp -s - "$f"; then
-      mkdir -p "$WORK_DIR/untracked-$RUN_ID"
-      mv -f "$f" "$WORK_DIR/untracked-$RUN_ID/$(echo "$f" | tr '/' '_')"
-      MOVED_ASIDE+=("$f")
-      ok "'$f' identik dengan versi repo -> dipindah aside (aman, tidak hilang)."
-    else
-      err "'$f' ada di server dan versi repo berbeda -> deploy diblokir, periksa manual."
-      CONFLICT2=1
-    fi
+  [ -f "$f" ] && [ ! -L "$f" ] || continue
+  git cat-file -e "origin/$BRANCH:$f" 2>/dev/null || continue
+  if git show "origin/$BRANCH:$f" | cmp -s - "$f"; then
+    mkdir -p "$WORK_DIR/untracked-$RUN_ID"
+    mv -f "$f" "$WORK_DIR/untracked-$RUN_ID/$(echo "$f" | tr '/' '_')"
+    MOVED_ASIDE+=("$f")
+    ok "'$f' identik dengan versi repo -> dipindah aside (aman, tidak hilang)."
+  else
+    err "'$f' ada di server dan versi repo berbeda -> deploy diblokir, periksa manual."
+    CONFLICT2=1
   fi
 done
 [ "$CONFLICT2" = "0" ] || die "Ada file bentrok."
