@@ -55,6 +55,34 @@ class ConversationRegionResolver
     }
 
     /**
+     * Region yang sedang dipakai percakapan: pakai region tersimpan lebih dulu,
+     * karena atribusi manual tidak tercermin di resolveWithSource().
+     */
+    public function currentRegion(WhatsAppConversation $conversation): ?Region
+    {
+        if ($conversation->region_id) {
+            if ($conversation->relationLoaded('region') && $conversation->region) {
+                return $conversation->region;
+            }
+
+            $region = Region::query()->find($conversation->region_id);
+
+            if ($region) {
+                return $region;
+            }
+        }
+
+        $regionId = $this->resolve($conversation);
+
+        return $regionId ? Region::query()->find($regionId) : null;
+    }
+
+    public function isLocked(WhatsAppConversation $conversation): bool
+    {
+        return in_array($this->attributionSource($conversation), self::LOCKED_SOURCES, true);
+    }
+
+    /**
      * Terapkan atribusi cabang ke percakapan.
      * Atribusi manual maupun dari customer tidak pernah ditimpa.
      */

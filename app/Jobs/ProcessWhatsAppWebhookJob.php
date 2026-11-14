@@ -4,16 +4,17 @@ namespace App\Jobs;
 
 use App\Enums\OrderBotConversationState;
 use App\Events\WhatsAppMessageReceived;
+use App\Models\Category;
 use App\Models\Region;
+use App\Models\WhatsAppBroadcastRecipient;
 use App\Models\WhatsAppConversation;
 use App\Models\WhatsAppMessage;
 use App\Models\WhatsAppMessageStatus;
-use App\Models\WhatsAppBroadcastRecipient;
-use App\Support\Phone;
+use App\Services\WhatsApp\ConversationRegionResolver;
 use App\Services\WhatsApp\IncomingMediaHandler;
 use App\Services\WhatsApp\OrderBotService;
-use App\Services\WhatsApp\ConversationRegionResolver;
 use App\Services\WhatsApp\WhatsappMetaService;
+use App\Support\Phone;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -26,10 +27,13 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public int $timeout = 120;
 
     protected array $payload;
+
     protected ?string $phoneNumberId;
+
     protected ?ConversationRegionResolver $regionResolver = null;
 
     public function __construct(array $payload, ?string $phoneNumberId = null)
@@ -96,8 +100,9 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
         $phone = $message['from'] ?? null;
         $messageId = $message['id'] ?? null;
 
-        if (!$phone || !$messageId) {
+        if (! $phone || ! $messageId) {
             Log::channel('whatsapp')->warning('⚠️ Missing phone or message ID', ['message' => $message]);
+
             return;
         }
 
@@ -107,6 +112,7 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
         // tepat sebelum insert untuk menutup celah balapan antar-worker.
         if (WhatsAppMessage::where('whatsapp_message_id', $messageId)->exists()) {
             Log::channel('whatsapp')->info('⏭️ Duplicate message skipped', ['message_id' => $messageId]);
+
             return;
         }
 
@@ -243,13 +249,15 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
             $recipientId = $status['recipient_id'] ?? null;
             $errors = $status['errors'] ?? null;
 
-            if (!$messageId || !$statusValue) continue;
+            if (! $messageId || ! $statusValue) {
+                continue;
+            }
 
             WhatsAppMessageStatus::updateOrCreate(
                 ['message_id' => $messageId, 'status' => $statusValue],
                 [
                     'recipient' => $recipientId,
-                    'timestamp' => $timestamp ? date('Y-m-d H:i:s', (int)$timestamp) : null,
+                    'timestamp' => $timestamp ? date('Y-m-d H:i:s', (int) $timestamp) : null,
                     'errors' => $errors,
                 ]
             );
@@ -340,6 +348,7 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
         // Default region from config
         $defaultRegionName = config('services.whatsapp.default_region', 'Denpasar');
         $region = Region::where('name', 'like', "%{$defaultRegionName}%")->first();
+
         return $region?->id;
     }
 
@@ -361,12 +370,13 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
             return $m[2];
         }
 
-        return match ($content) {
-            'cat_tumpeng' => 'tumpeng',
-            'cat_hampers' => 'hampers',
-            'cat_alacarte' => 'ala carte',
-            default => $content,
-        };
+        // Mapping cat_{slug} → slug dari kategori DB (Fase 5: kategori dinamis).
+        $catMap = [];
+        foreach (Category::all() as $category) {
+            $catMap['cat_'.$category->slug] = $category->slug;
+        }
+
+        return $catMap[$content] ?? $content;
     }
 
     protected function updateConversationProfile(array $contact): void
@@ -394,8 +404,8 @@ class ProcessWhatsAppWebhookJob implements ShouldQueue
                 'region_id' => null,
                 'type' => 'system',
                 'title' => 'Webhook WhatsApp gagal diproses',
-                'message' => 'Pesan masuk gagal diproses 3x: ' . mb_substr($exception->getMessage(), 0, 500)
-                    . '. Cek log whatsapp & hubungi customer bila perlu.',
+                'message' => 'Pesan masuk gagal diproses 3x: '.mb_substr($exception->getMessage(), 0, 500)
+                    .'. Cek log whatsapp & hubungi customer bila perlu.',
                 'is_read' => false,
             ]);
         } catch (\Throwable $e) {

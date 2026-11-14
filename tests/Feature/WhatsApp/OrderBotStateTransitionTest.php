@@ -23,7 +23,9 @@ class OrderBotStateTransitionTest extends TestCase
     use RefreshDatabase;
 
     protected Region $region;
+
     protected OrderBotService $botService;
+
     protected WhatsAppConversation $conversation;
 
     protected function setUp(): void
@@ -275,6 +277,7 @@ class OrderBotStateTransitionTest extends TestCase
     {
         $product = Product::where('name', 'Tumpeng Mini Mix')->first();
         $variant = $product->variants()->first();
+
         return [
             'cart' => [[
                 'product_id' => $product->id,
@@ -651,6 +654,124 @@ class OrderBotStateTransitionTest extends TestCase
         $this->botService->handleMessage($this->conversation, '2');
         $this->conversation->refresh();
         $this->assertEquals('Hampers Natal', $this->conversation->getContext('selected_product_name'));
+    }
+
+    public function test_catalog_order_by_id_deterministic(): void
+    {
+        $category = Category::create(['name' => 'Produk', 'slug' => 'produk']);
+        $zebra = Product::create([
+            'category_id' => $category->id,
+            'region_id' => $this->region->id,
+            'name' => 'Zebra Kue',
+            'description' => 'z',
+            'is_active' => true,
+        ]);
+        $apple = Product::create([
+            'category_id' => $category->id,
+            'region_id' => $this->region->id,
+            'name' => 'Apple Kue',
+            'description' => 'a',
+            'is_active' => true,
+        ]);
+        $mango = Product::create([
+            'category_id' => $category->id,
+            'region_id' => $this->region->id,
+            'name' => 'Mango Kue',
+            'description' => 'm',
+            'is_active' => true,
+        ]);
+
+        $this->conversation->update(['current_state' => OrderBotConversationState::WELCOME_SENT->value]);
+        $this->botService->handleMessage($this->conversation, 'produk');
+
+        $this->conversation->refresh();
+        $expected = Product::where('region_id', $this->region->id)
+            ->where('is_active', true)
+            ->orderBy('id')
+            ->pluck('id')
+            ->all();
+        $this->assertEquals($expected, $this->conversation->getContext('catalog_ids'));
+    }
+
+    public function test_pricelist_clears_catalog_ids(): void
+    {
+        $category = Category::create(['name' => 'Produk', 'slug' => 'produk']);
+        Product::create([
+            'category_id' => $category->id,
+            'region_id' => $this->region->id,
+            'name' => 'Kue A',
+            'description' => 'a',
+            'is_active' => true,
+        ]);
+        Product::create([
+            'category_id' => $category->id,
+            'region_id' => $this->region->id,
+            'name' => 'Kue B',
+            'description' => 'b',
+            'is_active' => true,
+        ]);
+
+        $this->conversation->update(['current_state' => OrderBotConversationState::WELCOME_SENT->value]);
+        $this->botService->handleMessage($this->conversation, 'produk');
+        $this->conversation->refresh();
+        $this->assertCount(3, $this->conversation->getContext('catalog_ids'));
+
+        $this->botService->handleMessage($this->conversation, 'harga');
+        $this->conversation->refresh();
+        $this->assertEquals([], $this->conversation->getContext('catalog_ids'));
+    }
+
+    public function test_category_clears_old_product_selection(): void
+    {
+        $category = Category::where('slug', 'tumpeng')->first();
+        Product::create([
+            'category_id' => $category->id,
+            'region_id' => $this->region->id,
+            'name' => 'Tumpeng Lain',
+            'description' => 't',
+            'is_active' => true,
+        ]);
+
+        $this->conversation->update([
+            'current_state' => OrderBotConversationState::MENU_SELECTION->value,
+            'context' => array_merge($this->conversation->context ?? [], [
+                'selected_product_name' => 'Tumpeng Mini Mix',
+                'selected_product_id' => 999,
+            ]),
+        ]);
+
+        // 'tumpeng' cocok ≥2 produk di kategori yang sama → daftar kategori,
+        // bukan detail produk; pilihan lama harus dibersihkan.
+        $this->botService->handleMessage($this->conversation, 'tumpeng');
+
+        $this->conversation->refresh();
+        $this->assertNull($this->conversation->getContext('selected_product_name'));
+        $this->assertNull($this->conversation->getContext('selected_product_id'));
+        $this->assertNotNull($this->conversation->getContext('catalog_ids'));
+    }
+
+    public function test_find_and_resolve_product_return_same(): void
+    {
+        $category = Category::create(['name' => 'Produk', 'slug' => 'produk']);
+        Product::create([
+            'category_id' => $category->id,
+            'region_id' => $this->region->id,
+            'name' => 'Kue Konsisten',
+            'description' => 'k',
+            'is_active' => true,
+        ]);
+
+        $find = (new \ReflectionMethod(OrderBotService::class, 'findProductByKeyword'));
+        $find->setAccessible(true);
+        $resolve = (new \ReflectionMethod(OrderBotService::class, 'resolveProduct'));
+        $resolve->setAccessible(true);
+
+        $this->assertEquals(
+            $find->invoke($this->botService, $this->conversation, 'Kue Konsisten'),
+            $resolve->invoke($this->botService, $this->conversation, 'Kue Konsisten')
+        );
+        $this->assertNull($find->invoke($this->botService, $this->conversation, 'tidak ada produk ini'));
+        $this->assertNull($resolve->invoke($this->botService, $this->conversation, 'tidak ada produk ini'));
     }
 
     public function test_branch_escape_batal_cancels_selection(): void

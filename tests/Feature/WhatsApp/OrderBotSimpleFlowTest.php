@@ -60,6 +60,7 @@ class OrderBotSimpleFlowTest extends TestCase
         $tumpengCat = Category::create(['name' => 'Tumpeng', 'slug' => 'tumpeng']);
 
         $this->ijo = Product::create([
+            'is_global' => true,
             'category_id' => $produk->id, 'region_id' => null,
             'name' => 'Kue Ijo', 'description' => 'ijo', 'tag' => 'Ala Carte', 'is_active' => true,
         ]);
@@ -68,6 +69,7 @@ class OrderBotSimpleFlowTest extends TestCase
         ProductVariant::create(['product_id' => $this->ijo->id, 'name' => 'Isi 12', 'price' => 40000, 'is_active' => true]);
 
         $this->tumpeng = Product::create([
+            'is_global' => true,
             'category_id' => $tumpengCat->id, 'region_id' => null,
             'name' => 'Tumpeng Mini Mix', 'description' => 'tumpeng', 'tag' => 'Hampers', 'is_active' => true,
         ]);
@@ -93,6 +95,7 @@ class OrderBotSimpleFlowTest extends TestCase
         $this->bot->handleMessage($c, '3'); // Isi 12
         $this->bot->handleMessage($c, 'Tumpeng Mini Mix');
         $this->bot->handleMessage($c, 'LANJUT');
+        $this->bot->handleMessage($c, '081234567890'); // nomor penerima (R-18, form_step 6)
         $this->bot->handleMessage($c, 'Shinta');
         $this->bot->handleMessage($c, 'Jl. Mawar No 10 Surabaya');
         $this->bot->handleMessage($c, now()->addDays(3)->format('d M Y'));
@@ -129,13 +132,17 @@ class OrderBotSimpleFlowTest extends TestCase
         $this->assertEquals(4, $c->getContext('form_step'));
     }
 
-    public function test_lanjut_minta_nama_lalu_alamat_lalu_tanggal(): void
+    public function test_lanjut_minta_nomor_lalu_nama_lalu_alamat_lalu_tanggal(): void
     {
         $c = $this->newConversation();
         $this->bot->handleMessage($c, 'Kue Ijo');
         $this->bot->handleMessage($c, '1');
         $this->bot->handleMessage($c, 'LANJUT');
 
+        $c->refresh();
+        $this->assertEquals(6, $c->getContext('form_step'));
+
+        $this->bot->handleMessage($c, '081234567890');
         $c->refresh();
         $this->assertEquals(1, $c->getContext('form_step'));
 
@@ -239,6 +246,7 @@ class OrderBotSimpleFlowTest extends TestCase
         $this->bot->handleMessage($c, 'Kue Ijo');
         $this->bot->handleMessage($c, '1');
         $this->bot->handleMessage($c, 'LANJUT');
+        $this->bot->handleMessage($c, '081234567890'); // nomor penerima (R-18)
         $this->bot->handleMessage($c, 'Halo, saya Budi Santoso');
 
         $c->refresh();
@@ -296,6 +304,7 @@ class OrderBotSimpleFlowTest extends TestCase
         $this->bot->handleMessage($c, 'Kue Ijo');
         $this->bot->handleMessage($c, '1');
         $this->bot->handleMessage($c, 'LANJUT');
+        $this->bot->handleMessage($c, '081234567890'); // nomor penerima (R-18)
 
         $date = \App\Services\WhatsApp\OrderBotService::formatDateIndo(now()->addDays(6));
         $this->bot->handleMessage($c, "Rahma | Jl Kawi no 8 Malang | {$date}");
@@ -322,8 +331,9 @@ class OrderBotSimpleFlowTest extends TestCase
         $this->bot->handleMessage($c, 'Kue Ijo');
         $this->bot->handleMessage($c, '1');
         $this->bot->handleMessage($c, 'LANJUT');
-        $this->bot->handleMessage($c, 'Budi');
-        $this->bot->handleMessage($c, 'Jl. Mawar No 10 Surabaya');
+        $this->bot->handleMessage($c, '081234567890'); // nomor penerima (R-18)
+        $this->bot->handleMessage($c, 'Budi'); // nama
+        $this->bot->handleMessage($c, 'Jl. Mawar No 10 Surabaya'); // alamat
         $this->bot->handleMessage($c, 'Jam 9 pagi');
 
         $c->refresh();
@@ -387,11 +397,12 @@ class OrderBotSimpleFlowTest extends TestCase
         $this->assertCount(1, $c->getContext('cart'));
         $this->assertEquals(4, $c->getContext('form_step'));
 
-        // LANJUT -> nama -> alamat -> tanggal
+        // LANJUT -> nomor penerima -> nama -> alamat -> tanggal (R-18)
         $this->bot->handleMessage($c, 'LANJUT');
-        $this->bot->handleMessage($c, 'Pak Budi');
-        $this->bot->handleMessage($c, 'Jl. Raya No 5 Denpasar');
-        $this->bot->handleMessage($c, now()->addDays(4)->format('d M Y'));
+        $this->bot->handleMessage($c, '081234567890'); // nomor penerima (R-18)
+        $this->bot->handleMessage($c, 'Pak Budi'); // nama
+        $this->bot->handleMessage($c, 'Jl. Raya No 5 Denpasar'); // alamat
+        $this->bot->handleMessage($c, now()->addDays(4)->format('d M Y')); // tanggal
         $c->refresh();
 
         // Metode + slot

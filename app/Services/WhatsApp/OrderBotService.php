@@ -12,6 +12,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Region;
 use App\Models\WhatsAppConversation;
+use App\Services\Pricing\PriceResolver;
 use App\Support\Phone;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -37,16 +38,28 @@ class OrderBotService
 
     protected DeliveryQuoteService $deliveryQuoteService;
 
+    protected ConversationRegionResolver $regionResolver;
+
+    protected PriceResolver $priceResolver;
+
+    protected ProductListRenderer $productListRenderer;
+
     public function __construct(
         WhatsappMetaService $metaService,
         DeliveryZoneService $deliveryZoneService,
         AdminNotificationRouterService $notificationRouter,
-        DeliveryQuoteService $deliveryQuoteService
+        DeliveryQuoteService $deliveryQuoteService,
+        ConversationRegionResolver $regionResolver,
+        PriceResolver $priceResolver,
+        ProductListRenderer $productListRenderer
     ) {
         $this->metaService = $metaService;
         $this->deliveryZoneService = $deliveryZoneService;
         $this->notificationRouter = $notificationRouter;
         $this->deliveryQuoteService = $deliveryQuoteService;
+        $this->regionResolver = $regionResolver;
+        $this->priceResolver = $priceResolver;
+        $this->productListRenderer = $productListRenderer;
     }
 
     public function handleMessage(WhatsAppConversation $conversation, string $messageText, ?array $messageData = null): void
@@ -97,6 +110,15 @@ class OrderBotService
             && $this->matchesCommand(strtolower(trim($messageText)), ['pricelist', 'price list', 'daftar harga', 'list harga', 'harga'])
         ) {
             $this->sendPricelist($conversation);
+
+            return;
+        }
+
+        // Ganti kota: perintah global yang selalu tersedia (R-11 — customer tidak
+        // perlu scroll ke atas untuk pindah kota). Harus dicek sebelum guard field
+        // form agar tidak ditelan sebagai jawaban langkah.
+        if ($this->isChangeCityCommand($messageText)) {
+            $this->handleChangeCityCommand($conversation);
 
             return;
         }
@@ -361,7 +383,7 @@ class OrderBotService
             // Anti ghost order: batal pasca-FIX membatalkan order 'baru' yang
             // belum dibayar (kalau sudah diproses kurir/admin, biarkan).
             $this->cancelFreshUnpaidOrder($conversation);
-            $conversation->clearContext();
+            $this->resetContextPreservingCity($conversation);
             $this->advanceState($conversation, OrderBotConversationState::MENU_SELECTION);
             $this->metaService->sendText(
                 $conversation->phone_number,
@@ -378,7 +400,7 @@ class OrderBotService
             && in_array($state, $orderFlowStates, true)
             && $this->matchesCommand($lower, ['menu', 'utama', 'kembali', 'awal', 'back'])
         ) {
-            $conversation->clearContext();
+            $this->resetContextPreservingCity($conversation);
             $this->advanceState($conversation, OrderBotConversationState::MENU_SELECTION);
             $this->metaService->sendText(
                 $conversation->phone_number,
@@ -419,19 +441,16 @@ class OrderBotService
             $this->cancelFreshUnpaidOrder($conversation);
             $keptCart = $conversation->getContext('cart') ?? [];
             $keptCustomer = $conversation->getContext('order_customer') ?? [];
-            $conversation->clearContext();
-            if ($keptCart !== []) {
-                $conversation->update(['context' => [
-                    'cart' => $keptCart,
-                    'order_customer' => $keptCustomer,
-                    'after_location' => 'cart',
-                ]]);
-            }
+            $this->resetContextPreservingCity($conversation, $keptCart !== [] ? [
+                'cart' => $keptCart,
+                'order_customer' => $keptCustomer,
+                'after_location' => 'cart',
+            ] : []);
             $this->advanceState($conversation, OrderBotConversationState::AWAITING_ORDER_FORM);
             if ($keptCart !== []) {
                 $this->metaService->sendText(
                     $conversation->phone_number,
-                    "📝 Oke, kita lanjutkan pesananmu ya 😊\n\nPertama pastikan cabang & lokasi dulu."
+                    "📝 Oke, kita lanjutkan pesananmu ya 😊\n\nPertama pastikan kota & lokasi dulu."
                 );
             } else {
                 $this->metaService->sendText(
@@ -453,14 +472,11 @@ class OrderBotService
         ) {
             $keptCart = $conversation->getContext('cart') ?? [];
             $keptCustomer = $conversation->getContext('order_customer') ?? [];
-            $conversation->clearContext();
-            if ($keptCart !== []) {
-                $conversation->update(['context' => [
-                    'cart' => $keptCart,
-                    'order_customer' => $keptCustomer,
-                    'after_location' => 'cart',
-                ]]);
-            }
+            $this->resetContextPreservingCity($conversation, $keptCart !== [] ? [
+                'cart' => $keptCart,
+                'order_customer' => $keptCustomer,
+                'after_location' => 'cart',
+            ] : []);
             $this->advanceState($conversation, OrderBotConversationState::PRODUCT_BROWSING);
             $this->sendProductCatalog($conversation);
 
@@ -491,7 +507,7 @@ class OrderBotService
 
         // MULAI ULANG / RESET — mulai dari awal, berlaku untuk semua state
         if ($this->matchesCommand($lower, ['mulai ulang', 'mulai dari awal', 'ulang dari awal', 'start ulang', 'restart', 'reset', 'ulangi', 'mulai lagi'])) {
-            $conversation->clearContext();
+            $this->resetContextPreservingCity($conversation);
             $conversation->update([
                 'current_state' => OrderBotConversationState::WELCOME_SENT->value,
                 'status' => 'active',
@@ -571,7 +587,7 @@ class OrderBotService
                 "Ketik *PESAN* untuk mulai order,\n".
                 'atau ketik *PRODUK* untuk melihat katalog.'
             );
-            $conversation->clearContext();
+            $this->resetContextPreservingCity($conversation);
         }
         $conversation->update([
             'current_state' => OrderBotConversationState::WELCOME_SENT->value,
@@ -610,15 +626,19 @@ class OrderBotService
             // keranjang + data penerima dipertahankan (stale-reset menyimpannya).
             $keptCart = $conversation->getContext('cart') ?? [];
             $keptCustomer = $conversation->getContext('order_customer') ?? [];
-            $conversation->clearContext();
-            if ($keptCart !== []) {
-                $conversation->update(['context' => [
-                    'cart' => $keptCart,
-                    'order_customer' => $keptCustomer,
-                    'after_location' => 'cart',
-                ]]);
+            $this->resetContextPreservingCity($conversation, $keptCart !== [] ? [
+                'cart' => $keptCart,
+                'order_customer' => $keptCustomer,
+                'after_location' => 'cart',
+            ] : []);
+
+            // Kota terkunci (atribusi manual): jangan tanya ulang, lanjut lokasi.
+            if ($this->regionResolver->isLocked($conversation)) {
+                $this->advanceState($conversation, OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS);
+                $this->requestDeliveryLocation($conversation);
+            } else {
+                $this->askBranchSelection($conversation);
             }
-            $this->askBranchSelection($conversation);
 
             return;
         } elseif ($this->matchesIntent($lower, ['liat produk', 'lihat produk', 'produk', 'catalog', 'katalog'])) {
@@ -693,9 +713,9 @@ class OrderBotService
 
             $this->metaService->sendReplyButtons(
                 $conversation->phone_number,
-                "📍 *Pilih Cabang Pengiriman*\n\n".implode("\n", $lines)."\n\nPesanan, ongkir & harga mengikuti cabang yang dipilih.",
+                "📍 *Pilih Kota Pengiriman*\n\n".implode("\n", $lines)."\n\nPesanan, ongkir & harga mengikuti kota yang dipilih.",
                 $buttons,
-                'Ketik angka atau nama cabang'
+                'Ketik angka atau nama kota'
             );
 
             return;
@@ -719,7 +739,7 @@ class OrderBotService
             $conversation->setContext('awaiting_branch', null);
             $this->advanceState($conversation, OrderBotConversationState::WELCOME_SENT);
             $this->metaService->sendText($conversation->phone_number,
-                'Baik, pilihan cabang dibatalkan.'
+                'Baik, pilihan kota dibatalkan.'
             );
             $this->sendWelcomeMessage($conversation);
 
@@ -754,22 +774,30 @@ class OrderBotService
 
         if (! $chosen) {
             $this->metaService->sendText($conversation->phone_number,
-                'Mohon pilih salah satu cabang yang tersedia ya 😊'
+                'Mohon pilih salah satu kota yang tersedia ya 😊'
             );
             $this->askBranchSelection($conversation);
 
             return;
         }
 
-        // Kunci cabang (sumber manual — tidak ditimpa ConversationRegionResolver)
+        // Kunci kota (sumber manual — tidak ditimpa ConversationRegionResolver)
         $context = $conversation->context ?? [];
         $context['branch_source'] = ConversationRegionResolver::SOURCE_MANUAL;
         $context['awaiting_branch'] = null;
         $conversation->update(['region_id' => $chosen->id, 'context' => $context]);
         unset($conversation->region);
 
+        // Buang item keranjang yang bukan produk lintas kota atau produk kota baru.
+        $removed = $this->pruneCartForRegion($conversation, $chosen->id);
+        if ($removed > 0) {
+            $this->metaService->sendText($conversation->phone_number,
+                "⚠️ Item berikut sudah tidak tersedia di kota {$chosen->name} dan telah dihapus dari keranjang Anda."
+            );
+        }
+
         $this->metaService->sendText($conversation->phone_number,
-            "✅ Cabang *{$chosen->name}* dipilih.\n\nKetik *PRODUK* untuk lihat katalog cabang ini, atau lanjut 👇"
+            "✅ Kota *{$chosen->name}* dipilih.\n\nKetik *PRODUK* untuk lihat katalog kota ini, atau lanjut 👇"
         );
         // Lokasi harus dipilih dulu saat chat agar tidak salah arah.
         // Jangan timpa after_location yang sudah ada (mis. 'cart' dari PESAN).
@@ -777,6 +805,85 @@ class OrderBotService
             $conversation->setContext('after_location', 'product');
         }
         $this->requestDeliveryLocation($conversation);
+    }
+
+    /**
+     * Cek apakah teks adalah perintah ganti kota (global, selalu tersedia).
+     * Dicek sebelum guard field form agar tidak ditelan sebagai jawaban langkah.
+     */
+    protected function isChangeCityCommand(string $text): bool
+    {
+        $lower = strtolower(trim($text));
+        if ($lower === 'kota') {
+            return true;
+        }
+
+        return $this->matchesCommand($lower, ['ganti kota', 'ubah kota', 'pindah kota', 'ganti lokasi']);
+    }
+
+    /**
+     * Tawarkan pindah kota kepada customer. Region yang terkunci dipertahankan
+     * sebagai referensi, tidak ditimpa otomatis.
+     */
+    protected function handleChangeCityCommand(WhatsAppConversation $conversation): void
+    {
+        $region = $this->regionResolver->currentRegion($conversation);
+        $prefix = $region !== null
+            ? "Kota pengiriman saat ini: *{$region->name}*.\n\n"
+            : '';
+
+        $this->metaService->sendText(
+            $conversation->phone_number,
+            $prefix.'Silakan pilih kota pengiriman yang baru ya 😊'
+        );
+        $this->askBranchSelection($conversation);
+    }
+
+    /**
+     * Reset konteks percakapan tapi pelihara informasi kota (region_id, sumber
+     * atribusi manual, kota customer, awaiting_branch) agar customer tidak
+     * perlu ditanya kota lagi setelah reset (R-05).
+     */
+    protected function resetContextPreservingCity(WhatsAppConversation $conversation, array $context = []): void
+    {
+        $oldContext = $conversation->context ?? [];
+        $preserved = [];
+        foreach (['branch_source', 'customer_city', 'awaiting_branch'] as $key) {
+            if (array_key_exists($key, $oldContext)) {
+                $preserved[$key] = $oldContext[$key];
+            }
+        }
+        $conversation->update(['context' => null]);
+        $conversation->setContextMany(array_merge($preserved, $context));
+    }
+
+    /**
+     * Buang item keranjang yang produknya bukan lintas kota dan bukan milik
+     * kota tujuan. Kembalikan jumlah item yang dibuang.
+     */
+    protected function pruneCartForRegion(WhatsAppConversation $conversation, int $regionId): int
+    {
+        $cart = $conversation->getContext('cart') ?? [];
+        if ($cart === []) {
+            return 0;
+        }
+
+        $kept = [];
+        $removed = 0;
+        foreach ($cart as $row) {
+            $product = Product::where('id', $row['product_id'] ?? null)
+                ->visibleInRegion($regionId)
+                ->first();
+            if ($product) {
+                $kept[] = $row;
+            } else {
+                $removed++;
+            }
+        }
+
+        $conversation->setContext('cart', $kept);
+
+        return $removed;
     }
 
     protected function requestDeliveryLocation(WhatsAppConversation $conversation): void
@@ -819,18 +926,18 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             }
         }
 
-        if ($this->matchesIntent($lower, ['tumpeng'])) {
-            $this->sendProductsByCategory($conversation, 'Tumpeng');
+        // Kategori dari DB: cocokkan nama atau slug kategori dengan input user.
+        $matchedCategory = \App\Models\Category::where(function ($q) use ($lower) {
+            $q->whereRaw('LOWER(name) = ?', [$lower])
+                ->orWhereRaw('LOWER(slug) = ?', [$lower]);
+        })->first();
+
+        if ($matchedCategory) {
+            $this->sendProductsByCategory($conversation, $matchedCategory->name);
             $this->advanceState($conversation, OrderBotConversationState::PRODUCT_BROWSING);
-            $conversation->setContext('selected_category', 'Tumpeng');
-        } elseif ($this->matchesIntent($lower, ['hampers'])) {
-            $this->sendProductsByCategory($conversation, 'Hampers');
-            $this->advanceState($conversation, OrderBotConversationState::PRODUCT_BROWSING);
-            $conversation->setContext('selected_category', 'Hampers');
-        } elseif ($this->matchesIntent($lower, ['ala carte', 'ala-carte', 'produk', 'kue', 'carte'])) {
-            $this->sendProductsByCategory($conversation, 'Produk');
-            $this->advanceState($conversation, OrderBotConversationState::PRODUCT_BROWSING);
-            $conversation->setContext('selected_category', 'Produk');
+            $conversation->setContext('selected_category', $matchedCategory->name);
+
+            return;
         } else {
             // Coba sebagai nama produk dulu ("tumpeng mini"), baru fallback kategori.
             $product = $this->findProductByKeyword($conversation, $this->extractProductQuery($lower));
@@ -876,9 +983,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                     $regionId = $conversation->region_id;
                     $product = Product::where('id', $productId)
                         ->where('is_active', true)
-                        ->where(function ($q) use ($regionId) {
-                            $q->where('region_id', $regionId)->orWhereNull('region_id');
-                        })
+                        ->visibleInRegion($regionId)
                         ->with(['category', 'variants' => fn ($q) => $q->where('is_active', true)])
                         ->first();
                 }
@@ -955,6 +1060,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             2 => $this->processAddressStep($conversation, $text),
             3 => $this->processDateStep($conversation, $text),
             4 => $this->processAddMoreStep($conversation, $text),
+            6 => $this->processPhoneStep($conversation, $text),
             default => $this->resumeOrderForm($conversation),
         };
     }
@@ -992,7 +1098,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             $regionId = $conversation->region_id;
             $product = $productId
                 ? Product::where('is_active', true)
-                    ->where(fn ($q) => $q->where('region_id', $regionId)->orWhereNull('region_id'))
+                    ->visibleInRegion($regionId)
                     ->with(['variants' => fn ($q) => $q->where('is_active', true)])
                     ->find($productId)
                 : null;
@@ -1035,12 +1141,16 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         }
 
         if (count($candidates) > 1) {
-            $options = $candidates->map(fn ($p) => [
-                'type' => 'product',
-                'id' => $p->id,
-                'label' => $p->name,
-                'price' => $this->resolveCheapestVariant($p)?->price,
-            ])->values()->all();
+            $options = $candidates->map(function ($p) use ($conversation) {
+                $cheapest = $this->resolveCheapestVariant($p, $conversation->region_id);
+
+                return [
+                    'type' => 'product',
+                    'id' => $p->id,
+                    'label' => $cheapest ? $cheapest->name : $p->name,
+                    'price' => $cheapest ? $this->priceResolver->priceFor($cheapest, $conversation->region_id) : null,
+                ];
+            })->values()->all();
             $conversation->setContext('pending_options', $options);
             $conversation->setContext('product_quantity', $quantity);
             $this->sendOptionList($conversation, 'Ditemukan beberapa produk yang cocok. Pilih salah satu:',
@@ -1077,15 +1187,14 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $cacheKey = 'prod_search:'.($regionId ?? 'all').':'.md5($lowerKeyword);
         $ids = \Illuminate\Support\Facades\Cache::remember($cacheKey, 120, function () use ($regionId, $lowerKeyword, $escaped) {
             $base = Product::where('is_active', true)
-                ->where(function ($q) use ($regionId) {
-                    $q->where('region_id', $regionId)->orWhereNull('region_id');
-                });
+                ->visibleInRegion($regionId);
 
             $exact = (clone $base)
                 ->where(function ($q) use ($lowerKeyword) {
                     $q->whereRaw('LOWER(name) = ?', [$lowerKeyword])
                         ->orWhereRaw('LOWER(tag) = ?', [$lowerKeyword]);
                 })
+                ->orderByRaw('region_id IS NULL ASC')
                 ->orderBy('id')
                 ->limit(6)
                 ->pluck('id');
@@ -1099,6 +1208,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                     $q->whereRaw('LOWER(name) LIKE ?', ["%{$escaped}%"])
                         ->orWhereRaw('LOWER(tag) LIKE ?', ["%{$escaped}%"]);
                 })
+                ->orderByRaw('region_id IS NULL ASC')
                 ->orderByRaw('LENGTH(name) ASC')
                 ->orderBy('id')
                 ->limit(6)
@@ -1112,12 +1222,14 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
         return Product::with(['category', 'variants' => fn ($q) => $q->where('is_active', true)->orderBy('price')])
             ->where('is_active', true)
-            ->where(function ($q) use ($regionId) {
-                $q->where('region_id', $regionId)->orWhereNull('region_id');
-            })
+            ->visibleInRegion($regionId)
             ->whereIn('id', $ids)
             ->get()
-            ->sortBy(fn ($p) => array_search($p->id, $ids))
+            ->sortBy(function ($p) use ($ids) {
+                // Produk regional (region_id terisi) diutamakan soal global
+                // (region_id NULL), lalu urutkan sesuai ID hasil pencarian.
+                return [(int) ($p->region_id === null), array_search($p->id, $ids)];
+            })
             ->values();
     }
 
@@ -1136,7 +1248,10 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         // Pilihan varian lama (produk sebelumnya) tidak berlaku lagi.
         $conversation->forgetContext('selected_variant_id');
 
-        $variants = $product->variants->where('is_active', true)->sortBy('price')->values();
+        $regionId = $conversation->region_id;
+        $variants = $product->variants->where('is_active', true)
+            ->sortBy(fn ($v) => $this->priceResolver->priceFor($v, $regionId))
+            ->values();
 
         if ($variants->isEmpty()) {
             // Bersihkan pilihan agar sesi tidak menunjuk produk mati.
@@ -1165,7 +1280,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                 'type' => 'variant',
                 'id' => $v->id,
                 'label' => $v->name,
-                'price' => $v->price,
+                'price' => $this->priceResolver->priceFor($v, $regionId),
             ])->all();
             $conversation->setContext('pending_options', $options);
             $qtyText = $quantity > 1 ? " ({$quantity} buah)" : '';
@@ -1271,7 +1386,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
         $this->metaService->sendText($conversation->phone_number,
             "✅ Masuk keranjang{$qtyNote}:\n".implode("\n", $lines)."\n\n".
-            "Mau tambah produk lain? Ketik *nama/nomor* produknya (bisa pakai jumlah, mis. *2x Kue Ijo*).\n\n".
+            "🛒 *Mau pesan apa?* Ketik *nama/nomor* produknya (bisa pakai jumlah, mis. *2x Kue Ijo*).\n\n".
             "Kalau sudah cukup, ketik *LANJUT*.\n".
             '(Ketik *HAPUS* untuk keluarkan item terakhir.)'
         );
@@ -1294,9 +1409,9 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
                 return;
             }
-            $conversation->setContext('form_step', 1);
+            $conversation->setContext('form_step', 6);
             $this->metaService->sendText($conversation->phone_number,
-                "Siap! Sekarang data penerima ya.\n\n*Siapa nama penerimanya?*\n(bisa nama sendiri)"
+                "Siap! Sekarang data penerima ya.\n\n*Nomor HP penerima?*\n(contoh: 081234567890)"
             );
 
             return;
@@ -1347,6 +1462,32 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
         // Selain itu = nama/nomor produk baru (dukung "2x ...").
         $this->processProductNameStep($conversation, $text);
+    }
+
+    /**
+     * Langkah 6 data penerima: NOMOR HP PENERIMA (satu pertanyaan, R-18).
+     * Simpan ke konteks, lalu lanjut ke nama (langkah 1).
+     */
+    protected function processPhoneStep(WhatsAppConversation $conversation, string $text): void
+    {
+        $phone = Phone::normalize($text);
+        // Minimal 10 digit setelah normalisasi (mis. 628123456789).
+        if (! $phone || mb_strlen($phone) < 10) {
+            $this->metaService->sendText($conversation->phone_number,
+                'Nomor HP tidak valid. Ketik ulang nomor HP penerima (contoh: 081234567890).'
+            );
+
+            return;
+        }
+
+        $context = $conversation->context ?? [];
+        $context['recipient_phone'] = $phone;
+        $conversation->update(['context' => $context]);
+        $conversation->setContext('form_step', 1);
+
+        $this->metaService->sendText($conversation->phone_number,
+            "Siap! Sekarang *nama penerima* ya.\n(bisa nama sendiri)"
+        );
     }
 
     /**
@@ -1716,9 +1857,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         if ($opt['type'] === 'product') {
             $regionId = $conversation->region_id;
             $product = Product::where('is_active', true)
-                ->where(function ($q) use ($regionId) {
-                    $q->where('region_id', $regionId)->orWhereNull('region_id');
-                })
+                ->visibleInRegion($regionId)
                 ->with(['variants' => fn ($q) => $q->where('is_active', true)])
                 ->find($opt['id']);
             if (! $product) {
@@ -2662,7 +2801,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
         return match ($state) {
             OrderBotConversationState::WELCOME_SENT => $conversation->getContext('awaiting_branch')
-                ? 'Pilih cabang pengiriman (ketik angka / nama cabang).'
+                ? 'Pilih kota pengiriman (ketik angka / nama kota).'
                 : 'Ketik *PESAN* untuk mulai order, atau *PRODUK* untuk melihat katalog.',
             OrderBotConversationState::AWAITING_ORDER_FORM => $conversation->getContext('pending_options')
                 ? 'Pilih nomor dari daftar yang ditampilkan (atau ketik *BATAL* untuk membatalkan).'
@@ -2698,24 +2837,28 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
         $this->metaService->sendText($conversation->phone_number,
             "{$greeting} dari *Kue Pandan Asli* 🍃\n".
-            "Cabang {$regionName}\n\n".
+            "Kota pengiriman: *{$regionName}*\n\n".
             "Kami menjual kue tradisional Indonesia dengan rasa pandan alami.\n".
             "Tanpa toko offline — hanya pesan online melalui WhatsApp ini.\n\n".
-            "📍 Lokasi: {$regionName}\n\n".
-            'Ketik *PESAN* untuk mulai order, *PRODUK* untuk katalog, atau *HARGA* untuk pricelist.'
+            'Ketik *PESAN* untuk mulai order, *PRODUK* untuk katalog, atau *HARGA* untuk pricelist.'.
+            "\nKetik *GANTI KOTA* untuk pindah kota pengiriman."
         );
     }
 
     protected function sendProductCategories(WhatsAppConversation $conversation): void
     {
+        $categories = \App\Models\Category::orderBy('name')->get();
+
+        $rows = $categories->map(fn ($category) => [
+            'id' => 'cat_'.$category->slug,
+            'title' => $category->name,
+            'description' => '',
+        ])->all();
+
         $sections = [
             [
                 'title' => 'Pilih Kategori',
-                'rows' => [
-                    ['id' => 'cat_tumpeng', 'title' => 'Tumpeng', 'description' => 'Tumpeng Mini & Besar untuk acara spesial'],
-                    ['id' => 'cat_hampers', 'title' => 'Hampers', 'description' => 'Paket hampers hadiah istimewa'],
-                    ['id' => 'cat_alacarte', 'title' => 'Ala Carte', 'description' => 'Kue individual sesuai selera'],
-                ],
+                'rows' => $rows,
             ],
         ];
 
@@ -2729,89 +2872,30 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
     protected function sendProductCatalog(WhatsAppConversation $conversation): void
     {
-        $regionId = $conversation->region_id;
-        $products = Product::where('is_active', true)
-            ->where(function ($q) use ($regionId) {
-                $q->where('region_id', $regionId)->orWhereNull('region_id');
-            })
-            ->with(['category', 'variants' => fn ($q) => $q->where('is_active', true)])
-            ->get();
-
-        $text = "📋 *KATALOG PRODUK*\n\n";
-
-        $grouped = $products->groupBy(fn ($p) => $p->category->name ?? 'Lainnya');
-
-        // Nomor global berurutan lintas kategori + simpan urutan ID agar pilihan
-        // angka selalu cocok dengan yang ditampilkan (tidak tergantung urutan DB).
-        $catalogIds = [];
-        $num = 0;
-        foreach ($grouped as $category => $items) {
-            $text .= "*{$category}*\n";
-            foreach ($items as $product) {
-                $num++;
-                $catalogIds[] = $product->id;
-                $variants = $product->variants;
-                $text .= "{$num}. {$product->name}\n";
-                foreach ($variants as $variant) {
-                    $text .= "  └ {$variant->name}: Rp ".number_format($variant->price, 0, ',', '.')."\n";
-                }
-            }
-            $text .= "\n";
-        }
-        $conversation->setContext('catalog_ids', $catalogIds);
-
-        $text .= 'Ketik *angka* untuk lihat foto & detail, atau *PESAN* untuk mulai order.';
+        $text = $this->productListRenderer->render($conversation, 'catalog');
 
         $this->sendLongText($conversation, $text);
     }
 
     protected function sendProductsByCategory(WhatsAppConversation $conversation, string $categoryName): void
     {
-        $regionId = $conversation->region_id;
+        $result = $this->productListRenderer->render($conversation, 'by_category', $categoryName);
 
-        $category = \App\Models\Category::where('name', 'like', "%{$categoryName}%")->first();
-
-        if (! $category) {
+        if ($result === null) {
             $this->metaService->sendText($conversation->phone_number, "Kategori '{$categoryName}' tidak ditemukan.");
 
             return;
         }
 
-        $products = Product::where('category_id', $category->id)
-            ->where('is_active', true)
-            ->where(function ($q) use ($regionId) {
-                $q->where('region_id', $regionId)->orWhereNull('region_id');
-            })
-            ->with(['variants' => fn ($q) => $q->where('is_active', true)])
-            ->get();
-
-        if ($products->isEmpty()) {
-            $this->metaService->sendText($conversation->phone_number, "Belum ada produk di kategori {$categoryName} untuk cabang Anda.");
+        if ($result === 'empty') {
+            $category = \App\Models\Category::where('name', 'like', "%{$categoryName}%")->first();
+            $name = $category ? $category->name : $categoryName;
+            $this->metaService->sendText($conversation->phone_number, "Belum ada produk di kategori {$name} untuk kota ini.");
 
             return;
         }
 
-        $text = "📦 *{$categoryName}*\n\n";
-
-        $catalogIds = [];
-        foreach ($products as $index => $product) {
-            $num = $index + 1;
-            $catalogIds[] = $product->id;
-            $text .= "{$num}. *{$product->name}*\n";
-            $text .= mb_substr($product->description ?? '', 0, 200)."\n";
-            if ($product->variants->where('is_active', true)->isEmpty()) {
-                $text .= "  (varian belum tersedia — tanya admin untuk harga)\n";
-            }
-            foreach ($product->variants as $variant) {
-                $text .= "  💰 {$variant->name}: Rp ".number_format($variant->price, 0, ',', '.')."\n";
-            }
-            $text .= "\n";
-        }
-        $conversation->setContext('catalog_ids', $catalogIds);
-
-        $text .= 'Ketik *angka* untuk lihat foto & detail, atau *PESAN* untuk mulai order.';
-
-        $this->sendLongText($conversation, $text);
+        $this->sendLongText($conversation, $result);
     }
 
     protected function sendProductDetail(WhatsAppConversation $conversation, Product $product): void
@@ -2862,34 +2946,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
      */
     protected function sendPricelist(WhatsAppConversation $conversation): void
     {
-        $regionId = $conversation->region_id;
-        $products = Product::where('is_active', true)
-            ->where(function ($q) use ($regionId) {
-                $q->where('region_id', $regionId)->orWhereNull('region_id');
-            })
-            ->with(['category', 'variants' => fn ($q) => $q->where('is_active', true)->orderBy('price')])
-            ->get();
-
-        $regionName = $conversation->region->name ?? config('services.whatsapp.default_region');
-        $text = "💰 *PRICELIST — Cabang {$regionName}*\n\n";
-
-        $grouped = $products->groupBy(fn ($p) => $p->category->name ?? 'Lainnya');
-
-        foreach ($grouped as $category => $items) {
-            $text .= "*{$category}*\n";
-            foreach ($items as $product) {
-                $text .= "• {$product->name}\n";
-                if ($product->variants->isEmpty()) {
-                    $text .= "  Harga menyusul\n";
-                }
-                foreach ($product->variants as $variant) {
-                    $text .= '  - '.$variant->name.': Rp '.number_format($variant->price, 0, ',', '.')."\n";
-                }
-            }
-            $text .= "\n";
-        }
-
-        $text .= 'Ketik nama produk untuk lihat foto & detail, atau ketik *PESAN* untuk mulai order.';
+        $text = $this->productListRenderer->render($conversation, 'pricelist');
 
         $this->sendLongText($conversation, $text);
     }
@@ -2951,27 +3008,8 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
      */
     protected function sendCompactCatalog(WhatsAppConversation $conversation): void
     {
-        $regionId = $conversation->region_id;
-        $products = Product::where('is_active', true)
-            ->where(function ($q) use ($regionId) {
-                $q->where('region_id', $regionId)->orWhereNull('region_id');
-            })
-            ->with(['variants' => fn ($q) => $q->where('is_active', true)])
-            ->orderBy('id')
-            ->limit(30)
-            ->get();
+        $text = $this->productListRenderer->render($conversation, 'compact');
 
-        $text = "🛒 *Mau pesan apa?*\n\n";
-        $catalogIds = [];
-        foreach ($products->values() as $i => $product) {
-            $catalogIds[] = $product->id;
-            $cheapest = $this->resolveCheapestVariant($product);
-            $price = $cheapest ? 'Rp '.number_format($cheapest->price, 0, ',', '.') : 'tanya admin';
-            $text .= ($i + 1).". {$product->name} — mulai {$price}\n";
-        }
-        $conversation->setContext('catalog_ids', $catalogIds);
-
-        $text .= "\nBalas *nomor / nama* produknya (boleh pakai jumlah, mis. *2x Kue Ijo*).";
         $this->metaService->sendText($conversation->phone_number, $text);
     }
 
@@ -3077,7 +3115,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             $conversation->setContext('delivery_address', $address);
         }
 
-        $regionName = $conversation->region?->name ?? config('services.whatsapp.default_region', 'cabang kami');
+        $regionName = $conversation->region?->name ?? config('services.whatsapp.default_region', 'kota kami');
 
         $headline = $lead !== '' ? $lead : "📍 Jarak pengiriman dari toko kami sekitar {$distance}km.";
 
@@ -3229,7 +3267,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             // Guard region: produk cabang lain tidak boleh lolos ke ringkasan
             // (mis. keranjang lama setelah pindah cabang lewat PESAN restart).
             $product = Product::where('is_active', true)
-                ->where(fn ($q) => $q->where('region_id', $regionId)->orWhereNull('region_id'))
+                ->visibleInRegion($regionId)
                 ->find($row['product_id'] ?? null);
 
             if (! $variant || ! $product) {
@@ -3249,13 +3287,14 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             }
 
             $qty = max(1, (int) ($row['qty'] ?? 1));
-            $subtotal = $variant->price * $qty;
+            $price = $this->priceResolver->priceFor($variant, $regionId);
+            $subtotal = $price * $qty;
             $total += $subtotal;
             $lines[] = [
                 'product_name' => $product->name,
                 'variant_name' => $variant->name,
                 'qty' => $qty,
-                'price' => (int) $variant->price,
+                'price' => $price,
                 'subtotal' => $subtotal,
                 'valid' => true,
                 'product_id' => $product->id,
@@ -3568,6 +3607,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                     'invoice_number' => $this->generateInvoiceNumber($conversation),
                     'customer_id' => $customerModel->id,
                     'phone' => $conversation->phone_number,
+                    'recipient_phone' => $context['recipient_phone'] ?? null,
                     'address' => $orderCustomer['address'] ?? $context['delivery_address'] ?? '',
                     'total_amount' => $totalAmount,
                     'payment_method' => 'qris',
@@ -3813,14 +3853,14 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $slug = strtolower(trim($city));
         $regionName = trim((string) ($conversation->region?->name ?? ''));
         $regionSlug = strtolower(trim((string) ($conversation->region?->slug ?? '')));
-        $regionLabel = $regionName !== '' ? $regionName : 'cabang kami';
+        $regionLabel = $regionName !== '' ? $regionName : 'kota kami';
 
         $conversation->setContext('customer_city', $city);
 
         // Kota sama persis dengan cabang saat ini
         if ($slug !== '' && $regionSlug !== '' && $slug === $regionSlug) {
             $this->metaService->sendText($conversation->phone_number,
-                "Benar! Kami dari cabang *{$regionLabel}* 😊\n\n".
+                "Benar! Kami dari *{$regionLabel}* 😊\n\n".
                 'Mau lihat menu, cek harga, cek ongkir, atau mulai pesanan?'
             );
 
@@ -3830,7 +3870,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         // Wilayah payung (provinsi), pasti dilayani salah satu cabang
         if ($slug === 'jawa timur') {
             $this->metaService->sendText($conversation->phone_number,
-                "Siap, kami melayani pengiriman di area *Jawa Timur* dari beberapa cabang 😊\n\n".
+                "Siap, kami melayani pengiriman di area *Jawa Timur* dari beberapa kota 😊\n\n".
                 "Nomor ini melayani area *{$regionLabel}*. Mau lihat menu, cek harga, atau mulai pesanan?"
             );
 
@@ -3840,7 +3880,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         // Kota masuk area delivery cabang saat ini
         if ($this->regionServesCity($conversation, $slug)) {
             $this->metaService->sendText($conversation->phone_number,
-                "Siap, area *{$city}* kami layani dari cabang *{$regionLabel}* 😊\n\n".
+                "Siap, area *{$city}* kami layani dari *{$regionLabel}* 😊\n\n".
                 'Mau lihat menu, cek harga, cek ongkir, atau mulai pesanan?'
             );
 
@@ -3852,7 +3892,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         if ($servingRegion !== null) {
             $this->metaService->sendText($conversation->phone_number,
                 "Mohon info ya 😊 Nomor ini melayani area *{$regionLabel}*.\n".
-                "Untuk pengiriman ke area *{$city}*, silakan hubungi admin cabang *{$servingRegion}*.\n\n".
+                "Untuk pengiriman ke area *{$city}*, silakan hubungi admin *{$servingRegion}*.\n\n".
                 "Ada yang bisa kami bantu untuk area *{$regionLabel}*?"
             );
 
@@ -3903,16 +3943,12 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $escaped = addcslashes($lowerKeyword, '%_\\');
 
         $query = Product::where('is_active', true)
-            ->where(function ($q) use ($regionId) {
-                $q->where('region_id', $regionId)->orWhereNull('region_id');
-            })
+            ->visibleInRegion($regionId)
             ->with(['variants' => fn ($q) => $q->where('is_active', true)]);
 
         // Prioritas: nama/tag persis dulu, baru partial
         $exactMatch = (clone $query)
-            ->where(function ($q) use ($regionId) {
-                $q->where('region_id', $regionId)->orWhereNull('region_id');
-            })
+            ->visibleInRegion($regionId)
             ->where(function ($q) use ($lowerKeyword) {
                 $q->whereRaw('LOWER(name) = ?', [$lowerKeyword])
                     ->orWhereRaw('LOWER(tag) = ?', [$lowerKeyword]);
@@ -3984,9 +4020,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $lowerKeyword = strtolower($keyword);
 
         $base = Product::where('is_active', true)
-            ->where(function ($q) use ($regionId) {
-                $q->where('region_id', $regionId)->orWhereNull('region_id');
-            })
+            ->visibleInRegion($regionId)
             ->with(['variants' => fn ($q) => $q->where('is_active', true)]);
 
         // Prioritas: nama/tag persis (seperti findProductByKeyword), lalu partial deterministik
