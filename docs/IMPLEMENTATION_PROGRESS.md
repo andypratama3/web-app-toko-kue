@@ -20,7 +20,7 @@ commit per fase di branch `rev/fase-N-<slug>`.
 | 6 | Setelah masuk keranjang: ringkasan + "Mau pesan apa?" | R-10 | ✅ Selesai |
 | 7 | Wording "cabang" → nama kota, satu nomor admin | R-16 | ✅ Selesai (teks pelanggan) |
 | 8 | Nomor HP penerima + contoh format lengkap | R-18 | ✅ Selesai (form_step 6 + orders.recipient_phone) |
-| 9 | Penyederhanaan alur pesanan | R-03, R-07 | ⬜ Belum |
+| 9 | Penyederhanaan alur pesanan | R-03, R-07 | ✅ Selesai (R-03 selesai; R-07 tetap OPEN) |
 | 10 | Import produk/harga (data pemilik) + QA & rilis | R-14, R-15 | ⬜ Belum |
 
 ## Status revisi
@@ -29,7 +29,7 @@ commit per fase di branch `rev/fase-N-<slug>`.
 |---|---|---|---|
 | R-01 | Produk/harga Surabaya & Malang tercampur | 3 | ✅ Selesai |
 | R-02 | Foto produk tidak tampil | 1 | ✅ Selesai |
-| R-03 | Alur pesanan membingungkan | 9 | ⬜ Belum |
+| R-03 | Alur pesanan membingungkan | 9 | ✅ Selesai (alur linear + katalog kanonis) |
 | R-04 | Awalan "⭐ List produk" | 4 | ✅ Selesai |
 | R-05 | Nomor lama masih ditanya kota | 2 | ✅ Selesai |
 | R-06 | Menu harga/produk pakai pricelist lama | 3, 4 | ✅ Selesai (PriceResolver + render tunggal) |
@@ -99,7 +99,7 @@ Suite: **283 passed, 7 skipped, 769 assertions** (2 deprecation notice PHP 8.5, 
 
 Catatan verifikasi R-14/R-17:
 - R-14: ditandai selesai berdasarkan konfirmasi user (data produk sudah ada di production). `bot:audit-data` tidak dapat dijalankan lokal karena migrasi belum diterapkan ke DB lokal (column `is_global` belum ada di MySQL lokal). Test suite (SQLite in-memory) meloloskan semua tes terkait.
-- R-17: nomor admin +62 851-1365-8557 dikonfirmasi user, tetapi `owner_phone` masih KOSONG di DB lokal dan `BOT_ADMIN_PHONE` belum ada di config/kode. Notifikasi admin saat ini pakai `regions.owner_phone` (fallback). Perlu diisi di produksi.
+- R-17: nomor admin +62 851-1365-8557 dikonfirmasi user. `BOT_ADMIN_PHONE` kini didukung melalui `config('bot.admin_phone')`, tetapi nilainya masih perlu diisi pada environment produksi. `regions.owner_phone` tetap menjadi fallback dan masih kosong di DB lokal.
 
 ---
 
@@ -178,28 +178,82 @@ Catatan verifikasi R-14/R-17:
 - `database/migrations/2026_11_14_000003_add_recipient_phone_to_orders_table.php` —
   menambah kolom `orders.recipient_phone` (nullable, reversible).
 
-**File diubah:**
-- `app/Services/WhatsApp/OrderBotService.php`:
-  - `processAddMoreStep()`: setelah LANJUT dengan cart non-kosong → `form_step 6`
-    (nomor penerja) bukan `form_step 1` (nama).
-  - `processPhoneStep()` (baru): validasi nomor HP (minimal 10 digit setelah
-    normalisasi), simpan ke `context.recipient_phone`, lanjut ke `form_step 1` (nama).
-  - `handleOrderForm()`: match case `6 => $this->processPhoneStep()`.
-  - `confirmOrder()`: simpan `$context['recipient_phone']` ke `orders.recipient_phone`.
+**Implementasi awal:**
+- `processPhoneStep()` memvalidasi nomor HP (minimal 10 digit setelah normalisasi) dan
+  menyimpannya ke `context.recipient_phone`.
+- `handleOrderForm()` menambahkan case `form_step = 6`.
+- `confirmOrder()` menyimpan `$context['recipient_phone']` ke `orders.recipient_phone`.
 
-**Tes baru/update:** Semua test flow order diupdate untuk menyertakan langkah nomor
-penerja antara LANJUT dan nama.
+> Fase 9 mengubah urutan pertanyaan. Implementasi awal menaruh nomor sebelum nama; kondisi final
+> adalah nama → alamat → nomor penerima → tanggal.
+
+---
+
+## Implementasi Fase 9 (R-03; R-07 tetap OPEN) — Penyederhanaan alur pesanan
+
+**Commit implementasi:**
+- `8ec159f` — `feat(bot): footer terpusat dan sambutan ringkas`
+- `c54dc61` — `feat(bot): satukan pintu katalog dan pastikan setiap state punya jalan keluar`
+- `d7f7795` — `fix(bot): buka pricelist dari katalog produk`
+- `3616e9b` — `feat(bot): alur form linear sampai pembayaran`
+
+### Peta kondisi nyata
+
+- `PESAN` dan `PRODUK` memakai katalog kanonis; `HARGA` memakai mode pricelist; `MENU` memakai
+  kategori dinamis dari database.
+- Kota ditanyakan paling banyak sekali. `ConversationRegionResolver` tetap menjadi penentu kota,
+  sedangkan override manual dibuat melalui `GANTI KOTA`.
+- Setelah memilih produk/varian, pelanggan dapat menambah item atau mengetik `LANJUT`.
+- Form linear final: **nama → alamat → nomor penerima → tanggal**. Nomor penerima tetap memakai
+  `form_step = 6`.
+- `missingOrderFormStep()` dan `promptMissingOrderField()` mengembalikan pelanggan ke field pertama
+  yang belum lengkap; ringkasan dan `FIX` tidak dapat melewati field wajib.
+- Nomor penerima dinormalisasi ke format `62...` dan disimpan ke `orders.recipient_phone`.
+  `recipient_phone` kini menjadi bagian dari `$fillable` model `Order`.
+- `GANTI KOTA` dari keranjang membuang item yang tidak tersedia di kota baru, mempertahankan item
+  lintas kota, lalu mengembalikan pelanggan ke `LANJUT`.
+- `footerFor(OrderBotConversationState)` menjadi sumber tunggal footer. `BOT_ADMIN_PHONE` hanya
+  ditampilkan pada sambutan bila diisi.
+- Sesi idle tetap memakai `resetConversationIfStale()`; tidak ada timeout atau state baru.
+- Dua E2E utama tercakup: pelanggan baru Surabaya sampai `ORDER_CONFIRMED`, dan pelanggan lama
+  Malang yang pindah kota saat keranjang lalu checkout.
+
+### Batas Fase 9
+
+- **R-07 tetap OPEN:** kalimat klien "Pada saat memilih *pesan*…" masih terpotong dan tidak
+  diimplementasikan.
+- **R-15 belum selesai:** infrastruktur harga per kota tersedia, tetapi data harga Surabaya/Malang
+  per varian belum lengkap.
+- `BOT_ADMIN_PHONE` dan fallback `regions.owner_phone` masih perlu diisi pada environment tujuan.
+- Tag `revisi-fase-8-done` masih menunjuk `f6d81f3`, sedangkan commit `44e3a25` dibuat setelah tag.
+  Branch `rev/fase-9-alur` sudah memuat `44e3a25`; cakupan tag final akan diverifikasi pada Fase 10.
+- Tidak ada push, merge, migrasi produksi, atau deployment yang dilakukan pada Fase 9.
+
+### Bukti verifikasi
+
+- `php artisan test --compact tests/Feature/WhatsApp` → **196 passed, 687 assertions**.
+- `php artisan test --compact` → **299 passed, 7 skipped, 910 assertions**.
+- Dua deprecation PHP 8.5 yang muncul (`PDO::MYSQL_ATTR_SSL_CA` dan
+  `ReflectionMethod::setAccessible()`) bersifat pre-existing.
+- Pint untuk 13 file PHP yang disentuh → **PASS**.
+- Diagram dan alur aktual didokumentasikan di `docs/ALUR_BOT_PESANAN.md`.
 
 ---
 
 ## Pertanyaan terbuka untuk klien
 
 1. **R-07** — catatan terpotong: "Pada saat memilih *pesan*" … apa yang terjadi/Diinginkan?
-2. **R-04** — "⭐List produk" itu judul daftar produk, atau tombol menu?
-3. **R-13** — konfirmasi: untuk tumpeng/kue mix/hampers, deskripsi hanya berisi daftar isi (tanpa narasi)?
-4. **R-12** — awalan `-` untuk sub-produk: menambah, mengganti, atau memperbaiki yang sudah ada?
-5. **R-15** — daftar harga khusus Surabaya (nama produk, varian, harga per kota) untuk diisi ke CSV.
-6. **D4** — produk mana yang dijual di kedua kota dengan harga sama (→ `is_global`)? Sementara semua produk lama `region_id NULL` sudah di-backfill `is_global = true`; koreksi bila ada yang seharusnya khusus satu kota.
+2. **R-15** — daftar harga khusus Surabaya/Malang (nama produk, varian, harga per kota) untuk diisi
+   ke CSV.
+3. **D4** — produk mana yang dijual di kedua kota dengan harga sama (→ `is_global`)? Sementara semua
+   produk lama `region_id NULL` sudah di-backfill `is_global = true`; koreksi bila ada yang seharusnya
+   khusus satu kota.
+
+## Konfigurasi environment yang belum lengkap
+
+- `BOT_ADMIN_PHONE` untuk environment produksi.
+- `regions.owner_phone` sebagai fallback owner per kota.
+- Data harga override `product_variant_prices` untuk Surabaya/Malang.
 
 ## Baseline Fase 0
 
