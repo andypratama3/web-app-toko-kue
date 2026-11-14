@@ -224,11 +224,10 @@ Route::middleware([
             $regionId = Auth::user()->region_id;
 
             return Product::where('is_active', true)
-                ->where(function ($q) use ($regionId) {
-                    // Produk cabang sendiri + produk global (region NULL, mis. katalog resmi).
-                    $q->where('region_id', $regionId)->orWhereNull('region_id');
-                })
-                ->with(['variants' => fn ($q) => $q->where('is_active', true)->select('id', 'product_id', 'name', 'price')])
+                ->visibleInRegion($regionId)
+                ->with(['variants' => fn ($q) => $q->where('is_active', true)
+                    ->with(['prices' => fn ($p) => $p->where('region_id', $regionId)])
+                    ->select('id', 'product_id', 'name', 'price')])
                 ->get(['id', 'name', 'image_path'])
                 ->map(fn ($p) => [
                     'id' => $p->id,
@@ -240,7 +239,11 @@ Route::middleware([
                             ? asset(ltrim(preg_replace('#^public/#', '', $p->image_path), '/'))
                             : Storage::url($p->image_path))
                         : null,
-                    'variants' => $p->variants->map(fn ($v) => ['id' => $v->id, 'name' => $v->name, 'price' => $v->price]),
+                    'variants' => $p->variants->map(fn ($v) => [
+                        'id' => $v->id,
+                        'name' => $v->name,
+                        'price' => app(\App\Services\Pricing\PriceResolver::class)->priceFor($v, $regionId),
+                    ]),
                 ]);
         })->name('produk.json');
     });

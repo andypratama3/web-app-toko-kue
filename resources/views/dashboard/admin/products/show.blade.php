@@ -8,7 +8,7 @@
 
         <div class="grid grid-cols-1 gap-6 mt-6 md:grid-cols-4">
             <div class="md:col-span-1">
-                <img src="{{ Storage::url($product->image_path) }}" alt="{{ $product->name }}"
+                <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
                     class="w-full rounded-lg shadow-sm">
             </div>
 
@@ -26,7 +26,7 @@
                 <hr class="my-4 border-gray-200 dark:border-gray-700">
 
                 <div class="flex justify-start">
-                    <a href="{{ route('admin.dashboard') }}"
+                    <a href="{{ route('admin.dashboard', ['region' => Auth::user()->region->slug]) }}"
                         class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-lg bg-greenlight hover:bg-greendark focus:outline-none focus:ring-4 focus:ring-greenlight/30">
                         Kembali ke Dashboard
                     </a>

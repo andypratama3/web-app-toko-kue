@@ -524,3 +524,51 @@ Tidak ada daftar produk, kategori, harga, atau foto. Tidak ada yang bisa diverif
 - R-05 dan R-11 wajib satu paket: melewati pertanyaan kota tanpa menyediakan `GANTI KOTA` akan mengunci pelanggan pada satu kota.
 - R-15 wajib mendahului R-12/R-09; tanpa resolver harga, judul yang menyebut kota akan menampilkan harga kota lain.
 - `docs/ALUR_BOT_PESANAN.md` sudah tidak sesuai kode (4092 baris vs dokumen lama) — jangan dipakai sebagai acuan implementasi.
+
+---
+
+## 9. Audit kode WhatsApp via codebase-memory (2026-11-14)
+
+Indeks: 5.965 node / 22.109 edge; `Services/WhatsApp` 187 method. Verifikasi perilaku: `php artisan test --compact` → 279 passed, 7 skipped, 739 assertions.
+
+### 9.1 Dead code
+
+Method tanpa pemanggil di `app/`, `routes/`, `resources/`, maupun `tests/`:
+
+| File:line | Method | Catatan |
+|---|---|---|
+| `app/Services/WhatsApp/IncomingMediaHandler.php:30` | `handleReturnProof()` | Sisa fitur retur; webhook memakai `handlePaymentProof()` (`ProcessWhatsAppWebhookJob.php:137`) |
+| `app/Services/WhatsApp/IncomingMediaHandler.php:68` | `getMediaType()` | Tipe media ditangani inline di webhook |
+| `app/Services/WhatsApp/DeliveryZoneService.php:236` | `getActiveZones()` | Zona aktif selalu di-query langsung |
+| `app/Services/WhatsApp/WhatsappMetaService.php:272` | `getPhoneNumberId()` | Hanya di-override `tests/Support/RecordingWhatsappMetaService.php:93` |
+
+Bukan dead code (false positive graph karena Blade gagal di-parse): `WhatsappMetaService::headerExampleUrl()`, `WhatsappMetaService::templateCategoryLabel()`.
+
+### 9.2 Double code
+
+| Pasangan | Kesamaan | Risiko |
+|---|---|---|
+| `findProductByKeyword()` `OrderBotService.php:3956` vs `resolveProduct()` `:4032` | 39 vs 38 baris; logika exact + partial nyaris identik | Perilaku berbeda: `findProductByKeyword` ikut mencari `description` dan **tanpa ORDER BY**; `resolveProduct` tidak mencari `description` dan `ORDER BY LENGTH(name)` |
+| `sendProductCatalog()` `:2797`, `sendProductsByCategory()` `:2833`, `sendPricelist()` `:2918`, `sendCompactCatalog()` `:3005` | Empat renderer daftar produk | Format, urutan, batas, dan penomoran berbeda |
+| `sendProductCategories()` `:2776`, intent di `handleMenuSelection()` `:892-903`, mapping `cat_*` `ProcessWhatsAppWebhookJob.php:364-369`, teks `buildCurrentStepGuide()` `:2745` | Empat sumber daftar kategori | Kategori baru/rename tidak muncul atau salah nama |
+| `detectCityMention()` `:3813` vs `ConversationRegionResolver` | Deteksi kota/area ganda | Bisa berbeda hasil untuk teks yang sama |
+
+### 9.3 Penyebab daftar produk "kadang berbeda"
+
+1. **Penomoran katalog penuh vs katalog form tidak sama.** `sendProductCatalog()` mengelompokkan per kategori tanpa `ORDER BY`; `sendCompactCatalog()` `ORDER BY id LIMIT 30` (`:3011-3012`). Produk cabang yang dibuat belakangan pindah posisi → nomor yang sama menunjuk produk berbeda. Jika produk aktif >30, katalog form juga menghilangkan sisanya.
+2. **Katalog penuh & per kategori tanpa urutan tetap.** `:2800-2803` dan `:2845-2849` tidak punya `orderBy`, jadi urutan bergantung storage engine MySQL dan bisa berubah setelah UPDATE/DELETE.
+3. **`catalog_ids` tidak diperbarui saat HARGA.** `sendPricelist()` tidak menulis/menghapus `catalog_ids`, padahal `:2945` mengajak user membalas. Angka yang diketik setelah pricelist memakai daftar lama (`:942`, `:1058`).
+4. **Tiga pencocok kata kunci berbeda.** `searchProductsByKeyword()` `:1133` (nama/tag, limit 6, urut panjang nama), `findProductByKeyword()` `:3956` (nama/tag/deskripsi, tanpa urutan), `resolveProduct()` `:4032` (nama/tag, urut panjang nama). Input sama dapat menghasilkan produk berbeda tergantung state.
+5. **Cache pencarian tanpa invalidasi.** `prod_search:{region}:{md5}` TTL 120 detik (`:1149-1150`); tidak ada `Cache::forget` saat produk diubah, jadi hasil pencarian bisa tertinggal sampai 2 menit.
+6. **Kategori hardcoded.** Menu hanya `cat_tumpeng/cat_hampers/cat_alacarte`; `sendProductsByCategory('Produk')` memakai `Category::where('name','like','%Produk%')->first()` (`:2837`) sehingga nama ganda/rename memilih kategori salah.
+7. **Pilihan produk lama tidak dibersihkan saat pindah kategori.** Detail produk menyimpan `selected_product_name` (`:871`, `:908`); `sendProductsByCategory()` tidak menghapusnya. Setelah lihat detail → MENU → pilih kategori → ketik PESAN, `askOrderForm()` (`:2978-2994`) memilih ulang produk lama, bukan katalog yang baru dilihat.
+8. **`visibleInRegion(null)` hanya produk global** (`Product.php:51-59`). Region default `Denpasar` (`config/services.php:41`, `.env.example:71`) sudah nonaktif; percakapan baru tanpa binding `phone_number_id` memakai kota nonaktif sampai user memilih kota.
+
+### 9.4 Rekomendasi
+
+1. Fase 4: satu `ProductListRenderer` (mode catalog/compact/pricelist) + `ORDER BY` deterministik + nomor dari satu sumber + reset `catalog_ids` pada pricelist.
+2. Satukan pencocok kata kunci ke `searchProductsByKeyword()`; hapus `findProductByKeyword()` atau jadikan wrapper.
+3. Fase 5: kategori dari tabel `categories` + mapping `cat_*` dinamis; hapus daftar hardcoded.
+4. Bersihkan `selected_product_*` setiap kali daftar/kategori baru dikirim.
+5. Tambah test: nomor katalog penuh vs form vs kategori vs pricelist; pencarian setelah update produk (cache); pindah kategori lalu PESAN.
+6. Hapus 4 method dead code di §9.1 (atau beri alasan dipertahankan).

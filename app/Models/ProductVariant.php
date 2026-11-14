@@ -18,7 +18,7 @@ class ProductVariant extends Model
         'product_id',
         'name',
         'price',
-        'is_active' // Tambahkan ini
+        'is_active', // Tambahkan ini
     ];
 
     protected $casts = [
@@ -31,6 +31,22 @@ class ProductVariant extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function prices()
+    {
+        return $this->hasMany(ProductVariantPrice::class);
+    }
+
+    public function priceForRegion(?int $regionId): ?ProductVariantPrice
+    {
+        if ($regionId === null) {
+            return null;
+        }
+
+        return $this->relationLoaded('prices')
+            ? $this->prices->firstWhere('region_id', $regionId)
+            : $this->prices()->where('region_id', $regionId)->first();
     }
 
     /**

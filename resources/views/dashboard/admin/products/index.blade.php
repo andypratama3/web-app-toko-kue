@@ -30,7 +30,7 @@
                             <div
                                 class="flex flex-col overflow-hidden transition-all duration-300 bg-white border border-gray-200 shadow-lg rounded-2xl hover:shadow-xl hover:-translate-y-1 dark:bg-gray-700 dark:border-gray-600">
                                 <div class="relative">
-                                    <img src="{{ Storage::url($product->image_path) }}" alt="{{ $product->name }}"
+                                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}"
                                         loading="lazy" class="object-cover w-full h-48">
                                     @if (!$product->is_active)
                                         <div

@@ -20,8 +20,8 @@ use Illuminate\Support\Facades\DB;
  * - Tumpeng Mini/Besar -> kategori Tumpeng (price list mengelompokkannya ke Hampers,
  *   jadi tag-nya ikut "Hampers" agar pencarian bot tetap ketemu)
  *
- * Semua produk resmi bersifat global: region_id = null (bot menampilkan
- * produk region user + produk global).
+ * Semua produk resmi bersifat global: region_id = null, is_global = true
+ * (bot menampilkan produk region user + produk global).
  */
 class ProductSeeder extends Seeder
 {
@@ -52,6 +52,7 @@ class ProductSeeder extends Seeder
                 'tag' => $item['tag'],
                 'is_active' => true,
                 'region_id' => null,
+                'is_global' => true,
             ]);
 
             $variants = [];

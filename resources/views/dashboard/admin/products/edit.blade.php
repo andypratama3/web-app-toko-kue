@@ -24,7 +24,7 @@
                             <div>
                                 <label class="block mb-2 text-sm font-medium">Gambar Produk</label>
                                 <div class="flex items-center space-x-4">
-                                    <img src="{{ Storage::url($product->image_path) }}" class="object-cover w-20 h-20 rounded-lg" alt="{{ $product->name }}">
+                                    <img src="{{ $product->image_url }}" class="object-cover w-20 h-20 rounded-lg" alt="{{ $product->name }}">
                                     {{-- <img src="{{ asset($product->image_path) }}" class="object-cover w-20 h-20 rounded-lg" alt="{{ $product->name }}"> --}}
                                     <input type="file" name="image" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-100 dark:bg-slate-800 dark:border-slate-600">
                                 </div>
