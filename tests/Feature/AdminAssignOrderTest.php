@@ -154,6 +154,7 @@ class AdminAssignOrderTest extends TestCase
     {
         $cat = \App\Models\Category::create(['name' => 'Produk', 'slug' => 'produk']);
         \App\Models\Product::create([
+            'is_global' => true,
             'category_id' => $cat->id, 'region_id' => null,
             'name' => 'Global', 'description' => 'g', 'is_active' => true,
         ]);

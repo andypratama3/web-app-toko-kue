@@ -52,6 +52,7 @@ class OrderBotOptimizationTest extends TestCase
         $this->region = Region::create(['name' => 'Denpasar', 'slug' => 'denpasar']);
         $category = \App\Models\Category::create(['name' => 'Produk', 'slug' => 'produk']);
         $this->kue = Product::create([
+            'is_global' => true,
             'category_id' => $category->id,
             'region_id' => null, 'name' => 'Kue Ijo', 'description' => 'ijo',
             'tag' => 'Ala Carte', 'is_active' => true,

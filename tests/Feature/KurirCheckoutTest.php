@@ -50,6 +50,7 @@ class KurirCheckoutTest extends TestCase
 
         $category = Category::create(['name' => 'Produk', 'slug' => 'produk']);
         $this->product = Product::create([
+            'is_global' => true,
             'category_id' => $category->id,
             'region_id' => null,
             'name' => 'Kue Ijo',

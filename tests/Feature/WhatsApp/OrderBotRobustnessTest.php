@@ -47,11 +47,13 @@ class OrderBotRobustnessTest extends TestCase
 
         $produk = Category::create(['name' => 'Produk', 'slug' => 'produk']);
         $this->kueIjo = Product::create([
+            'is_global' => true,
             'category_id' => $produk->id, 'region_id' => null,
             'name' => 'Kue Ijo', 'description' => 'ijo', 'tag' => 'Ala Carte', 'is_active' => true,
         ]);
         ProductVariant::create(['product_id' => $this->kueIjo->id, 'name' => 'Isi 3', 'price' => 9000, 'is_active' => true]);
         $this->tumpeng = Product::create([
+            'is_global' => true,
             'category_id' => $produk->id, 'region_id' => null,
             'name' => 'Tumpeng Mini', 'description' => 'tumpeng', 'tag' => 'Tumpeng', 'is_active' => true,
         ]);

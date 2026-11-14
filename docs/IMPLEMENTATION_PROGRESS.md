@@ -86,6 +86,23 @@ Suite: **283 passed, 7 skipped, 769 assertions** (2 deprecation notice PHP 8.5, 
 
 ---
 
+## Verifikasi Commit — Fase 0-8 (selesai)
+
+**Commit 1:** `62b1ea6` feat(bot): fase 0-3 infrastruktur harga & foto (R-01, R-02, R-06, R-15)
+**Commit 2:** `28763ad` feat(bot): fase 2-8 logika percakapan & katalog (R-03..R-18 sebagian)
+**Commit 3:** `f6d81f3` build: abaikan artefak codebase-memory dari git
+**Branch:** `rev/revisi-chatbot-fase-1-8` → di-rename, kemudian check out ke `rev/fase-9-alur`
+**Tag:** `revisi-fase-8-done`
+**Verifikasi ulang setelah commit:** 283 passed, 7 skipped, 769 assertions; Pint 9 file PASS (sama dengan sebelum commit).
+
+7 test skipped: semua Fortify default (email verification, registration, 2FA, account deletion, API tokens, password reset) — tidak terkait perubahan chatbot.
+
+Catatan verifikasi R-14/R-17:
+- R-14: ditandai selesai berdasarkan konfirmasi user (data produk sudah ada di production). `bot:audit-data` tidak dapat dijalankan lokal karena migrasi belum diterapkan ke DB lokal (column `is_global` belum ada di MySQL lokal). Test suite (SQLite in-memory) meloloskan semua tes terkait.
+- R-17: nomor admin +62 851-1365-8557 dikonfirmasi user, tetapi `owner_phone` masih KOSONG di DB lokal dan `BOT_ADMIN_PHONE` belum ada di config/kode. Notifikasi admin saat ini pakai `regions.owner_phone` (fallback). Perlu diisi di produksi.
+
+---
+
 ## Implementasi Fase 4 (R-04, R-09, R-12, R-13)
 
 **File baru:**

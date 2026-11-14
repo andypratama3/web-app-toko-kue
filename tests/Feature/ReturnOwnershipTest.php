@@ -61,6 +61,7 @@ class ReturnOwnershipTest extends TestCase
         ]);
         $category = Category::create(['name' => 'Produk', 'slug' => 'produk']);
         $product = Product::create([
+            'is_global' => true,
             'category_id' => $category->id, 'region_id' => null,
             'name' => 'Kue Ijo', 'description' => 'd', 'is_active' => true,
         ]);
