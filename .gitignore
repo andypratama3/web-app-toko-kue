@@ -24,3 +24,4 @@ yarn-error.log
 
 # Manifest seeder demo responsif
 /storage/app/demo_seeded.json
+.codebase-memory/
