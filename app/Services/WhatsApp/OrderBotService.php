@@ -790,8 +790,21 @@ class OrderBotService
         match ($action) {
             'menu' => $this->showCategoryMenu($conversation),
             'pricelist' => $this->sendPricelist($conversation),
+            'cart' => $this->showCartAfterCityChange($conversation),
             default => $this->showProductCatalog($conversation),
         };
+    }
+
+    protected function showCartAfterCityChange(WhatsAppConversation $conversation): void
+    {
+        if (($conversation->getContext('cart') ?? []) === []) {
+            $this->showProductCatalog($conversation);
+
+            return;
+        }
+
+        $this->advanceState($conversation, OrderBotConversationState::AWAITING_ORDER_FORM);
+        $this->askAddMore($conversation);
     }
 
     protected function openProductCatalog(WhatsAppConversation $conversation): void
@@ -863,7 +876,8 @@ class OrderBotService
             $conversation->phone_number,
             $prefix.'Silakan pilih kota pengiriman yang baru ya 😊'
         );
-        $conversation->setContext('after_city_action', 'catalog');
+        $action = ($conversation->getContext('cart') ?? []) !== [] ? 'cart' : 'catalog';
+        $conversation->setContext('after_city_action', $action);
         $this->askBranchSelection($conversation);
     }
 
@@ -1069,8 +1083,8 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
         $formStep = $context['form_step'] ?? 0;
 
-        // Alur sederhana (ramah 30+): 0 produk → 1 nama → 2 alamat → 3 tanggal → 4 tambah/LANJUT.
-        // Tanpa format pipa, satu pertanyaan per pesan.
+        // Alur sederhana (ramah 30+): 0 produk → 1 nama → 2 alamat → 6 nomor → 3 tanggal → 4 tambah/LANJUT.
+        // Satu pertanyaan per pesan.
         match ($formStep) {
             0 => $this->processProductNameStep($conversation, $text),
             1 => $this->processNameStep($conversation, $text),
@@ -1426,10 +1440,10 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
                 return;
             }
-            $conversation->setContext('form_step', 6);
-            $this->metaService->sendText($conversation->phone_number,
-                "Siap! Sekarang data penerima ya.\n\n*Nomor HP penerima?*\n(contoh: 081234567890)"
-            );
+            if (! $this->promptMissingOrderField($conversation)) {
+                $conversation->setContext('form_step', 5);
+                $this->askDeliveryMethod($conversation);
+            }
 
             return;
         }
@@ -1483,7 +1497,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
     /**
      * Langkah 6 data penerima: NOMOR HP PENERIMA (satu pertanyaan, R-18).
-     * Simpan ke konteks, lalu lanjut ke nama (langkah 1).
+     * Simpan ke konteks, lalu lanjut ke field penerima berikutnya.
      */
     protected function processPhoneStep(WhatsAppConversation $conversation, string $text): void
     {
@@ -1500,11 +1514,11 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $context = $conversation->context ?? [];
         $context['recipient_phone'] = $phone;
         $conversation->update(['context' => $context]);
-        $conversation->setContext('form_step', 1);
 
-        $this->metaService->sendText($conversation->phone_number,
-            "Siap! Sekarang *nama penerima* ya.\n(bisa nama sendiri)"
-        );
+        if (! $this->promptMissingOrderField($conversation)) {
+            $conversation->setContext('form_step', 5);
+            $this->askDeliveryMethod($conversation);
+        }
     }
 
     /**
@@ -1540,10 +1554,12 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
         $customer = $conversation->getContext('order_customer') ?? [];
         $customer['name'] = mb_substr($name, 0, 100);
-        $conversation->setContextMany(['order_customer' => $customer, 'form_step' => 2]);
-        $this->metaService->sendText($conversation->phone_number,
-            "Terima kasih, *{$customer['name']}*.\n\n*Apa alamat lengkapnya?*\nTulis jalan + nomor + patokan (mis. Jl. Mawar No 10, dekat pasar)."
-        );
+        $conversation->setContext('order_customer', $customer);
+
+        if (! $this->promptMissingOrderField($conversation)) {
+            $conversation->setContext('form_step', 5);
+            $this->askDeliveryMethod($conversation);
+        }
     }
 
     /**
@@ -1572,28 +1588,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         }
         $conversation->setContext('order_customer', $customer);
 
-        if (empty($customer['name'])) {
-            $conversation->setContext('form_step', 1);
-            $this->metaService->sendText($conversation->phone_number,
-                '*Siapa nama penerimanya?*'
-            );
-
-            return;
-        }
-        if (empty($customer['address'])) {
-            $conversation->setContext('form_step', 2);
-            $this->metaService->sendText($conversation->phone_number,
-                "Terima kasih, *{$customer['name']}*.\n\n*Apa alamat lengkapnya?*"
-            );
-
-            return;
-        }
-        if (empty($customer['date'])) {
-            $conversation->setContext('form_step', 3);
-            $this->metaService->sendText($conversation->phone_number,
-                "*Mau dikirim tanggal berapa?*\nContoh: {$this->orderExampleDate()}"
-            );
-
+        if ($this->promptMissingOrderField($conversation)) {
             return;
         }
 
@@ -1625,10 +1620,12 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
         $customer = $conversation->getContext('order_customer') ?? [];
         $customer['address'] = mb_substr($address, 0, 500);
-        $conversation->setContextMany(['order_customer' => $customer, 'form_step' => 3]);
-        $this->metaService->sendText($conversation->phone_number,
-            "Alamat dicatat.\n\n*Mau dikirim tanggal berapa?*\nContoh: {$this->orderExampleDate()} (boleh juga 25/12/2026 atau 25 Des 2026)"
-        );
+        $conversation->setContext('order_customer', $customer);
+
+        if (! $this->promptMissingOrderField($conversation)) {
+            $conversation->setContext('form_step', 5);
+            $this->askDeliveryMethod($conversation);
+        }
     }
 
     /**
@@ -1982,12 +1979,68 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
      * Pengaman: hanya maju ke metode bila form gabungan benar-benar lengkap,
      * jika tidak kembalikan ke langkah pengisian.
      */
+    protected function missingOrderFormStep(WhatsAppConversation $conversation): ?int
+    {
+        $context = $conversation->context ?? [];
+        $customer = $context['order_customer'] ?? [];
+
+        if (($context['cart'] ?? []) === []) {
+            return 0;
+        }
+        if (empty($customer['name'])) {
+            return 1;
+        }
+        if (empty($customer['address'])) {
+            return 2;
+        }
+
+        $recipientPhone = trim((string) ($context['recipient_phone'] ?? ''));
+        if ($recipientPhone === '' || mb_strlen(Phone::normalize($recipientPhone)) < 10) {
+            return 6;
+        }
+        if (empty($customer['date'])) {
+            return 3;
+        }
+
+        return null;
+    }
+
+    protected function promptMissingOrderField(WhatsAppConversation $conversation): bool
+    {
+        $step = $this->missingOrderFormStep($conversation);
+        if ($step === null) {
+            return false;
+        }
+
+        $this->advanceState($conversation, OrderBotConversationState::AWAITING_ORDER_FORM);
+        $conversation->setContext('form_step', $step);
+
+        match ($step) {
+            0 => $this->askOrderForm($conversation),
+            1 => $this->metaService->sendText(
+                $conversation->phone_number,
+                "*Siapa nama penerimanya?*\n(bisa nama sendiri)"
+            ),
+            2 => $this->metaService->sendText(
+                $conversation->phone_number,
+                "*Apa alamat lengkapnya?*\nTulis jalan + nomor + patokan."
+            ),
+            6 => $this->metaService->sendText(
+                $conversation->phone_number,
+                "*Nomor HP penerima?*\n(contoh: 081234567890)"
+            ),
+            3 => $this->metaService->sendText(
+                $conversation->phone_number,
+                "*Mau dikirim tanggal berapa?*\nContoh: {$this->orderExampleDate()}"
+            ),
+        };
+
+        return true;
+    }
+
     protected function resumeOrderForm(WhatsAppConversation $conversation): void
     {
-        // Kembalikan ke pertanyaan terakhir sesuai langkah (0 produk, 1 nama,
-        // 2 alamat, 3 tanggal, 4 tambah/LANJUT).
         $step = (int) ($conversation->getContext('form_step') ?? 0);
-        $customer = $conversation->getContext('order_customer') ?? [];
         $cart = $conversation->getContext('cart') ?? [];
 
         if ($step === 4 && $cart !== []) {
@@ -1996,35 +2049,19 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             return;
         }
 
-        if ($step >= 3 && ! empty($customer['address'])) {
-            $conversation->setContext('form_step', 3);
-            $this->metaService->sendText($conversation->phone_number,
-                "*Mau dikirim tanggal berapa?*\nContoh: {$this->orderExampleDate()}"
-            );
+        if ($this->promptMissingOrderField($conversation)) {
+            return;
+        }
+
+        $context = $conversation->context ?? [];
+        if (! empty($context['delivery_method']) && ! empty($context['delivery_slot'])) {
+            $this->advanceState($conversation, OrderBotConversationState::ORDER_SUMMARY);
+            $this->sendOrderSummary($conversation);
 
             return;
         }
 
-        if ($step >= 2 && ! empty($customer['name'])) {
-            $conversation->setContext('form_step', 2);
-            $this->metaService->sendText($conversation->phone_number,
-                "*Apa alamat lengkapnya?*\nTulis jalan + nomor + patokan."
-            );
-
-            return;
-        }
-
-        if ($step >= 1 && $cart !== []) {
-            $conversation->setContext('form_step', 1);
-            $this->metaService->sendText($conversation->phone_number,
-                "*Siapa nama penerimanya?*\n(bisa nama sendiri)"
-            );
-
-            return;
-        }
-
-        $conversation->setContext('form_step', 0);
-        $this->askOrderForm($conversation);
+        $this->askDeliveryMethod($conversation);
     }
 
     protected function handleDeliveryMethod(WhatsAppConversation $conversation, string $text): void
@@ -2304,14 +2341,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             return;
         }
 
-        $customer = $conversation->getContext('order_customer') ?? [];
-        if (empty($customer['name']) || empty($customer['address']) || empty($customer['date'])) {
-            $conversation->setContext('form_step', 1);
-            $this->advanceState($conversation, OrderBotConversationState::AWAITING_ORDER_FORM);
-            $this->metaService->sendText($conversation->phone_number,
-                "Lengkapi dulu data penerima ya.\n\n*Siapa nama penerimanya?*"
-            );
-
+        if ($this->promptMissingOrderField($conversation)) {
             return;
         }
 
@@ -2828,6 +2858,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                     2 => 'Tulis alamat lengkap penerima.',
                     3 => 'Tulis tanggal kirim yang diinginkan.',
                     4 => 'Ketik nama produk untuk tambah, atau *LANJUT* bila sudah cukup.',
+                    6 => 'Tulis nomor HP penerima.',
                     default => 'Lanjutkan pesanan Anda.',
                 },
             OrderBotConversationState::MENU_SELECTION => 'Pilih kategori (Tumpeng / Hampers / Ala Carte) atau ketik nama produk.',
@@ -3382,13 +3413,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             }
             $resolved = $this->resolveCartLines($conversation);
         }
-        if (empty($customer['name']) || empty($customer['address']) || empty($customer['date'])) {
-            $conversation->setContext('form_step', 1);
-            $this->advanceState($conversation, OrderBotConversationState::AWAITING_ORDER_FORM);
-            $this->metaService->sendText($conversation->phone_number,
-                "Data penerima belum lengkap.\n\n*Siapa nama penerimanya?*"
-            );
-
+        if ($this->promptMissingOrderField($conversation)) {
             return;
         }
         if (empty($context['delivery_method'])) {
@@ -3484,13 +3509,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
             return;
         }
-        if (empty($customer['name']) || empty($customer['address']) || empty($customer['date'])) {
-            $conversation->setContext('form_step', 1);
-            $this->advanceState($conversation, OrderBotConversationState::AWAITING_ORDER_FORM);
-            $this->metaService->sendText($conversation->phone_number,
-                "Data penerima belum lengkap.\n\n*Siapa nama penerimanya?*"
-            );
-
+        if ($this->promptMissingOrderField($conversation)) {
             return;
         }
         if (empty($context['delivery_method']) || empty($context['delivery_slot'])) {

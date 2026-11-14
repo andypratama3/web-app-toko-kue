@@ -23,9 +23,13 @@ class CustomerQuotaTest extends TestCase
     use RefreshDatabase;
 
     protected Region $region;
+
     protected CustomerCategory $resellerCategory;
+
     protected Customer $customer;
+
     protected OrderBotService $botService;
+
     protected array $cartRow;
 
     protected function setUp(): void
@@ -112,6 +116,7 @@ class CustomerQuotaTest extends TestCase
                 'delivery_method' => 'self_pickup',
                 'delivery_slot' => '09:00-11:00',
                 'ongkir' => 0,
+                'recipient_phone' => '6281234567890',
                 'cart' => [$this->cartRow],
                 'order_customer' => [
                     'name' => 'Test',
@@ -153,6 +158,7 @@ class CustomerQuotaTest extends TestCase
                 'delivery_method' => 'self_pickup',
                 'delivery_slot' => '09:00-11:00',
                 'ongkir' => 0,
+                'recipient_phone' => '6281234567890',
                 'cart' => [$this->cartRow],
                 'order_customer' => [
                     'name' => 'Test',
@@ -195,6 +201,7 @@ class CustomerQuotaTest extends TestCase
                 'delivery_method' => 'self_pickup',
                 'delivery_slot' => '09:00-11:00',
                 'ongkir' => 0,
+                'recipient_phone' => '6281234567890',
                 'cart' => [$this->cartRow],
                 'order_customer' => [
                     'name' => 'Test',

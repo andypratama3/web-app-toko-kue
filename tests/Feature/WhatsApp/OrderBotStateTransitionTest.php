@@ -284,6 +284,7 @@ class OrderBotStateTransitionTest extends TestCase
                 'variant_name' => $variant->name,
                 'qty' => 1,
             ]],
+            'recipient_phone' => '6281234567890',
             'order_customer' => [
                 'name' => 'Budi',
                 'address' => 'Jl. Test No.1 Denpasar',

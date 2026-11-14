@@ -106,15 +106,14 @@ class OrderBotAdversarialTest extends TestCase
     public function test_input_aneh_di_langkah_nama(): void
     {
         // Siapkan cart dulu via API internal: satu produk single-varian.
-        // Alur baru (R-18): LANJUT → nomor penerima (6) → nama (1) → alamat (2).
+        // Alur baru (R-18): LANJUT → nama (1) → alamat (2) → nomor (6) → tanggal (3).
         // 'x','1' bukan nama (terlalu pendek/angka) -> tetap; 'BATALYON'
         // adalah nama sah -> lanjut; 'PESAN' persis = restart TAPI keranjang
-        // dipertahankan (anti-putus) + lokasi diverifikasi ulang.
+        // dipertahankan (anti-putus) + katalog dibuka kembali.
         foreach ([['x', 1], ['1', 1], ['BATALYON', 2]] as $i => [$input, $expectedStep]) {
             $c = $this->convo();
             $this->bot->handleMessage($c, 'Kue Ijo'); // masuk keranjang (1 varian)
             $this->bot->handleMessage($c, 'LANJUT');
-            $this->bot->handleMessage($c, '081234567890'); // nomor penerima (R-18)
             $c->refresh();
             $this->assertEquals(1, $c->getContext('form_step'), "setup#$i");
             $this->bot->handleMessage($c, $input);
@@ -133,7 +132,6 @@ class OrderBotAdversarialTest extends TestCase
         $c = $this->convo();
         $this->bot->handleMessage($c, 'Kue Ijo');
         $this->bot->handleMessage($c, 'LANJUT');
-        $this->bot->handleMessage($c, '081234567890'); // nomor penerima (R-18)
         $c->refresh();
         $this->assertEquals(1, $c->getContext('form_step'));
         $this->bot->handleMessage($c, 'Jl. Mawar No 10');
@@ -144,15 +142,14 @@ class OrderBotAdversarialTest extends TestCase
 
     public function test_input_aneh_di_langkah_alamat(): void
     {
-        // Alur baru (R-18): LANJUT → nomor penerima (6) → nama (1) → alamat (2).
+        // Alur baru (R-18): LANJUT → nama (1) → alamat (2) → nomor (6) → tanggal (3).
         // 'a'/'Jl'/'MENU' terlalu pendek -> tetap; alamat ber-kata MENU diterima.
-        foreach ([['a', 2], ['Jl', 2], ['MENU', 2], ['Jl. MENU Utama No 1', 3]] as $i => [$input, $expectedStep]) {
+        foreach ([['a', 2], ['Jl', 2], ['MENU', 2], ['Jl. MENU Utama No 1', 6]] as $i => [$input, $expectedStep]) {
             $c = $this->convo();
             $this->bot->handleMessage($c, 'Kue Ijo');
             $this->bot->handleMessage($c, 'LANJUT');
-            $this->bot->handleMessage($c, '081234567890'); // nomor penerima (R-18)
             $c->refresh();
-            $this->assertEquals(1, $c->getContext('form_step'), "setup-phone#$i");
+            $this->assertEquals(1, $c->getContext('form_step'), "setup-name#$i");
             $this->bot->handleMessage($c, 'Budi'); // nama
             $c->refresh();
             $this->assertEquals(2, $c->getContext('form_step'), "setup#$i");
@@ -170,18 +167,14 @@ class OrderBotAdversarialTest extends TestCase
 
     public function test_input_aneh_di_langkah_tanggal(): void
     {
-        // Alur baru (R-18): LANJUT → nomor penerima (6) → nama (1) → alamat (2) → tanggal (3).
+        // Alur baru (R-18): LANJUT → nama (1) → alamat (2) → nomor (6) → tanggal (3).
         foreach (['asdf', 'kemarin', '32/13/2026', '25', 'Desember', '10:00', 'pagi'] as $i => $input) {
             $c = $this->convo();
             $this->bot->handleMessage($c, 'Kue Ijo');
             $this->bot->handleMessage($c, 'LANJUT');
-            $this->bot->handleMessage($c, '081234567890'); // nomor penerima (R-18)
-            $c->refresh();
-            $this->assertEquals(1, $c->getContext('form_step'), "setup-phone#$i");
             $this->bot->handleMessage($c, 'Budi'); // nama
-            $c->refresh();
-            $this->assertEquals(2, $c->getContext('form_step'), "setup-name#$i");
             $this->bot->handleMessage($c, 'Jl. Mawar No 10 Surabaya'); // alamat
+            $this->bot->handleMessage($c, '081234567890'); // nomor penerima
             $c->refresh();
             $this->assertEquals(3, $c->getContext('form_step'), "setup#$i");
             $this->bot->handleMessage($c, $input);
@@ -194,17 +187,16 @@ class OrderBotAdversarialTest extends TestCase
 
     public function test_tanggal_natural_diterima(): void
     {
-        // Alur baru (R-18): LANJUT → nomor penerima (6) → nama (1) → alamat (2) → tanggal (3).
+        // Alur baru (R-18): LANJUT → nama (1) → alamat (2) → nomor (6) → tanggal (3).
         foreach (['besok', 'lusa', 'hari ini', now()->addDays(9)->format('d M Y'), now()->addDays(9)->format('d/m/Y')] as $input) {
             $c = $this->convo();
             $this->bot->handleMessage($c, 'Kue Ijo');
             $this->bot->handleMessage($c, 'LANJUT');
-            $this->bot->handleMessage($c, '081234567890'); // nomor penerima (R-18)
-            $c->refresh();
             $this->bot->handleMessage($c, 'Budi'); // nama
             $c->refresh();
             $this->bot->handleMessage($c, 'Jl. Mawar No 10 Surabaya'); // alamat
             $c->refresh();
+            $this->bot->handleMessage($c, '081234567890'); // nomor penerima
             $this->bot->handleMessage($c, $input); // tanggal
             $c->refresh();
             $this->assertNotEquals(3, $c->getContext('form_step'), "input: $input (tanggal harus diterima)");

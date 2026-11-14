@@ -26,7 +26,9 @@ class AdminNotificationsTest extends TestCase
     use RefreshDatabase;
 
     protected Region $region;
+
     protected User $admin;
+
     protected Customer $customer;
 
     protected function setUp(): void
@@ -67,7 +69,7 @@ class AdminNotificationsTest extends TestCase
             'status' => $status,
             'region_id' => $this->region->id,
             'channel' => $channel,
-            'invoice_number' => 'INV-' . Str::random(8),
+            'invoice_number' => 'INV-'.Str::random(8),
         ]);
     }
 
@@ -142,6 +144,7 @@ class AdminNotificationsTest extends TestCase
                 'delivery_method' => 'self_pickup',
                 'delivery_slot' => '09:00-11:00',
                 'ongkir' => 0,
+                'recipient_phone' => '6281234567890',
                 'cart' => [[
                     'product_id' => $product->id,
                     'product_name' => $product->name,

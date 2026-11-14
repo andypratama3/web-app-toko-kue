@@ -162,16 +162,16 @@ class OrderBotCharacterizationTest extends TestCase
         ], OrderBotConversationState::AWAITING_ORDER_FORM->value);
 
         $this->say($conversation, 'LANJUT');
-        $this->assertTrue($this->recorder->hasText('Nomor HP penerima'));
-
-        $this->say($conversation, '081234567890');
-        $this->assertTrue($this->recorder->hasText('nama penerima'));
+        $this->assertTrue($this->recorder->hasText('Siapa nama penerimanya'));
 
         $this->say($conversation, 'Shinta');
         $this->assertTrue($this->recorder->hasText('Apa alamat lengkapnya'));
 
         $this->say($conversation, 'Jl. Mawar No 10 Surabaya');
-        $this->assertTrue($this->recorder->hasText('Alamat dicatat'));
+        $this->assertTrue($this->recorder->hasText('Nomor HP penerima'));
+
+        $this->say($conversation, '081234567890');
+        $this->assertTrue($this->recorder->hasText('Mau dikirim tanggal berapa'));
 
         $this->say($conversation, now()->addDays(3)->format('d/m/Y'));
         $this->assertTrue($this->recorder->hasText('Pilih Metode Pengiriman'));

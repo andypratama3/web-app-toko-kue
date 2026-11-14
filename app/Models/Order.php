@@ -19,6 +19,7 @@ class Order extends Model
         'invoice_number',
         'customer_id',
         'phone',
+        'recipient_phone',
         'address',
         'total_amount',
         'payment_method',

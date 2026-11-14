@@ -85,6 +85,7 @@ class DeliveryOngkirFixTest extends TestCase
         $cart = $this->makeCart();
         $c = $this->conversation([
             'cart' => $cart,
+            'recipient_phone' => '6281234567890',
             'order_customer' => ['name' => 'Budi', 'address' => 'Jl. Mawar No 10 Denpasar', 'date' => '25/12/2026'],
             'delivery_method' => 'grab_gosend',
             'delivery_slot' => '09:00-11:00',
@@ -105,6 +106,7 @@ class DeliveryOngkirFixTest extends TestCase
         $cart = $this->makeCart();
         $c = $this->conversation([
             'cart' => $cart,
+            'recipient_phone' => '6281234567890',
             'order_customer' => ['name' => 'Budi', 'address' => 'Jl. Mawar No 10 Denpasar', 'date' => '25/12/2026'],
             'delivery_method' => 'self_pickup',
             'delivery_slot' => '09:00-11:00',
@@ -129,6 +131,7 @@ class DeliveryOngkirFixTest extends TestCase
 
         // Simulasikan alamat jauh via konteks update dan refresh? Kita langsung uji refreshAddressAndOngkir behavior via order customer
         $c->setContextMany([
+            'recipient_phone' => '6281234567890',
             'order_customer' => ['name' => 'Budi', 'address' => 'Gresik Kota banyak jalan jauh test alamat panjang sekali', 'date' => '25/12/2026'],
             'last_location_source' => 'address',
             'location_source' => 'address',
@@ -163,6 +166,7 @@ class DeliveryOngkirFixTest extends TestCase
         $cart = $this->makeCart();
         $c = $this->conversation([
             'cart' => $cart,
+            'recipient_phone' => '6281234567890',
             'order_customer' => ['name' => 'Budi', 'address' => 'Jl. Mawar No 10 Denpasar', 'date' => '25/12/2026'],
             'delivery_method' => 'internal_courier',
             'delivery_slot' => '09:00-11:00',
@@ -185,6 +189,7 @@ class DeliveryOngkirFixTest extends TestCase
         $cart = $this->makeCart();
         $c = $this->conversation([
             'cart' => $cart,
+            'recipient_phone' => '6281234567890',
             'order_customer' => ['name' => 'Budi', 'address' => 'Jl. Mawar No 10 Denpasar', 'date' => '25/12/2026'],
             'delivery_method' => 'self_pickup',
             'delivery_slot' => '09:00-11:00',

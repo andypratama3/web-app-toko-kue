@@ -3,8 +3,11 @@
 namespace Tests\Feature\WhatsApp;
 
 use App\Enums\OrderBotConversationState;
+use App\Models\Customer;
+use App\Models\Order;
 use App\Models\Region;
 use App\Models\WhatsAppConversation;
+use App\Services\WhatsApp\ConversationRegionResolver;
 use App\Services\WhatsApp\OrderBotService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -339,5 +342,133 @@ class OrderBotFlowSimplificationTest extends TestCase
                 "State {$state->value} tidak membuka pilihan kota."
             );
         }
+    }
+
+    public function test_pelanggan_baru_surabaya_sampai_pesanan_dikonfirmasi(): void
+    {
+        $this->makeRegion('Malang');
+        $category = $this->makeCategory('Kue Tradisional');
+        $this->makeProduct($category, 'Kue Pandan', [
+            ['name' => 'Reguler', 'price' => 12000],
+        ], $this->surabaya);
+        $conversation = WhatsAppConversation::create([
+            'phone_number' => '628123450001',
+            'region_id' => null,
+            'status' => 'active',
+            'current_state' => OrderBotConversationState::WELCOME_SENT->value,
+        ]);
+
+        $this->say($conversation, 'PESAN');
+        $this->assertTrue($conversation->fresh()->getContext('awaiting_branch'));
+
+        $this->say($conversation, 'Surabaya');
+        $this->assertSame(
+            OrderBotConversationState::AWAITING_ORDER_FORM->value,
+            $conversation->fresh()->current_state
+        );
+
+        $this->say($conversation, '1');
+        $this->assertCount(1, $conversation->fresh()->getContext('cart'));
+
+        $this->say($conversation, 'LANJUT');
+        $this->assertSame(1, $conversation->fresh()->getContext('form_step'));
+
+        $this->say($conversation, 'Budi Santoso');
+        $this->assertSame(2, $conversation->fresh()->getContext('form_step'));
+
+        $this->say($conversation, 'Jl. Pahlawan No 10 Surabaya');
+        $this->assertSame(6, $conversation->fresh()->getContext('form_step'));
+
+        $this->say($conversation, '081234567890');
+        $this->assertSame(3, $conversation->fresh()->getContext('form_step'));
+
+        $this->say($conversation, now()->addDays(3)->format('d M Y'));
+        $this->assertSame(
+            OrderBotConversationState::AWAITING_DELIVERY_METHOD->value,
+            $conversation->fresh()->current_state
+        );
+
+        $this->say($conversation, '1');
+        $this->say($conversation, '1');
+        $this->assertSame(
+            OrderBotConversationState::ORDER_SUMMARY->value,
+            $conversation->fresh()->current_state
+        );
+
+        $this->say($conversation, 'FIX');
+        $this->assertSame(
+            OrderBotConversationState::AWAITING_PAYMENT_PROOF->value,
+            $conversation->fresh()->current_state
+        );
+        $this->assertSame('6281234567890', Order::first()->recipient_phone);
+
+        $this->say($conversation, 'SKIP');
+        $this->assertSame(
+            OrderBotConversationState::ORDER_CONFIRMED->value,
+            $conversation->fresh()->current_state
+        );
+    }
+
+    public function test_pelanggan_lama_malang_ganti_kota_di_keranjang_lalu_checkout(): void
+    {
+        $malang = $this->makeRegion('Malang');
+        $category = $this->makeCategory('Kue Tradisional');
+        $globalProduct = $this->makeProduct($category, 'Kue Global', [
+            ['name' => 'Reguler', 'price' => 10000],
+        ]);
+        $malangProduct = $this->makeProduct($category, 'Kue Malang', [
+            ['name' => 'Reguler', 'price' => 11000],
+        ], $malang);
+        $customer = Customer::create([
+            'name' => 'Sinta Lama',
+            'phone' => '628123450002',
+            'address' => 'Jl. lama No 1 Malang',
+            'region_id' => $malang->id,
+            'added_by_user_id' => null,
+        ]);
+        $conversation = WhatsAppConversation::create([
+            'phone_number' => $customer->phone,
+            'customer_id' => $customer->id,
+            'region_id' => $malang->id,
+            'status' => 'active',
+            'current_state' => OrderBotConversationState::WELCOME_SENT->value,
+            'context' => ['branch_source' => ConversationRegionResolver::SOURCE_CUSTOMER],
+        ]);
+
+        $this->say($conversation, 'PESAN');
+        $this->say($conversation, '1');
+        $this->say($conversation, '2');
+        $this->assertCount(2, $conversation->fresh()->getContext('cart'));
+
+        $this->say($conversation, 'GANTI KOTA');
+        $this->assertTrue($conversation->fresh()->getContext('awaiting_branch'));
+
+        $this->say($conversation, 'Surabaya');
+        $fresh = $conversation->fresh();
+        $this->assertCount(1, $fresh->getContext('cart'));
+        $this->assertSame($globalProduct->id, $fresh->getContext('cart')[0]['product_id']);
+        $this->assertNotSame($malangProduct->id, $fresh->getContext('cart')[0]['product_id']);
+        $this->assertSame(4, $fresh->getContext('form_step'));
+
+        $this->say($conversation, 'LANJUT');
+        $this->say($conversation, 'Sinta Baru');
+        $this->say($conversation, 'Jl. Pahlawan No 10 Surabaya');
+        $this->say($conversation, '081234567891');
+        $this->say($conversation, now()->addDays(3)->format('d M Y'));
+        $this->say($conversation, '1');
+        $this->say($conversation, '1');
+        $this->say($conversation, 'FIX');
+        $this->say($conversation, 'SKIP');
+
+        $order = Order::first();
+        $this->assertNotNull($order);
+        $this->assertSame($this->surabaya->id, $order->region_id);
+        $this->assertSame($customer->id, $order->customer_id);
+        $this->assertSame('6281234567891', $order->recipient_phone);
+        $this->assertSame($globalProduct->id, $order->items->first()->product_id);
+        $this->assertSame(
+            OrderBotConversationState::ORDER_CONFIRMED->value,
+            $conversation->fresh()->current_state
+        );
     }
 }

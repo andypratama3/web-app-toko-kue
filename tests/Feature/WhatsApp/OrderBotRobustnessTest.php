@@ -395,6 +395,7 @@ class OrderBotRobustnessTest extends TestCase
                     'qty' => 1,
                 ],
             ],
+            'recipient_phone' => '6281234567890',
             'order_customer' => ['name' => 'Budi', 'address' => 'Jl. Mawar No 10 Denpasar', 'date' => '25 Oct 2026'],
             'delivery_method' => 'self_pickup',
             'delivery_slot' => '09:00-11:00',

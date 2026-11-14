@@ -176,6 +176,7 @@ class DeliveryQuoteConflictTest extends TestCase
     {
         $c = $this->conversation([
             'cart' => $this->makeCart(),
+            'recipient_phone' => '6281234567890',
             'order_customer' => ['name' => 'Budi', 'address' => 'Jl. Mawar No 10 Denpasar', 'date' => '25 Des 2026'],
             'delivery_method' => 'internal_courier',
             'delivery_slot' => '09:00-11:00',
@@ -207,6 +208,7 @@ class DeliveryQuoteConflictTest extends TestCase
     {
         $c = $this->conversation([
             'cart' => $this->makeCart(),
+            'recipient_phone' => '6281234567890',
             'order_customer' => ['name' => 'Budi', 'address' => 'Jl. Mawar No 10 Denpasar', 'date' => '25 Des 2026'],
             'delivery_method' => 'internal_courier',
             'delivery_slot' => '09:00-11:00',
@@ -235,6 +237,8 @@ class DeliveryQuoteConflictTest extends TestCase
     {
         // Alamat dari form adalah input lokasi terakhir → ongkir ikut alamat.
         $c = $this->conversation([
+            'cart' => $this->makeCart(),
+            'order_customer' => ['name' => 'Budi'],
             'delivery_method' => 'internal_courier',
             'delivery_slot' => '09:00-11:00',
             'delivery_lat' => self::PIN_LAT,
@@ -242,10 +246,12 @@ class DeliveryQuoteConflictTest extends TestCase
             'location_source' => 'pin',
             'last_location_source' => 'pin',
             'location_done' => true,
-            'form_step' => 1,
+            'form_step' => 2,
         ], OrderBotConversationState::AWAITING_ORDER_FORM->value, '6281200000101');
 
-        $this->bot->handleMessage($c, 'Budi | Jl. Sanan No 3 Denpasar Barat | 25 Des 2026');
+        $this->bot->handleMessage($c, 'Jl. Sanan No 3 Denpasar Barat');
+        $this->bot->handleMessage($c, '081234567890');
+        $this->bot->handleMessage($c, '25 Des 2026');
 
         $c->refresh();
         $this->assertSame(15000, (int) $c->getContext('ongkir'));
@@ -261,6 +267,7 @@ class DeliveryQuoteConflictTest extends TestCase
     {
         $c = $this->conversation([
             'cart' => $this->makeCart(),
+            'recipient_phone' => '6281234567890',
             'order_customer' => ['name' => 'Budi', 'address' => 'Gresik Kota', 'date' => '25 Des 2026'],
             'delivery_method' => 'internal_courier',
             'delivery_slot' => '09:00-11:00',
@@ -295,6 +302,7 @@ class DeliveryQuoteConflictTest extends TestCase
     {
         $c = $this->conversation([
             'cart' => $this->makeCart(),
+            'recipient_phone' => '6281234567890',
             'order_customer' => ['name' => 'Budi', 'address' => 'Jl. Mawar No 10 Denpasar', 'date' => '25 Des 2026'],
             'delivery_method' => 'self_pickup',
             'delivery_slot' => '09:00-11:00',

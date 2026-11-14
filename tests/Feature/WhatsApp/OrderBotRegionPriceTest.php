@@ -142,9 +142,9 @@ class OrderBotRegionPriceTest extends TestCase
 
         $this->say($conversation, '2x Kue Surabaya');
         $this->say($conversation, 'LANJUT');
-        $this->say($conversation, '081234567890'); // nomor penerima (R-18)
         $this->say($conversation, 'Shinta');
         $this->say($conversation, 'Jl. Mawar No 10 Surabaya');
+        $this->say($conversation, '081234567890');
         $this->say($conversation, now()->addDays(3)->format('d M Y'));
 
         $conversation->setContext('delivery_method', 'self_pickup');
