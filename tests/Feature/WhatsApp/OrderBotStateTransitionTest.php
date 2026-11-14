@@ -88,7 +88,7 @@ class OrderBotStateTransitionTest extends TestCase
         $this->assertEquals(OrderBotConversationState::WELCOME_SENT->value, $this->conversation->current_state);
     }
 
-    public function test_welcome_sent_to_branch_selection_via_pesan(): void
+    public function test_welcome_sent_with_known_region_opens_catalog_via_pesan(): void
     {
         Region::create(['name' => 'Surabaya', 'slug' => 'surabaya']);
 
@@ -97,9 +97,8 @@ class OrderBotStateTransitionTest extends TestCase
         $this->botService->handleMessage($this->conversation, 'Mau pesan');
 
         $this->conversation->refresh();
-        // Filter cabang eksplisit: tetap di WELCOME_SENT dengan flag awaiting_branch
-        $this->assertEquals(OrderBotConversationState::WELCOME_SENT->value, $this->conversation->current_state);
-        $this->assertTrue((bool) $this->conversation->getContext('awaiting_branch'));
+        $this->assertEquals(OrderBotConversationState::AWAITING_ORDER_FORM->value, $this->conversation->current_state);
+        $this->assertFalse((bool) $this->conversation->getContext('awaiting_branch'));
     }
 
     public function test_welcome_sent_skips_branch_when_single_region(): void
@@ -109,12 +108,11 @@ class OrderBotStateTransitionTest extends TestCase
         $this->botService->handleMessage($this->conversation, 'Mau pesan');
 
         $this->conversation->refresh();
-        // Hanya 1 cabang di DB — langsung ke langkah lokasi
-        $this->assertEquals(OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS->value, $this->conversation->current_state);
+        $this->assertEquals(OrderBotConversationState::AWAITING_ORDER_FORM->value, $this->conversation->current_state);
         $this->assertNull($this->conversation->getContext('awaiting_branch'));
     }
 
-    public function test_branch_choice_by_name_locks_region_and_requests_location(): void
+    public function test_branch_choice_by_name_locks_region_and_opens_catalog(): void
     {
         Region::create(['name' => 'Surabaya', 'slug' => 'surabaya']);
 
@@ -130,7 +128,7 @@ class OrderBotStateTransitionTest extends TestCase
         $this->assertEquals($surabaya->id, $this->conversation->region_id);
         $this->assertEquals('manual', $this->conversation->getContext('branch_source'));
         $this->assertNull($this->conversation->getContext('awaiting_branch'));
-        $this->assertEquals(OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS->value, $this->conversation->current_state);
+        $this->assertEquals(OrderBotConversationState::AWAITING_ORDER_FORM->value, $this->conversation->current_state);
     }
 
     public function test_pricelist_request_preserves_state(): void
@@ -393,10 +391,8 @@ class OrderBotStateTransitionTest extends TestCase
         $this->assertMatchesRegularExpression('/^INV\/\d{4}\/\d{2}\/\d{3}\/\d{3}\/\d{3}$/', $order->invoice_number);
     }
 
-    public function test_pesan_during_form_restarts_order_form(): void
+    public function test_pesan_during_form_reopens_catalog(): void
     {
-        // Simulasi user yang "nyangkut" lalu mengetik "PESAN" — mulai ulang
-        // dari lokasi (satu cabang → langsung minta lokasi), cart dikosongkan.
         $this->conversation->update([
             'current_state' => OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS->value,
             'context' => array_merge($this->cartContext(), [
@@ -407,10 +403,9 @@ class OrderBotStateTransitionTest extends TestCase
         $this->botService->handleMessage($this->conversation, 'PESAN');
 
         $this->conversation->refresh();
-        $this->assertEquals(OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS->value, $this->conversation->current_state);
-        // Keranjang dipertahankan (anti-putus), lokasi diverifikasi ulang.
+        $this->assertEquals(OrderBotConversationState::AWAITING_ORDER_FORM->value, $this->conversation->current_state);
         $this->assertNotEmpty($this->conversation->getContext('cart'));
-        $this->assertEquals('cart', $this->conversation->getContext('after_location'));
+        $this->assertNull($this->conversation->getContext('after_location'));
     }
 
     public function test_pesan_during_form_step_does_not_swallow_as_field(): void
@@ -434,10 +429,9 @@ class OrderBotStateTransitionTest extends TestCase
         $this->botService->handleMessage($this->conversation, 'PESAN');
 
         $this->conversation->refresh();
-        $this->assertEquals(OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS->value, $this->conversation->current_state);
-        // Keranjang dipertahankan (anti-putus), lokasi diverifikasi ulang.
+        $this->assertEquals(OrderBotConversationState::AWAITING_ORDER_FORM->value, $this->conversation->current_state);
         $this->assertNotEmpty($this->conversation->getContext('cart'));
-        $this->assertEquals('cart', $this->conversation->getContext('after_location'));
+        $this->assertNull($this->conversation->getContext('after_location'));
     }
 
     public function test_halo_during_form_shows_guidance_without_leaving_form(): void
@@ -636,11 +630,17 @@ class OrderBotStateTransitionTest extends TestCase
     public function test_catalog_numbering_matches_selection(): void
     {
         $category = Category::create(['name' => 'Hampers', 'slug' => 'hampers']);
-        Product::create([
+        $hampers = Product::create([
             'category_id' => $category->id,
             'region_id' => $this->region->id,
             'name' => 'Hampers Natal',
             'description' => 'Hampers natal',
+            'is_active' => true,
+        ]);
+        ProductVariant::create([
+            'product_id' => $hampers->id,
+            'name' => 'Regular',
+            'price' => 150000,
             'is_active' => true,
         ]);
 
@@ -648,12 +648,12 @@ class OrderBotStateTransitionTest extends TestCase
         $this->botService->handleMessage($this->conversation, 'produk');
 
         $this->conversation->refresh();
-        $this->assertEquals(OrderBotConversationState::PRODUCT_BROWSING->value, $this->conversation->current_state);
+        $this->assertEquals(OrderBotConversationState::AWAITING_ORDER_FORM->value, $this->conversation->current_state);
         $this->assertCount(2, $this->conversation->getContext('catalog_ids'));
 
         $this->botService->handleMessage($this->conversation, '2');
         $this->conversation->refresh();
-        $this->assertEquals('Hampers Natal', $this->conversation->getContext('selected_product_name'));
+        $this->assertSame('Hampers Natal', $this->conversation->getContext('cart')[0]['product_name']);
     }
 
     public function test_catalog_order_by_id_deterministic(): void
@@ -693,7 +693,7 @@ class OrderBotStateTransitionTest extends TestCase
         $this->assertEquals($expected, $this->conversation->getContext('catalog_ids'));
     }
 
-    public function test_pricelist_clears_catalog_ids(): void
+    public function test_pricelist_preserves_catalog_ids(): void
     {
         $category = Category::create(['name' => 'Produk', 'slug' => 'produk']);
         Product::create([
@@ -718,7 +718,7 @@ class OrderBotStateTransitionTest extends TestCase
 
         $this->botService->handleMessage($this->conversation, 'harga');
         $this->conversation->refresh();
-        $this->assertEquals([], $this->conversation->getContext('catalog_ids'));
+        $this->assertCount(3, $this->conversation->getContext('catalog_ids'));
     }
 
     public function test_category_clears_old_product_selection(): void
@@ -800,6 +800,6 @@ class OrderBotStateTransitionTest extends TestCase
         $this->botService->handleMessage($this->conversation, 'produk');
 
         $this->conversation->refresh();
-        $this->assertEquals(OrderBotConversationState::PRODUCT_BROWSING->value, $this->conversation->current_state);
+        $this->assertEquals(OrderBotConversationState::AWAITING_ORDER_FORM->value, $this->conversation->current_state);
     }
 }

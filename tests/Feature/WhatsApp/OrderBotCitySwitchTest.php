@@ -152,7 +152,7 @@ class OrderBotCitySwitchTest extends TestCase
             $this->recorder->hasText('Pilih Kota Pengiriman'),
             'Kota yang sudah terkunci tidak boleh ditanya ulang (R-05).'
         );
-        $this->assertTrue($this->recorder->hasText('Pilih Lokasi Pengiriman'));
+        $this->assertTrue($this->recorder->hasText('List Produk — Kue Pandan Asli'));
         $this->assertNull($conversation->fresh()->getContext('awaiting_branch'));
         $this->assertSame($this->surabaya->id, $conversation->fresh()->region_id);
     }

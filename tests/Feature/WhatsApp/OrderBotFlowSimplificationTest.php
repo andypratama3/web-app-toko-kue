@@ -122,4 +122,202 @@ class OrderBotFlowSimplificationTest extends TestCase
             trim($this->recorder->allText())
         );
     }
+
+    public function test_pesan_dan_produk_membuka_pintu_katalog_yang_sama(): void
+    {
+        $category = $this->makeCategory('Produk');
+        $this->makeProduct($category, 'Kue Ijo', [
+            ['name' => 'Isi 3', 'price' => 9000],
+        ]);
+        $conversation = $this->makeConversation($this->surabaya);
+
+        $this->say($conversation, 'PESAN');
+
+        $this->assertSame(
+            OrderBotConversationState::AWAITING_ORDER_FORM->value,
+            $conversation->fresh()->current_state
+        );
+        $this->assertSame(1, substr_count($this->recorder->allText(), 'List Produk — Kue Pandan Asli'));
+        $this->assertCount(1, $conversation->fresh()->getContext('catalog_ids'));
+
+        $this->recorder->reset();
+        $this->say($conversation, 'PRODUK');
+
+        $this->assertSame(
+            OrderBotConversationState::AWAITING_ORDER_FORM->value,
+            $conversation->fresh()->current_state
+        );
+        $this->assertSame(1, substr_count($this->recorder->allText(), 'List Produk — Kue Pandan Asli'));
+    }
+
+    public function test_harga_membuka_pricelist_dan_menu_membuka_kategori(): void
+    {
+        $conversation = $this->makeConversation($this->surabaya);
+
+        $this->say($conversation, 'HARGA');
+
+        $this->assertTrue($this->recorder->hasText('PRICELIST'));
+        $this->assertSame(
+            OrderBotConversationState::WELCOME_SENT->value,
+            $conversation->fresh()->current_state
+        );
+
+        $this->recorder->reset();
+        $this->say($conversation, 'MENU');
+
+        $lists = $this->recorder->messagesOfType('list');
+        $this->assertNotEmpty($lists);
+        $this->assertStringContainsString('Pilih Kategori', $lists[0]['payload']['text']);
+        $this->assertSame(
+            OrderBotConversationState::MENU_SELECTION->value,
+            $conversation->fresh()->current_state
+        );
+    }
+
+    public function test_kota_dipilih_sebelum_katalog_dan_tidak_minta_lokasi_awal(): void
+    {
+        $malang = $this->makeRegion('Malang');
+        $category = $this->makeCategory('Produk');
+        $this->makeProduct($category, 'Kue Global', [
+            ['name' => 'Regular', 'price' => 9000],
+        ]);
+        $conversation = $this->makeConversation($malang, [], OrderBotConversationState::WELCOME_SENT->value);
+        $conversation->update(['region_id' => null]);
+
+        $this->say($conversation, 'PESAN');
+        $this->assertTrue($conversation->fresh()->getContext('awaiting_branch'));
+
+        $this->say($conversation, 'Surabaya');
+
+        $fresh = $conversation->fresh();
+        $this->assertSame($this->surabaya->id, $fresh->region_id);
+        $this->assertSame(
+            OrderBotConversationState::AWAITING_ORDER_FORM->value,
+            $fresh->current_state
+        );
+        $this->assertFalse($this->recorder->hasText('Pilih Lokasi Pengiriman'));
+        $this->assertTrue($this->recorder->hasText('List Produk — Kue Pandan Asli'));
+    }
+
+    public function test_pesan_selama_memilih_kota_tidak_meninggalkan_flag_kota_aktif(): void
+    {
+        $conversation = $this->makeConversation($this->surabaya, [
+            'awaiting_branch' => true,
+            'after_city_action' => 'catalog',
+        ], OrderBotConversationState::WELCOME_SENT->value);
+
+        $this->say($conversation, 'PESAN');
+
+        $fresh = $conversation->fresh();
+        $this->assertNull($fresh->getContext('awaiting_branch'));
+        $this->assertNull($fresh->getContext('after_city_action'));
+        $this->assertSame(
+            OrderBotConversationState::AWAITING_ORDER_FORM->value,
+            $fresh->current_state
+        );
+        $this->assertTrue($this->recorder->hasText('List Produk — Kue Pandan Asli'));
+    }
+
+    public function test_teks_bebas_di_state_yang_tidak_mengharapkannya_dibalas_ringkas(): void
+    {
+        $conversation = $this->makeConversation($this->surabaya);
+
+        $this->say($conversation, 'apa kabar');
+
+        $text = $this->recorder->allText();
+        $this->assertStringContainsString('Ketik *MENU* untuk melihat pilihan', $text);
+        $this->assertStringContainsString(
+            $this->bot->footerFor(OrderBotConversationState::WELCOME_SENT),
+            $text
+        );
+        $this->assertStringNotContainsString('Apa yang bisa kami bantu', $text);
+    }
+
+    public function test_setiap_state_aktif_memiliki_jalan_keluar_menu(): void
+    {
+        foreach (OrderBotConversationState::cases() as $state) {
+            if (! $state->isActive()) {
+                continue;
+            }
+
+            $context = $state === OrderBotConversationState::AWAITING_ORDER_FORM
+                ? ['form_step' => 0]
+                : [];
+            $conversation = $this->makeConversation(
+                $this->surabaya,
+                $context,
+                $state->value,
+                '6281000000'.substr(md5($state->value), 0, 4)
+            );
+            $this->recorder->reset();
+
+            $this->say($conversation, 'MENU');
+
+            $this->assertNotEmpty($this->recorder->sent, "State {$state->value} tidak merespons MENU.");
+            $this->assertSame(
+                OrderBotConversationState::MENU_SELECTION->value,
+                $conversation->fresh()->current_state,
+                "State {$state->value} tidak keluar lewat MENU."
+            );
+        }
+    }
+
+    public function test_setiap_state_aktif_memiliki_jalan_keluar_batal(): void
+    {
+        foreach (OrderBotConversationState::cases() as $state) {
+            if (! $state->isActive()) {
+                continue;
+            }
+
+            $context = $state === OrderBotConversationState::AWAITING_ORDER_FORM
+                ? ['form_step' => 0]
+                : [];
+            $conversation = $this->makeConversation(
+                $this->surabaya,
+                $context,
+                $state->value,
+                '6281000001'.substr(md5($state->value), 0, 4)
+            );
+            $this->recorder->reset();
+
+            $this->say($conversation, 'BATAL');
+
+            $this->assertNotEmpty($this->recorder->sent, "State {$state->value} tidak merespons BATAL.");
+            $this->assertSame(
+                OrderBotConversationState::MENU_SELECTION->value,
+                $conversation->fresh()->current_state,
+                "State {$state->value} tidak keluar lewat BATAL."
+            );
+        }
+    }
+
+    public function test_setiap_state_aktif_memiliki_jalan_keluar_ganti_kota(): void
+    {
+        $this->makeRegion('Malang');
+
+        foreach (OrderBotConversationState::cases() as $state) {
+            if (! $state->isActive()) {
+                continue;
+            }
+
+            $context = $state === OrderBotConversationState::AWAITING_ORDER_FORM
+                ? ['form_step' => 0]
+                : [];
+            $conversation = $this->makeConversation(
+                $this->surabaya,
+                $context,
+                $state->value,
+                '6281000002'.substr(md5($state->value), 0, 4)
+            );
+            $this->recorder->reset();
+
+            $this->say($conversation, 'GANTI KOTA');
+
+            $this->assertNotEmpty($this->recorder->sent, "State {$state->value} tidak merespons GANTI KOTA.");
+            $this->assertTrue(
+                $conversation->fresh()->getContext('awaiting_branch'),
+                "State {$state->value} tidak membuka pilihan kota."
+            );
+        }
+    }
 }

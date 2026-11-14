@@ -121,14 +121,14 @@ class OrderBotAdversarialTest extends TestCase
             $c->refresh();
             $this->assertEquals($expectedStep, $c->getContext('form_step'), "input#$i: $input");
         }
-        // PESAN persis: restart, keranjang TETAP ADA, lokasi dicek ulang.
+        // PESAN persis: restart, keranjang TETAP ADA, katalog dibuka kembali.
         $c = $this->convo();
         $this->bot->handleMessage($c, 'Kue Ijo');
         $this->bot->handleMessage($c, 'LANJUT');
         $this->bot->handleMessage($c, 'PESAN');
         $c->refresh();
         $this->assertCount(1, $c->getContext('cart') ?? []);
-        $this->assertEquals('cart', $c->getContext('after_location'));
+        $this->assertNull($c->getContext('after_location'));
         // 'Jl. Mawar No 10' sebagai NAMA juga sah (bebas, tanggung jawab user).
         $c = $this->convo();
         $this->bot->handleMessage($c, 'Kue Ijo');

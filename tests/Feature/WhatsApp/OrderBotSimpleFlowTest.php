@@ -377,14 +377,8 @@ class OrderBotSimpleFlowTest extends TestCase
         $c->refresh();
         $this->assertEquals($this->region->id, $c->region_id);
         $this->assertEquals(
-            OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS->value, $c->current_state
+            OrderBotConversationState::AWAITING_ORDER_FORM->value, $c->current_state
         );
-
-        // Kirim lokasi -> langsung pilih produk (katalog)
-        $this->bot->handleLocationMessage($c, ['latitude' => -8.67, 'longitude' => 115.21]);
-        $c->refresh();
-        $this->assertEquals(OrderBotConversationState::AWAITING_ORDER_FORM->value, $c->current_state);
-        $this->assertTrue((bool) $c->getContext('location_done'));
 
         // Pilih produk no 1 (Kue Ijo) -> varian
         $this->bot->handleMessage($c, '1');

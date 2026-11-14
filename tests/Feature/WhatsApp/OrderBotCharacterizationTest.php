@@ -80,19 +80,21 @@ class OrderBotCharacterizationTest extends TestCase
         );
     }
 
-    public function test_pesan_pada_pelanggan_baru_menanyakan_kota(): void
+    public function test_pesan_dengan_kota_known_langsung_membuka_katalog(): void
     {
         $conversation = $this->makeConversation($this->surabaya);
 
         $this->say($conversation, 'PESAN');
 
-        $buttons = $this->recorder->messagesOfType('buttons');
-        $this->assertNotEmpty($buttons, 'Bot harus mengirim pilihan kota.');
-        $this->assertStringContainsString('Pilih Kota Pengiriman', $buttons[0]['payload']['text']);
-        $this->assertTrue($conversation->fresh()->getContext('awaiting_branch'));
+        $this->assertTrue($this->recorder->hasText('List Produk — Kue Pandan Asli'));
+        $this->assertNull($conversation->fresh()->getContext('awaiting_branch'));
+        $this->assertSame(
+            OrderBotConversationState::AWAITING_ORDER_FORM->value,
+            $conversation->fresh()->current_state
+        );
     }
 
-    public function test_produk_menampilkan_katalog_dan_masuk_state_browsing(): void
+    public function test_produk_menampilkan_katalog_dan_masuk_state_pemilihan_produk(): void
     {
         $conversation = $this->makeConversation($this->surabaya);
 
@@ -101,7 +103,7 @@ class OrderBotCharacterizationTest extends TestCase
         $this->assertTrue($this->recorder->hasText('List Produk — Kue Pandan Asli'));
         $this->assertTrue($this->recorder->hasText('Kue Ijo'));
         $this->assertSame(
-            OrderBotConversationState::PRODUCT_BROWSING->value,
+            OrderBotConversationState::AWAITING_ORDER_FORM->value,
             $conversation->fresh()->current_state
         );
     }

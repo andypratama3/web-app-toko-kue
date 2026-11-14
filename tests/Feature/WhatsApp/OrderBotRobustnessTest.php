@@ -25,9 +25,13 @@ class OrderBotRobustnessTest extends TestCase
     use RefreshDatabase;
 
     protected Region $region;
+
     protected Region $otherRegion;
+
     protected Product $kueIjo;
+
     protected Product $tumpeng;
+
     protected OrderBotService $bot;
 
     protected function setUp(): void
@@ -79,7 +83,7 @@ class OrderBotRobustnessTest extends TestCase
         ]);
 
         return WhatsAppConversation::create([
-            'phone_number' => '6281' . random_int(100000000, 999999999),
+            'phone_number' => '6281'.random_int(100000000, 999999999),
             'region_id' => $this->region->id,
             'status' => 'active',
             'current_state' => OrderBotConversationState::from($state)->value,
@@ -113,9 +117,9 @@ class OrderBotRobustnessTest extends TestCase
         $c->refresh();
         $this->assertEquals($this->otherRegion->id, $c->region_id);
         $this->assertNull($c->getContext('awaiting_branch'));
-        // Lanjut ke minta lokasi, bukan error "produk tidak ditemukan".
+        // Lanjut ke katalog, bukan error "produk tidak ditemukan".
         $this->assertEquals(
-            OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS->value,
+            OrderBotConversationState::AWAITING_ORDER_FORM->value,
             $c->current_state
         );
     }
@@ -151,7 +155,7 @@ class OrderBotRobustnessTest extends TestCase
         $c->refresh();
         $this->assertCount(1, $c->getContext('cart') ?? []);
         $this->assertEquals('Budi', $c->getContext('order_customer')['name'] ?? null);
-        $this->assertEquals('cart', $c->getContext('after_location'));
+        $this->assertNull($c->getContext('after_location'));
     }
 
     // BUG-3: escape PRODUK dari tengah order tidak menghapus keranjang.
@@ -166,7 +170,7 @@ class OrderBotRobustnessTest extends TestCase
         $this->bot->handleMessage($c, 'PRODUK');
         $c->refresh();
         $this->assertCount(1, $c->getContext('cart') ?? []);
-        $this->assertEquals(OrderBotConversationState::PRODUCT_BROWSING->value, $c->current_state);
+        $this->assertEquals(OrderBotConversationState::AWAITING_ORDER_FORM->value, $c->current_state);
     }
 
     // BUG-4: kurir internal tidak meminta pin GPS kedua kali bila ongkir
@@ -227,6 +231,7 @@ class OrderBotRobustnessTest extends TestCase
             'invoice_number' => 'INV/0101/01/000/000/001',
             'customer_id' => (function () {
                 $c = \App\Models\Customer::create(['phone' => '6281999999999', 'name' => 'Korban', 'region_id' => $this->region->id, 'address' => 'Jl. Dummy No 1']);
+
                 return $c->id;
             })(),
             'phone' => '6281999999999',
@@ -252,6 +257,7 @@ class OrderBotRobustnessTest extends TestCase
             'invoice_number' => 'INV/0101/01/000/000/002',
             'customer_id' => (function () use ($c) {
                 $cu = \App\Models\Customer::create(['phone' => $c->phone_number, 'name' => 'Saya', 'region_id' => $this->region->id, 'address' => 'Jl. Saya No 1']);
+
                 return $cu->id;
             })(),
             'phone' => $c->phone_number,
@@ -276,6 +282,7 @@ class OrderBotRobustnessTest extends TestCase
             'invoice_number' => 'INV/0101/01/000/000/003',
             'customer_id' => (function () use ($c) {
                 $cu = \App\Models\Customer::create(['phone' => $c->phone_number, 'name' => 'Ghost', 'region_id' => $this->region->id, 'address' => 'Jl. Hantu No 1']);
+
                 return $cu->id;
             })(),
             'phone' => $c->phone_number,
@@ -305,7 +312,7 @@ class OrderBotRobustnessTest extends TestCase
         $this->bot->handleMessage($c, 'PESAN');
         $c->refresh();
         $this->assertEquals(OrderBotConversationState::AWAITING_ORDER_FORM->value, $c->current_state);
-        $this->assertTrue((bool) $c->getContext('awaiting_branch'), 'Langkah berikutnya = pilih cabang');
+        $this->assertFalse((bool) $c->getContext('awaiting_branch'), 'Kota yang sudah diketahui tidak perlu ditanya lagi');
     }
 
     // BUG-9: di langkah 4, nama produk mengandung kata "menu"/"produk"
