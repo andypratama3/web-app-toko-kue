@@ -16,4 +16,6 @@ return [
 
     'description_mode' => env('BOT_DESCRIPTION_MODE', 'full'),
 
+    'admin_phone' => env('BOT_ADMIN_PHONE'),
+
 ];

@@ -2824,9 +2824,33 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         };
     }
 
+    public function footerFor(OrderBotConversationState $state): string
+    {
+        return match ($state) {
+            OrderBotConversationState::INIT,
+            OrderBotConversationState::WELCOME_SENT,
+            OrderBotConversationState::MENU_SELECTION,
+            OrderBotConversationState::PRODUCT_BROWSING => 'Perintah: *PESAN* · *MENU* · *HARGA* · *GANTI KOTA*',
+            OrderBotConversationState::AWAITING_ORDER_FORM,
+            OrderBotConversationState::AWAITING_DELIVERY_METHOD,
+            OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS,
+            OrderBotConversationState::AWAITING_DELIVERY_SLOT => 'Perintah: *BATAL* · *GANTI KOTA*',
+            OrderBotConversationState::ORDER_SUMMARY => 'Perintah: *FIX* · *UBAH ALAMAT* · *BATAL*',
+            OrderBotConversationState::AWAITING_PAYMENT_PROOF => 'Perintah: *SKIP* · *BATAL*',
+            OrderBotConversationState::ORDER_CONFIRMED,
+            OrderBotConversationState::CLOSED,
+            OrderBotConversationState::ESCALATED_TO_HUMAN => 'Perintah: *PESAN* · *MENU*',
+        };
+    }
+
+    protected function withFooter(string $text, OrderBotConversationState $state): string
+    {
+        return rtrim($text)."\n\n".$this->footerFor($state);
+    }
+
     protected function sendWelcomeMessage(WhatsAppConversation $conversation): void
     {
-        $regionName = $conversation->region->name ?? config('services.whatsapp.default_region');
+        $regionName = $conversation->region?->name;
         $hour = (int) $this->localNow()->format('H');
         $greeting = match (true) {
             $hour >= 5 && $hour < 11 => 'Selamat pagi',
@@ -2835,13 +2859,19 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             default => 'Selamat malam',
         };
 
-        $this->metaService->sendText($conversation->phone_number,
-            "{$greeting} dari *Kue Pandan Asli* 🍃\n".
-            "Kota pengiriman: *{$regionName}*\n\n".
-            "Kami menjual kue tradisional Indonesia dengan rasa pandan alami.\n".
-            "Tanpa toko offline — hanya pesan online melalui WhatsApp ini.\n\n".
-            'Ketik *PESAN* untuk mulai order, *PRODUK* untuk katalog, atau *HARGA* untuk pricelist.'.
-            "\nKetik *GANTI KOTA* untuk pindah kota pengiriman."
+        $text = "{$greeting} dari *Kue Pandan Asli* 🍃";
+        if ($regionName) {
+            $text .= "\nKota pengiriman: *{$regionName}*";
+        }
+
+        $adminPhone = trim((string) config('bot.admin_phone'));
+        if ($adminPhone !== '') {
+            $text .= "\nAdmin WhatsApp: ".Phone::normalize($adminPhone);
+        }
+
+        $this->metaService->sendText(
+            $conversation->phone_number,
+            $this->withFooter($text, OrderBotConversationState::WELCOME_SENT)
         );
     }
 

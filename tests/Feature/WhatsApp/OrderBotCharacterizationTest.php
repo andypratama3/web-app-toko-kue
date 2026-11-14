@@ -73,7 +73,7 @@ class OrderBotCharacterizationTest extends TestCase
         $this->say($conversation, 'halo');
 
         $this->assertTrue($this->recorder->hasText('Kue Pandan Asli'));
-        $this->assertTrue($this->recorder->hasText('Ketik *PESAN*'));
+        $this->assertTrue($this->recorder->hasText('*PESAN*'));
         $this->assertSame(
             OrderBotConversationState::WELCOME_SENT->value,
             $conversation->fresh()->current_state
