@@ -693,7 +693,7 @@ class OrderBotStateTransitionTest extends TestCase
         $this->assertEquals($expected, $this->conversation->getContext('catalog_ids'));
     }
 
-    public function test_pricelist_preserves_catalog_ids(): void
+    public function test_pricelist_clears_catalog_ids(): void
     {
         $category = Category::create(['name' => 'Produk', 'slug' => 'produk']);
         Product::create([
@@ -718,7 +718,7 @@ class OrderBotStateTransitionTest extends TestCase
 
         $this->botService->handleMessage($this->conversation, 'harga');
         $this->conversation->refresh();
-        $this->assertCount(3, $this->conversation->getContext('catalog_ids'));
+        $this->assertEquals([], $this->conversation->getContext('catalog_ids'));
     }
 
     public function test_category_clears_old_product_selection(): void

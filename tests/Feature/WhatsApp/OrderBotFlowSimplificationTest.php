@@ -174,6 +174,26 @@ class OrderBotFlowSimplificationTest extends TestCase
         );
     }
 
+    public function test_harga_dari_katalog_membuka_pricelist(): void
+    {
+        $category = $this->makeCategory('Produk');
+        $this->makeProduct($category, 'Kue Ijo', [
+            ['name' => 'Isi 3', 'price' => 9000],
+        ]);
+        $conversation = $this->makeConversation($this->surabaya);
+
+        $this->say($conversation, 'PESAN');
+        $this->recorder->reset();
+        $this->say($conversation, 'HARGA');
+
+        $this->assertTrue($this->recorder->hasText('PRICELIST'));
+        $this->assertSame(
+            OrderBotConversationState::AWAITING_ORDER_FORM->value,
+            $conversation->fresh()->current_state
+        );
+        $this->assertSame([], $conversation->fresh()->getContext('catalog_ids'));
+    }
+
     public function test_kota_dipilih_sebelum_katalog_dan_tidak_minta_lokasi_awal(): void
     {
         $malang = $this->makeRegion('Malang');

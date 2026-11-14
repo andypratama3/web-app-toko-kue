@@ -100,10 +100,12 @@ class OrderBotService
         // Pricelist: bisa diminta dari state apa pun tanpa keluar alur — kecuali saat
         // bot sedang menunggu jawaban field bebas (jawaban form / alamat), agar jawaban
         // customer yang kebetulan mengandung kata "harga" tidak ditelan.
-        $acceptsPricelist = ! in_array($state, [
-            OrderBotConversationState::AWAITING_ORDER_FORM,
-            OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS,
-        ], true);
+        $formStep = (int) ($conversation->getContext('form_step') ?? 0);
+        $acceptsPricelist = $state !== OrderBotConversationState::AWAITING_LOCATION_OR_ADDRESS
+            && ! (
+                $state === OrderBotConversationState::AWAITING_ORDER_FORM
+                && $formStep !== 0
+            );
 
         if ($acceptsPricelist
             && $this->matchesCommand(strtolower(trim($messageText)), ['pricelist', 'price list', 'daftar harga', 'list harga', 'harga'])
