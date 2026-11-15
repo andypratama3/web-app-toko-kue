@@ -18,9 +18,9 @@ commit per fase di branch `rev/fase-N-<slug>`.
 | 4 | Renderer daftar produk tunggal (judul berkota, sub-produk `-`, isi saja) | R-04, R-09, R-12, R-13 | ✅ Selesai |
 | 5 | Menu kategori dinamis dari DB | R-08 | ✅ Selesai |
 | 6 | Setelah masuk keranjang: ringkasan + "Mau pesan apa?" | R-10 | ✅ Selesai |
-| 7 | Wording "cabang" → nama kota, satu nomor admin | R-16 | ✅ Selesai (teks pelanggan) |
-| 8 | Nomor HP penerima + contoh format lengkap | R-18 | ✅ Selesai (form_step 6 + orders.recipient_phone) |
-| 9 | Penyederhanaan alur pesanan | R-03, R-07 | ✅ Selesai (R-03 selesai; R-07 tetap OPEN) |
+| 7 | Wording "cabang" → nama kota, satu nomor admin | R-16 | ✅ Selesai (pelanggan, admin, owner) |
+| 8 | Nomor HP penerima + contoh format lengkap | R-18 | ✅ Selesai (form_step 6, ringkasan, notifikasi) |
+| 9 | Penyederhanaan alur pesanan | R-03, R-07 | ✅ Selesai (R-03 + perbaikan review; R-07 tetap OPEN) |
 | 10 | Import produk/harga (data pemilik) + QA & rilis | R-14, R-15 | ⬜ Belum |
 
 ## Status revisi
@@ -42,9 +42,9 @@ commit per fase di branch `rev/fase-N-<slug>`.
 | R-13 | Tumpeng/kue mix/hampers: keterangan cukup isi | 4 | ✅ Selesai (description_mode di config/bot.php) |
 | R-14 | Produk baru | 10 | ✅ Selesai (data sudah ada di production) |
 | R-15 | Harga khusus Surabaya | 3, 10 | 🟡 Infra selesai — data harga belum ada |
-| R-16 | Hilangkan kata "cabang" | 7 | ✅ Selesai (dihapus dari semua teks pelanggan) |
+| R-16 | Hilangkan kata "cabang" | 7, 9 | ✅ Selesai (pelanggan, admin, owner) |
 | R-17 | Nomor admin Malang & Surabaya | 7 | ✅ Selesai (+62 851-1365-8557 — Kue Pandan Asli) |
-| R-18 | Contoh format lengkap + no penerima | 8 | ✅ Selesai (form_step 6 + orders.recipient_phone) |
+| R-18 | Contoh format lengkap + no penerima | 8, 9 | ✅ Selesai (form_step 6, ringkasan, notifikasi admin/owner) |
 
 ## Keputusan desain final
 
@@ -212,8 +212,8 @@ Catatan verifikasi R-14/R-17:
   `recipient_phone` kini menjadi bagian dari `$fillable` model `Order`.
 - `GANTI KOTA` dari keranjang membuang item yang tidak tersedia di kota baru, mempertahankan item
   lintas kota, lalu mengembalikan pelanggan ke `LANJUT`.
-- `footerFor(OrderBotConversationState)` menjadi sumber tunggal footer. `BOT_ADMIN_PHONE` hanya
-  ditampilkan pada sambutan bila diisi.
+- `footerFor(OrderBotConversationState)` menjadi sumber tunggal footer. Nomor admin diambil dari
+  `AdminContactResolver` (`BOT_ADMIN_PHONE` → `regions.owner_phone`) dan hanya ditampilkan bila ada.
 - Sesi idle tetap memakai `resetConversationIfStale()`; tidak ada timeout atau state baru.
 - Dua E2E utama tercakup: pelanggan baru Surabaya sampai `ORDER_CONFIRMED`, dan pelanggan lama
   Malang yang pindah kota saat keranjang lalu checkout.
@@ -231,12 +231,29 @@ Catatan verifikasi R-14/R-17:
 
 ### Bukti verifikasi
 
-- `php artisan test --compact tests/Feature/WhatsApp` → **196 passed, 687 assertions**.
-- `php artisan test --compact` → **299 passed, 7 skipped, 910 assertions**.
+- `php artisan test --compact tests/Feature/WhatsApp` → **209 passed, 749 assertions**.
+- `php artisan test --compact` → **312 passed, 7 skipped, 972 assertions**.
 - Dua deprecation PHP 8.5 yang muncul (`PDO::MYSQL_ATTR_SSL_CA` dan
   `ReflectionMethod::setAccessible()`) bersifat pre-existing.
-- Pint untuk 13 file PHP yang disentuh → **PASS**.
+- Pint untuk 15 file PHP yang disentuh → **PASS**.
 - Diagram dan alur aktual didokumentasikan di `docs/ALUR_BOT_PESANAN.md`.
+
+### Perbaikan review whole-branch
+
+Review fresh atas `44e3a25..053eece` menghasilkan 6 temuan Important dan 5 Minor, tanpa Critical.
+Semua temuan diperbaiki dan dikunci dengan `tests/Feature/WhatsApp/OrderBotReviewRegressionTest.php`:
+
+- **I-1:** `MENU` setelah `FIX` membatalkan order `baru` yang belum dibayar sebelum konteks ditulis ulang.
+- **I-2:** `GANTI KOTA` membatalkan order lama dan membersihkan state pengiriman/ongkir kota lama.
+- **I-3:** `SKIP` idempoten di `ORDER_CONFIRMED`; bukti susulan tetap tertempel ke order.
+- **I-4:** nomor penerima tampil di ringkasan dan notifikasi admin/owner.
+- **I-5:** `AdminContactResolver` menjadi satu sumber nomor (D1) untuk sambutan, job, dan notifikasi.
+- **I-6:** semua harga tampilan (caption, daftar varian, kandidat pencarian) memakai `PriceResolver`.
+- **M-1:** dokumentasi alur/footer/verifikasi dikoreksi.
+- **M-2:** langkah nomor penerima (`form_step = 6`) tidak bisa keluar form karena teks command-like.
+- **M-3:** reset stale mempertahankan `recipient_phone` dan `branch_source`.
+- **M-4:** footer `CLOSED`/`ESCALATED_TO_HUMAN` hanya menawarkan `PESAN`, dan `PESAN` dirutekan.
+- **M-5:** kata "cabang" dihapus dari copy admin/owner dan notifikasi kegagalan forward.
 
 ---
 

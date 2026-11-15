@@ -100,8 +100,8 @@ class OrderBotFlowSimplificationTest extends TestCase
             OrderBotConversationState::ORDER_SUMMARY->value => 'Perintah: *FIX* · *UBAH ALAMAT* · *BATAL*',
             OrderBotConversationState::AWAITING_PAYMENT_PROOF->value => 'Perintah: *SKIP* · *BATAL*',
             OrderBotConversationState::ORDER_CONFIRMED->value => 'Perintah: *PESAN* · *MENU*',
-            OrderBotConversationState::CLOSED->value => 'Perintah: *PESAN* · *MENU*',
-            OrderBotConversationState::ESCALATED_TO_HUMAN->value => 'Perintah: *PESAN* · *MENU*',
+            OrderBotConversationState::CLOSED->value => 'Perintah: *PESAN*',
+            OrderBotConversationState::ESCALATED_TO_HUMAN->value => 'Perintah: *PESAN*',
         ];
 
         foreach ($expected as $state => $footer) {

@@ -44,6 +44,8 @@ class OrderBotService
 
     protected ProductListRenderer $productListRenderer;
 
+    protected AdminContactResolver $adminContactResolver;
+
     public function __construct(
         WhatsappMetaService $metaService,
         DeliveryZoneService $deliveryZoneService,
@@ -51,7 +53,8 @@ class OrderBotService
         DeliveryQuoteService $deliveryQuoteService,
         ConversationRegionResolver $regionResolver,
         PriceResolver $priceResolver,
-        ProductListRenderer $productListRenderer
+        ProductListRenderer $productListRenderer,
+        AdminContactResolver $adminContactResolver
     ) {
         $this->metaService = $metaService;
         $this->deliveryZoneService = $deliveryZoneService;
@@ -60,6 +63,7 @@ class OrderBotService
         $this->regionResolver = $regionResolver;
         $this->priceResolver = $priceResolver;
         $this->productListRenderer = $productListRenderer;
+        $this->adminContactResolver = $adminContactResolver;
     }
 
     public function handleMessage(WhatsAppConversation $conversation, string $messageText, ?array $messageData = null): void
@@ -360,7 +364,7 @@ class OrderBotService
         // "Halo, saya Budi", "Menu Pandan" (nama produk) adalah isi field,
         // bukan perintah. BATAL tetap selalu bisa.
         $isFieldAnswerStep = $state === OrderBotConversationState::AWAITING_ORDER_FORM
-            && in_array($conversation->getContext('form_step'), [1, 2, 3, 4], true);
+            && in_array($conversation->getContext('form_step'), [1, 2, 3, 4, 6], true);
         // Pengecualian langkah 4: perintah PERSIS ("MENU" saja) tetap boleh
         // keluar — yang diblokir hanya substring di dalam nama produk.
         $isExactAddMoreEscape = $state === OrderBotConversationState::AWAITING_ORDER_FORM
@@ -400,13 +404,21 @@ class OrderBotService
             && ! $conversation->getContext('awaiting_branch')
             && $this->matchesCommand($lower, ['menu', 'utama', 'kembali', 'awal', 'back'])
         ) {
+            // Sama seperti PESAN: order 'baru' belum dibayar tidak boleh
+            // ditinggalkan tanpa pemilik saat konteks ditulis ulang.
+            $this->cancelFreshUnpaidOrder($conversation);
             $cart = $conversation->getContext('cart') ?? [];
             $customer = $conversation->getContext('order_customer') ?? [];
-            $this->resetContextPreservingCity($conversation, $cart !== [] ? [
+            $recipientPhone = $conversation->getContext('recipient_phone');
+            $preserved = $cart !== [] ? [
                 'cart' => $cart,
                 'order_customer' => $customer,
                 'after_location' => 'cart',
-            ] : []);
+            ] : [];
+            if ($cart !== [] && $recipientPhone !== null) {
+                $preserved['recipient_phone'] = $recipientPhone;
+            }
+            $this->resetContextPreservingCity($conversation, $preserved);
             $this->advanceState($conversation, OrderBotConversationState::MENU_SELECTION);
             $this->metaService->sendText(
                 $conversation->phone_number,
@@ -542,11 +554,17 @@ class OrderBotService
                 "Ketik *PESAN* untuk lanjutkan order,\n".
                 'atau ketik *PRODUK* untuk melihat katalog.'
             );
-            $conversation->update(['context' => [
+            $kept = [
                 'cart' => $keptCart,
                 'order_customer' => $keptCustomer,
                 'form_step' => 4,
-            ]]);
+            ];
+            foreach (['recipient_phone', 'branch_source', 'customer_city'] as $key) {
+                if (array_key_exists($key, $conversation->context ?? [])) {
+                    $kept[$key] = $conversation->context[$key];
+                }
+            }
+            $conversation->update(['context' => $kept]);
         } else {
             $this->metaService->sendText(
                 $conversation->phone_number,
@@ -744,6 +762,12 @@ class OrderBotService
         $conversation->update(['region_id' => $chosen->id, 'context' => $context]);
         unset($conversation->region);
 
+        // Pindah kota harus atomik: order lama yang belum dibayar dibatalkan
+        // dan seluruh state pengiriman/ongkir kota lama dilepas, supaya kota
+        // baru tidak mewarisi kuota, lokasi, atau tarif kota sebelumnya.
+        $this->cancelFreshUnpaidOrder($conversation);
+        $this->clearCityBoundCheckoutState($conversation);
+
         // Buang item keranjang yang bukan produk lintas kota atau produk kota baru.
         $removed = $this->pruneCartForRegion($conversation, $chosen->id);
         if ($removed > 0) {
@@ -897,6 +921,27 @@ class OrderBotService
         }
         $conversation->update(['context' => null]);
         $conversation->setContextMany(array_merge($preserved, $context));
+    }
+
+    /**
+     * Lepas seluruh state yang terikat kota lama (metode, slot, lokasi,
+     * ongkir, order) tanpa menghapus keranjang dan identitas penerima.
+     */
+    protected function clearCityBoundCheckoutState(WhatsAppConversation $conversation): void
+    {
+        $context = $conversation->context ?? [];
+        $kept = [];
+        foreach ([
+            'cart', 'order_customer', 'recipient_phone',
+            'branch_source', 'customer_city', 'awaiting_branch', 'after_city_action',
+        ] as $key) {
+            if (array_key_exists($key, $context)) {
+                $kept[$key] = $context[$key];
+            }
+        }
+        $kept['form_step'] = ($kept['cart'] ?? []) !== [] ? 4 : 0;
+
+        $conversation->update(['context' => $kept]);
     }
 
     /**
@@ -1173,7 +1218,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
         if (count($candidates) > 1) {
             $options = $candidates->map(function ($p) use ($conversation) {
-                $cheapest = $this->resolveCheapestVariant($p, $conversation->region_id);
+                $cheapest = $this->priceResolver->cheapestVariant($p, $conversation->region_id);
 
                 return [
                     'type' => 'product',
@@ -2688,7 +2733,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                 'user_id' => null,
                 'region_id' => $conversation->region_id,
                 'title' => $title,
-                'message' => "⚠️ Pesanan dari {$conversation->phone_number} butuh penanganan (jarak {$distance}km > 14km). Cabang: {$regionName}. {$details}",
+                'message' => "⚠️ Pesanan dari {$conversation->phone_number} butuh penanganan (jarak {$distance}km > 14km). Kota: {$regionName}. {$details}",
                 'is_read' => false,
                 'type' => 'escalated',
             ]);
@@ -2777,6 +2822,44 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
             return;
         }
+
+        $state = OrderBotConversationState::tryFrom((string) $conversation->current_state) ?? OrderBotConversationState::WELCOME_SENT;
+        $lower = strtolower(trim($text));
+
+        // SKIP idempoten: pesan kedua (retry/double-tap) tidak boleh
+        // menurunkan state dan memutus jalur bukti susulan.
+        if ($state === OrderBotConversationState::ORDER_CONFIRMED
+            && $this->matchesCommand($lower, ['skip', 'lewati', 'nanti'])
+        ) {
+            $this->metaService->sendText($conversation->phone_number,
+                "✅ Pesanan Anda sudah tersimpan.\n".
+                "Silakan kirim bukti pembayaran kapan saja.\n\n".
+                'Terima kasih! 🙏'
+            );
+
+            return;
+        }
+
+        // PESAN/ORDER eksplisit juga berlaku di state nonaktif — footer
+        // hanya menawarkan perintah yang benar-benar dirutekan.
+        if ($this->matchesCommand($lower, ['mau pesan', 'pesan', 'order', 'ordering', 'mau order'])) {
+            $this->cancelFreshUnpaidOrder($conversation);
+            $this->openProductCatalog($conversation);
+
+            return;
+        }
+
+        // ORDER_CONFIRMED: jangan turunkan state karena teks bebas (mis.
+        // "terima kasih"); bukti susulan harus tetap tertangkap.
+        if ($state === OrderBotConversationState::ORDER_CONFIRMED) {
+            $this->metaService->sendText($conversation->phone_number,
+                "Pesanan Anda sudah kami terima. 🙏\n".
+                'Kirim bukti pembayaran bila belum, atau ketik *PESAN* untuk membuat pesanan baru.'
+            );
+
+            return;
+        }
+
         // Restart PESAN/ORDER dari ESCALATED/ORDER_CONFIRMED ditangani global escape
         // (checkGlobalEscape) sebelum sampai sini — satu jalur kanonis, satu pesan.
         $this->metaService->sendText($conversation->phone_number,
@@ -2885,9 +2968,9 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             OrderBotConversationState::AWAITING_DELIVERY_SLOT => 'Perintah: *BATAL* · *GANTI KOTA*',
             OrderBotConversationState::ORDER_SUMMARY => 'Perintah: *FIX* · *UBAH ALAMAT* · *BATAL*',
             OrderBotConversationState::AWAITING_PAYMENT_PROOF => 'Perintah: *SKIP* · *BATAL*',
-            OrderBotConversationState::ORDER_CONFIRMED,
+            OrderBotConversationState::ORDER_CONFIRMED => 'Perintah: *PESAN* · *MENU*',
             OrderBotConversationState::CLOSED,
-            OrderBotConversationState::ESCALATED_TO_HUMAN => 'Perintah: *PESAN* · *MENU*',
+            OrderBotConversationState::ESCALATED_TO_HUMAN => 'Perintah: *PESAN*',
         };
     }
 
@@ -2922,9 +3005,9 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             $text .= "\nKota pengiriman: *{$regionName}*";
         }
 
-        $adminPhone = trim((string) config('bot.admin_phone'));
-        if ($adminPhone !== '') {
-            $text .= "\nAdmin WhatsApp: ".Phone::normalize($adminPhone);
+        $adminPhone = $this->adminContactResolver->phoneFor($conversation->region);
+        if ($adminPhone !== null) {
+            $text .= "\nAdmin WhatsApp: {$adminPhone}";
         }
 
         $this->metaService->sendText(
@@ -3000,9 +3083,9 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
                 } else {
                     $imageUrl = rtrim((string) config('app.url'), '/').Storage::url($imagePath);
                 }
-                $cheapest = $this->resolveCheapestVariant($product);
+                $cheapest = $this->priceResolver->cheapestVariant($product, $conversation->region_id);
                 $caption = "*{$product->name}*"
-                    .($cheapest ? "\nMulai Rp ".number_format($cheapest->price, 0, ',', '.') : '');
+                    .($cheapest ? "\nMulai Rp ".number_format($this->priceResolver->priceFor($cheapest, $conversation->region_id), 0, ',', '.') : '');
                 $sent = $this->metaService->sendImage($conversation->phone_number, $imageUrl, $caption);
                 if (! $sent) {
                     Log::channel('whatsapp')->warning('⚠️ Gagal kirim foto produk, lanjut teks saja', [
@@ -3021,7 +3104,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $text .= "{$product->description}\n\n";
         $text .= "Varian:\n";
         foreach ($product->variants->where('is_active', true) as $variant) {
-            $text .= "• {$variant->name}: Rp ".number_format($variant->price, 0, ',', '.')."\n";
+            $text .= "• {$variant->name}: Rp ".number_format($this->priceResolver->priceFor($variant, $conversation->region_id), 0, ',', '.')."\n";
         }
         $this->metaService->sendText(
             $conversation->phone_number,
@@ -3431,6 +3514,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $recipientName = $customer['name'];
         $address = $customer['address'];
         $date = $customer['date'];
+        $recipientPhone = $context['recipient_phone'] ?? '';
         $slot = $context['delivery_slot'];
         $method = $context['delivery_method'];
         $ongkir = $context['ongkir'] ?? 0;
@@ -3459,6 +3543,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $text .= "─────────────────\n";
         $text .= '*TOTAL: Rp '.number_format($totalAll, 0, ',', '.')."*\n\n";
         $text .= "Penerima: {$recipientName}\n";
+        $text .= "HP Penerima: {$recipientPhone}\n";
         $text .= "Alamat: {$address}\n";
         $text .= "Tanggal: {$date}\n";
         $text .= "Jam pengiriman: slot {$slot}\n\n";
@@ -4095,20 +4180,6 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             ->orderByRaw('LENGTH(name) ASC')
             ->orderBy('id')
             ->first();
-    }
-
-    /**
-     * Satu-satunya sumber varian termurah yang aktif — dipakai ringkasan,
-     * konfirmasi, detail, dan pricelist agar harga yang ditampilkan SELALU
-     * sama dengan yang ditagihkan.
-     */
-    protected function resolveCheapestVariant(?Product $product): ?ProductVariant
-    {
-        if (! $product) {
-            return null;
-        }
-
-        return $product->variants->where('is_active', true)->sortBy('price')->first();
     }
 
     protected function generateInvoiceNumber(WhatsAppConversation $conversation): string

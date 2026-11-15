@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Order;
+use App\Services\WhatsApp\AdminContactResolver;
 use App\Services\WhatsApp\AdminNotificationRouterService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -24,14 +25,13 @@ class ForwardOrderToOwnerJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 3;
+
     public int $timeout = 30;
 
     /** Backoff eksponensial (detik) antar percobaan. */
     public array $backoff = [10, 30, 90];
 
-    public function __construct(public int $orderId)
-    {
-    }
+    public function __construct(public int $orderId) {}
 
     public function handle(AdminNotificationRouterService $router): void
     {
@@ -45,9 +45,9 @@ class ForwardOrderToOwnerJob implements ShouldQueue
             return;
         }
 
-        // Tanpa nomor owner, tak ada gunanya retry — cukup dilewati.
-        if (! $order->region?->owner_phone) {
-            Log::channel('whatsapp')->info('⏭️ Skip forward owner via job (owner_phone kosong)', [
+        // Tanpa nomor admin/owner, tak ada gunanya retry — cukup dilewati.
+        if (! app(AdminContactResolver::class)->phoneFor($order->region)) {
+            Log::channel('whatsapp')->info('⏭️ Skip forward owner via job (nomor admin/owner kosong)', [
                 'order_id' => $order->id,
             ]);
 

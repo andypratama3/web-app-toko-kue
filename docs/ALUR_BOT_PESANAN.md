@@ -114,7 +114,8 @@ Pencocokan perintah utama menggunakan kata utuh/case-insensitive. Karena itu, te
 ### 6.1 Sambutan dan Penentuan Kota
 
 Sambutan ringkas memuat nama toko dan kota pengiriman bila kota sudah diketahui.
-Nomor admin hanya ditampilkan jika `BOT_ADMIN_PHONE` terisi:
+Nomor admin diambil dari `AdminContactResolver`: `BOT_ADMIN_PHONE` diutamakan, lalu
+`regions.owner_phone` sebagai fallback. Nomor hanya ditampilkan jika salah satunya terisi:
 
 ```dotenv
 BOT_ADMIN_PHONE=
@@ -277,7 +278,12 @@ Produk nonaktif tidak pernah masuk katalog, pricelist, atau order.
 | `AWAITING_ORDER_FORM`, `AWAITING_DELIVERY_METHOD`, `AWAITING_LOCATION_OR_ADDRESS`, `AWAITING_DELIVERY_SLOT` | `Perintah: *BATAL* · *GANTI KOTA*` |
 | `ORDER_SUMMARY` | `Perintah: *FIX* · *UBAH ALAMAT* · *BATAL*` |
 | `AWAITING_PAYMENT_PROOF` | `Perintah: *SKIP* · *BATAL*` |
-| `ORDER_CONFIRMED`, `CLOSED`, `ESCALATED_TO_HUMAN` | `Perintah: *PESAN* · *MENU*` |
+| `ORDER_CONFIRMED` | `Perintah: *PESAN* · *MENU*` |
+| `CLOSED`, `ESCALATED_TO_HUMAN` | `Perintah: *PESAN*` |
+
+State nonaktif hanya menawarkan perintah yang benar-benar dirutekan. `PESAN` dari
+`CLOSED`/`ESCALATED_TO_HUMAN` membuka katalog kanonis; teks bebas di `ORDER_CONFIRMED`
+tidak menurunkan state agar bukti susulan tetap tertangkap.
 
 ## 9. Diagram Mermaid
 
@@ -405,16 +411,18 @@ flowchart TD
 
 - **R-07 OPEN:** catatan klien “Pada saat memilih ‘pesan’…” masih terpotong; tidak ada interpretasi baru yang diterapkan.
 - **R-15:** infrastruktur harga per kota tersedia, tetapi data harga Surabaya/Malang per varian belum lengkap.
-- `BOT_ADMIN_PHONE` belum otomatis berarti `regions.owner_phone` terisi; keduanya perlu dikonfigurasi untuk environment tujuan.
+- `BOT_ADMIN_PHONE` dan `regions.owner_phone` sama-sama kosong membuat notifikasi admin/owner dilewati; isi salah satunya di environment tujuan.
 - Dokumentasi ini tidak menyatakan deployment atau migrasi produksi telah dijalankan.
 - Sumber kebenaran status fase ada di `docs/IMPLEMENTATION_PROGRESS.md`.
 
 ## 12. Verifikasi Fase 9
 
-- `php artisan test --compact tests/Feature/WhatsApp` → **196 passed, 687 assertions**.
-- `php artisan test --compact` → **299 passed, 7 skipped, 910 assertions**.
+- `php artisan test --compact tests/Feature/WhatsApp` → **209 passed, 749 assertions**.
+- `php artisan test --compact` → **312 passed, 7 skipped, 972 assertions**.
 - Dua deprecation PHP 8.5 yang muncul (`PDO::MYSQL_ATTR_SSL_CA` dan `ReflectionMethod::setAccessible()`) bersifat pre-existing.
-- Pint untuk 13 file PHP yang disentuh → **PASS**.
+- Pint untuk 15 file PHP yang disentuh → **PASS**.
+- Review whole-branch: 6 temuan Important (I-1…I-6) dan 5 Minor (M-1…M-5) sudah diperbaiki;
+  regression test ada di `tests/Feature/WhatsApp/OrderBotReviewRegressionTest.php`.
 
 ---
 

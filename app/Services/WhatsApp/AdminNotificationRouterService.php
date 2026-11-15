@@ -6,7 +6,6 @@ use App\Models\AdminNotification;
 use App\Models\Order;
 use App\Models\Region;
 use App\Models\User;
-use App\Support\Phone;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -14,9 +13,12 @@ class AdminNotificationRouterService
 {
     protected WhatsappMetaService $metaService;
 
-    public function __construct(WhatsappMetaService $metaService)
+    protected AdminContactResolver $adminContactResolver;
+
+    public function __construct(WhatsappMetaService $metaService, AdminContactResolver $adminContactResolver)
     {
         $this->metaService = $metaService;
+        $this->adminContactResolver = $adminContactResolver;
     }
 
     public function notifyNewOrder(int $orderId): void
@@ -57,6 +59,7 @@ class AdminNotificationRouterService
                 'title' => 'Pesanan baru via WhatsApp',
                 'message' => "Invoice: {$order->invoice_number}\n"
                     ."Customer: {$customerName}\n"
+                    .($order->recipient_phone ? "HP Penerima: {$order->recipient_phone}\n" : '')
                     .'Total: Rp '.number_format($order->total_amount, 0, ',', '.')."\n"
                     ."Items:\n{$items}",
             ]);
@@ -116,8 +119,8 @@ class AdminNotificationRouterService
                 'order_id' => $order->id,
                 'type' => 'order',
                 'title' => 'Gagal meneruskan pesanan ke owner',
-                'message' => "Invoice {$order->invoice_number} gagal diteruskan ke WA owner cabang ({$reason}). "
-                    .'Cek koneksi Meta / nomor owner cabang, lalu teruskan manual bila perlu.',
+                'message' => "Invoice {$order->invoice_number} gagal diteruskan ke WA admin/owner ({$reason}). "
+                    .'Cek koneksi Meta / nomor admin atau owner kota, lalu teruskan manual bila perlu.',
                 'is_read' => false,
             ]);
         } catch (\Throwable $e) {
@@ -140,12 +143,10 @@ class AdminNotificationRouterService
     {
         $order->loadMissing(['customer', 'region', 'items']);
 
-        $ownerPhone = $order->region?->owner_phone
-            ? Phone::normalize($order->region->owner_phone)
-            : null;
+        $ownerPhone = $this->adminContactResolver->phoneFor($order->region);
 
         if (! $ownerPhone) {
-            Log::channel('whatsapp')->info('⏭️ Skip forward ke owner (owner_phone cabang belum diisi)', [
+            Log::channel('whatsapp')->info('⏭️ Skip forward ke owner (nomor admin/owner belum diisi)', [
                 'order_id' => $order->id,
                 'region_id' => $order->region_id,
             ]);
@@ -211,7 +212,7 @@ class AdminNotificationRouterService
      */
     public function sendOwnerTestMessage(Region $region): bool
     {
-        $ownerPhone = $region->owner_phone ? Phone::normalize($region->owner_phone) : null;
+        $ownerPhone = $this->adminContactResolver->phoneFor($region);
 
         if (! $ownerPhone) {
             return false;
@@ -221,9 +222,9 @@ class AdminNotificationRouterService
             $now = now(config('services.whatsapp.timezone', 'Asia/Jakarta'));
 
             $body = "✅ *Tes Notifikasi Owner*\n"
-                ."Cabang: {$region->name}\n"
+                ."Kota: {$region->name}\n"
                 .'Waktu: '.$now->isoFormat('D MMM YYYY HH:mm')."\n\n"
-                .'Jika pesan ini diterima, nomor owner cabang sudah benar dan '
+                .'Jika pesan ini diterima, nomor admin/owner sudah benar dan '
                 .'notifikasi pesanan akan dikirim ke nomor ini.';
 
             return $this->sendOwnerText($ownerPhone, $body) !== null;
@@ -245,10 +246,10 @@ class AdminNotificationRouterService
     {
         try {
             $region = $regionId ? \App\Models\Region::find($regionId) : null;
-            $ownerPhone = $region?->owner_phone ? Phone::normalize($region->owner_phone) : null;
+            $ownerPhone = $this->adminContactResolver->phoneFor($region);
 
             if (! $ownerPhone) {
-                Log::channel('whatsapp')->info('⏭️ Skip forward eskalasi (owner_phone cabang belum diisi)', [
+                Log::channel('whatsapp')->info('⏭️ Skip forward eskalasi (nomor admin/owner belum diisi)', [
                     'region_id' => $regionId,
                 ]);
 
@@ -288,12 +289,10 @@ class AdminNotificationRouterService
     {
         $order->loadMissing(['customer', 'region', 'items']);
 
-        $ownerPhone = $order->region?->owner_phone
-            ? Phone::normalize($order->region->owner_phone)
-            : null;
+        $ownerPhone = $this->adminContactResolver->phoneFor($order->region);
 
         if (! $ownerPhone) {
-            Log::channel('whatsapp')->info('⏭️ Skip forward bukti bayar (owner_phone cabang belum diisi)', [
+            Log::channel('whatsapp')->info('⏭️ Skip forward bukti bayar (nomor admin/owner belum diisi)', [
                 'order_id' => $order->id,
                 'region_id' => $order->region_id,
             ]);
@@ -338,13 +337,14 @@ class AdminNotificationRouterService
         $customer = $order->customer;
 
         return "🧾 *PESANAN BARU via WhatsApp*\n"
-            ."Cabang: {$order->region->name}\n"
+            ."Kota: {$order->region->name}\n"
             ."Invoice: *{$order->invoice_number}*\n"
             ."─────────────────\n"
             ."{$items}\n"
             ."─────────────────\n"
             .'*TOTAL: Rp '.number_format($order->total_amount, 0, ',', '.')."*\n\n"
             ."Penerima: {$customer->name}\n"
+            .($order->recipient_phone ? "HP Penerima: {$order->recipient_phone}\n" : '')
             ."HP customer: {$order->phone}\n"
             ."Alamat: {$order->address}\n"
             ."Bayar via: {$order->payment_method}\n"
