@@ -418,9 +418,9 @@ flowchart TD
 ## 12. Verifikasi Fase 9
 
 - `php artisan test --compact tests/Feature/WhatsApp` → **209 passed, 749 assertions**.
-- `php artisan test --compact` → **312 passed, 7 skipped, 972 assertions**.
+- `php artisan test --compact` → **318 passed, 7 skipped, 995 assertions**.
 - Dua deprecation PHP 8.5 yang muncul (`PDO::MYSQL_ATTR_SSL_CA` dan `ReflectionMethod::setAccessible()`) bersifat pre-existing.
-- Pint untuk 15 file PHP yang disentuh → **PASS**.
+- Pint file PHP yang disentuh (termasuk command import) → **PASS**.
 - Review whole-branch: 6 temuan Important (I-1…I-6) dan 5 Minor (M-1…M-5) sudah diperbaiki;
   regression test ada di `tests/Feature/WhatsApp/OrderBotReviewRegressionTest.php`.
 

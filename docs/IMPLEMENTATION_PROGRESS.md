@@ -21,7 +21,7 @@ commit per fase di branch `rev/fase-N-<slug>`.
 | 7 | Wording "cabang" → nama kota, satu nomor admin | R-16 | ✅ Selesai (pelanggan, admin, owner) |
 | 8 | Nomor HP penerima + contoh format lengkap | R-18 | ✅ Selesai (form_step 6, ringkasan, notifikasi) |
 | 9 | Penyederhanaan alur pesanan | R-03, R-07 | ✅ Selesai (R-03 + perbaikan review; R-07 tetap OPEN) |
-| 10 | Import produk/harga (data pemilik) + QA & rilis | R-14, R-15 | ⬜ Belum |
+| 10 | Import produk/harga (data pemilik) + QA & rilis | R-14, R-15 | ✅ Selesai (kode + QA; data harga R-15 belum ada) |
 
 ## Status revisi
 
@@ -41,7 +41,7 @@ commit per fase di branch `rev/fase-N-<slug>`.
 | R-12 | Tanda "-" pada sub produk | 4 | ✅ Selesai |
 | R-13 | Tumpeng/kue mix/hampers: keterangan cukup isi | 4 | ✅ Selesai (description_mode di config/bot.php) |
 | R-14 | Produk baru | 10 | ✅ Selesai (data sudah ada di production) |
-| R-15 | Harga khusus Surabaya | 3, 10 | 🟡 Infra selesai — data harga belum ada |
+| R-15 | Harga khusus Surabaya | 3, 10 | 🟡 Infra + import siap — data harga belum ada |
 | R-16 | Hilangkan kata "cabang" | 7, 9 | ✅ Selesai (pelanggan, admin, owner) |
 | R-17 | Nomor admin Malang & Surabaya | 7 | ✅ Selesai (+62 851-1365-8557 — Kue Pandan Asli) |
 | R-18 | Contoh format lengkap + no penerima | 8, 9 | ✅ Selesai (form_step 6, ringkasan, notifikasi admin/owner) |
@@ -232,7 +232,7 @@ Catatan verifikasi R-14/R-17:
 ### Bukti verifikasi
 
 - `php artisan test --compact tests/Feature/WhatsApp` → **209 passed, 749 assertions**.
-- `php artisan test --compact` → **312 passed, 7 skipped, 972 assertions**.
+- `php artisan test --compact` → **318 passed, 7 skipped, 995 assertions**.
 - Dua deprecation PHP 8.5 yang muncul (`PDO::MYSQL_ATTR_SSL_CA` dan
   `ReflectionMethod::setAccessible()`) bersifat pre-existing.
 - Pint untuk 15 file PHP yang disentuh → **PASS**.
@@ -254,6 +254,38 @@ Semua temuan diperbaiki dan dikunci dengan `tests/Feature/WhatsApp/OrderBotRevie
 - **M-3:** reset stale mempertahankan `recipient_phone` dan `branch_source`.
 - **M-4:** footer `CLOSED`/`ESCALATED_TO_HUMAN` hanya menawarkan `PESAN`, dan `PESAN` dirutekan.
 - **M-5:** kata "cabang" dihapus dari copy admin/owner dan notifikasi kegagalan forward.
+
+---
+
+## Implementasi Fase 10 (R-14, R-15) — Import harga, QA, dan rilis
+
+**Branch:** `rev/fase-10-qa` (belum di-merge/push).
+
+### Import harga
+
+- Command baru `php artisan bot:import-prices {file}`:
+  - default **dry-run** (validasi + tabel `buat/perbarui/tetap`, tanpa menulis);
+  - `--apply` menulis lewat `updateOrCreate` dalam satu transaksi;
+  - validasi header, kota, produk (ambigu ditolak), varian, harga, dan baris duplikat;
+  - seluruh baris dibatalkan bila ada satu error agar tidak ada import setengah jalan.
+- Template: `docs/templates/harga-varian.csv`.
+- Panduan pemilik: `docs/PANDUAN_PEMILIK.md`.
+- Test: `tests/Feature/Console/ImportVariantPricesCommandTest.php` (6 test).
+
+### QA dan rilis
+
+- Full suite: **318 passed, 7 skipped, 995 assertions**.
+- E2E fokus: **52 passed, 299 assertions**.
+- Pint file yang disentuh: **PASS**; 10 style issue pre-existing di file lama tidak diubah.
+- Release notes + matriks R-01…R-18: `docs/RILIS_REVISI_CHATBOT.md`.
+- Tag lokal `revisi-selesai-kode` dibuat setelah QA; tidak ada push/merge/migrasi production.
+
+### Batas Fase 10
+
+- **R-15:** data harga Surabaya/Malang per varian belum tersedia; import hanya siap dipakai.
+- **R-07:** tetap OPEN dan tidak diinterpretasikan.
+- DB lokal masih memiliki migrasi pending; `bot:audit-data` akan gagal sampai migrasi dijalankan.
+- `BOT_ADMIN_PHONE`/`regions.owner_phone` masih perlu diisi pada environment tujuan.
 
 ---
 
