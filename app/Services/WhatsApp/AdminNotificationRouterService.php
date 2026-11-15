@@ -132,11 +132,12 @@ class AdminNotificationRouterService
     }
 
     /**
-     * Kirim format pesanan + instruksi konfirmasi ke nomor WA owner cabang.
-     * Nomor diambil dari `regions.owner_phone` (format 62…).
-     * Bila kosong/belum diisi, hanya dicatat di log agar alur bot tidak terganggu.
+     * Kirim format pesanan + instruksi konfirmasi ke nomor WA admin/owner.
+     * Nomor diambil dari AdminContactResolver: `BOT_ADMIN_PHONE`, lalu
+     * `regions.owner_phone` sebagai fallback (format 62…).
+     * Bila keduanya kosong, hanya dicatat di log agar alur bot tidak terganggu.
      *
-     * @return bool true bila terkirim; false bila tak ada owner / gagal kirim
+     * @return bool true bila terkirim; false bila tak ada nomor / gagal kirim
      *              (dipakai job retry agar notif order tak hilang diam-diam).
      */
     public function forwardOrderToOwner(Order $order): bool
