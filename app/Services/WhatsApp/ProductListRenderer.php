@@ -218,11 +218,11 @@ class ProductListRenderer
     }
 
     /**
-     * Baris deskripsi produk sesuai config 'bot.description_mode' (R-13).
+     * Deskripsi produk sesuai config 'bot.description_mode' (R-13).
      *
      * 'only_after_berisi' hanya mengambil bagian setelah kata "Berisi:".
      */
-    protected function descriptionLine(Product $product): string
+    public function descriptionText(Product $product): string
     {
         $mode = config('bot.description_mode', 'full');
         if ($mode === 'off') {
@@ -236,12 +236,16 @@ class ProductListRenderer
 
         if ($mode === 'only_after_berisi') {
             $description = $this->afterBerisi($description);
-            if ($description === '') {
-                return '';
-            }
         }
 
-        return "  {$description}\n";
+        return $description;
+    }
+
+    protected function descriptionLine(Product $product): string
+    {
+        $text = $this->descriptionText($product);
+
+        return $text === '' ? '' : "  {$text}\n";
     }
 
     protected function afterBerisi(string $description): string

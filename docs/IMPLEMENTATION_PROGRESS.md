@@ -430,3 +430,34 @@ Fase 0 +7, Fase 1 +14, Fase 2 +7.
 **Bukti**: `php artisan test --compact` → **279 passed, 7 skipped, 739 assertions**
 (2 deprecation lingkungan yang sama). `./vendor/bin/pint --test` pada 14 file yang
 disentuh → **PASS**. Fase 3 menambah 8 test dari baseline Fase 2 (271).
+
+---
+
+## Perbaikan lanjutan R-13 — mode deskripsi aktif sebagai default (audit E2E 2026-11-16)
+
+**Temuan**: `description_mode` default `full` sehingga revisi R-13 tidak aktif tanpa env,
+`BOT_DESCRIPTION_MODE` tidak tercatat di `.env.example`, tidak ada test yang mengunci perilakunya,
+dan `sendProductDetail` mengabaikan mode (memakai deskripsi mentah) sementara daftar memakai
+`descriptionLine`. Varian di detail juga memakai `•` padahal R-12 menetapkan `-`.
+
+**Perubahan**
+
+- `config/bot.php`: default `only_after_berisi` (D9) — balik dengan `BOT_DESCRIPTION_MODE=full`.
+- `.env.example`: `BOT_DESCRIPTION_MODE=only_after_berisi`.
+- `ProductListRenderer::descriptionText()` (public) jadi satu sumber logika mode;
+  `descriptionLine()` menyelimutinya sehingga output daftar identik dengan sebelumnya.
+- `OrderBotService::sendProductDetail`: deskripsi lewat `descriptionText()`, varian memakai `- `
+  (R-12), dan foto kembali ke `$product->image_url` (`ProductImage`) sesuai desain Fase 1 —
+  blok URL inline yang terlanjur menumpuk diganti.
+- Test baru `tests/Feature/WhatsApp/ProductDescriptionModeTest.php` (3 test): katalog default
+  hanya menampilkan isi setelah "Berisi:", detail mengikuti mode + varian `-`, mode `full`
+  menampilkan seluruh deskripsi.
+
+**Bukti**: `php artisan test --compact tests/Feature/WhatsApp` → **212 passed, 757 assertions**
+(2 deprecation PHP 8.5 pre-existing). `./vendor/bin/pint` pada 4 file yang disentuh → **PASS**.
+
+**Sisa di luar cakupan revisi (tidak diubah sesuai instruksi)**: teks dashboard admin masih
+memakai "cabang" (internal), tiga matcher produk masih terpisah, mode `compact` renderer tidak
+terpakai, prompt opsi produk menampilkan nama varian, dan `BANTUAN` hanya hidup di tengah alur
+order.
+

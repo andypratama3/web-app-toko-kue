@@ -16,7 +16,6 @@ use App\Services\Pricing\PriceResolver;
 use App\Support\Phone;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class OrderBotService
 {
@@ -3074,15 +3073,8 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         // Kirim foto produk dulu bila tersedia (gagal kirim gambar tidak menggagalkan teks detail)
         if ($product->image_path) {
             try {
-                // Produk katalog memakai path public/assets/..., bukan storage.
-                $imagePath = $product->image_path;
-                if (str_starts_with($imagePath, 'assets/') || str_starts_with($imagePath, 'http')) {
-                    $imageUrl = str_starts_with($imagePath, 'http')
-                        ? $imagePath
-                        : rtrim((string) config('app.url'), '/').'/'.ltrim($imagePath, '/');
-                } else {
-                    $imageUrl = rtrim((string) config('app.url'), '/').Storage::url($imagePath);
-                }
+                // Satu sumber URL foto (R-02): legacy public, disk publik, atau URL eksternal.
+                $imageUrl = $product->image_url;
                 $cheapest = $this->priceResolver->cheapestVariant($product, $conversation->region_id);
                 $caption = "*{$product->name}*"
                     .($cheapest ? "\nMulai Rp ".number_format($this->priceResolver->priceFor($cheapest, $conversation->region_id), 0, ',', '.') : '');
@@ -3101,10 +3093,13 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         }
 
         $text = "*{$product->name}*\n\n";
-        $text .= "{$product->description}\n\n";
+        $description = $this->productListRenderer->descriptionText($product);
+        if ($description !== '') {
+            $text .= "{$description}\n\n";
+        }
         $text .= "Varian:\n";
         foreach ($product->variants->where('is_active', true) as $variant) {
-            $text .= "• {$variant->name}: Rp ".number_format($this->priceResolver->priceFor($variant, $conversation->region_id), 0, ',', '.')."\n";
+            $text .= "- {$variant->name}: Rp ".number_format($this->priceResolver->priceFor($variant, $conversation->region_id), 0, ',', '.')."\n";
         }
         $this->metaService->sendText(
             $conversation->phone_number,
