@@ -44,13 +44,7 @@ class ProductListRenderer
     protected function catalog(WhatsAppConversation $conversation): string
     {
         $regionId = $conversation->region_id;
-        $products = Product::where('is_active', true)
-            ->visibleInRegion($regionId)
-            ->with(['category', 'variants' => fn ($q) => $q->where('is_active', true)])
-            ->orderBy('id')
-            ->get();
-
-        $regionName = $conversation->region?->name ?? config('services.whatsapp.default_region', 'kota kami');
+        [$products, $regionName] = $this->orderedProducts($conversation);
         $text = "⭐ *List Produk — Kue Pandan Asli {$regionName}*\n\n";
 
         $grouped = $products->groupBy(fn ($p) => $p->category->name ?? 'Lainnya');
@@ -69,29 +63,50 @@ class ProductListRenderer
 
         $this->saveCatalogIds($conversation, $catalogIds);
 
-        $text .= 'Ketik *angka* untuk lihat foto & detail, atau *PESAN* untuk mulai order.';
+        $text .= 'Ketik *angka* untuk pesan produk itu, atau *MENU* untuk pilih kategori.';
 
         return $text;
     }
 
     /**
+     * Urutan produk kanonis: per kategori (urutan kemunculan menurut id),
+     * lalu id. Dipakai katalog penuh DAN katalog ringkas supaya nomor yang
+     * sama menunjuk produk yang sama di kedua daftar.
+     *
+     * @return array{0: \Illuminate\Database\Eloquent\Collection<int, Product>, 1: string}
+     */
+    protected function orderedProducts(WhatsAppConversation $conversation): array
+    {
+        $products = Product::where('is_active', true)
+            ->visibleInRegion($conversation->region_id)
+            ->with(['category', 'variants' => fn ($q) => $q->where('is_active', true)])
+            ->orderBy('id')
+            ->get();
+
+        $ordered = $products
+            ->groupBy(fn ($p) => $p->category->name ?? 'Lainnya')
+            ->flatMap(fn ($items) => $items->values())
+            ->values();
+
+        $regionName = $conversation->region?->name
+            ?? config('services.whatsapp.default_region', 'kota kami');
+
+        return [$ordered, $regionName];
+    }
+
+    /**
      * Katalog ringkas bernomor untuk pemilihan (R-10: "Mau pesan apa?").
+     * Nomor mengikuti urutan kanonis yang sama dengan katalog penuh.
      */
     protected function compact(WhatsAppConversation $conversation): string
     {
         $regionId = $conversation->region_id;
-        $products = Product::where('is_active', true)
-            ->visibleInRegion($regionId)
-            ->with(['variants' => fn ($q) => $q->where('is_active', true)])
-            ->orderBy('id')
-            ->limit(30)
-            ->get();
+        [$products, $regionName] = $this->orderedProducts($conversation);
 
-        $regionName = $conversation->region?->name ?? config('services.whatsapp.default_region', 'kota kami');
         $text = "⭐ *List Produk — Kue Pandan Asli {$regionName}*\n\n🛒 *Mau pesan apa?*\n\n";
 
         $catalogIds = [];
-        foreach ($products->values() as $i => $product) {
+        foreach ($products as $i => $product) {
             $catalogIds[] = $product->id;
             $cheapest = $this->priceResolver->cheapestVariant($product, $regionId);
             $price = $cheapest ? 'Rp '.number_format($this->priceResolver->priceFor($cheapest, $regionId), 0, ',', '.') : 'tanya admin';
@@ -158,7 +173,10 @@ class ProductListRenderer
     {
         $regionId = $conversation->region_id;
 
-        $category = Category::where('name', 'like', "%{$categoryName}%")->first();
+        // Nama kategori persis dulu — LIKE '%Kue%' bisa menangkap "Kue Basah"
+        // padahal yang dipilih kategori "Kue".
+        $category = Category::whereRaw('LOWER(name) = ?', [strtolower(trim($categoryName))])->first()
+            ?? Category::where('name', 'like', "%{$categoryName}%")->orderBy('id')->first();
 
         if (! $category) {
             return null;
@@ -175,7 +193,8 @@ class ProductListRenderer
             return 'empty';
         }
 
-        $text = "📦 *{$category->name}*\n\n";
+        $regionName = $conversation->region?->name ?? config('services.whatsapp.default_region', 'kota kami');
+        $text = "📦 *{$category->name} — Kue Pandan Asli {$regionName}*\n\n";
 
         $catalogIds = [];
         foreach ($products as $index => $product) {
@@ -183,10 +202,13 @@ class ProductListRenderer
             $catalogIds[] = $product->id;
             $text .= "{$num}. *{$product->name}*\n";
             $text .= $this->descriptionLine($product);
-            if ($product->variants->where('is_active', true)->isEmpty()) {
+            $variants = $product->variants->where('is_active', true)
+                ->sortBy(fn ($variant) => $this->priceResolver->priceFor($variant, $regionId))
+                ->values();
+            if ($variants->isEmpty()) {
                 $text .= "  (varian belum tersedia — tanya admin untuk harga)\n";
             }
-            foreach ($product->variants as $variant) {
+            foreach ($variants as $variant) {
                 $text .= "  - {$variant->name}: Rp ".number_format($this->priceResolver->priceFor($variant, $regionId), 0, ',', '.')."\n";
             }
             $text .= "\n";
@@ -206,7 +228,9 @@ class ProductListRenderer
     {
         $line = "{$num}. {$product->name}\n";
         $line .= $this->descriptionLine($product);
-        $variants = $product->variants->where('is_active', true);
+        $variants = $product->variants->where('is_active', true)
+            ->sortBy(fn ($variant) => $this->priceResolver->priceFor($variant, $regionId))
+            ->values();
         if ($variants->isEmpty()) {
             $line .= "  - (varian belum tersedia — tanya admin untuk harga)\n";
         }

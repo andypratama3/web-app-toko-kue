@@ -1449,11 +1449,9 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $cart = $conversation->getContext('cart') ?? [];
 
         $lines = [];
-        $totalQty = 0;
         foreach ($cart as $i => $row) {
             $n = $i + 1;
             $lines[] = "{$n}. {$row['qty']}x {$row['product_name']} ({$row['variant_name']})";
-            $totalQty += (int) $row['qty'];
         }
 
         $qtyNote = $conversation->getContext('qty_note') ?? '';
@@ -1461,9 +1459,17 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
         $this->metaService->sendText($conversation->phone_number,
             "✅ Masuk keranjang{$qtyNote}:\n".implode("\n", $lines)."\n\n".
-            "🛒 *Mau pesan apa?* Ketik *nama/nomor* produknya (bisa pakai jumlah, mis. *2x Kue Ijo*).\n\n".
             "Kalau sudah cukup, ketik *LANJUT*.\n".
             '(Ketik *HAPUS* untuk keluarkan item terakhir.)'
+        );
+
+        // R-10: daftar produk diulang di bawah agar pelanggan tidak perlu
+        // scroll ke atas. Sekaligus menyegarkan catalog_ids supaya angka
+        // yang diketik menunjuk daftar yang sedang terlihat.
+        $this->sendLongText(
+            $conversation,
+            $this->productListRenderer->render($conversation, 'compact'),
+            3500
         );
     }
 
@@ -2858,6 +2864,11 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
 
             return;
         }
+        // ESCALATED_TO_HUMAN: jangan rebut percakapan dari admin.
+        // Teks bebas tidak menurunkan state — admin yang menangani.
+        if ($state === OrderBotConversationState::ESCALATED_TO_HUMAN) {
+            return;
+        }
 
         // Restart PESAN/ORDER dari ESCALATED/ORDER_CONFIRMED ditangani global escape
         // (checkGlobalEscape) sebelum sampai sini — satu jalur kanonis, satu pesan.
@@ -3098,7 +3109,9 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
             $text .= "{$description}\n\n";
         }
         $text .= "Varian:\n";
-        foreach ($product->variants->where('is_active', true) as $variant) {
+        foreach ($product->variants->where('is_active', true)
+            ->sortBy(fn ($v) => $this->priceResolver->priceFor($v, $conversation->region_id))
+            ->values() as $variant) {
             $text .= "- {$variant->name}: Rp ".number_format($this->priceResolver->priceFor($variant, $conversation->region_id), 0, ',', '.')."\n";
         }
         $this->metaService->sendText(
@@ -3541,7 +3554,7 @@ Agar arah pengiriman tepat, silakan kirim pin GPS lokasi Anda atau ketik alamat 
         $text .= "HP Penerima: {$recipientPhone}\n";
         $text .= "Alamat: {$address}\n";
         $text .= "Tanggal: {$date}\n";
-        $text .= "Jam pengiriman: slot {$slot}\n\n";
+        $text .= "Jam pengiriman: {$slot}\n\n";
         $text .= 'Ketik *FIX* untuk konfirmasi, *UBAH ALAMAT* bila alamat salah, atau *BATAL* untuk membatalkan.';
 
         $this->metaService->sendText($conversation->phone_number, $text);

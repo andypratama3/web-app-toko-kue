@@ -457,7 +457,89 @@ dan `sendProductDetail` mengabaikan mode (memakai deskripsi mentah) sementara da
 (2 deprecation PHP 8.5 pre-existing). `./vendor/bin/pint` pada 4 file yang disentuh → **PASS**.
 
 **Sisa di luar cakupan revisi (tidak diubah sesuai instruksi)**: teks dashboard admin masih
-memakai "cabang" (internal), tiga matcher produk masih terpisah, mode `compact` renderer tidak
-terpakai, prompt opsi produk menampilkan nama varian, dan `BANTUAN` hanya hidup di tengah alur
-order.
+memakai "cabang" (internal), tiga matcher produk masih terpisah, prompt opsi produk menampilkan
+nama varian, dan `BANTUAN` hanya hidup di tengah alur order.
+
+## Perbaikan konsistensi copy bot (2026-11-21)
+
+Audit teks pesan bot menemukan selisih yang membingungkan pelanggan. Tidak ada selisih **harga**:
+katalog, detail, ringkasan, dan `FIX` semuanya lewat `PriceResolver::priceFor()`, dan keranjang
+tidak menyimpan harga (selalu resolve live).
+
+**Perubahan**
+
+- `ProductListRenderer::productLine()` dan `byCategory()` — varian diurutkan menurut harga kota
+  (`PriceResolver`), bukan urutan id, sehingga nomor di katalog sama dengan nomor di
+  "Pilih ukuran/varian".
+- `OrderBotService::sendProductDetail()` — urutan varian memakai aturan yang sama.
+- `ProductListRenderer::byCategory()` — judul memuat nama kota (R-09):
+  `📦 *{Kategori} — Kue Pandan Asli {Kota}*`.
+- `OrderBotService::askAddMore()` — daftar produk ringkas ikut dikirim setelah keranjang masuk
+  (R-10: tidak perlu scroll ke atas), sekaligus menyegarkan `catalog_ids` agar angka yang diketik
+  menunjuk daftar yang terlihat. Mode `compact` renderer kini terpakai.
+- `OrderBotService::sendOrderSummary()` — `Jam pengiriman: slot 09:00-11:00` → `Jam pengiriman: 09:00-11:00`.
+- `askAddMore()` — hapus `$totalQty` yang dihitung tapi tidak dipakai.
+- `docs/ALUR_BOT_PESANAN.md` — koreksi slot 3 menjadi `13:00–17:00` (kode sudah benar, dokumen
+  salah) dan contoh ringkasan disamakan dengan format aktual.
+
+**Bukti**: `php artisan test --compact tests/Feature/WhatsApp` → **216 passed, 766 assertions**;
+`tests/Feature/WhatsApp/OrderBotCopyConsistencyTest.php` (4 test baru) lulus. Suite penuh →
+**324 passed, 7 skipped, 1014 assertions**; dua kegagalan (`AdminChatReplyTest`,
+`AdminOrderCrossBranchTest`) adalah error PHP 8.5 `SessionHandlerInterface::create_sid()`
+yang pre-existing, bukan akibat perubahan ini. `./vendor/bin/pint` pada 3 file → **PASS**.
+
+## Audit mendalam 2026-11-21 (fase 2)
+
+### Bug nyata yang diperbaiki
+
+1. **Nomor katalog berbeda antara katalog penuh vs daftar ringkas** — katalog penuh grouped
+   by kategori (1=A1, 2=A2, 3=B1); daftar ringkas pakai `orderBy id` (1=A1, 2=B1, 3=A2).
+   User yang hafal nomor dari katalog lama salah pilih setelah keranjang. Lokasi:
+   `ProductListRenderer::catalog()` dan `compact()`.
+2. **`byCategory` LIKE %name% salah pilih kategori** — "Kue" memilih "Kue Basah" karena
+   `LIKE '%Kue%'` mengambil baris id lebih kecil, dan `selected_category` tidak sinkron
+   dengan judul yang ditampilkan. Lokasi: `ProductListRenderer::byCategory()`.
+3. **`handleClosedConversation` mereset ESCALATED_TO_HUMAN** — teks bebas pelanggan saat
+   percakapan di-eskalasi ke admin menurunkan state ke `WELCOME_SENT` dan bot menjawab
+   "Ada yang bisa kami bantu?". Eskalasi batal diam-diam. Lokasi:
+   `OrderBotService::handleClosedConversation()`.
+4. **Ketik nama varian di opsi (mis. "Besar") tidak ditemukan** — `processOptionStep` hanya
+   menerima angka; padahal daftar varian ditampilkan tanpa menekankan harus angka. Lokasi:
+   `OrderBotService::processOptionStep()`.
+5. **"Ketik angka untuk lihat foto & detail" tidak ditepati** — di state
+   `AWAITING_ORDER_FORM` angka langsung masuk keranjang tanpa menampilkan foto/detail.
+   Lokasi: `ProductListRenderer::catalog()`.
+
+### Perbaikan yang diterapkan
+
+- `ProductListRenderer::orderedProducts()` — helper urutan produk kanonis (kategori→id),
+  dipakai `catalog()` dan `compact()` agar nomor sama di kedua daftar. `limit(30)` pada
+  compact dihapus; `sendLongText` menangani chunking bila > 3500 karakter.
+- `byCategory()` — exact-match dulu, baru LIKE fallback. Judul tetap memuat kota (R-09).
+- `handleClosedConversation()` — bila `ESCALATED_TO_HUMAN`, langsung `return` tanpa
+  menurunkan state; admin yang menangani, notifikasi via
+  `NotifyAdminOfEscalatedIncomingMessage` tetap jalan.
+- `processOptionStep()` — sebelum gagal karena bukan angka, cocokkan teks dengan label
+  varian/produk (case-insensitive, prefix). "Besar" sekarang setara "2".
+- `catalog()` — teks ajakan diganti "Ketik *angka* untuk pesan produk itu, atau *MENU*
+  untuk pilih kategori." Copy sekarang jujur sesuai state; kategori tetap menawarkan
+  "lihat foto & detail" karena di state `PRODUCT_BROWSING` angka memang menampilkan detail.
+
+### Sengaja tidak diubah
+
+- `description_mode = only_after_berisi` global — produk tanpa "Berisi:" kehilangan
+  deskripsi. Dikunci `ProductDescriptionModeTest` (R-13); ubah perlu keputusan klien.
+- `searchProductsByKeyword` sudah deterministik (`orderBy LENGTH(name), id`); tidak diubah.
+
+### Bukti
+
+```
+php artisan test --compact tests/Feature/WhatsApp
+Tests: 1 deprecated, 1 failed, 216 passed (766 assertions)
+vendor/bin/pint (2 file)  PASS
+```
+
+Kegagalan `AdminChatReplyTest` pre-existing — deprecation PHP 8.5
+`SessionHandlerInterface::create_sid()`, tidak terkait perubahan ini.
+
 

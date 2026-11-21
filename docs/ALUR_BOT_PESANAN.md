@@ -191,7 +191,7 @@ Tersedia tiga slot:
 |---|---|
 | `1` | 09:00–11:00 |
 | `2` | 11:00–13:00 |
-| `3` | 13:00–15:00 |
+| `3` | 13:00–17:00 |
 
 Untuk kurir internal, alamat terakhir atau pin GPS menjadi sumber ongkir. Jika pin dan alamat
 berbeda jauh, bot menginformasikan konflik dan meminta konfirmasi ulang. Jarak di luar jangkauan
@@ -387,18 +387,25 @@ flowchart TD
 🤖 Bot:        Pilih slot waktu pengiriman:
                1. 09:00–11:00
                2. 11:00–13:00
-               3. 13:00–15:00
+               3. 13:00–17:00
 
 👤 Pelanggan:  1
 🤖 Bot:        📋 *RINGKASAN PESANAN*
-               Kue Ijo — Isi 5 | 1 | Rp...
-               Ongkir: Rp0
-               TOTAL: Rp...
+
+               1. 1x Kue Ijo (Isi 5)
+                  Rp 15.000
+               Subtotal Produk: Rp 15.000
+               Ongkir (Diambil Sendiri): Rp 0
+               ─────────────────
+               *TOTAL: Rp 15.000*
+
                Penerima: Budi Santoso
+               HP Penerima: 6281234567890
                Alamat: Jl. Pahlawan No 10 Surabaya
-               Nomor: 6281234567890
                Tanggal: 17 Nov 2026
-               Perintah: *FIX* · *UBAH ALAMAT* · *BATAL*
+               Jam pengiriman: 09:00-11:00
+
+               Ketik *FIX* untuk konfirmasi, *UBAH ALAMAT* bila alamat salah, atau *BATAL* untuk membatalkan.
 
 👤 Pelanggan:  FIX
 🤖 Bot:        ✅ *Pesanan Berhasil Dibuat!*
